@@ -1,0 +1,11 @@
+G:\GSWWWR\GRRWS.BackEnd\GRRWS.Application\bin\Debug\net8.0\GRRWS.Application.deps.json
+G:\GSWWWR\GRRWS.BackEnd\GRRWS.Application\bin\Debug\net8.0\GRRWS.Application.dll
+G:\GSWWWR\GRRWS.BackEnd\GRRWS.Application\bin\Debug\net8.0\GRRWS.Application.pdb
+G:\GSWWWR\GRRWS.BackEnd\GRRWS.Application\obj\Debug\net8.0\GRRWS.Application.GeneratedMSBuildEditorConfig.editorconfig
+G:\GSWWWR\GRRWS.BackEnd\GRRWS.Application\obj\Debug\net8.0\GRRWS.Application.AssemblyInfoInputs.cache
+G:\GSWWWR\GRRWS.BackEnd\GRRWS.Application\obj\Debug\net8.0\GRRWS.Application.AssemblyInfo.cs
+G:\GSWWWR\GRRWS.BackEnd\GRRWS.Application\obj\Debug\net8.0\GRRWS.Application.csproj.CoreCompileInputs.cache
+G:\GSWWWR\GRRWS.BackEnd\GRRWS.Application\obj\Debug\net8.0\GRRWS.Application.dll
+G:\GSWWWR\GRRWS.BackEnd\GRRWS.Application\obj\Debug\net8.0\refint\GRRWS.Application.dll
+G:\GSWWWR\GRRWS.BackEnd\GRRWS.Application\obj\Debug\net8.0\GRRWS.Application.pdb
+G:\GSWWWR\GRRWS.BackEnd\GRRWS.Application\obj\Debug\net8.0\ref\GRRWS.Application.dll

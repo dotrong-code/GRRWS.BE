@@ -1,0 +1,6 @@
+@GRRWS.Host_HostAddress = http://localhost:5101
+
+GET {{GRRWS.Host_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

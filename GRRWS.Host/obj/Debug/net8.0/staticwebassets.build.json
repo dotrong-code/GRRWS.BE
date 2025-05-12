@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "Ap5+1HZGq2OkCs+WqsA85kyqBuBytRz5MukbJpCliW0=",
+  "Source": "GRRWS.Host",
+  "BasePath": "_content/GRRWS.Host",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
