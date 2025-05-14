@@ -11,7 +11,8 @@ namespace GRRWS.Domain.Entities
         public string? RequestTitle { get; set; }
         public string? Description { get; set; }
         public string? Status { get; set; } // e.g., Pending, Approved, Denied
-
+        public DateTime? DueDate { get; set; }
+        public string? Priority { get; set; }
         // Foreign key 
         public Guid? SenderId { get; set; } 
         public Guid? ReceiverId { get; set; } 
