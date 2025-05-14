@@ -1,4 +1,4 @@
-﻿using System;
+﻿    using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -82,10 +82,11 @@ namespace GRRWS.Application.Implement.Service
             }
             var role = userLogin.Role switch
             {
-                1 => "Admin",
-                2 => "User",
+                1 => "HOD",
+                2 => "HOT",
                 3 => "Staff",
-                4 => "Customer",
+                4 => "SK",
+                5 => "Admin",
                 _ => throw new InvalidOperationException("Unknown role.")
             };
             var c = new CurrentUserObject
@@ -129,7 +130,7 @@ namespace GRRWS.Application.Implement.Service
                 UserName = registerRequest.UserName,
                 PhoneNumber = registerRequest.PhoneNumber,
                 DateOfBirth = registerRequest.DateOfBirth,
-                Role = 4,
+                Role = registerRequest.Role
 
             };
 
@@ -140,30 +141,30 @@ namespace GRRWS.Application.Implement.Service
             }
 
             
-            var activationLink = $"{CommonObject.Domain}/api/Auth/confirm?userId={newUser.Id}";
+            //var activationLink = $"{CommonObject.Domain}/api/Auth/confirm?userId={newUser.Id}";
 
-            // Send activation email
-            var emailBodyResult = await _emailTemplateService.GenerateEmailWithActivationLink("VerifyEmail", activationLink);
-            if (emailBodyResult.IsFailure)
-            {
-                return Result.Failure(Error.Failure("EmailGenerationFailed", "Failed to generate the email body."));
-            }
-            var emailBody = emailBodyResult.Object as string;
+            //// Send activation email
+            //var emailBodyResult = await _emailTemplateService.GenerateEmailWithActivationLink("VerifyEmail", activationLink);
+            //if (emailBodyResult.IsFailure)
+            //{
+            //    return Result.Failure(Error.Failure("EmailGenerationFailed", "Failed to generate the email body."));
+            //}
+            //var emailBody = emailBodyResult.Object as string;
 
-            // Create and send the email
-            var mailObject = new MailObject
-            {
-                ToMailIds = new List<string> { newUser.Email },
-                Subject = "Confirm Your Email Address",
-                Body = emailBody,
-                IsBodyHtml = true
-            };
+            //// Create and send the email
+            //var mailObject = new MailObject
+            //{
+            //    ToMailIds = new List<string> { newUser.Email },
+            //    Subject = "Confirm Your Email Address",
+            //    Body = emailBody,
+            //    IsBodyHtml = true
+            //};
 
-            var sendResult = await _emailTemplateService.SendMail(mailObject);
-            if (!sendResult.IsSuccess)
-            {
-                return Result.Failure(Error.None);
-            }
+            //var sendResult = await _emailTemplateService.SendMail(mailObject);
+            //if (!sendResult.IsSuccess)
+            //{
+            //    return Result.Failure(Error.None);
+            //}
             return Result.SuccessWithObject(new { Message = "Create successfully!!!" });
 
         }
@@ -192,10 +193,11 @@ namespace GRRWS.Application.Implement.Service
             // add role to author
             var role = Role switch
             {
-                1 => "Admin",
-                2 => "User",
+                1 => "HOD",
+                2 => "HOT",
                 3 => "Staff",
-                4 => "Customer",
+                4 => "SK",
+                5 => "Admin",
             };
             var claims = new[]
             {

@@ -14,5 +14,6 @@ namespace GRRWS.Infrastructure.DTOs.User.Register
         public string FullName { get; set; }
         public string PhoneNumber { get; set; }
         public DateTime DateOfBirth { get; set; }
+        public int Role { get; set; }
     }
 }
