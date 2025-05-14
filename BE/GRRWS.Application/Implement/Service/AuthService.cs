@@ -76,10 +76,10 @@ namespace GRRWS.Application.Implement.Service
             {
                 return Result.Failure(UserErrorMessage.UserNotExist());
             }
-            if (!userLogin.IsEmailConfirmed)
-            {
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Confirm", "Your email is not activated yet!!, please confirm your mail"));
-            }
+            //if (!userLogin.IsEmailConfirmed)
+            //{
+            //    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Confirm", "Your email is not activated yet!!, please confirm your mail"));
+            //}
             var role = userLogin.Role switch
             {
                 1 => "HOD",
