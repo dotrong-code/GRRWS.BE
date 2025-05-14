@@ -92,7 +92,7 @@ namespace GRRWS.Application.Implement.Service
             }
             catch (Exception ex)
             {
-                return Result.Failure(Error.Failure("SaveError", $"Failed to save email template: {ex.Message}"));
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("SaveError", $"Failed to save email template: {ex.Message}"));
             }
         }
         public async Task<Result> GetTemplateByTypeAsync(string templateType)
@@ -100,7 +100,7 @@ namespace GRRWS.Application.Implement.Service
             var emailTemplate = await _emailTemplateRepsository.GetEmailTemplateByTypeAsync(templateType);
             if (emailTemplate == null)
             {
-                return Result.Failure(Error.Failure("TemplateNotFound", $"Template of type '{templateType}' not found."));
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("TemplateNotFound", $"Template of type '{templateType}' not found."));
             }
 
             return Result.SuccessWithObject(emailTemplate);
@@ -112,7 +112,7 @@ namespace GRRWS.Application.Implement.Service
             var templateResult = await GetTemplateByTypeAsync(templateType);
             if (templateResult.IsFailure)
             {
-                return Result.Failure(Error.Failure("TemplateNotFound", "Email template not found"));
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("TemplateNotFound", "Email template not found"));
             }
 
             var emailTemplate = templateResult.Object as EmailTemplate;
@@ -153,7 +153,7 @@ namespace GRRWS.Application.Implement.Service
             var templateResult = await GetTemplateByTypeAsync(templateType);
             if (templateResult.IsFailure)
             {
-                return Result.Failure(Error.Failure("TemplateNotFound", "Email template not found"));
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("TemplateNotFound", "Email template not found"));
             }
 
             var emailTemplate = templateResult.Object as EmailTemplate;
@@ -194,7 +194,7 @@ namespace GRRWS.Application.Implement.Service
             var templateResult = await GetTemplateByTypeAsync(templateType);
             if (templateResult.IsFailure)
             {
-                return Result.Failure(Error.Failure("TemplateNotFound", "Email template not found"));
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("TemplateNotFound", "Email template not found"));
             }
 
             var emailTemplate = templateResult.Object as EmailTemplate;

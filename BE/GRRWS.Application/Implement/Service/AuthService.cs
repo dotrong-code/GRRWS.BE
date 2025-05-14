@@ -63,7 +63,7 @@ namespace GRRWS.Application.Implement.Service
             if (!validate.IsValid)
             {
                 var errors = validate.Errors
-                    .Select(e => (Error)e.CustomState)
+                    .Select(e => (Infrastructure.DTOs.Common.Error)e.CustomState)
                     .ToList();
 
                 // Handle errors as needed, e.g., return them in a Result object
@@ -78,7 +78,7 @@ namespace GRRWS.Application.Implement.Service
             }
             if (!userLogin.IsEmailConfirmed)
             {
-                return Result.Failure(Error.NotFound("Confirm", "Your email is not activated yet!!, please confirm your mail"));
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Confirm", "Your email is not activated yet!!, please confirm your mail"));
             }
             var role = userLogin.Role switch
             {
@@ -115,7 +115,7 @@ namespace GRRWS.Application.Implement.Service
             if (!validate.IsValid)
             {
                 var errors = validate.Errors
-                    .Select(e => (Error)e.CustomState)
+                    .Select(e => (Infrastructure.DTOs.Common.Error)e.CustomState)
                     .ToList();
                 return Result.Failures(errors);
             }
@@ -177,7 +177,7 @@ namespace GRRWS.Application.Implement.Service
             var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
             if (user == null)
             {
-                return Result.Failure(Error.NotFound("UserNotFound", "User not found."));
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("UserNotFound", "User not found."));
             }
 
             user.IsEmailConfirmed = true;
@@ -239,7 +239,7 @@ namespace GRRWS.Application.Implement.Service
             var user = await _unitOfWork.UserRepository.GetByAsync("Email", forgetPasswordRequest.Email);
             if (user == null)
             {
-                return Result.Failure(Error.NotFound("UserNotFound", "Email does not exist."));
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("UserNotFound", "Email does not exist."));
             }
 
             // Tạo mã token hoặc liên kết đặt lại mật khẩu (tạm thời dùng Guid làm token)
@@ -253,7 +253,7 @@ namespace GRRWS.Application.Implement.Service
             var emailBodyResult = await _emailTemplateService.GenerateEmailWithActivationLink("ChangePassword", resetLink);
             if (emailBodyResult.IsFailure)
             {
-                return Result.Failure(Error.Failure("EmailGenerationFailed", "Failed to generate the email body."));
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("EmailGenerationFailed", "Failed to generate the email body."));
             }
             var emailBody = emailBodyResult.Object as string;
 
@@ -270,7 +270,7 @@ namespace GRRWS.Application.Implement.Service
             var sendResult = await _emailTemplateService.SendMail(mailObject);
             if (!sendResult.IsSuccess)
             {
-                return Result.Failure(Error.Failure("EmailSendFailed", "Failed to send reset password email."));
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("EmailSendFailed", "Failed to send reset password email."));
             }
 
             return Result.SuccessWithObject(new { Message = "Reset password link has been sent to your email!" });
@@ -280,13 +280,13 @@ namespace GRRWS.Application.Implement.Service
             var user = await _unitOfWork.UserRepository.GetByAsync("Email", resetPasswordRequest.Email);
             if (user == null)
             {
-                return Result.Failure(Error.NotFound("UserNotFound", "User not found."));
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("UserNotFound", "User not found."));
             }
 
 
             if (user.ResetPasswordToken != resetPasswordRequest.Token)
             {
-                return Result.Failure(Error.NotFound("Token wrong", "Token not found."));
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Token wrong", "Token not found."));
             }
 
 
