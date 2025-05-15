@@ -13,7 +13,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetAllAsync();
         Task<Result> GetByIdAsync(Guid id);
         Task<Result> CreateAsync(CreateRequestDTO dto);
-        Task<Result> UpdateAsync(UpdateRequestDTO dto);
+        Task<Result> UpdateAsync(UpdateRequestDTO dto, Guid id);
         Task<Result> DeleteAsync(Guid id);
     }
 }

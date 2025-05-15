@@ -19,7 +19,7 @@ namespace GRRWS.Infrastructure.DTOs.Request
         public Guid? CreatedBy { get; set; }
         public DateTime? ModifiedDate { get; set; }
         public Guid? ModifiedBy { get; set; }
-        public List<RequestIssue> RequestIssues { get; set; }
+        public List<IssueDTO> Issues { get; set; } = new();
     }
     public class CreateRequestDTO
     {
@@ -35,7 +35,6 @@ namespace GRRWS.Infrastructure.DTOs.Request
 
     public class UpdateRequestDTO
     {
-        public Guid Id { get; set; }
         public string RequestTitle { get; set; }
         public string Description { get; set; }
         public string Status { get; set; }
@@ -45,5 +44,9 @@ namespace GRRWS.Infrastructure.DTOs.Request
 
         public List<Guid> IssueIds { get; set; } = new();
     }
-
+    public class IssueDTO
+    {
+        public Guid Id { get; set; }
+        public string? IssueTitle { get; set; }
+    }
 }

@@ -47,7 +47,7 @@ namespace GRRWS.Host.Controllers
         [HttpPut("{id}")]
         public async Task<IResult> Update(Guid id, [FromBody] UpdateRequestDTO dto)
         {
-            var result = await _requestService.UpdateAsync(dto);
+            var result = await _requestService.UpdateAsync(dto, id);
             return result.IsSuccess
 ? ResultExtensions.ToSuccessDetails(result, "Successfully")
 : ResultExtensions.ToProblemDetails(result);

@@ -23,7 +23,7 @@ namespace GRRWS.Application.Implement.Service
 
         public async Task<Result> GetAllAsync()
         {
-            var requests = await _requestRepository.GetAllAsync();
+            var requests = await _requestRepository.GetAllRequestAsync();
             var dtos = requests
                 .Where(r => !r.IsDeleted)
                 .Select(r => new RequestDTO
@@ -37,7 +37,12 @@ namespace GRRWS.Application.Implement.Service
                     ModifiedDate = r.ModifiedDate,
                     ModifiedBy = r.ModifiedBy,
                     DueDate = r.DueDate,
-                    Priority = r.Priority
+                    Priority = r.Priority,
+                    Issues = r.RequestIssues.Select(ri => new IssueDTO
+                    {
+                        Id = ri.Issue.Id,
+                        IssueTitle = ri.Issue.IssueKey
+                    }).ToList()
                 }).ToList<object>();
 
             return Result.SuccessWithObject(dtos);
@@ -45,7 +50,7 @@ namespace GRRWS.Application.Implement.Service
 
         public async Task<Result> GetByIdAsync(Guid id)
         {
-            var r = await _requestRepository.GetByIdAsync(id);
+            var r = await _requestRepository.GetRequestByIdAsync(id);
             if (r == null || r.IsDeleted)
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Request not found.", 0));
 
@@ -58,10 +63,17 @@ namespace GRRWS.Application.Implement.Service
                 CreatedDate = r.CreatedDate,
                 CreatedBy = r.CreatedBy,
                 ModifiedDate = r.ModifiedDate,
-                ModifiedBy = r.ModifiedBy
+                ModifiedBy = r.ModifiedBy,
+                DueDate = r.DueDate,
+                Priority = r.Priority,
+                Issues = r.RequestIssues.Select(ri => new IssueDTO
+                {
+                    Id = ri.Issue.Id,
+                    IssueTitle = ri.Issue.IssueKey
+                }).ToList()
             };
 
-            return Result.SuccessWithObject(new { Message = "Successfully!" });
+            return Result.SuccessWithObject(dto);
         }
 
         public async Task<Result> CreateAsync(CreateRequestDTO dto)
@@ -88,26 +100,25 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(new { Message = "Successfully!" });
         }
 
-        public async Task<Result> UpdateAsync(UpdateRequestDTO dto)
+        public async Task<Result> UpdateAsync(UpdateRequestDTO dto, Guid id)
         {
-            var r = await _requestRepository.GetByIdAsync(dto.Id);
+            var r = await _requestRepository.GetRequestByIdAsync(id);
             if (r == null || r.IsDeleted)
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Request not found.", 0));
 
-            r.RequestTitle = dto.RequestTitle;
-            r.Description = dto.Description;
-            r.Status = dto.Status;
-            r.DueDate = dto.DueDate;
-            r.Priority = dto.Priority;
-            r.ModifiedBy = dto.ModifiedBy;
-            r.ModifiedDate = DateTime.UtcNow;
-            r.RequestIssues?.Clear();
-            r.RequestIssues = dto.IssueIds.Select(issueId => new RequestIssue
+            var updatedRequest = new Request
             {
-                RequestId = r.Id,
-                IssueId = issueId
-            }).ToList();
-            await _requestRepository.UpdateAsync(r);
+                Id = id,
+                RequestTitle = dto.RequestTitle,
+                Description = dto.Description,
+                Status = dto.Status,
+                DueDate = dto.DueDate,
+                Priority = dto.Priority,
+                ModifiedBy = dto.ModifiedBy,
+                ModifiedDate = DateTime.UtcNow
+            };
+
+            await _requestRepository.UpdateRequestAsync(updatedRequest, dto.IssueIds);
             return Result.SuccessWithObject(new { Message = "Successfully!" });
         }
 
