@@ -4,6 +4,7 @@ using GRRWS.Infrastructure.DB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GRRWS.Infrastructure.Migrations
 {
     [DbContext(typeof(GRRWSContext))]
-    partial class GRRWSContextModelSnapshot : ModelSnapshot
+    [Migration("20250514151222_init")]
+    partial class init
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -80,37 +83,17 @@ namespace GRRWS.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("DeviceCode")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DeviceName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("InstallationDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsUnderWarranty")
-                        .HasColumnType("bit");
-
                     b.Property<Guid?>("MachineId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("ManufactureDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Manufacturer")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Model")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("ModifiedBy")
                         .HasColumnType("uniqueidentifier");
@@ -118,27 +101,11 @@ namespace GRRWS.Infrastructure.Migrations
                     b.Property<DateTime?>("ModifiedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("PhotoUrl")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<Guid?>("PositionId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<decimal?>("PurchasePrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("SerialNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Specifications")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Supplier")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid?>("ZoneId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -146,73 +113,9 @@ namespace GRRWS.Infrastructure.Migrations
 
                     b.HasIndex("PositionId");
 
-                    b.ToTable("Device", (string)null);
-                });
+                    b.HasIndex("ZoneId");
 
-            modelBuilder.Entity("GRRWS.Domain.Entities.DeviceHistory", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ActionType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ComponentCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ComponentName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal?>("Cost")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("DeviceId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("DocumentUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("EventDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid?>("ModifiedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("ModifiedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Provider")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Reason")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("RelatedTaskId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Status")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DeviceId");
-
-                    b.HasIndex("RelatedTaskId");
-
-                    b.ToTable("DeviceHistory", (string)null);
+                    b.ToTable("Device");
                 });
 
             modelBuilder.Entity("GRRWS.Domain.Entities.DeviceWarranty", b =>
@@ -221,9 +124,6 @@ namespace GRRWS.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<decimal?>("Cost")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
@@ -232,9 +132,6 @@ namespace GRRWS.Infrastructure.Migrations
 
                     b.Property<Guid>("DeviceId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("DocumentUrl")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -245,40 +142,20 @@ namespace GRRWS.Infrastructure.Migrations
                     b.Property<DateTime?>("ModifiedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime?>("ReceiveDate")
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("Provider")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("RelatedTaskId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<DateTime?>("SendDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Status")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("WarrantyCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("WarrantyEndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("WarrantyReason")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("WarrantyStartDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("WarrantyType")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("DeviceId");
 
-                    b.HasIndex("RelatedTaskId");
-
-                    b.ToTable("DeviceWarranty", (string)null);
+                    b.ToTable("DeviceWarranty");
                 });
 
             modelBuilder.Entity("GRRWS.Domain.Entities.EmailTemplate", b =>
@@ -355,20 +232,11 @@ namespace GRRWS.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ErrorCode")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<TimeSpan?>("EstimatedRepairTime")
                         .HasColumnType("time");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
-
-                    b.Property<Guid?>("MachineId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("ModifiedBy")
                         .HasColumnType("uniqueidentifier");
@@ -379,15 +247,10 @@ namespace GRRWS.Infrastructure.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Solution")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Sparepart")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("MachineId");
 
                     b.ToTable("Error", (string)null);
                 });
@@ -404,20 +267,14 @@ namespace GRRWS.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("Frequency")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<Guid>("IssueId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("IssueKey")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("MachineId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("ModifiedBy")
                         .HasColumnType("uniqueidentifier");
@@ -425,12 +282,7 @@ namespace GRRWS.Infrastructure.Migrations
                     b.Property<DateTime?>("ModifiedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Severity")
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("MachineId");
 
                     b.ToTable("Issue", (string)null);
                 });
@@ -483,9 +335,6 @@ namespace GRRWS.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -495,33 +344,15 @@ namespace GRRWS.Infrastructure.Migrations
                     b.Property<string>("MachineName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Manufacturer")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Model")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<Guid?>("ModifiedBy")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("ModifiedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("PhotoUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ReleaseDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Specifications")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Status")
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
-                    b.ToTable("Machine", (string)null);
+                    b.ToTable("Machine");
                 });
 
             modelBuilder.Entity("GRRWS.Domain.Entities.Position", b =>
@@ -552,7 +383,7 @@ namespace GRRWS.Infrastructure.Migrations
 
                     b.HasIndex("ZoneId");
 
-                    b.ToTable("Position", (string)null);
+                    b.ToTable("Position");
                 });
 
             modelBuilder.Entity("GRRWS.Domain.Entities.Report", b =>
@@ -641,6 +472,9 @@ namespace GRRWS.Infrastructure.Migrations
                     b.Property<Guid?>("DeviceId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -649,6 +483,9 @@ namespace GRRWS.Infrastructure.Migrations
 
                     b.Property<DateTime?>("ModifiedDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Priority")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("ReceiverId")
                         .HasColumnType("uniqueidentifier");
@@ -739,7 +576,7 @@ namespace GRRWS.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("IsEmailConfirmed")
+                    b.Property<bool>("IsEmailConfirmed")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("IsRegister")
@@ -777,75 +614,6 @@ namespace GRRWS.Infrastructure.Migrations
                     b.ToTable("User", (string)null);
                 });
 
-            modelBuilder.Entity("GRRWS.Domain.Entities.WarrantyTask", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("AppointmentDocumentUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("AssignedStaffId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ConfirmationResult")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal?>("Cost")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("DeviceId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ErrorDescription")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("IssueDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("ModifiedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("ModifiedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Provider")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ReceiveDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("SendDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Status")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TaskCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AssignedStaffId");
-
-                    b.HasIndex("DeviceId");
-
-                    b.ToTable("WarrantyTask", (string)null);
-                });
-
             modelBuilder.Entity("GRRWS.Domain.Entities.Zone", b =>
                 {
                     b.Property<Guid>("Id")
@@ -877,7 +645,7 @@ namespace GRRWS.Infrastructure.Migrations
 
                     b.HasIndex("AreaId");
 
-                    b.ToTable("Zone", (string)null);
+                    b.ToTable("Zone");
                 });
 
             modelBuilder.Entity("GRRWS.Domain.Entities.Area", b =>
@@ -885,7 +653,7 @@ namespace GRRWS.Infrastructure.Migrations
                     b.HasOne("GRRWS.Domain.Entities.User", "User")
                         .WithMany("ManagedAreas")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("User");
                 });
@@ -894,35 +662,21 @@ namespace GRRWS.Infrastructure.Migrations
                 {
                     b.HasOne("GRRWS.Domain.Entities.Machine", "Machine")
                         .WithMany("Devices")
-                        .HasForeignKey("MachineId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .HasForeignKey("MachineId");
 
                     b.HasOne("GRRWS.Domain.Entities.Position", "Position")
                         .WithMany("Devices")
-                        .HasForeignKey("PositionId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .HasForeignKey("PositionId");
+
+                    b.HasOne("GRRWS.Domain.Entities.Zone", "Zone")
+                        .WithMany()
+                        .HasForeignKey("ZoneId");
 
                     b.Navigation("Machine");
 
                     b.Navigation("Position");
-                });
 
-            modelBuilder.Entity("GRRWS.Domain.Entities.DeviceHistory", b =>
-                {
-                    b.HasOne("GRRWS.Domain.Entities.Device", "Device")
-                        .WithMany("Histories")
-                        .HasForeignKey("DeviceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("GRRWS.Domain.Entities.WarrantyTask", "RelatedTask")
-                        .WithMany()
-                        .HasForeignKey("RelatedTaskId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.Navigation("Device");
-
-                    b.Navigation("RelatedTask");
+                    b.Navigation("Zone");
                 });
 
             modelBuilder.Entity("GRRWS.Domain.Entities.DeviceWarranty", b =>
@@ -933,32 +687,7 @@ namespace GRRWS.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("GRRWS.Domain.Entities.WarrantyTask", null)
-                        .WithMany("RelatedWarranties")
-                        .HasForeignKey("RelatedTaskId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
                     b.Navigation("Device");
-                });
-
-            modelBuilder.Entity("GRRWS.Domain.Entities.Error", b =>
-                {
-                    b.HasOne("GRRWS.Domain.Entities.Machine", "Machine")
-                        .WithMany()
-                        .HasForeignKey("MachineId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.Navigation("Machine");
-                });
-
-            modelBuilder.Entity("GRRWS.Domain.Entities.Issue", b =>
-                {
-                    b.HasOne("GRRWS.Domain.Entities.Machine", "Machine")
-                        .WithMany()
-                        .HasForeignKey("MachineId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.Navigation("Machine");
                 });
 
             modelBuilder.Entity("GRRWS.Domain.Entities.IssueError", b =>
@@ -985,7 +714,7 @@ namespace GRRWS.Infrastructure.Migrations
                     b.HasOne("GRRWS.Domain.Entities.Zone", "Zone")
                         .WithMany("Positions")
                         .HasForeignKey("ZoneId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Zone");
@@ -1025,8 +754,7 @@ namespace GRRWS.Infrastructure.Migrations
                 {
                     b.HasOne("GRRWS.Domain.Entities.Device", "Device")
                         .WithMany("Requests")
-                        .HasForeignKey("DeviceId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("DeviceId");
 
                     b.HasOne("GRRWS.Domain.Entities.User", "Receiver")
                         .WithMany("RequestsReceiveds")
@@ -1064,24 +792,6 @@ namespace GRRWS.Infrastructure.Migrations
                     b.Navigation("Request");
                 });
 
-            modelBuilder.Entity("GRRWS.Domain.Entities.WarrantyTask", b =>
-                {
-                    b.HasOne("GRRWS.Domain.Entities.User", "AssignedStaff")
-                        .WithMany()
-                        .HasForeignKey("AssignedStaffId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("GRRWS.Domain.Entities.Device", "Device")
-                        .WithMany()
-                        .HasForeignKey("DeviceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AssignedStaff");
-
-                    b.Navigation("Device");
-                });
-
             modelBuilder.Entity("GRRWS.Domain.Entities.Zone", b =>
                 {
                     b.HasOne("GRRWS.Domain.Entities.Area", "Area")
@@ -1100,8 +810,6 @@ namespace GRRWS.Infrastructure.Migrations
 
             modelBuilder.Entity("GRRWS.Domain.Entities.Device", b =>
                 {
-                    b.Navigation("Histories");
-
                     b.Navigation("Requests");
 
                     b.Navigation("Warranties");
@@ -1150,11 +858,6 @@ namespace GRRWS.Infrastructure.Migrations
                     b.Navigation("RequestsReceiveds");
 
                     b.Navigation("RequestsSents");
-                });
-
-            modelBuilder.Entity("GRRWS.Domain.Entities.WarrantyTask", b =>
-                {
-                    b.Navigation("RelatedWarranties");
                 });
 
             modelBuilder.Entity("GRRWS.Domain.Entities.Zone", b =>
