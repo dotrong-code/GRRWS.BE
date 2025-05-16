@@ -30,12 +30,12 @@ namespace GRRWS.Domain.Entities
         public string? Supplier { get; set; } // Nhà cung cấp thiết bị
 
         // Foreign keys
-
+        
         public Guid? MachineId { get; set; }
         public Guid? PositionId { get; set; }
 
         // Navigation properties
-
+        
         public Position? Position { get; set; }
         public Machine? Machine { get; set; }
         public ICollection<DeviceWarranty> Warranties { get; set; } = new List<DeviceWarranty>();
