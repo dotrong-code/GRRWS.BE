@@ -1,4 +1,4 @@
-﻿    using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -31,7 +31,7 @@ namespace GRRWS.Application.Implement.Service
         private readonly ITokenService _tokenService;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IConfiguration _configuration;
-        
+
         private readonly IEmailTemplateService _emailTemplateService;
         public AuthService
             (
@@ -41,7 +41,7 @@ namespace GRRWS.Application.Implement.Service
             IPasswordHasher passwordHasher,
             ITokenService tokenService,
             IConfiguration configuration,
-            
+
             IEmailTemplateService emailTemplateService
             )
         {
@@ -52,7 +52,7 @@ namespace GRRWS.Application.Implement.Service
             _passwordHasher = passwordHasher;
             _tokenService = tokenService;
             _configuration = configuration;
-            
+
             _emailTemplateService = emailTemplateService;
 
         }
@@ -76,10 +76,10 @@ namespace GRRWS.Application.Implement.Service
             {
                 return Result.Failure(UserErrorMessage.UserNotExist());
             }
-            if (!userLogin.IsEmailConfirmed)
-            {
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Confirm", "Your email is not activated yet!!, please confirm your mail"));
-            }
+            //if (!userLogin.IsEmailConfirmed)
+            //{
+            //    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Confirm", "Your email is not activated yet!!, please confirm your mail"));
+            //}
             var role = userLogin.Role switch
             {
                 1 => "HOD",
@@ -140,7 +140,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(UserErrorMessage.UserNoCreated());
             }
 
-            
+
             //var activationLink = $"{CommonObject.Domain}/api/Auth/confirm?userId={newUser.Id}";
 
             //// Send activation email
