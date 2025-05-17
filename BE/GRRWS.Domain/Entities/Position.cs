@@ -8,11 +8,9 @@ namespace GRRWS.Domain.Entities
 {
     public class Position : BaseEntity
     {
-
-        // Foreign key 
+        public int Index { get; set; }
         public Guid ZoneId { get; set; }
         public Zone Zone { get; set; }
-        // Navigation
-        public ICollection<Device>? Devices { get; set; }
+        public Device Device { get; set; }
     }
 }

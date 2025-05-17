@@ -30,7 +30,7 @@ namespace GRRWS.Infrastructure.DB
         public DbSet<Issue> Issues { get; set; }
         public DbSet<IssueError> IssueErrors { get; set; }
         public DbSet<Error> Errors { get; set; }
-        public DbSet<ReportError> ReportErrors { get; set; }
+        public DbSet<ErrorDetail> ReportErrors { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -56,7 +56,7 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<Issue>().ToTable("Issue");
             modelBuilder.Entity<IssueError>().ToTable("IssueError");
             modelBuilder.Entity<Error>().ToTable("Error");
-            modelBuilder.Entity<ReportError>().ToTable("ReportError");
+            modelBuilder.Entity<ErrorDetail>().ToTable("ReportError");
             #endregion
 
             #region Relationships and Additional Configuration
@@ -210,14 +210,14 @@ namespace GRRWS.Infrastructure.DB
                 .OnDelete(DeleteBehavior.Cascade);
 
             // ReportError - Report
-            modelBuilder.Entity<ReportError>()
+            modelBuilder.Entity<ErrorDetail>()
                 .HasOne(re => re.Report)
                 .WithMany(r => r.ReportErrors)
                 .HasForeignKey(re => re.ReportId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // ReportError - Error
-            modelBuilder.Entity<ReportError>()
+            modelBuilder.Entity<ErrorDetail>()
                 .HasOne(re => re.Error)
                 .WithMany(e => e.ReportErrors)
                 .HasForeignKey(re => re.ErrorId)

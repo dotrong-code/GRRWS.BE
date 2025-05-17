@@ -8,7 +8,8 @@ namespace GRRWS.Domain.Entities
 {
     public class Feedback : BaseEntity
     {
-        public string? Name { get; set; }
+        public string? Title { get; set; }
+        public string? Content { get; set; }
         // Foreign key 
         public Guid? UserId { get; set; }
 

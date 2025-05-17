@@ -8,7 +8,7 @@ namespace GRRWS.Domain.Entities
 {
     public class DeviceHistory : BaseEntity
     {
-        public string? ActionType { get; set; } // Warranty, Repair, Replacement, Maintenance
+        public string? ActionType { get; set; } // Warranty, Repair, Replacement
         public DateTime EventDate { get; set; }
         public string? Description { get; set; }
         public string? Reason { get; set; }
