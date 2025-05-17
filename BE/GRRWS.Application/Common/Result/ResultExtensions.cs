@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using GRRWS.Domain.Enum;
+﻿using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.DTOs.Common;
 using Microsoft.AspNetCore.Http;
 
@@ -69,6 +64,7 @@ namespace GRRWS.Application.Common.Result
                     ErrorType.Validation => StatusCodes.Status400BadRequest,
                     ErrorType.NotFound => StatusCodes.Status404NotFound,
                     ErrorType.Conflict => StatusCodes.Status409Conflict,
+                    ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
                     _ => StatusCodes.Status500InternalServerError
                 };
 
@@ -78,6 +74,7 @@ namespace GRRWS.Application.Common.Result
                     ErrorType.Validation => "Bad Request",
                     ErrorType.NotFound => "Not Found",
                     ErrorType.Conflict => "Conflict",
+                    ErrorType.Unauthorized => "Unauthorized",
                     _ => "Server Failure"
                 };
 
@@ -87,6 +84,7 @@ namespace GRRWS.Application.Common.Result
                     ErrorType.Validation => "https://tools.ietf.org/html/rfc7231#section-6.5.1",  // 400 Bad Request
                     ErrorType.NotFound => "https://tools.ietf.org/html/rfc7231#section-6.5.4",   // 404 Not Found
                     ErrorType.Conflict => "https://tools.ietf.org/html/rfc7231#section-6.5.8",   // 409 Conflict
+                    ErrorType.Unauthorized => "https://tools.ietf.org/html/rfc7231#section-6.5.8",   // 409 Conflict
                     _ => "https://tools.ietf.org/html/rfc7231#section-6.6.1"                     // 500 Internal Server Error
                 };
         }
