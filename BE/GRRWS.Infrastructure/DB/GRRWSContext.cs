@@ -22,7 +22,6 @@ namespace GRRWS.Infrastructure.DB
         public DbSet<Device> Devices { get; set; }
         public DbSet<DeviceWarranty> DeviceWarranties { get; set; }
         public DbSet<DeviceHistory> DeviceHistories { get; set; }
-        public DbSet<WarrantyTask> WarrantyTasks { get; set; }
         public DbSet<EmailTemplate> EmailTemplates { get; set; }
         public DbSet<Request> Requests { get; set; }
         public DbSet<Report> Reports { get; set; }
@@ -48,7 +47,6 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<Device>().ToTable("Device");
             modelBuilder.Entity<DeviceWarranty>().ToTable("DeviceWarranty");
             modelBuilder.Entity<DeviceHistory>().ToTable("DeviceHistory");
-            modelBuilder.Entity<WarrantyTask>().ToTable("WarrantyTask");
             modelBuilder.Entity<EmailTemplate>().ToTable("EmailTemplate");
             modelBuilder.Entity<Request>().ToTable("Request");
             modelBuilder.Entity<Report>().ToTable("Report");
@@ -61,11 +59,11 @@ namespace GRRWS.Infrastructure.DB
 
             #region Relationships and Additional Configuration
             // Area - User
-            modelBuilder.Entity<Area>()
-                .HasOne(a => a.User)
-                .WithMany(u => u.ManagedAreas)
-                .HasForeignKey(a => a.UserId)
-                .OnDelete(DeleteBehavior.NoAction);
+            //modelBuilder.Entity<Area>()
+            //    .HasOne(a => a.User)
+            //    .WithMany(u => u.ManagedAreas)
+            //    .HasForeignKey(a => a.UserId)
+            //    .OnDelete(DeleteBehavior.NoAction);
 
             // Zone - Area
             modelBuilder.Entity<Zone>()
@@ -90,12 +88,9 @@ namespace GRRWS.Infrastructure.DB
 
             // Device - Position
             modelBuilder.Entity<Device>()
-                .HasOne(d => d.Position)
-                .WithMany(p => p.Devices)
+                .HasOne(d => d.Position).WithOne(d => d.Device)
                 .HasForeignKey(d => d.PositionId)
                 .OnDelete(DeleteBehavior.NoAction);
-
-            
 
             // DeviceWarranty - Device
             modelBuilder.Entity<DeviceWarranty>()

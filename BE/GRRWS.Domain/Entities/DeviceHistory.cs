@@ -25,6 +25,5 @@ namespace GRRWS.Domain.Entities
 
         // Navigation
         public Device Device { get; set; }
-        public WarrantyTask? RelatedTask { get; set; }
     }
 }
