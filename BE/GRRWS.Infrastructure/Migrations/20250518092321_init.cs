@@ -195,8 +195,8 @@ namespace GRRWS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
-                    StaffID = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     FullName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    StaffID = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     Email = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(450)", nullable: false),
