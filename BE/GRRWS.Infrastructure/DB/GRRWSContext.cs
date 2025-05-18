@@ -42,7 +42,7 @@ namespace GRRWS.Infrastructure.DB
 
             // Area
             modelBuilder.Entity<Area>()
-                .Property(a => a.Name)
+                .Property(a => a.AreaName)
                 .IsRequired();
 
             // Zone

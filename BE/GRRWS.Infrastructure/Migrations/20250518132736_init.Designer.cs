@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GRRWS.Infrastructure.Migrations
 {
     [DbContext(typeof(GRRWSContext))]
-    [Migration("20250518092321_init")]
+    [Migration("20250518132736_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -137,7 +137,7 @@ namespace GRRWS.Infrastructure.Migrations
                 {
                     b.HasBaseType("GRRWS.Domain.Entities.BaseEntity");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("AreaName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

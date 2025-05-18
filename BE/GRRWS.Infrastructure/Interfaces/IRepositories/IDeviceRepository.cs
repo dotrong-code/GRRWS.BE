@@ -3,10 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GRRWS.Domain.Entities;
+using GRRWS.Infrastructure.DTOs.Device;
+using GRRWS.Infrastructure.Interfaces.IRepositories.IGeneric;
 
 namespace GRRWS.Infrastructure.Interfaces.IRepositories
 {
-    internal interface IDeviceRepository
+    public interface IDeviceRepository : IGenericRepository<Device>
     {
+        Task<bool> DeviceCodeExistsAsync(string deviceCode);
+        Task<(List<GetDeviceResponse> Devices, int TotalCount)> GetAllDevicesAsync(
+            string? deviceName = null,
+            string? deviceCode = null,
+            string? status = null,
+            Guid? positionId = null,
+            int pageNumber = 1,
+            int pageSize = 10);
+        Task<int> DeleteDeviceAsync(Guid id);
     }
 }

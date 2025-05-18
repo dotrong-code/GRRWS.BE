@@ -8,7 +8,7 @@ namespace GRRWS.Domain.Entities
 {
     public class Area : BaseEntity
     {
-        public string? Name { get; set; }
+        public string? AreaName { get; set; }
         public ICollection<Zone>? Zones { get; set; }
     }
 }
