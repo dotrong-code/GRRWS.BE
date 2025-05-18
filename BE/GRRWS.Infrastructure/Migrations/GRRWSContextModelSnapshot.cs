@@ -134,7 +134,7 @@ namespace GRRWS.Infrastructure.Migrations
                 {
                     b.HasBaseType("GRRWS.Domain.Entities.BaseEntity");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("AreaName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

@@ -23,16 +23,9 @@ namespace GRRWS.Infrastructure.DTOs.Device
         public string? Specifications { get; set; }
         public decimal? PurchasePrice { get; set; }
         public string? Supplier { get; set; }
-        public Guid? ZoneId { get; set; }
         public Guid? MachineId { get; set; }
         public Guid? PositionId { get; set; }
         public DateTime CreatedDate { get; set; }
-        public Guid? CreatedBy { get; set; }
         public DateTime? ModifiedDate { get; set; }
-        public Guid? ModifiedBy { get; set; }
-        public bool IsDeleted { get; set; }
-        public List<Guid>? WarrantyIds { get; set; }
-        public List<Guid>? RequestIds { get; set; }
-        public List<Guid>? HistoryIds { get; set; }
     }
 }
