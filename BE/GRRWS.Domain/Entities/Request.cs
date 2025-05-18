@@ -14,16 +14,13 @@ namespace GRRWS.Domain.Entities
         public DateTime? DueDate { get; set; }
         public string? Priority { get; set; }
         // Foreign key 
-        public Guid? SenderId { get; set; } 
-        public Guid? ReceiverId { get; set; } 
-        public Guid? DeviceId { get; set; } 
-        public Guid? RequestedById { get; set; }
-
+        public Guid DeviceId { get; set; } 
+        public Guid RequestedById { get; set; }
+        public Guid? ReportId { get; set; }
 
         // Navigation properties
-        public Device? Device { get; set; }
-        public User? Sender { get; set; }
-        public User? Receiver { get; set; }
+        public Device Device { get; set; }
+        public User Sender { get; set; }
         public Report? Report { get; set; }
         public ICollection<RequestIssue>? RequestIssues { get; set; }
         
