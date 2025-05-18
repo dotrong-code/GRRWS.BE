@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GRRWS.Domain.Entities
 {
-    public class RepairSparepart : BaseEntity
+    public class RepairSparepart
     {
         public Guid SpareId { get; set; }
         public Guid TaskId { get; set; }

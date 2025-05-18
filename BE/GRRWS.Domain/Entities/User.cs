@@ -20,11 +20,10 @@ namespace GRRWS.Domain.Entities
         public bool? IsRegister { get; set; }
         public int Role { get; set; }//1 Head of department, 2 Head of technical, 3 Staff, 4 Stock keeper
         public string? ResetPasswordToken { get; set; }
-
+        public Guid? FeedbackId { get; set; }
         // Navigation
-        public ICollection<Area>? ManagedAreas { get; set; }
-        public ICollection<Request>? RequestsSents { get; set; }
-        public ICollection<Request>? RequestsReceiveds { get; set; }
-
+        public Feedback? Feedback { get; set; }
+        public ICollection<Request>? Requests { get; set; }
+        public ICollection<Tasks>? Tasks { get; set; }
     }
 }

@@ -10,6 +10,5 @@ namespace GRRWS.Domain.Entities
     {
         public string? Name { get; set; }
         public ICollection<Zone>? Zones { get; set; }
-
     }
 }
