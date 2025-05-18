@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 
 namespace GRRWS.Domain.Entities
 {
-    public class Area : BaseEntity
+    public class DeviceWarrantyHistory : BaseEntity
     {
-        public string? Name { get; set; }
-        public ICollection<Zone>? Zones { get; set; }
 
     }
 }

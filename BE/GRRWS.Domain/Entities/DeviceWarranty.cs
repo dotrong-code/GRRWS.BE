@@ -18,11 +18,10 @@ namespace GRRWS.Domain.Entities
         public string? Notes { get; set; }
         public decimal? Cost { get; set; }
         public string? DocumentUrl { get; set; }
-
+        public string? SparePartCode { get; set; }
+        public string? SparePartName { get; set; }
         // Foreign keys
         public Guid DeviceId { get; set; }
-        
-
         // Navigation
         public Device Device { get; set; }
        
