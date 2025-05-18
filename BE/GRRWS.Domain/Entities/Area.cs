@@ -9,17 +9,6 @@ namespace GRRWS.Domain.Entities
     public class Area : BaseEntity
     {
         public string? Name { get; set; }
-        public string? Instruction { get; set; }
-        public int? Width { get; set; }
-        public int? Height { get; set; }
-        public int? KeyPosition { get; set; }
-
-        // Foreign Key
-        public Guid? UserId { get; set; }
-
-        // Navigation
-        public User? User { get; set; }
         public ICollection<Zone>? Zones { get; set; }
-
     }
 }

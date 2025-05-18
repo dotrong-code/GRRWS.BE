@@ -17,8 +17,6 @@ namespace GRRWS.Domain.Entities
         public DateTime? ReleaseDate { get; set; }
         public string? Specifications { get; set; }
         public string? PhotoUrl { get; set; }
-
-
         public ICollection<Device>? Devices { get; set; }
     }
 }
