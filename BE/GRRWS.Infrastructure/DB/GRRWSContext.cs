@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using GRRWS.Domain.Entities;
+﻿using GRRWS.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace GRRWS.Infrastructure.DB
@@ -44,6 +39,7 @@ namespace GRRWS.Infrastructure.DB
             base.OnModelCreating(modelBuilder);
 
             #region Entity Configurations
+
             // Area
             modelBuilder.Entity<Area>()
                 .Property(a => a.Name)
@@ -247,12 +243,14 @@ namespace GRRWS.Infrastructure.DB
                 .HasForeignKey(d => d.MachineId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+
             // Device - DeviceHistory (One-to-Many)
             modelBuilder.Entity<DeviceHistory>()
                 .HasOne(dh => dh.Device)
                 .WithMany(d => d.Histories)
                 .HasForeignKey(dh => dh.DeviceId)
                 .OnDelete(DeleteBehavior.Restrict); // Changed to Restrict to avoid cascade path issues
+
 
             // Device - DeviceWarranty (One-to-Many)
             modelBuilder.Entity<DeviceWarranty>()
@@ -269,6 +267,36 @@ namespace GRRWS.Infrastructure.DB
                 .OnDelete(DeleteBehavior.Restrict); // Changed to Restrict to further avoid cascade issues
 
             // Device - Request (One-to-Many)
+
+            // WarrantyTask - Device
+            //modelBuilder.Entity<WarrantyTask>()
+            //    .HasOne(wt => wt.Device)
+            //    .WithMany()
+            //    .HasForeignKey(wt => wt.DeviceId)
+            //    .OnDelete(DeleteBehavior.Cascade);
+
+            //// WarrantyTask - User (AssignedStaff)
+            //modelBuilder.Entity<WarrantyTask>()
+            //    .HasOne(wt => wt.AssignedStaff)
+            //    .WithMany()
+            //    .HasForeignKey(wt => wt.AssignedStaffId)
+            //    .OnDelete(DeleteBehavior.NoAction);
+
+            //// WarrantyTask - DeviceWarranty
+            //modelBuilder.Entity<WarrantyTask>()
+            //    .HasMany(wt => wt.RelatedWarranties)
+            //    .WithOne()
+            //    .HasForeignKey("RelatedTaskId")
+            //    .OnDelete(DeleteBehavior.NoAction);
+
+            //// DeviceHistory - WarrantyTask
+            //modelBuilder.Entity<DeviceHistory>()
+            //    .HasOne(dh => dh.RelatedTask)
+            //    .WithMany()
+            //    .HasForeignKey(dh => dh.RelatedTaskId)
+            //    .OnDelete(DeleteBehavior.NoAction);
+
+            // Request - Device
             modelBuilder.Entity<Request>()
                 .HasOne(r => r.Device)
                 .WithMany(d => d.Requests)
@@ -383,6 +411,7 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<BaseEntity>()
                 .Property(b => b.IsDeleted)
                 .HasDefaultValue(false);
+
             #endregion
         }
     }
