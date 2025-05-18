@@ -10,8 +10,8 @@ namespace GRRWS.Domain.Entities
     {
         public string? IssueKey { get; set; } // Mã triệu chứng
         public string? Description { get; set; }
-        public int? Frequency { get; set; } // Mức độ Phổ Biến
-        public string? Severity { get; set; } // Low, Medium, High
+        public bool IsCommon { get; set; }
+        public int? OccurrenceCount { get; set; }
         public Guid? MachineId { get; set; }
 
         // Navigation

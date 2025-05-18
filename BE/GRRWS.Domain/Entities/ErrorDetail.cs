@@ -7,7 +7,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GRRWS.Domain.Entities
 {
-    public class ReportError : BaseEntity
+    public class ErrorDetail : BaseEntity
     {
         public Guid ReportId { get; set; }
         public Guid ErrorId { get; set; }
