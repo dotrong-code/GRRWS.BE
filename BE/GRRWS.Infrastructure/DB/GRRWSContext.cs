@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using GRRWS.Domain.Entities;
+﻿using GRRWS.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace GRRWS.Infrastructure.DB
@@ -35,7 +30,7 @@ namespace GRRWS.Infrastructure.DB
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             #region Entity Configurations
-            
+
             #endregion
 
             #region Table Mappings
@@ -54,7 +49,7 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<Issue>().ToTable("Issue");
             modelBuilder.Entity<IssueError>().ToTable("IssueError");
             modelBuilder.Entity<Error>().ToTable("Error");
-            modelBuilder.Entity<ErrorDetail>().ToTable("ReportError");
+            modelBuilder.Entity<ErrorDetail>().ToTable("ErrorDetail");
             #endregion
 
             #region Relationships and Additional Configuration
@@ -86,10 +81,10 @@ namespace GRRWS.Infrastructure.DB
                 .HasForeignKey(d => d.MachineId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // Device - Position
-            modelBuilder.Entity<Device>()
-                .HasOne(d => d.Position).WithOne(d => d.Device)
-                .HasForeignKey(d => d.PositionId)
+            modelBuilder.Entity<Position>()
+                .HasOne(p => p.Device)
+                .WithOne(d => d.Position)
+                .HasForeignKey<Position>(p => p.Id)
                 .OnDelete(DeleteBehavior.NoAction);
 
             // DeviceWarranty - Device
@@ -107,32 +102,32 @@ namespace GRRWS.Infrastructure.DB
                 .OnDelete(DeleteBehavior.Cascade);
 
             // WarrantyTask - Device
-            modelBuilder.Entity<WarrantyTask>()
-                .HasOne(wt => wt.Device)
-                .WithMany()
-                .HasForeignKey(wt => wt.DeviceId)
-                .OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<WarrantyTask>()
+            //    .HasOne(wt => wt.Device)
+            //    .WithMany()
+            //    .HasForeignKey(wt => wt.DeviceId)
+            //    .OnDelete(DeleteBehavior.Cascade);
 
-            // WarrantyTask - User (AssignedStaff)
-            modelBuilder.Entity<WarrantyTask>()
-                .HasOne(wt => wt.AssignedStaff)
-                .WithMany()
-                .HasForeignKey(wt => wt.AssignedStaffId)
-                .OnDelete(DeleteBehavior.NoAction);
+            //// WarrantyTask - User (AssignedStaff)
+            //modelBuilder.Entity<WarrantyTask>()
+            //    .HasOne(wt => wt.AssignedStaff)
+            //    .WithMany()
+            //    .HasForeignKey(wt => wt.AssignedStaffId)
+            //    .OnDelete(DeleteBehavior.NoAction);
 
-            // WarrantyTask - DeviceWarranty
-            modelBuilder.Entity<WarrantyTask>()
-                .HasMany(wt => wt.RelatedWarranties)
-                .WithOne()
-                .HasForeignKey("RelatedTaskId")
-                .OnDelete(DeleteBehavior.NoAction);
+            //// WarrantyTask - DeviceWarranty
+            //modelBuilder.Entity<WarrantyTask>()
+            //    .HasMany(wt => wt.RelatedWarranties)
+            //    .WithOne()
+            //    .HasForeignKey("RelatedTaskId")
+            //    .OnDelete(DeleteBehavior.NoAction);
 
-            // DeviceHistory - WarrantyTask
-            modelBuilder.Entity<DeviceHistory>()
-                .HasOne(dh => dh.RelatedTask)
-                .WithMany()
-                .HasForeignKey(dh => dh.RelatedTaskId)
-                .OnDelete(DeleteBehavior.NoAction);
+            //// DeviceHistory - WarrantyTask
+            //modelBuilder.Entity<DeviceHistory>()
+            //    .HasOne(dh => dh.RelatedTask)
+            //    .WithMany()
+            //    .HasForeignKey(dh => dh.RelatedTaskId)
+            //    .OnDelete(DeleteBehavior.NoAction);
 
             // Request - Device
             modelBuilder.Entity<Request>()
@@ -207,14 +202,14 @@ namespace GRRWS.Infrastructure.DB
             // ReportError - Report
             modelBuilder.Entity<ErrorDetail>()
                 .HasOne(re => re.Report)
-                .WithMany(r => r.ReportErrors)
+                .WithMany(r => r.ErrorDetails)
                 .HasForeignKey(re => re.ReportId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // ReportError - Error
             modelBuilder.Entity<ErrorDetail>()
                 .HasOne(re => re.Error)
-                .WithMany(e => e.ReportErrors)
+                .WithMany(e => e.ErrorDetails)
                 .HasForeignKey(re => re.ErrorId)
                 .OnDelete(DeleteBehavior.Cascade);
             #endregion
