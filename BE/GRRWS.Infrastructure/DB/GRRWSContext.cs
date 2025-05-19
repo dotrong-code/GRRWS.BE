@@ -1,4 +1,5 @@
 ﻿using GRRWS.Domain.Entities;
+using GRRWS.Infrastructure.DB.Configuration;
 using Microsoft.EntityFrameworkCore;
 
 namespace GRRWS.Infrastructure.DB
@@ -37,6 +38,11 @@ namespace GRRWS.Infrastructure.DB
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            #region Data Configuration
+            modelBuilder.ApplyConfiguration(new UserConfiguration());
+            modelBuilder.ApplyConfiguration(new IssueConfiguration());
+            #endregion
+
 
             #region Entity Configurations
 

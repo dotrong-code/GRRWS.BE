@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using GRRWS.Infrastructure.Interfaces.IRepositories;
+﻿using GRRWS.Infrastructure.Interfaces.IRepositories;
 
 namespace GRRWS.Infrastructure.Interfaces
 {
@@ -12,6 +7,7 @@ namespace GRRWS.Infrastructure.Interfaces
         IUserRepository UserRepository { get; }
         IEmailTemplateRepository EmailTemplateRepository { get; }
         IFirebaseRepository FirebaseRepository { get; }
+        IIssueRepository IssueRepository { get; }
         int Complete();
         Task<int> SaveChangesAsync();
     }

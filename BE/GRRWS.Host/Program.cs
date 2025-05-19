@@ -1,6 +1,4 @@
-﻿using System.Text;
-using System.Text.Json.Serialization;
-using GRRWS.Application.Common;
+﻿using GRRWS.Application.Common;
 using GRRWS.Host.Starup;
 using GRRWS.Infrastructure.DB;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -8,6 +6,8 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,8 +21,9 @@ builder.Services.AddLogging(logging =>
 builder.Services.AddDbContext<GRRWSContext>(opt =>
 {
     // Set up your database connection string
-    opt.UseSqlServer(builder.Configuration.GetConnectionString("MyDb"));
+    opt.UseSqlServer(builder.Configuration.GetConnectionString("MyDb")).EnableSensitiveDataLogging();
 });
+builder.Services.AddMemoryCache();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

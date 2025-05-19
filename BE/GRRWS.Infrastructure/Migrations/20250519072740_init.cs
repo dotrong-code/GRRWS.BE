@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace GRRWS.Infrastructure.Migrations
 {
     /// <inheritdoc />
@@ -78,7 +80,6 @@ namespace GRRWS.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
                     ErrorCode = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     EstimatedRepairTime = table.Column<TimeSpan>(type: "time", nullable: true),
                     Sparepart = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -104,6 +105,7 @@ namespace GRRWS.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
                     IssueKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    DisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsCommon = table.Column<bool>(type: "bit", nullable: false),
                     OccurrenceCount = table.Column<int>(type: "int", nullable: true)
@@ -674,6 +676,77 @@ namespace GRRWS.Infrastructure.Migrations
                         column: x => x.RequestIssueId1,
                         principalTable: "RequestIssues",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.InsertData(
+                table: "BaseEntity",
+                columns: new[] { "Id", "CreatedBy", "CreatedDate", "ModifiedBy", "ModifiedDate" },
+                values: new object[,]
+                {
+                    { new Guid("11111111-1111-1111-1111-111111111111"), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(862), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(863) },
+                    { new Guid("12121212-1212-1212-1212-121212121212"), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(956), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(956) },
+                    { new Guid("21111111-1111-1111-1111-111111111111"), null, new DateTime(2025, 5, 19, 7, 27, 38, 786, DateTimeKind.Utc).AddTicks(9982), null, null },
+                    { new Guid("22222222-2222-2222-2222-222222222222"), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(870), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(871) },
+                    { new Guid("23232323-2323-2323-2323-232323232323"), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(961), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(962) },
+                    { new Guid("32222222-2222-2222-2222-222222222222"), null, new DateTime(2025, 5, 19, 7, 27, 38, 786, DateTimeKind.Utc).AddTicks(9994), null, null },
+                    { new Guid("33333333-3333-3333-3333-333333333333"), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(874), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(874) },
+                    { new Guid("34343434-3434-3434-3434-343434343434"), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(965), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(965) },
+                    { new Guid("43333333-3333-3333-3333-333333333333"), null, new DateTime(2025, 5, 19, 7, 27, 38, 786, DateTimeKind.Utc).AddTicks(9997), null, null },
+                    { new Guid("44444444-4444-4444-4444-444444444444"), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(877), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(878) },
+                    { new Guid("45454545-4545-4545-4545-454545454545"), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(967), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(968) },
+                    { new Guid("54444444-4444-4444-4444-444444444444"), null, new DateTime(2025, 5, 19, 7, 27, 38, 786, DateTimeKind.Utc).AddTicks(9999), null, null },
+                    { new Guid("55555555-5555-5555-5555-555555555555"), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(881), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(882) },
+                    { new Guid("56565656-5656-5656-5656-565656565656"), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(971), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(971) },
+                    { new Guid("65555555-5555-5555-5555-555555555555"), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(1), null, null },
+                    { new Guid("66666666-6666-6666-6666-666666666666"), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(885), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(886) },
+                    { new Guid("77777777-7777-7777-7777-777777777777"), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(889), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(889) },
+                    { new Guid("88888888-8888-8888-8888-888888888888"), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(930), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(931) },
+                    { new Guid("99999999-9999-9999-9999-999999999999"), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(936), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(936) },
+                    { new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(939), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(939) },
+                    { new Guid("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(942), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(942) },
+                    { new Guid("cccccccc-cccc-cccc-cccc-cccccccccccc"), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(945), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(945) },
+                    { new Guid("dddddddd-dddd-dddd-dddd-dddddddddddd"), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(948), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(948) },
+                    { new Guid("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(951), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(951) },
+                    { new Guid("ffffffff-ffff-ffff-ffff-ffffffffffff"), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(953), null, new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(954) }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Issues",
+                columns: new[] { "Id", "Description", "DisplayName", "IsCommon", "IssueKey", "OccurrenceCount" },
+                values: new object[,]
+                {
+                    { new Guid("11111111-1111-1111-1111-111111111111"), "Máy may bị nóng sau thời gian sử dụng ngắn.", "Máy Nóng", false, "MAY_NONG", null },
+                    { new Guid("12121212-1212-1212-1212-121212121212"), "Ống chỉ bị kẹt hoặc không quay đúng cách.", "Ống Chỉ Lỗi", false, "ONG_CHI_LOI", null },
+                    { new Guid("22222222-2222-2222-2222-222222222222"), "Kim bị gãy trong quá trình may.", "Kim Gãy", false, "KIM_GAY", null },
+                    { new Guid("23232323-2323-2323-2323-232323232323"), "Dây curoa bị lỏng hoặc đứt, gây ngừng máy.", "Dây Curoa Lỗi", false, "DAY_CUROA_LOI", null },
+                    { new Guid("33333333-3333-3333-3333-333333333333"), "Máy không khởi động hoặc không hoạt động khi bật công tắc.", "Máy Không Chạy", false, "MAY_KHONG_CHAY", null },
+                    { new Guid("34343434-3434-3434-3434-343434343434"), "Chỉ dưới không được kéo lên đúng cách.", "Chỉ Dưới Lỗi", false, "CHI_DUOI_LOI", null },
+                    { new Guid("44444444-4444-4444-4444-444444444444"), "Máy bị chảy dầu ra ngoài, ảnh hưởng đến hoạt động.", "Chảy Dầu", false, "CHAY_DAU", null },
+                    { new Guid("45454545-4545-4545-4545-454545454545"), "Máy tự động dừng trong khi đang hoạt động.", "Máy Tự Dừng", false, "MAY_TU_DUNG", null },
+                    { new Guid("55555555-5555-5555-5555-555555555555"), "Máy phát ra tiếng ồn lớn bất thường khi hoạt động.", "Kêu To", false, "KEU_TO", null },
+                    { new Guid("56565656-5656-5656-5656-565656565656"), "Nút điều chỉnh độ căng chỉ không hoạt động.", "Nút Điều Chỉnh Lỗi", false, "NUT_DIEU_CHINH_LOI", null },
+                    { new Guid("66666666-6666-6666-6666-666666666666"), "Máy làm rách vải trong quá trình may.", "Rách Vải", false, "RACH_VAI", null },
+                    { new Guid("77777777-7777-7777-7777-777777777777"), "Kim không xuyên đúng vị trí gây lỗi đường may.", "Lưỡi Kim", false, "LUOI_KIM", null },
+                    { new Guid("88888888-8888-8888-8888-888888888888"), "Chỉ bị đứt liên tục trong quá trình sử dụng.", "Đứt Chỉ", false, "DUT_CHI", null },
+                    { new Guid("99999999-9999-9999-9999-999999999999"), "Máy không cuốn chỉ hoặc chỉ bị rối.", "Không Cuốn Chỉ", false, "KHONG_CUON_CHI", null },
+                    { new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), "Máy chạy chậm hoặc không đều tốc độ.", "Máy Chạy Chậm", false, "MAY_CHAY_CHAM", null },
+                    { new Guid("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), "Đường chỉ may không đều, lúc chặt lúc lỏng.", "Chỉ Không Đều", false, "CHI_KHONG_DEU", null },
+                    { new Guid("cccccccc-cccc-cccc-cccc-cccccccccccc"), "Đèn báo lỗi trên máy may sáng liên tục.", "Đèn Báo Lỗi", false, "DEN_BAO_LOI", null },
+                    { new Guid("dddddddd-dddd-dddd-dddd-dddddddddddd"), "Bàn đạp không phản hồi khi sử dụng.", "Bàn Đạp Không Hoạt Động", false, "BAN_DAP_KHONG_HOAT_DONG", null },
+                    { new Guid("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"), "Vải bị nhăn hoặc co kéo trong quá trình may.", "Vải Bị Nhăn", false, "VAI_BI_NHAN", null },
+                    { new Guid("ffffffff-ffff-ffff-ffff-ffffffffffff"), "Kim may không di chuyển khi máy hoạt động.", "Kim Không Di Chuyển", false, "KIM_KHONG_DI_CHUYEN", null }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "Id", "DateOfBirth", "Email", "FeedbackId", "FullName", "IsEmailConfirmed", "IsRegister", "PasswordHash", "PhoneNumber", "ProfilePictureUrl", "ResetPasswordToken", "Role", "StaffID", "UserName" },
+                values: new object[,]
+                {
+                    { new Guid("21111111-1111-1111-1111-111111111111"), null, "hod@gmail.com", null, "Head of Department", null, null, "String123!", null, null, null, 1, null, "Head of Department" },
+                    { new Guid("32222222-2222-2222-2222-222222222222"), null, "hot@gmail.com", null, "Head of Team", null, null, "String123!", null, null, null, 2, null, "Head of Team" },
+                    { new Guid("43333333-3333-3333-3333-333333333333"), null, "staff@gmail.com", null, "Staff Member", null, null, "String123!", null, null, null, 3, null, "Staff Member" },
+                    { new Guid("54444444-4444-4444-4444-444444444444"), null, "sk@gmail.com", null, "Support Staff", null, null, "String123!", null, null, null, 4, null, "Support Staff" },
+                    { new Guid("65555555-5555-5555-5555-555555555555"), null, "admin@gmail.com", null, "Administrator", null, null, "String123!", null, null, null, 5, null, "Administrator" }
                 });
 
             migrationBuilder.CreateIndex(

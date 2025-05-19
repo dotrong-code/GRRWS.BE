@@ -389,9 +389,6 @@ namespace GRRWS.Infrastructure.Migrations
                     b.Property<bool>("IsCommon")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("OccurrenceCount")
                         .HasColumnType("int");
 
@@ -461,6 +458,9 @@ namespace GRRWS.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("DisplayName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsCommon")
                         .HasColumnType("bit");
 
@@ -473,9 +473,232 @@ namespace GRRWS.Infrastructure.Migrations
 
                     b.HasIndex("IssueKey")
                         .IsUnique()
+                        .HasDatabaseName("IX_Issues_IssueKey")
                         .HasFilter("[IssueKey] IS NOT NULL");
 
                     b.ToTable("Issues", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(862),
+                            IsDeleted = false,
+                            ModifiedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(863),
+                            Description = "Máy may bị nóng sau thời gian sử dụng ngắn.",
+                            DisplayName = "Máy Nóng",
+                            IsCommon = false,
+                            IssueKey = "MAY_NONG"
+                        },
+                        new
+                        {
+                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(870),
+                            IsDeleted = false,
+                            ModifiedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(871),
+                            Description = "Kim bị gãy trong quá trình may.",
+                            DisplayName = "Kim Gãy",
+                            IsCommon = false,
+                            IssueKey = "KIM_GAY"
+                        },
+                        new
+                        {
+                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(874),
+                            IsDeleted = false,
+                            ModifiedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(874),
+                            Description = "Máy không khởi động hoặc không hoạt động khi bật công tắc.",
+                            DisplayName = "Máy Không Chạy",
+                            IsCommon = false,
+                            IssueKey = "MAY_KHONG_CHAY"
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-444444444444"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(877),
+                            IsDeleted = false,
+                            ModifiedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(878),
+                            Description = "Máy bị chảy dầu ra ngoài, ảnh hưởng đến hoạt động.",
+                            DisplayName = "Chảy Dầu",
+                            IsCommon = false,
+                            IssueKey = "CHAY_DAU"
+                        },
+                        new
+                        {
+                            Id = new Guid("55555555-5555-5555-5555-555555555555"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(881),
+                            IsDeleted = false,
+                            ModifiedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(882),
+                            Description = "Máy phát ra tiếng ồn lớn bất thường khi hoạt động.",
+                            DisplayName = "Kêu To",
+                            IsCommon = false,
+                            IssueKey = "KEU_TO"
+                        },
+                        new
+                        {
+                            Id = new Guid("66666666-6666-6666-6666-666666666666"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(885),
+                            IsDeleted = false,
+                            ModifiedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(886),
+                            Description = "Máy làm rách vải trong quá trình may.",
+                            DisplayName = "Rách Vải",
+                            IsCommon = false,
+                            IssueKey = "RACH_VAI"
+                        },
+                        new
+                        {
+                            Id = new Guid("77777777-7777-7777-7777-777777777777"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(889),
+                            IsDeleted = false,
+                            ModifiedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(889),
+                            Description = "Kim không xuyên đúng vị trí gây lỗi đường may.",
+                            DisplayName = "Lưỡi Kim",
+                            IsCommon = false,
+                            IssueKey = "LUOI_KIM"
+                        },
+                        new
+                        {
+                            Id = new Guid("88888888-8888-8888-8888-888888888888"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(930),
+                            IsDeleted = false,
+                            ModifiedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(931),
+                            Description = "Chỉ bị đứt liên tục trong quá trình sử dụng.",
+                            DisplayName = "Đứt Chỉ",
+                            IsCommon = false,
+                            IssueKey = "DUT_CHI"
+                        },
+                        new
+                        {
+                            Id = new Guid("99999999-9999-9999-9999-999999999999"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(936),
+                            IsDeleted = false,
+                            ModifiedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(936),
+                            Description = "Máy không cuốn chỉ hoặc chỉ bị rối.",
+                            DisplayName = "Không Cuốn Chỉ",
+                            IsCommon = false,
+                            IssueKey = "KHONG_CUON_CHI"
+                        },
+                        new
+                        {
+                            Id = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(939),
+                            IsDeleted = false,
+                            ModifiedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(939),
+                            Description = "Máy chạy chậm hoặc không đều tốc độ.",
+                            DisplayName = "Máy Chạy Chậm",
+                            IsCommon = false,
+                            IssueKey = "MAY_CHAY_CHAM"
+                        },
+                        new
+                        {
+                            Id = new Guid("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(942),
+                            IsDeleted = false,
+                            ModifiedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(942),
+                            Description = "Đường chỉ may không đều, lúc chặt lúc lỏng.",
+                            DisplayName = "Chỉ Không Đều",
+                            IsCommon = false,
+                            IssueKey = "CHI_KHONG_DEU"
+                        },
+                        new
+                        {
+                            Id = new Guid("cccccccc-cccc-cccc-cccc-cccccccccccc"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(945),
+                            IsDeleted = false,
+                            ModifiedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(945),
+                            Description = "Đèn báo lỗi trên máy may sáng liên tục.",
+                            DisplayName = "Đèn Báo Lỗi",
+                            IsCommon = false,
+                            IssueKey = "DEN_BAO_LOI"
+                        },
+                        new
+                        {
+                            Id = new Guid("dddddddd-dddd-dddd-dddd-dddddddddddd"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(948),
+                            IsDeleted = false,
+                            ModifiedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(948),
+                            Description = "Bàn đạp không phản hồi khi sử dụng.",
+                            DisplayName = "Bàn Đạp Không Hoạt Động",
+                            IsCommon = false,
+                            IssueKey = "BAN_DAP_KHONG_HOAT_DONG"
+                        },
+                        new
+                        {
+                            Id = new Guid("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(951),
+                            IsDeleted = false,
+                            ModifiedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(951),
+                            Description = "Vải bị nhăn hoặc co kéo trong quá trình may.",
+                            DisplayName = "Vải Bị Nhăn",
+                            IsCommon = false,
+                            IssueKey = "VAI_BI_NHAN"
+                        },
+                        new
+                        {
+                            Id = new Guid("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(953),
+                            IsDeleted = false,
+                            ModifiedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(954),
+                            Description = "Kim may không di chuyển khi máy hoạt động.",
+                            DisplayName = "Kim Không Di Chuyển",
+                            IsCommon = false,
+                            IssueKey = "KIM_KHONG_DI_CHUYEN"
+                        },
+                        new
+                        {
+                            Id = new Guid("12121212-1212-1212-1212-121212121212"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(956),
+                            IsDeleted = false,
+                            ModifiedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(956),
+                            Description = "Ống chỉ bị kẹt hoặc không quay đúng cách.",
+                            DisplayName = "Ống Chỉ Lỗi",
+                            IsCommon = false,
+                            IssueKey = "ONG_CHI_LOI"
+                        },
+                        new
+                        {
+                            Id = new Guid("23232323-2323-2323-2323-232323232323"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(961),
+                            IsDeleted = false,
+                            ModifiedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(962),
+                            Description = "Dây curoa bị lỏng hoặc đứt, gây ngừng máy.",
+                            DisplayName = "Dây Curoa Lỗi",
+                            IsCommon = false,
+                            IssueKey = "DAY_CUROA_LOI"
+                        },
+                        new
+                        {
+                            Id = new Guid("34343434-3434-3434-3434-343434343434"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(965),
+                            IsDeleted = false,
+                            ModifiedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(965),
+                            Description = "Chỉ dưới không được kéo lên đúng cách.",
+                            DisplayName = "Chỉ Dưới Lỗi",
+                            IsCommon = false,
+                            IssueKey = "CHI_DUOI_LOI"
+                        },
+                        new
+                        {
+                            Id = new Guid("45454545-4545-4545-4545-454545454545"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(967),
+                            IsDeleted = false,
+                            ModifiedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(968),
+                            Description = "Máy tự động dừng trong khi đang hoạt động.",
+                            DisplayName = "Máy Tự Dừng",
+                            IsCommon = false,
+                            IssueKey = "MAY_TU_DUNG"
+                        },
+                        new
+                        {
+                            Id = new Guid("56565656-5656-5656-5656-565656565656"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(971),
+                            IsDeleted = false,
+                            ModifiedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(971),
+                            Description = "Nút điều chỉnh độ căng chỉ không hoạt động.",
+                            DisplayName = "Nút Điều Chỉnh Lỗi",
+                            IsCommon = false,
+                            IssueKey = "NUT_DIEU_CHINH_LOI"
+                        });
                 });
 
             modelBuilder.Entity("GRRWS.Domain.Entities.Machine", b =>
@@ -741,6 +964,63 @@ namespace GRRWS.Infrastructure.Migrations
                         .HasFilter("[UserName] IS NOT NULL");
 
                     b.ToTable("Users", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("21111111-1111-1111-1111-111111111111"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 786, DateTimeKind.Utc).AddTicks(9982),
+                            IsDeleted = false,
+                            Email = "hod@gmail.com",
+                            FullName = "Head of Department",
+                            PasswordHash = "String123!",
+                            Role = 1,
+                            UserName = "Head of Department"
+                        },
+                        new
+                        {
+                            Id = new Guid("32222222-2222-2222-2222-222222222222"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 786, DateTimeKind.Utc).AddTicks(9994),
+                            IsDeleted = false,
+                            Email = "hot@gmail.com",
+                            FullName = "Head of Team",
+                            PasswordHash = "String123!",
+                            Role = 2,
+                            UserName = "Head of Team"
+                        },
+                        new
+                        {
+                            Id = new Guid("43333333-3333-3333-3333-333333333333"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 786, DateTimeKind.Utc).AddTicks(9997),
+                            IsDeleted = false,
+                            Email = "staff@gmail.com",
+                            FullName = "Staff Member",
+                            PasswordHash = "String123!",
+                            Role = 3,
+                            UserName = "Staff Member"
+                        },
+                        new
+                        {
+                            Id = new Guid("54444444-4444-4444-4444-444444444444"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 786, DateTimeKind.Utc).AddTicks(9999),
+                            IsDeleted = false,
+                            Email = "sk@gmail.com",
+                            FullName = "Support Staff",
+                            PasswordHash = "String123!",
+                            Role = 4,
+                            UserName = "Support Staff"
+                        },
+                        new
+                        {
+                            Id = new Guid("65555555-5555-5555-5555-555555555555"),
+                            CreatedDate = new DateTime(2025, 5, 19, 7, 27, 38, 787, DateTimeKind.Utc).AddTicks(1),
+                            IsDeleted = false,
+                            Email = "admin@gmail.com",
+                            FullName = "Administrator",
+                            PasswordHash = "String123!",
+                            Role = 5,
+                            UserName = "Administrator"
+                        });
                 });
 
             modelBuilder.Entity("GRRWS.Domain.Entities.Zone", b =>
