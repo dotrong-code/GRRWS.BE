@@ -17,13 +17,11 @@ namespace GRRWS.Infrastructure.DTOs.Device
         public DateTime? ManufactureDate { get; set; }
         public DateTime? InstallationDate { get; set; }
         public string? Description { get; set; }
-        public string? PhotoUrl { get; set; }
         public string Status { get; set; }
         public bool IsUnderWarranty { get; set; }
         public string? Specifications { get; set; }
         public decimal? PurchasePrice { get; set; }
         public string? Supplier { get; set; }
-        public Guid? ZoneId { get; set; }
         public Guid? MachineId { get; set; }
         public Guid? PositionId { get; set; }
     }

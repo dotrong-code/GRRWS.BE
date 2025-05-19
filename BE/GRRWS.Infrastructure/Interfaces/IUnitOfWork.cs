@@ -12,6 +12,11 @@ namespace GRRWS.Infrastructure.Interfaces
         IUserRepository UserRepository { get; }
         IEmailTemplateRepository EmailTemplateRepository { get; }
         IFirebaseRepository FirebaseRepository { get; }
+        IDeviceRepository DeviceRepository { get; }
+        IPositionRepository PositionRepository { get; }
+        IZoneRepository ZoneRepository { get; }
+        IAreaRepository AreaRepository { get; } 
+        IDeviceWarrantyRepository DeviceWarrantyRepository { get; }
         int Complete();
         Task<int> SaveChangesAsync();
     }

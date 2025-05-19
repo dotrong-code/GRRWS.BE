@@ -22,7 +22,6 @@ namespace GRRWS.Infrastructure.DTOs.Device
         public string? Specifications { get; set; }
         public decimal? PurchasePrice { get; set; }
         public string? Supplier { get; set; }
-        public Guid? ZoneId { get; set; }
         public Guid? MachineId { get; set; }
         public Guid? PositionId { get; set; }
     }
