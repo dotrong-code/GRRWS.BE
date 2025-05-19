@@ -17,6 +17,8 @@ namespace GRRWS.Infrastructure.Interfaces
         IZoneRepository ZoneRepository { get; }
         IAreaRepository AreaRepository { get; } 
         IDeviceWarrantyRepository DeviceWarrantyRepository { get; }
+        IReportRepository ReportRepository { get; }
+        IRequestRepository RequestRepository { get; }
         int Complete();
         Task<int> SaveChangesAsync();
     }

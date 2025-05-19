@@ -24,6 +24,8 @@ namespace GRRWS.Infrastructure.Common
         public IZoneRepository ZoneRepository { get; private set; }
         public IAreaRepository AreaRepository { get; private set; }
         public IDeviceWarrantyRepository DeviceWarrantyRepository { get; private set; }
+        public IReportRepository ReportRepository { get; private set; }
+        public IRequestRepository RequestRepository { get; private set; }
         public async Task<int> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync();
@@ -40,7 +42,8 @@ namespace GRRWS.Infrastructure.Common
             ZoneRepository = new ZoneRepository(_context);
             AreaRepository = new AreaRepository(_context);
             DeviceWarrantyRepository = new DeviceWarrantyRepository(_context);
-
+            ReportRepository = new ReportRepository(_context);
+            RequestRepository = new RequestRepository(_context);
         }
         public int Complete()
         {
