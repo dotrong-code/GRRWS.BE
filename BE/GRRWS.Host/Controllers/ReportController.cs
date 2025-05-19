@@ -1,53 +1,52 @@
 ﻿using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
-using GRRWS.Infrastructure.DTOs.Common;
-using GRRWS.Infrastructure.DTOs.RequestDTO;
+using GRRWS.Infrastructure.DTOs.Report;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GRRWS.Host.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
-    public class RequestController : ControllerBase
+    [Route("api/[controller]")]
+    public class ReportsController : ControllerBase
     {
-        private readonly IRequestService _requestService;
+        private readonly IReportService _service;
 
-        public RequestController(IRequestService requestService)
+        public ReportsController(IReportService service)
         {
-            _requestService = requestService;
+            _service = service;
         }
 
         [HttpGet]
         public async Task<IResult> GetAll()
         {
-            var result = await _requestService.GetAllAsync();
+            var result = await _service.GetAllAsync();
             return result.IsSuccess
-    ? ResultExtensions.ToSuccessDetails(result, "Successfully")
-    : ResultExtensions.ToProblemDetails(result);
+? ResultExtensions.ToSuccessDetails(result, "Successfully")
+: ResultExtensions.ToProblemDetails(result);
         }
 
         [HttpGet("{id}")]
         public async Task<IResult> GetById(Guid id)
         {
-            var result = await _requestService.GetByIdAsync(id);
+            var result = await _service.GetByIdAsync(id);
             return result.IsSuccess
 ? ResultExtensions.ToSuccessDetails(result, "Successfully")
 : ResultExtensions.ToProblemDetails(result);
         }
 
         [HttpPost]
-        public async Task<IResult> Create([FromBody] CreateRequestDTO dto)
+        public async Task<IResult> Create([FromBody] ReportCreateDTO dto)
         {
-            var result = await _requestService.CreateAsync(dto);
+            var result = await _service.CreateAsync(dto);
             return result.IsSuccess
 ? ResultExtensions.ToSuccessDetails(result, "Successfully")
 : ResultExtensions.ToProblemDetails(result);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IResult> Update(Guid id, [FromBody] UpdateRequestDTO dto)
+        [HttpPut]
+        public async Task<IResult> Update([FromBody] ReportUpdateDTO dto)
         {
-            var result = await _requestService.UpdateAsync(dto, id);
+            var result = await _service.UpdateAsync(dto);
             return result.IsSuccess
 ? ResultExtensions.ToSuccessDetails(result, "Successfully")
 : ResultExtensions.ToProblemDetails(result);
@@ -56,10 +55,11 @@ namespace GRRWS.Host.Controllers
         [HttpDelete("{id}")]
         public async Task<IResult> Delete(Guid id)
         {
-            var result = await _requestService.DeleteAsync(id);
+            var result = await _service.DeleteAsync(id);
             return result.IsSuccess
 ? ResultExtensions.ToSuccessDetails(result, "Successfully")
 : ResultExtensions.ToProblemDetails(result);
         }
     }
+
 }
