@@ -33,6 +33,11 @@ namespace GRRWS.Infrastructure.DB
         public DbSet<Sparepart> Spareparts { get; set; }
         public DbSet<Tasks> Tasks { get; set; }
         public DbSet<User> Users { get; set; }
+
+        public DbSet<MachineIssueHistory> MachineIssueHistories { get; set; }
+        public DbSet<MachineErrorHistory> MachineErrorHistories { get; set; }
+        public DbSet<DeviceIssueHistory> DeviceIssueHistories { get; set; }
+        public DbSet<DeviceErrorHistory> DeviceErrorHistories { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -48,7 +53,7 @@ namespace GRRWS.Infrastructure.DB
 
             // Area
             modelBuilder.Entity<Area>()
-                .Property(a => a.Name)
+                .Property(a => a.AreaName)
                 .IsRequired();
 
             // Zone
@@ -137,7 +142,45 @@ namespace GRRWS.Infrastructure.DB
                 entity.Property(m => m.MachineCode).IsRequired();
                 entity.HasIndex(m => m.MachineCode).IsUnique();
             });
+            // MachineIssueHistory
+            modelBuilder.Entity<MachineIssueHistory>(entity =>
+            {
+                entity.Property(mih => mih.MachineId).IsRequired();
+                entity.Property(mih => mih.IssueId).IsRequired();
+                entity.Property(mih => mih.LastOccurredDate).IsRequired();
+                entity.Property(mih => mih.OccurrenceCount).IsRequired().HasDefaultValue(1);
+                entity.HasIndex(mih => new { mih.MachineId, mih.IssueId });
+            });
 
+            // MachineErrorHistory
+            modelBuilder.Entity<MachineErrorHistory>(entity =>
+            {
+                entity.Property(meh => meh.MachineId).IsRequired();
+                entity.Property(meh => meh.ErrorId).IsRequired();
+                entity.Property(meh => meh.LastOccurredDate).IsRequired();
+                entity.Property(meh => meh.OccurrenceCount).IsRequired().HasDefaultValue(1);
+                entity.HasIndex(meh => new { meh.MachineId, meh.ErrorId });
+            });
+
+            // DeviceIssueHistory
+            modelBuilder.Entity<DeviceIssueHistory>(entity =>
+            {
+                entity.Property(dih => dih.DeviceId).IsRequired();
+                entity.Property(dih => dih.IssueId).IsRequired();
+                entity.Property(dih => dih.LastOccurredDate).IsRequired();
+                entity.Property(dih => dih.OccurrenceCount).IsRequired().HasDefaultValue(1);
+                entity.HasIndex(dih => new { dih.DeviceId, dih.IssueId });
+            });
+
+            // DeviceErrorHistory
+            modelBuilder.Entity<DeviceErrorHistory>(entity =>
+            {
+                entity.Property(deh => deh.DeviceId).IsRequired();
+                entity.Property(deh => deh.ErrorId).IsRequired();
+                entity.Property(deh => deh.LastOccurredDate).IsRequired();
+                entity.Property(deh => deh.OccurrenceCount).IsRequired().HasDefaultValue(1);
+                entity.HasIndex(deh => new { deh.DeviceId, deh.ErrorId });
+            });
             // Notification
             modelBuilder.Entity<Notification>(entity =>
             {
@@ -403,6 +446,58 @@ namespace GRRWS.Infrastructure.DB
                 .HasOne(i => i.RequestIssue)
                 .WithMany() // No navigation property in RequestIssue
                 .HasForeignKey(i => i.RequestIssueId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Machine - MachineIssueHistory (One-to-Many)
+            modelBuilder.Entity<MachineIssueHistory>()
+                .HasOne(mih => mih.Machine)
+                .WithMany()
+                .HasForeignKey(mih => mih.MachineId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<MachineIssueHistory>()
+                .HasOne(mih => mih.Issue)
+                .WithMany()
+                .HasForeignKey(mih => mih.IssueId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Machine - MachineErrorHistory (One-to-Many)
+            modelBuilder.Entity<MachineErrorHistory>()
+                .HasOne(meh => meh.Machine)
+                .WithMany()
+                .HasForeignKey(meh => meh.MachineId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<MachineErrorHistory>()
+                .HasOne(meh => meh.Error)
+                .WithMany()
+                .HasForeignKey(meh => meh.ErrorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Device - DeviceIssueHistory (One-to-Many)
+            modelBuilder.Entity<DeviceIssueHistory>()
+                .HasOne(dih => dih.Device)
+                .WithMany()
+                .HasForeignKey(dih => dih.DeviceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<DeviceIssueHistory>()
+                .HasOne(dih => dih.Issue)
+                .WithMany()
+                .HasForeignKey(dih => dih.IssueId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Device - DeviceErrorHistory (One-to-Many)
+            modelBuilder.Entity<DeviceErrorHistory>()
+                .HasOne(deh => deh.Device)
+                .WithMany()
+                .HasForeignKey(deh => deh.DeviceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<DeviceErrorHistory>()
+                .HasOne(deh => deh.Error)
+                .WithMany()
+                .HasForeignKey(deh => deh.ErrorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // BaseEntity Defaults

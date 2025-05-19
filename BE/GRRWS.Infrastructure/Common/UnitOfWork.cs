@@ -14,7 +14,15 @@ namespace GRRWS.Infrastructure.Common
         public IUserRepository UserRepository { get; private set; }
         public IEmailTemplateRepository EmailTemplateRepository { get; private set; }
         public IFirebaseRepository FirebaseRepository { get; private set; }
+
         public IIssueRepository IssueRepository { get; private set; }
+
+        public IDeviceRepository DeviceRepository { get; private set; }
+        public IPositionRepository PositionRepository { get; private set; }
+        public IZoneRepository ZoneRepository { get; private set; }
+        public IAreaRepository AreaRepository { get; private set; }
+        public IDeviceWarrantyRepository DeviceWarrantyRepository { get; private set; }
+
         public async Task<int> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync();
@@ -26,7 +34,15 @@ namespace GRRWS.Infrastructure.Common
             UserRepository = new UserRepository(_context);
             FirebaseRepository = new FirebaseRepository(storageClient);
             EmailTemplateRepository = new EmailTemplateRepository(_context);
+
             IssueRepository = new IssueRepository(_context);
+
+            DeviceRepository = new DeviceRepository(_context);
+            PositionRepository = new PositionRepository(_context);
+            ZoneRepository = new ZoneRepository(_context);
+            AreaRepository = new AreaRepository(_context);
+            DeviceWarrantyRepository = new DeviceWarrantyRepository(_context);
+
 
         }
         public int Complete()
