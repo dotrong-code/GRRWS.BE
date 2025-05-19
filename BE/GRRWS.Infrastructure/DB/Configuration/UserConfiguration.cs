@@ -54,9 +54,6 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     PasswordHash = "String123!", // Ensure password is hashed in production
                     Role = 5 // Admin
                 }
-
-
-
                 );
         }
     }
