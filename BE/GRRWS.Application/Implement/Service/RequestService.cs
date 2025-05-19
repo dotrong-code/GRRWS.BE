@@ -2,7 +2,7 @@
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DTOs.Common;
-using GRRWS.Infrastructure.DTOs.Request;
+using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
 using System;
 using System.Collections.Generic;
@@ -29,6 +29,7 @@ namespace GRRWS.Application.Implement.Service
                 .Select(r => new RequestDTO
                 {
                     Id = r.Id,
+                    ReportId = r.ReportId,
                     RequestTitle = r.RequestTitle,
                     Description = r.Description,
                     Status = r.Status,
@@ -57,6 +58,7 @@ namespace GRRWS.Application.Implement.Service
             var dto = new RequestDTO
             {
                 Id = r.Id,
+                ReportId = r.ReportId,
                 RequestTitle = r.RequestTitle,
                 Description = r.Description,
                 Status = r.Status,
