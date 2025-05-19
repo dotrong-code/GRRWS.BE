@@ -5,11 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GRRWS.Infrastructure.DTOs.Request
+namespace GRRWS.Infrastructure.DTOs.RequestDTO
 {
     public class RequestDTO
     {
         public Guid Id { get; set; }
+        public Guid? ReportId { get; set; }
         public string RequestTitle { get; set; }
         public string Description { get; set; }
         public string Status { get; set; }
