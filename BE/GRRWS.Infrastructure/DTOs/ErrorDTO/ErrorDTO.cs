@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GRRWS.Infrastructure.DTOs.Error
+namespace GRRWS.Infrastructure.DTOs.ErrorDTO
 {
     public class ErrorDTO
     {
