@@ -8,6 +8,8 @@ namespace GRRWS.Infrastructure.DTOs.Common.Message
 {
     public static class DeviceErrorMessage
     {
+        public static Error InValidLength()
+            => Error.Validation("Device.Length", $"Device must be at least 3 characters.");
         public static Error FieldIsEmpty(string fieldName) =>
             Error.Validation("Device.FieldEmpty", $"{fieldName} cannot be empty.");
 
@@ -16,7 +18,8 @@ namespace GRRWS.Infrastructure.DTOs.Common.Message
 
         public static Error SerialNumberExists() =>
             Error.Validation("Device.SerialNumberExists", "Serial number already exists.");
-
+        public static Error SerialNumberInvalidLength() =>
+            Error.Validation("Device.SerialNumberInvalidLength", "SerialNumberInvalidLength.");
         public static Error DeviceNotExist() =>
             Error.Validation("Device.NotExist", "Device does not exist.");
 
@@ -37,7 +40,8 @@ namespace GRRWS.Infrastructure.DTOs.Common.Message
 
         public static Error PositionNotExist() =>
             Error.Validation("Device.PositionNotExist", "Specified position does not exist.");
-
+        public static Error PurchasePriceInvalid() =>
+           Error.Validation("Device.PurchasePriceInvalid", "Specified position does not PurchasePriceInvalid.");
         public static Error DeviceCreateFailed() =>
             Error.Validation("Device.CreateFailed", "Failed to create device.");
 
@@ -46,5 +50,16 @@ namespace GRRWS.Infrastructure.DTOs.Common.Message
 
         public static Error DeviceDeleteFailed() =>
             Error.Validation("Device.DeleteFailed", "Failed to delete device.");
+
+        
+        
+  
+        public static Error InvalidPosition() => 
+             Error.Validation("Device.InvalidPosition", "Invalid position selected.");
+        public static Error InvalidZone() => 
+            Error.Validation("Device.InvalidZone", "Invalid zone.");
+        public static Error InvalidArea() => 
+            Error.Validation("Device.InvalidArea", "Invalid area.");
+        
     }
 }
