@@ -18,7 +18,7 @@
 GRRWS.BackEnd/GRRWS.Host/Keys/
 
 #migration
-GRRWS.BackEnd/GRRWS.Infrastructure/Migrations
+GRRWS.BackEnd/GRRWS.Infrastructure/Migrations/*
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

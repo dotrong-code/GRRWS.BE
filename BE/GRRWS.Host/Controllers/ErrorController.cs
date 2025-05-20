@@ -22,7 +22,7 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
-        [HttpGet("{id}/spare-parts")]
+        [HttpGet("spare-parts")]
         public async Task<IResult> GetSparepartsByErrorId(Guid errorId)
         {
             var result = await _errorService.GetSparepartsByErrorIdAsync(errorId);
