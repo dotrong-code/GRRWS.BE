@@ -405,10 +405,6 @@ namespace GRRWS.Infrastructure.DB
                 .WithMany(ri => ri.Images)
                 .HasForeignKey(i => i.RequestIssueId)
                 .OnDelete(DeleteBehavior.Restrict);
-            // BaseEntity Defaults
-            modelBuilder.Entity<BaseEntity>()
-                .Property(b => b.Id)
-                .HasDefaultValueSql("NEWID()");
 
             // Add these relationship configurations to your OnModelCreating method
             modelBuilder.Entity<ErrorDetail>()
@@ -429,6 +425,11 @@ namespace GRRWS.Infrastructure.DB
                 .WithMany(t => t.ErrorDetails)
                 .HasForeignKey(ed => ed.TaskId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // BaseEntity Defaults
+            modelBuilder.Entity<BaseEntity>()
+                .Property(b => b.Id)
+                .HasDefaultValueSql("NEWID()");
 
             modelBuilder.Entity<BaseEntity>()
                 .Property(b => b.CreatedDate)
