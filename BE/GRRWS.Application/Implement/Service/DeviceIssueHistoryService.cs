@@ -1,5 +1,10 @@
-﻿using GRRWS.Application.Interface.IService;
+﻿using AutoMapper;
+using GRRWS.Application.Common.Result;
+using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
+using GRRWS.Infrastructure.DTOs.Device.History;
+using GRRWS.Infrastructure.DTOs.Device.IssueHistory;
+using GRRWS.Infrastructure.Interfaces;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
 using System;
 using System.Collections.Generic;
@@ -11,18 +16,18 @@ namespace GRRWS.Application.Implement.Service
 {
     public class DeviceIssueHistoryService : IDeviceIssueHistoryService
     {
-        private readonly IDeviceIssueHistoryRepository _deviceIssueHistoryRepository;
-        public DeviceIssueHistoryService(IDeviceIssueHistoryRepository deviceIssueHistoryRepository)
+        private readonly IUnitOfWork _unit;
+        private readonly IMapper _mapper;
+        public DeviceIssueHistoryService(IUnitOfWork unit, IMapper mapper)
         {
-            _deviceIssueHistoryRepository = deviceIssueHistoryRepository;
+            _unit = unit;
+            _mapper = mapper;
         }
-        public async Task<List<DeviceIssueHistory>> GetAllDeviceIssueHistoryAsync()
+        public async Task<Result> GetDeviceIssueHistoryByDeviceIdAsync(Guid id)
         {
-            return await _deviceIssueHistoryRepository.GetAllDeviceIssueHistoryAsync();
-        }
-        public async Task<List<DeviceIssueHistory>> GetDeviceIssueHistoryByDeviceIdAsync(Guid id)
-        {
-            return await _deviceIssueHistoryRepository.GetDeviceIssueHistoryByDeviceIdAsync(id);
+            var deviceIssueHistories = await _unit.DeviceIssueHistoryRepository.GetDeviceIssueHistoryByDeviceIdAsync(id);
+            var dtos = _mapper.Map<List<DeviceIssueHistoryDTO>>(deviceIssueHistories).Cast<object>().ToList();
+            return Result.SuccessWithObject(dtos);
         }
     }
 }
