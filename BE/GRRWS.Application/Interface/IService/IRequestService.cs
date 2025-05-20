@@ -1,5 +1,5 @@
 ﻿using GRRWS.Application.Common.Result;
-using GRRWS.Infrastructure.DTOs.Request;
+using GRRWS.Infrastructure.DTOs.RequestDTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;

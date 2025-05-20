@@ -81,6 +81,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IEmailTemplateService, EmailTemplateService>();
             services.AddTransient<IFirebaseService, FirebaseService>();
             services.AddTransient<IUserService, UserService>();
+            services.AddTransient<IReportService, ReportService>();
             services.AddTransient<IRequestService, RequestService>();
             services.AddTransient<IIssueService, IssueService>();
 
@@ -95,6 +96,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IUserRepository, UserRepository>();
             services.AddTransient<IFirebaseRepository, FirebaseRepository>();
             services.AddTransient<IEmailTemplateRepository, EmailTemplateRepository>();
+            services.AddTransient<IReportRepository, ReportRepository>();
             services.AddTransient<IRequestRepository, RequestRepository>();
 
             services.AddTransient<IIssueRepository, IssueRepository>();
@@ -115,6 +117,8 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IGenericRepository<Area>, GenericRepository<Area>>();
             services.AddTransient<IGenericRepository<Zone>, GenericRepository<Zone>>();
             services.AddTransient<IGenericRepository<Position>, GenericRepository<Position>>();
+            services.AddTransient<IGenericRepository<Request>, GenericRepository<Request>>();
+            services.AddTransient<IGenericRepository<Report>, GenericRepository<Report>>();
             #endregion
 
 
