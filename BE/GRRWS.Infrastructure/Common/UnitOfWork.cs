@@ -27,6 +27,9 @@ namespace GRRWS.Infrastructure.Common
         public IReportRepository ReportRepository { get; private set; }
         public IRequestRepository RequestRepository { get; private set; }
 
+        public ITaskRepository TaskRepository { get; private set; }
+
+
         public async Task<int> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync();

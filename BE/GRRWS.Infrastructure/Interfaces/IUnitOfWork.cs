@@ -20,6 +20,10 @@ namespace GRRWS.Infrastructure.Interfaces
         IReportRepository ReportRepository { get; }
         IRequestRepository RequestRepository { get; }
 
+
+        ITaskRepository TaskRepository { get; }
+
+
         int Complete();
         Task<int> SaveChangesAsync();
     }
