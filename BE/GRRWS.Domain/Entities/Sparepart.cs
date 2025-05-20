@@ -7,7 +7,7 @@
         public string? Description { get; set; }
         public string? Specification { get; set; } // Thông số kỹ thuật (nếu có)
         public int StockQuantity { get; set; } = 0; // Số lượng hiện có trong kho
-        public bool IsAvailable => StockQuantity > 0;
+        public bool IsAvailable { get; set; } // => StockQuantity > 0;
         public string? Unit { get; set; } // Đơn vị tính: cái, bộ, v.v.
         public decimal? UnitPrice { get; set; } // Giá linh kiện
 
