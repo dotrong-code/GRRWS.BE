@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GRRWS.Application.Common.Result;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,6 @@ namespace GRRWS.Application.Interface.IService
 {
     public interface IDeviceHistoryService
     {
-
+        Task<Result> GetDeviceHistoryByDeviceIdAsync(Guid id);
     }
 }

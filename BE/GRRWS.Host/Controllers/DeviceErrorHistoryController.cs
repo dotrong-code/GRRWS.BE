@@ -9,10 +9,18 @@ namespace GRRWS.Host.Controllers
     [Route("api/[controller]")]
     public class DeviceErrorHistoryController : ControllerBase
     {
-        private readonly IDeviceErrorHistoryService _deviceIssueHistoryService;
-        public DeviceErrorHistoryController(IDeviceErrorHistoryService deviceIssueHistoryService)
+        private readonly IDeviceErrorHistoryService _deviceErrorHistoryService;
+        public DeviceErrorHistoryController(IDeviceErrorHistoryService deviceErrorHistoryService)
         {
-            _deviceIssueHistoryService = deviceIssueHistoryService;
+            _deviceErrorHistoryService = deviceErrorHistoryService;
+        }
+        [HttpGet("{deviceId}")]
+        public async Task<IResult> etDeviceHistoryByDeviceId(Guid deviceId)
+        {
+            var result = await _deviceErrorHistoryService.GetDeviceErrorHistoryByDeviceIdAsync(deviceId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully")
+                : ResultExtensions.ToProblemDetails(result);
         }
     }
 }
