@@ -26,7 +26,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Select(i => new SuggestObject
                 {
                     Id = i.Id,
-                    Name = i.DisplayName // Assuming `Name` is the display name
+                    Name = i.Name // Assuming `Name` is the display name
                 })
                 .Take(maxResults)
                 .ToListAsync();

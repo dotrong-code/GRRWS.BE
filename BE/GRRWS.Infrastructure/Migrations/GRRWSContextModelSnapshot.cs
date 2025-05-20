@@ -740,9 +740,6 @@ namespace GRRWS.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DisplayName")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("ErrorCode")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -752,6 +749,9 @@ namespace GRRWS.Infrastructure.Migrations
 
                     b.Property<bool>("IsCommon")
                         .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("OccurrenceCount")
                         .HasColumnType("int");
@@ -770,420 +770,420 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("e1d1a111-0001-0001-0001-000000000001"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3085),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1098),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3085),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1099),
                             Description = "Bàn đạp không phản hồi hoặc mất tín hiệu.",
-                            DisplayName = "Hỏng Bàn Đạp",
                             ErrorCode = "HONG_BAN_DAP",
                             EstimatedRepairTime = new TimeSpan(0, 1, 0, 0, 0),
                             IsCommon = true,
+                            Name = "Hỏng Bàn Đạp",
                             OccurrenceCount = 20,
                             Severity = "Medium"
                         },
                         new
                         {
                             Id = new Guid("e1d1a222-0002-0002-0002-000000000002"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3090),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1106),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3091),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1107),
                             Description = "Dây curoa lỏng hoặc mòn, gây mất chuyển động.",
-                            DisplayName = "Dây Curoa Trượt",
                             ErrorCode = "DAYCUROA_TRUOT",
                             EstimatedRepairTime = new TimeSpan(0, 1, 30, 0, 0),
                             IsCommon = true,
+                            Name = "Dây Curoa Trượt",
                             OccurrenceCount = 15,
                             Severity = "Medium"
                         },
                         new
                         {
                             Id = new Guid("e1d1a333-0003-0003-0003-000000000003"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3094),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1113),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3095),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1114),
                             Description = "Bo điều khiển bị lỗi, không kiểm soát được tốc độ.",
-                            DisplayName = "Máy Chạy Luôn Lượt",
                             ErrorCode = "MAY_CHAY_LUON_LUOT",
                             EstimatedRepairTime = new TimeSpan(0, 2, 0, 0, 0),
                             IsCommon = false,
+                            Name = "Máy Chạy Luôn Lượt",
                             OccurrenceCount = 5,
                             Severity = "High"
                         },
                         new
                         {
                             Id = new Guid("e1d1a444-0004-0004-0004-000000000004"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3097),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1118),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3098),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1119),
                             Description = "Động cơ chính bị cháy do quá tải hoặc ngắn mạch.",
-                            DisplayName = "Cháy Motor",
                             ErrorCode = "CHAY_MOTOR",
                             EstimatedRepairTime = new TimeSpan(0, 3, 0, 0, 0),
                             IsCommon = false,
+                            Name = "Cháy Motor",
                             OccurrenceCount = 3,
                             Severity = "High"
                         },
                         new
                         {
                             Id = new Guid("e1d1a555-0005-0005-0005-000000000005"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3102),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1129),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3102),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1130),
                             Description = "Cơ chế giữ kim bị lệch hoặc gãy.",
-                            DisplayName = "Khóa Kim Hỏng",
                             ErrorCode = "KHOA_KIM_HONG",
                             EstimatedRepairTime = new TimeSpan(0, 0, 40, 0, 0),
                             IsCommon = true,
+                            Name = "Khóa Kim Hỏng",
                             OccurrenceCount = 18,
                             Severity = "Medium"
                         },
                         new
                         {
                             Id = new Guid("e1d1a666-0006-0006-0006-000000000006"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3105),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1190),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3106),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1190),
                             Description = "Dầu rò ra ngoài do gioăng hoặc phớt bị mòn.",
-                            DisplayName = "Gioăng Dầu Bị Rò",
                             ErrorCode = "GIOANG_DAU_BI_RO",
                             EstimatedRepairTime = new TimeSpan(0, 1, 30, 0, 0),
                             IsCommon = true,
+                            Name = "Gioăng Dầu Bị Rò",
                             OccurrenceCount = 10,
                             Severity = "Medium"
                         },
                         new
                         {
                             Id = new Guid("e1d1a777-0007-0007-0007-000000000007"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3109),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1197),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3110),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1197),
                             Description = "Cảm biến vị trí bị lệch dẫn đến dừng máy không đúng lúc.",
-                            DisplayName = "Cảm Biến Lệch",
                             ErrorCode = "CAM_BIEN_LECH",
                             EstimatedRepairTime = new TimeSpan(0, 1, 0, 0, 0),
                             IsCommon = false,
+                            Name = "Cảm Biến Lệch",
                             OccurrenceCount = 6,
                             Severity = "Low"
                         },
                         new
                         {
                             Id = new Guid("e1d1a888-0008-0008-0008-000000000008"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3113),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1208),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3113),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1208),
                             Description = "Bo mạch điều khiển bị chập, không phản hồi.",
-                            DisplayName = "Lỗi Mạch Điều Khiển",
                             ErrorCode = "LOI_MACH_DIEU_KHIEN",
                             EstimatedRepairTime = new TimeSpan(0, 2, 0, 0, 0),
                             IsCommon = false,
+                            Name = "Lỗi Mạch Điều Khiển",
                             OccurrenceCount = 4,
                             Severity = "High"
                         },
                         new
                         {
                             Id = new Guid("e1d1a999-0009-0009-0009-000000000009"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3117),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1215),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3117),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1215),
                             Description = "Cơ chế chống trôi vải không ăn khớp.",
-                            DisplayName = "Chống Trôi Không Hoạt Động",
                             ErrorCode = "CHONG_TROI_KHONG_HOAT_DONG",
                             EstimatedRepairTime = new TimeSpan(0, 0, 50, 0, 0),
                             IsCommon = true,
+                            Name = "Chống Trôi Không Hoạt Động",
                             OccurrenceCount = 12,
                             Severity = "Medium"
                         },
                         new
                         {
                             Id = new Guid("e1d1abbb-0010-0010-0010-000000000010"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3120),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1220),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3120),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1220),
                             Description = "Chốt vải bị kẹt, gây gián đoạn chu trình may.",
-                            DisplayName = "Chốt Vải Kẹt",
                             ErrorCode = "CHOT_VAI_KET",
                             EstimatedRepairTime = new TimeSpan(0, 0, 30, 0, 0),
                             IsCommon = true,
+                            Name = "Chốt Vải Kẹt",
                             OccurrenceCount = 22,
                             Severity = "Low"
                         },
                         new
                         {
                             Id = new Guid("e1d1addd-0011-0011-0011-000000000011"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3124),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1225),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3124),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1226),
                             Description = "Vòng bạc trục bị mòn dẫn đến rung lắc hoặc tiếng ồn lớn.",
-                            DisplayName = "Vòng Bạc Mòn",
                             ErrorCode = "VONG_BAC_MON",
                             EstimatedRepairTime = new TimeSpan(0, 1, 30, 0, 0),
                             IsCommon = true,
+                            Name = "Vòng Bạc Mòn",
                             OccurrenceCount = 14,
                             Severity = "Medium"
                         },
                         new
                         {
                             Id = new Guid("e1d1aeee-0012-0012-0012-000000000012"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3129),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1233),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3129),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1233),
                             Description = "Dao cắt không bén, gây xơ vải hoặc rách mép.",
-                            DisplayName = "Dao Cắt Không Sắc",
                             ErrorCode = "DAO_CAT_KHONG_SAC",
                             EstimatedRepairTime = new TimeSpan(0, 0, 30, 0, 0),
                             IsCommon = true,
+                            Name = "Dao Cắt Không Sắc",
                             OccurrenceCount = 25,
                             Severity = "Low"
                         },
                         new
                         {
                             Id = new Guid("e1d1afff-0013-0013-0013-000000000013"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3132),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1238),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3132),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1239),
                             Description = "Cảm biến không phát hiện được vải khi đưa vào.",
-                            DisplayName = "Cảm Biến Vải Không Nhận",
                             ErrorCode = "CAM_BIEN_VAI_KHONG_NHAN",
                             EstimatedRepairTime = new TimeSpan(0, 1, 0, 0, 0),
                             IsCommon = false,
+                            Name = "Cảm Biến Vải Không Nhận",
                             OccurrenceCount = 6,
                             Severity = "Medium"
                         },
                         new
                         {
                             Id = new Guid("e1d1abcf-0014-0014-0014-000000000014"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3135),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1243),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3135),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1244),
                             Description = "Kim không đúng trục tâm, đâm lệch lỗ.",
-                            DisplayName = "Kim Lỗi Tâm",
                             ErrorCode = "KIM_LOI_TAM",
                             EstimatedRepairTime = new TimeSpan(0, 1, 0, 0, 0),
                             IsCommon = true,
+                            Name = "Kim Lỗi Tâm",
                             OccurrenceCount = 18,
                             Severity = "Medium"
                         },
                         new
                         {
                             Id = new Guid("e1d1a123-0015-0015-0015-000000000015"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3138),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1249),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3138),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1249),
                             Description = "Quạt tản nhiệt không hoạt động gây quá nhiệt.",
-                            DisplayName = "Lỗi Quạt Gió",
                             ErrorCode = "LOI_QUAT_GIO",
                             EstimatedRepairTime = new TimeSpan(0, 1, 0, 0, 0),
                             IsCommon = true,
+                            Name = "Lỗi Quạt Gió",
                             OccurrenceCount = 7,
                             Severity = "Low"
                         },
                         new
                         {
                             Id = new Guid("e1d1a124-0016-0016-0016-000000000016"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3141),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1257),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3141),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1257),
                             Description = "Trục chính không quay đồng tâm gây rung.",
-                            DisplayName = "Trục Chính Lệch",
                             ErrorCode = "TRUC_CHINH_LAC",
                             EstimatedRepairTime = new TimeSpan(0, 2, 0, 0, 0),
                             IsCommon = false,
+                            Name = "Trục Chính Lệch",
                             OccurrenceCount = 4,
                             Severity = "High"
                         },
                         new
                         {
                             Id = new Guid("e1d1a125-0017-0017-0017-000000000017"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3145),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1262),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3146),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1263),
                             Description = "Đèn máy không sáng do đuôi đèn bị hỏng.",
-                            DisplayName = "Đuôi Đèn Cháy",
                             ErrorCode = "DUI_DEN_CHAY",
                             EstimatedRepairTime = new TimeSpan(0, 0, 20, 0, 0),
                             IsCommon = true,
+                            Name = "Đuôi Đèn Cháy",
                             OccurrenceCount = 15,
                             Severity = "Low"
                         },
                         new
                         {
                             Id = new Guid("e1d1a126-0018-0018-0018-000000000018"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3148),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1268),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3149),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1269),
                             Description = "Bộ điều khiển không lưu lại các thiết lập máy.",
-                            DisplayName = "Mất Bộ Nhớ Lưu Thông Số",
                             ErrorCode = "MAT_BO_NHO_LUU_THONG_SO",
                             EstimatedRepairTime = new TimeSpan(0, 1, 30, 0, 0),
                             IsCommon = false,
+                            Name = "Mất Bộ Nhớ Lưu Thông Số",
                             OccurrenceCount = 2,
                             Severity = "High"
                         },
                         new
                         {
                             Id = new Guid("e1d1a127-0019-0019-0019-000000000019"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3151),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1273),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3152),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1274),
                             Description = "Áp lực chân vịt không ổn định do cảm biến sai số.",
-                            DisplayName = "Cảm Biến Áp Lực Lỗi",
                             ErrorCode = "CAM_BIEN_AP_LUC_LOI",
                             EstimatedRepairTime = new TimeSpan(0, 1, 0, 0, 0),
                             IsCommon = false,
+                            Name = "Cảm Biến Áp Lực Lỗi",
                             OccurrenceCount = 5,
                             Severity = "Medium"
                         },
                         new
                         {
                             Id = new Guid("e1d1a128-0020-0020-0020-000000000020"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3155),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1279),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3155),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1279),
                             Description = "Vải bị kéo không đều do lỗi bộ cấp vải.",
-                            DisplayName = "Rong Không Đủ Siêu",
                             ErrorCode = "ROONG_KHONG_DU_SIEU",
                             EstimatedRepairTime = new TimeSpan(0, 1, 0, 0, 0),
                             IsCommon = true,
+                            Name = "Rong Không Đủ Siêu",
                             OccurrenceCount = 10,
                             Severity = "Medium"
                         },
                         new
                         {
                             Id = new Guid("e1d1a129-0021-0021-0021-000000000021"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3157),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1285),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3158),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1286),
                             Description = "Bộ phận giữ chỉ không đủ lực siết, gây bung chỉ khi may.",
-                            DisplayName = "Mỏ Trói Chỉ Bị Lỏng",
                             ErrorCode = "MO_TROI_CHI",
                             EstimatedRepairTime = new TimeSpan(0, 0, 45, 0, 0),
                             IsCommon = true,
+                            Name = "Mỏ Trói Chỉ Bị Lỏng",
                             OccurrenceCount = 13,
                             Severity = "Medium"
                         },
                         new
                         {
                             Id = new Guid("e1d1a130-0022-0022-0022-000000000022"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3161),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1292),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3161),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1292),
                             Description = "Bánh răng truyền động bị mòn, phát ra tiếng kêu hoặc trượt.",
-                            DisplayName = "Bánh Răng Mòn",
                             ErrorCode = "BANH_RANG_MON",
                             EstimatedRepairTime = new TimeSpan(0, 1, 30, 0, 0),
                             IsCommon = true,
+                            Name = "Bánh Răng Mòn",
                             OccurrenceCount = 17,
                             Severity = "Medium"
                         },
                         new
                         {
                             Id = new Guid("e1d1a131-0023-0023-0023-000000000023"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3164),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1297),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3165),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1298),
                             Description = "Bộ phận điều khiển bằng tay không ăn khớp với cơ cấu truyền động.",
-                            DisplayName = "Cần Tay Không Ăn Khớp",
                             ErrorCode = "CAM_TAY_KHONG_AN_KHOP",
                             EstimatedRepairTime = new TimeSpan(0, 1, 0, 0, 0),
                             IsCommon = false,
+                            Name = "Cần Tay Không Ăn Khớp",
                             OccurrenceCount = 3,
                             Severity = "Low"
                         },
                         new
                         {
                             Id = new Guid("e1d1a132-0024-0024-0024-000000000024"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3167),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1376),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3168),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1376),
                             Description = "Kim va vào mặt vải hoặc phụ liệu, có thể gây hỏng bề mặt.",
-                            DisplayName = "Kim Chạm Vải",
                             ErrorCode = "KIM_CHAM_VAI",
                             EstimatedRepairTime = new TimeSpan(0, 0, 30, 0, 0),
                             IsCommon = true,
+                            Name = "Kim Chạm Vải",
                             OccurrenceCount = 22,
                             Severity = "Low"
                         },
                         new
                         {
                             Id = new Guid("e1d1a133-0025-0025-0025-000000000025"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3172),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1382),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3172),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1383),
                             Description = "Dây nối từ nút khởi động đến động cơ bị hở hoặc đứt.",
-                            DisplayName = "Dây Khởi Động Lỗi",
                             ErrorCode = "DAY_KHOI_DONG_LOI",
                             EstimatedRepairTime = new TimeSpan(0, 1, 0, 0, 0),
                             IsCommon = false,
+                            Name = "Dây Khởi Động Lỗi",
                             OccurrenceCount = 6,
                             Severity = "High"
                         },
                         new
                         {
                             Id = new Guid("e1d1a134-0026-0026-0026-000000000026"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3175),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1388),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3175),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1389),
                             Description = "Một số bu lông cố định các cụm máy bị lỏng gây rung lắc.",
-                            DisplayName = "Bu Lông Lỏng",
                             ErrorCode = "BULONG_LONG",
                             EstimatedRepairTime = new TimeSpan(0, 0, 40, 0, 0),
                             IsCommon = true,
+                            Name = "Bu Lông Lỏng",
                             OccurrenceCount = 19,
                             Severity = "Medium"
                         },
                         new
                         {
                             Id = new Guid("e1d1a135-0027-0027-0027-000000000027"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3178),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1397),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3178),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1398),
                             Description = "Hỏng mạch điện đèn chiếu sáng, gây mất tầm nhìn khu vực may.",
-                            DisplayName = "Mạch Đèn Lỗi",
                             ErrorCode = "MACH_DEN_LOI",
                             EstimatedRepairTime = new TimeSpan(0, 0, 30, 0, 0),
                             IsCommon = true,
+                            Name = "Mạch Đèn Lỗi",
                             OccurrenceCount = 12,
                             Severity = "Low"
                         },
                         new
                         {
                             Id = new Guid("e1d1a136-0028-0028-0028-000000000028"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3181),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1402),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3181),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1403),
                             Description = "Dầu bôi trơn ra quá nhiều gây loang vải hoặc trơn trượt bộ truyền.",
-                            DisplayName = "Dầu Bôi Trơn Nhiều",
                             ErrorCode = "DAU_BO_NHIEU",
                             EstimatedRepairTime = new TimeSpan(0, 1, 0, 0, 0),
                             IsCommon = true,
+                            Name = "Dầu Bôi Trơn Nhiều",
                             OccurrenceCount = 11,
                             Severity = "Medium"
                         },
                         new
                         {
                             Id = new Guid("e1d1a137-0029-0029-0029-000000000029"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3184),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1407),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3184),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1408),
                             Description = "Quạt thông gió hoạt động yếu, không đủ làm mát cho mô tơ.",
-                            DisplayName = "Quạt Thông Gió Yếu",
                             ErrorCode = "QUAT_THONG_GIO_YEU",
                             EstimatedRepairTime = new TimeSpan(0, 1, 30, 0, 0),
                             IsCommon = false,
+                            Name = "Quạt Thông Gió Yếu",
                             OccurrenceCount = 4,
                             Severity = "Medium"
                         },
                         new
                         {
                             Id = new Guid("e1d1a138-0030-0030-0030-000000000030"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3187),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1413),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3187),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(1413),
                             Description = "Cửa kim không thẳng hàng với trục kim gây lệch đường may.",
-                            DisplayName = "Cửa Kim Lệch",
                             ErrorCode = "CUA_KIM_LECH",
                             EstimatedRepairTime = new TimeSpan(0, 1, 0, 0, 0),
                             IsCommon = true,
+                            Name = "Cửa Kim Lệch",
                             OccurrenceCount = 20,
                             Severity = "Medium"
                         });
@@ -1258,9 +1258,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111111"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2261),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(321),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2262),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(324),
                             Description = "Máy may bị nóng sau thời gian sử dụng ngắn.",
                             DisplayName = "Máy Nóng",
                             IsCommon = false,
@@ -1269,9 +1269,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2268),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(337),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2268),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(338),
                             Description = "Kim bị gãy trong quá trình may.",
                             DisplayName = "Kim Gãy",
                             IsCommon = false,
@@ -1280,9 +1280,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("33333333-3333-3333-3333-333333333333"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2270),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(348),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2271),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(348),
                             Description = "Máy không khởi động hoặc không hoạt động khi bật công tắc.",
                             DisplayName = "Máy Không Chạy",
                             IsCommon = false,
@@ -1291,9 +1291,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("44444444-4444-4444-4444-444444444444"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2273),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(359),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2273),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(360),
                             Description = "Máy bị chảy dầu ra ngoài, ảnh hưởng đến hoạt động.",
                             DisplayName = "Chảy Dầu",
                             IsCommon = false,
@@ -1302,9 +1302,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("55555555-5555-5555-5555-555555555555"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2281),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(364),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2281),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(364),
                             Description = "Máy phát ra tiếng ồn lớn bất thường khi hoạt động.",
                             DisplayName = "Kêu To",
                             IsCommon = false,
@@ -1313,9 +1313,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("66666666-6666-6666-6666-666666666666"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2287),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(369),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2288),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(370),
                             Description = "Máy làm rách vải trong quá trình may.",
                             DisplayName = "Rách Vải",
                             IsCommon = false,
@@ -1324,9 +1324,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("77777777-7777-7777-7777-777777777777"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2291),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(375),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2291),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(376),
                             Description = "Kim không xuyên đúng vị trí gây lỗi đường may.",
                             DisplayName = "Lưỡi Kim",
                             IsCommon = false,
@@ -1335,9 +1335,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("88888888-8888-8888-8888-888888888888"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2293),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(380),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2294),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(380),
                             Description = "Chỉ bị đứt liên tục trong quá trình sử dụng.",
                             DisplayName = "Đứt Chỉ",
                             IsCommon = false,
@@ -1346,9 +1346,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("99999999-9999-9999-9999-999999999999"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2296),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(385),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2296),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(386),
                             Description = "Máy không cuốn chỉ hoặc chỉ bị rối.",
                             DisplayName = "Không Cuốn Chỉ",
                             IsCommon = false,
@@ -1357,9 +1357,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2298),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(390),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2298),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(391),
                             Description = "Máy chạy chậm hoặc không đều tốc độ.",
                             DisplayName = "Máy Chạy Chậm",
                             IsCommon = false,
@@ -1368,9 +1368,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2300),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(394),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2301),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(395),
                             Description = "Đường chỉ may không đều, lúc chặt lúc lỏng.",
                             DisplayName = "Chỉ Không Đều",
                             IsCommon = false,
@@ -1379,9 +1379,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("cccccccc-cccc-cccc-cccc-cccccccccccc"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2303),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(402),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2303),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(402),
                             Description = "Đèn báo lỗi trên máy may sáng liên tục.",
                             DisplayName = "Đèn Báo Lỗi",
                             IsCommon = false,
@@ -1390,9 +1390,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("dddddddd-dddd-dddd-dddd-dddddddddddd"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2306),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(406),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2307),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(407),
                             Description = "Bàn đạp không phản hồi khi sử dụng.",
                             DisplayName = "Bàn Đạp Không Hoạt Động",
                             IsCommon = false,
@@ -1401,9 +1401,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2309),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(410),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2309),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(411),
                             Description = "Vải bị nhăn hoặc co kéo trong quá trình may.",
                             DisplayName = "Vải Bị Nhăn",
                             IsCommon = false,
@@ -1412,9 +1412,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("ffffffff-ffff-ffff-ffff-ffffffffffff"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2312),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(414),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2312),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(415),
                             Description = "Kim may không di chuyển khi máy hoạt động.",
                             DisplayName = "Kim Không Di Chuyển",
                             IsCommon = false,
@@ -1423,9 +1423,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("12121212-1212-1212-1212-121212121212"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2316),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(418),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2317),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(419),
                             Description = "Ống chỉ bị kẹt hoặc không quay đúng cách.",
                             DisplayName = "Ống Chỉ Lỗi",
                             IsCommon = false,
@@ -1434,9 +1434,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("23232323-2323-2323-2323-232323232323"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2319),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(422),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2319),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(423),
                             Description = "Dây curoa bị lỏng hoặc đứt, gây ngừng máy.",
                             DisplayName = "Dây Curoa Lỗi",
                             IsCommon = false,
@@ -1445,9 +1445,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("34343434-3434-3434-3434-343434343434"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2321),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(426),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2322),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(428),
                             Description = "Chỉ dưới không được kéo lên đúng cách.",
                             DisplayName = "Chỉ Dưới Lỗi",
                             IsCommon = false,
@@ -1456,9 +1456,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("45454545-4545-4545-4545-454545454545"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2324),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(433),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2325),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(433),
                             Description = "Máy tự động dừng trong khi đang hoạt động.",
                             DisplayName = "Máy Tự Dừng",
                             IsCommon = false,
@@ -1467,9 +1467,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("56565656-5656-5656-5656-565656565656"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2328),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(441),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(2328),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(441),
                             Description = "Nút điều chỉnh độ căng chỉ không hoạt động.",
                             DisplayName = "Nút Điều Chỉnh Lỗi",
                             IsCommon = false,
@@ -1728,9 +1728,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000001"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3895),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2795),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3896),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2795),
                             Description = "Kim thép không gỉ dùng cho máy may công nghiệp",
                             IsAvailable = false,
                             SparepartCode = "SP001",
@@ -1743,9 +1743,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000002"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3900),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2809),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3900),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2810),
                             Description = "Dây truyền động cho máy may",
                             IsAvailable = false,
                             SparepartCode = "SP002",
@@ -1758,9 +1758,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000003"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3905),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2820),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3906),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2821),
                             Description = "Bàn đạp điều khiển tốc độ",
                             IsAvailable = false,
                             SparepartCode = "SP003",
@@ -1773,9 +1773,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000004"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3908),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2827),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3909),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2828),
                             Description = "Ống chỉ nhựa cho máy may tự động",
                             IsAvailable = false,
                             SparepartCode = "SP004",
@@ -1788,9 +1788,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000005"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3913),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2833),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3913),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2834),
                             Description = "Điều chỉnh nhiệt độ máy may",
                             IsAvailable = false,
                             SparepartCode = "SP005",
@@ -1803,9 +1803,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000006"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3917),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2841),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3917),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2841),
                             Description = "Công tắc bật/tắt máy may",
                             IsAvailable = false,
                             SparepartCode = "SP006",
@@ -1818,9 +1818,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000007"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3920),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2848),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3920),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2848),
                             Description = "Mô tơ điện cho máy may công nghiệp",
                             IsAvailable = false,
                             SparepartCode = "SP007",
@@ -1833,9 +1833,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000008"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3923),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2854),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3923),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2855),
                             Description = "Đèn chiếu sáng cho khu vực may",
                             IsAvailable = false,
                             SparepartCode = "SP008",
@@ -1848,9 +1848,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000009"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3927),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2859),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3927),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2860),
                             Description = "Trụ gắn kim thay thế cho đầu máy",
                             IsAvailable = false,
                             SparepartCode = "SP009",
@@ -1863,9 +1863,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000010"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3930),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2868),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3930),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2868),
                             Description = "Cơ cấu truyền động kim máy may",
                             IsAvailable = false,
                             SparepartCode = "SP010",
@@ -1878,9 +1878,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000011"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3935),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2873),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3935),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2874),
                             Description = "Bộ phận giữ chỉ dưới trong máy may",
                             IsAvailable = false,
                             SparepartCode = "SP011",
@@ -1893,9 +1893,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000012"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3938),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2878),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3938),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2879),
                             Description = "Bánh răng dẫn động kim và trụ máy",
                             IsAvailable = false,
                             SparepartCode = "SP012",
@@ -1908,9 +1908,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000013"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3969),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2883),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3970),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2884),
                             Description = "Trục truyền động từ mô tơ đến kim",
                             IsAvailable = false,
                             SparepartCode = "SP013",
@@ -1923,9 +1923,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000014"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3973),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2889),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3973),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2889),
                             Description = "Khung giữ ống chỉ phía trên máy",
                             IsAvailable = false,
                             SparepartCode = "SP014",
@@ -1938,9 +1938,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000015"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3976),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2894),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3976),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2895),
                             Description = "Phụ kiện cảm biến tốc độ quay mô tơ",
                             IsAvailable = false,
                             SparepartCode = "SP015",
@@ -1953,9 +1953,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000016"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3979),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2900),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3979),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2901),
                             Description = "Bộ khung bên ngoài cho máy loại nhỏ",
                             IsAvailable = false,
                             SparepartCode = "SP016",
@@ -1968,9 +1968,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000017"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3983),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2906),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3983),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2906),
                             Description = "Lót chân máy may giảm rung, chống ồn",
                             IsAvailable = false,
                             SparepartCode = "SP017",
@@ -1983,9 +1983,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000018"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3987),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2915),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3988),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2916),
                             Description = "Bánh dẫn puli gắn với động cơ",
                             IsAvailable = false,
                             SparepartCode = "SP018",
@@ -1998,9 +1998,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000019"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3992),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2920),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3992),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2921),
                             Description = "Dây cấp nguồn cho mô tơ máy may",
                             IsAvailable = false,
                             SparepartCode = "SP019",
@@ -2013,9 +2013,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000020"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3995),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2926),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3995),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2926),
                             Description = "Chắn dầu chống tràn ra khỏi ổ",
                             IsAvailable = false,
                             SparepartCode = "SP020",
@@ -2028,9 +2028,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000021"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3998),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2983),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(3998),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2984),
                             Description = "Kim chuyên dụng cho vải dày, da, nỉ",
                             IsAvailable = false,
                             SparepartCode = "SP021",
@@ -2043,9 +2043,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000022"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(4001),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2993),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(4001),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(2994),
                             Description = "Loại dây curoa dự phòng cho máy lập trình",
                             IsAvailable = false,
                             SparepartCode = "SP022",
@@ -2058,9 +2058,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000023"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(4004),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(3002),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(4004),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(3004),
                             Description = "Loại đèn LED gắn bên cạnh trục kim",
                             IsAvailable = false,
                             SparepartCode = "SP023",
@@ -2073,9 +2073,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000024"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(4008),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(3011),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(4008),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(3012),
                             Description = "Cơ cấu điều khiển chân vịt tự động",
                             IsAvailable = false,
                             SparepartCode = "SP024",
@@ -2088,9 +2088,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000025"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(4011),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(3018),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(4011),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(3019),
                             Description = "Ổ chỉ dưới thay thế cho máy Brother",
                             IsAvailable = false,
                             SparepartCode = "SP025",
@@ -2103,9 +2103,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000026"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(4014),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(3029),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(4014),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(3030),
                             Description = "Thanh truyền động từ bàn đạp đến mô tơ",
                             IsAvailable = false,
                             SparepartCode = "SP026",
@@ -2118,9 +2118,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000027"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(4019),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(3035),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(4019),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(3037),
                             Description = "Đế cao su chống trượt cho máy may",
                             IsAvailable = false,
                             SparepartCode = "SP027",
@@ -2133,9 +2133,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000028"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(4022),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(3050),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(4022),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(3051),
                             Description = "Giá đỡ đèn LED trên thân máy",
                             IsAvailable = false,
                             SparepartCode = "SP028",
@@ -2148,9 +2148,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000029"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(4024),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(3057),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(4025),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(3058),
                             Description = "Bo mạch điều khiển trung tâm cho máy điện tử",
                             IsAvailable = false,
                             SparepartCode = "SP029",
@@ -2163,9 +2163,9 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000030"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(4027),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(3064),
                             IsDeleted = false,
-                            ModifiedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(4028),
+                            ModifiedDate = new DateTime(2025, 5, 20, 14, 41, 42, 449, DateTimeKind.Utc).AddTicks(3064),
                             Description = "Khung gắn chỉ đứng dùng cho máy công nghiệp",
                             IsAvailable = false,
                             SparepartCode = "SP030",
@@ -2184,6 +2184,12 @@ namespace GRRWS.Infrastructure.Migrations
                     b.Property<Guid>("AssigneeId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("DeviceCondition")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeviceReturnTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("EndTime")
                         .HasColumnType("datetime2");
 
@@ -2192,6 +2198,9 @@ namespace GRRWS.Infrastructure.Migrations
 
                     b.Property<int?>("Priority")
                         .HasColumnType("int");
+
+                    b.Property<string>("ReportNotes")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("StartTime")
                         .HasColumnType("datetime2");
@@ -2262,7 +2271,7 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("21111111-1111-1111-1111-111111111111"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(1211),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 448, DateTimeKind.Utc).AddTicks(8620),
                             IsDeleted = false,
                             Email = "hod@gmail.com",
                             FullName = "Head of Department",
@@ -2274,7 +2283,7 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("32222222-2222-2222-2222-222222222222"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(1236),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 448, DateTimeKind.Utc).AddTicks(8656),
                             IsDeleted = false,
                             Email = "hot@gmail.com",
                             FullName = "Head of Team",
@@ -2286,7 +2295,7 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("43333333-3333-3333-3333-333333333333"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(1239),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 448, DateTimeKind.Utc).AddTicks(8662),
                             IsDeleted = false,
                             Email = "staff@gmail.com",
                             FullName = "Staff Member",
@@ -2298,7 +2307,7 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("54444444-4444-4444-4444-444444444444"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(1241),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 448, DateTimeKind.Utc).AddTicks(8666),
                             IsDeleted = false,
                             Email = "sk@gmail.com",
                             FullName = "Support Staff",
@@ -2310,7 +2319,7 @@ namespace GRRWS.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("65555555-5555-5555-5555-555555555555"),
-                            CreatedDate = new DateTime(2025, 5, 20, 12, 15, 18, 136, DateTimeKind.Utc).AddTicks(1243),
+                            CreatedDate = new DateTime(2025, 5, 20, 14, 41, 42, 448, DateTimeKind.Utc).AddTicks(8669),
                             IsDeleted = false,
                             Email = "admin@gmail.com",
                             FullName = "Administrator",

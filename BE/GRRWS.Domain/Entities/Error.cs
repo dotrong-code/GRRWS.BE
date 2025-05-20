@@ -3,7 +3,7 @@
     public class Error : BaseEntity
     {
         public string? ErrorCode { get; set; } // Unique
-        public string? DisplayName { get; set; }
+        public string? Name { get; set; }
         public string? Description { get; set; }
         public TimeSpan? EstimatedRepairTime { get; set; }
         public bool IsCommon { get; set; }
