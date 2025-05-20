@@ -113,11 +113,6 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 },
                 new IssueError
                 {
-                    IssueId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"), // VAI_BI_NHAN
-                    ErrorId = Guid.Parse("e1d1a128-0020-0020-0020-000000000020")  // ROONG_KHONG_DU_SIEU
-                },
-                new IssueError
-                {
                     IssueId = Guid.Parse("12121212-1212-1212-1212-121212121212"), // ONG_CHI_LOI
                     ErrorId = Guid.Parse("e1d1a134-0026-0026-0026-000000000026")  // BULONG_LONG
                 },
@@ -157,7 +152,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     ErrorId = Guid.Parse("e1d1a124-0016-0016-0016-000000000016")  // TRUC_CHINH_LAC
                 },
                 new IssueError
-                {
+    {
                     IssueId = Guid.Parse("99999999-9999-9999-9999-999999999999"), // KHONG_CUON_CHI
                     ErrorId = Guid.Parse("e1d1a135-0027-0027-0027-000000000027")  // MACH_DEN_LOI
                 }

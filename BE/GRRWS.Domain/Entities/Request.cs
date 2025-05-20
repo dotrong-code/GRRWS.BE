@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GRRWS.Domain.Entities
+﻿namespace GRRWS.Domain.Entities
 {
     public class Request : BaseEntity
     {
@@ -14,15 +8,16 @@ namespace GRRWS.Domain.Entities
         public DateTime? DueDate { get; set; }
         public string? Priority { get; set; }
         // Foreign key 
-        public Guid DeviceId { get; set; } 
+        public Guid DeviceId { get; set; }
         public Guid RequestedById { get; set; }
         public Guid? ReportId { get; set; }
+        public Guid? SerderId { get; set; }
 
         // Navigation properties
         public Device Device { get; set; }
         public User Sender { get; set; }
         public Report? Report { get; set; }
         public ICollection<RequestIssue>? RequestIssues { get; set; }
-        
+
     }
 }
