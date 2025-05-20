@@ -2,6 +2,7 @@
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.DTOs.Common;
+using GRRWS.Infrastructure.DTOs.Sparepart;
 using GRRWS.Infrastructure.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -47,6 +48,25 @@ namespace GRRWS.Application.Implement.Service
             _cache.Set(cacheKey, suggestions, cacheEntryOptions);
 
             return Result.SuccessWithObject(suggestions);
+        }
+
+        public async Task<Result> GetSparepartsByErrorIdAsync(Guid errorId)
+        {
+            var spareparts = await _unitOfWork.ErrorRepository.GetSparepartsByErrorIdAsync(errorId);
+            if (spareparts == null || !spareparts.Any())
+            {
+                return Result.Failure(Error.Validation("Guid not found", "Sparepart not found for this error"));
+            }
+            var sparepartDtos = spareparts.Select(s => new SparepartDto
+            {
+                SparepartCode = s.SparepartCode,
+                SparepartName = s.SparepartName,
+                Description = s.Description,
+                Specification = s.Specification,
+                StockQuantity = s.StockQuantity
+            }).ToList();
+
+            return Result.SuccessWithObject(sparepartDtos);
         }
     }
 }

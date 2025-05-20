@@ -1,4 +1,5 @@
-﻿using GRRWS.Infrastructure.DB;
+﻿using GRRWS.Domain.Entities;
+using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
@@ -28,6 +29,14 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     Name = i.DisplayName // Assuming `Name` is the display name
                 })
                 .Take(maxResults)
+                .ToListAsync();
+        }
+        public async Task<List<Sparepart>> GetSparepartsByErrorIdAsync(Guid errorId)
+        {
+            return await _context.ErrorSpareparts
+                .Where(es => es.ErrorId == errorId)
+                .Include(es => es.Sparepart)
+                .Select(es => es.Sparepart)
                 .ToListAsync();
         }
     }
