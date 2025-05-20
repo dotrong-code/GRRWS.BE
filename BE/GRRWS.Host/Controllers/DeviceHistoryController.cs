@@ -15,7 +15,14 @@ namespace GRRWS.Host.Controllers
         {
             _service = service;
         }
-
+        [HttpGet("{deviceId}")]
+        public async Task<IResult> etDeviceHistoryByDeviceId(Guid deviceId)
+        {
+            var result = await _service.GetDeviceHistoryByDeviceIdAsync(deviceId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 
 }
