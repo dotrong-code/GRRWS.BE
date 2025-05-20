@@ -90,6 +90,9 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IReportService, ReportService>();
             services.AddTransient<IRequestService, RequestService>();
             services.AddTransient<IDeviceService, DeviceService>();
+            services.AddTransient<IDeviceErrorHistoryService, DeviceErrorHistoryService>();
+            services.AddTransient<IDeviceIssueHistoryService, DeviceIssueHistoryService>();
+            services.AddTransient<IDeviceHistoryService, DeviceHistoryService>();
             services.AddTransient<IDeviceWarrantyService, DeviceWarrantyService>();
             services.AddTransient<IZoneService, ZoneService>();
             services.AddTransient<IAreaService, AreaService>();
@@ -104,6 +107,9 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IReportRepository, ReportRepository>();
             services.AddTransient<IRequestRepository, RequestRepository>();
             services.AddTransient<IDeviceRepository, DeviceRepository>();
+            services.AddTransient<IDeviceErrorHistoryRepository, DeviceErrorHistoryRepository>();
+            services.AddTransient<IDeviceIssueHistoryRepository, DeviceIssueHistoryRepository>();
+            services.AddTransient<IDeviceHistoryRepository, DeviceHistoryRepository>();
             services.AddTransient<IDeviceWarrantyRepository, DeviceWarrantyRepository>();
             services.AddTransient<IZoneRepository, ZoneRepository>();
             services.AddTransient<IAreaRepository, AreaRepository>();
@@ -115,6 +121,9 @@ namespace GRRWS.Host.Starup
 
             services.AddTransient<IGenericRepository<User>, GenericRepository<User>>();
             services.AddTransient<IGenericRepository<Device>, GenericRepository<Device>>();
+            services.AddTransient<IGenericRepository<DeviceErrorHistory>, GenericRepository<DeviceErrorHistory>>();
+            services.AddTransient<IGenericRepository<DeviceIssueHistory>, GenericRepository<DeviceIssueHistory>>();
+            services.AddTransient<IGenericRepository<DeviceHistory>, GenericRepository<DeviceHistory>>();
             services.AddTransient<IGenericRepository<DeviceWarranty>, GenericRepository<DeviceWarranty>>();
             services.AddTransient<IGenericRepository<Area>, GenericRepository<Area>>();
             services.AddTransient<IGenericRepository<Zone>, GenericRepository<Zone>>();

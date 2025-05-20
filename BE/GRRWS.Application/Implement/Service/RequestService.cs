@@ -30,11 +30,18 @@ namespace GRRWS.Application.Implement.Service
                 {
                     Id = r.Id,
                     ReportId = r.ReportId,
+                    DeviceId = r.DeviceId,
+                    DeviceName = r.Device?.DeviceName,
+                    DeviceCode = r.Device?.DeviceCode,
+                    PositionIndex = r.Device?.Position?.Index,
+                    ZoneName = r.Device?.Position?.Zone?.ZoneName,
+                    AreaName = r.Device?.Position?.Zone?.Area?.AreaName,
+                    RequestDate = r.CreatedDate,
                     RequestTitle = r.RequestTitle,
                     Description = r.Description,
                     Status = r.Status,
                     CreatedDate = r.CreatedDate,
-                    CreatedBy = r.CreatedBy,
+                    CreatedBy = r.RequestedById,
                     ModifiedDate = r.ModifiedDate,
                     ModifiedBy = r.ModifiedBy,
                     DueDate = r.DueDate,
@@ -42,7 +49,8 @@ namespace GRRWS.Application.Implement.Service
                     Issues = r.RequestIssues.Select(ri => new IssueDTO
                     {
                         Id = ri.Issue.Id,
-                        IssueTitle = ri.Issue.IssueKey
+                        IssueTitle = ri.Issue.IssueKey,
+                        ImageUrls = ri.Images.Select(img => img.ImageUrl).ToList()
                     }).ToList()
                 }).ToList<object>();
 
@@ -59,11 +67,18 @@ namespace GRRWS.Application.Implement.Service
             {
                 Id = r.Id,
                 ReportId = r.ReportId,
+                DeviceId = r.DeviceId,
+                DeviceName = r.Device?.DeviceName,
+                DeviceCode = r.Device?.DeviceCode,
+                PositionIndex = r.Device?.Position?.Index,
+                ZoneName = r.Device?.Position?.Zone?.ZoneName,
+                AreaName = r.Device?.Position?.Zone?.Area?.AreaName,
+                RequestDate = r.CreatedDate,
                 RequestTitle = r.RequestTitle,
                 Description = r.Description,
                 Status = r.Status,
                 CreatedDate = r.CreatedDate,
-                CreatedBy = r.CreatedBy,
+                CreatedBy = r.RequestedById,
                 ModifiedDate = r.ModifiedDate,
                 ModifiedBy = r.ModifiedBy,
                 DueDate = r.DueDate,
@@ -71,18 +86,95 @@ namespace GRRWS.Application.Implement.Service
                 Issues = r.RequestIssues.Select(ri => new IssueDTO
                 {
                     Id = ri.Issue.Id,
-                    IssueTitle = ri.Issue.IssueKey
+                    IssueTitle = ri.Issue.IssueKey,
+                    ImageUrls = ri.Images.Select(img => img.ImageUrl).ToList()
                 }).ToList()
             };
 
             return Result.SuccessWithObject(dto);
         }
 
+        public async Task<Result> GetRequestByDeviceIdAsync(Guid id)
+        {
+            var requests = await _requestRepository.GetRequestByDeviceIdAsync(id);
+            var dtos = requests
+                .Where(r => !r.IsDeleted)
+                .OrderByDescending(r => r.CreatedDate)
+                .Select(r => new RequestDTO
+                {
+                    Id = r.Id,
+                    ReportId = r.ReportId,
+                    DeviceId = r.DeviceId,
+                    DeviceName = r.Device?.DeviceName,
+                    DeviceCode = r.Device?.DeviceCode,
+                    PositionIndex = r.Device?.Position?.Index,
+                    ZoneName = r.Device?.Position?.Zone?.ZoneName,
+                    AreaName = r.Device?.Position?.Zone?.Area?.AreaName,
+                    RequestDate = r.CreatedDate,
+                    RequestTitle = r.RequestTitle,
+                    Description = r.Description,
+                    Status = r.Status,
+                    CreatedDate = r.CreatedDate,
+                    CreatedBy = r.RequestedById,
+                    ModifiedDate = r.ModifiedDate,
+                    ModifiedBy = r.ModifiedBy,
+                    DueDate = r.DueDate,
+                    Priority = r.Priority,
+                    Issues = r.RequestIssues.Select(ri => new IssueDTO
+                    {
+                        Id = ri.Issue.Id,
+                        IssueTitle = ri.Issue.IssueKey,
+                        ImageUrls = ri.Images.Select(img => img.ImageUrl).ToList()
+                    }).ToList()
+                }).ToList<object>();
+            return Result.SuccessWithObject(dtos);
+        }
+        public async Task<Result> GetRequestByUserIdAsync(Guid userId)
+        {
+            var requests = await _requestRepository.GetRequestByUserIdAsync(userId);
+            var dtos = requests
+                .Where(r => !r.IsDeleted)
+                .OrderByDescending(r => r.CreatedDate)
+                .Select(r => new RequestDTO
+                {
+                    Id = r.Id,
+                    ReportId = r.ReportId,
+                    DeviceId = r.DeviceId,
+                    DeviceName = r.Device?.DeviceName,
+                    DeviceCode = r.Device?.DeviceCode,
+                    PositionIndex = r.Device?.Position?.Index,
+                    ZoneName = r.Device?.Position?.Zone?.ZoneName,
+                    AreaName = r.Device?.Position?.Zone?.Area?.AreaName,
+                    RequestDate = r.CreatedDate,
+                    RequestTitle = r.RequestTitle,
+                    Description = r.Description,
+                    Status = r.Status,
+                    CreatedDate = r.CreatedDate,
+                    CreatedBy = r.RequestedById,
+                    ModifiedDate = r.ModifiedDate,
+                    ModifiedBy = r.ModifiedBy,
+                    DueDate = r.DueDate,
+                    Priority = r.Priority,
+                    Issues = r.RequestIssues.Select(ri => new IssueDTO
+                    {
+                        Id = ri.Issue.Id,
+                        IssueTitle = ri.Issue.IssueKey,
+                        ImageUrls = ri.Images.Select(img => img.ImageUrl).ToList()
+                    }).ToList()
+                }).ToList<object>();
+            return Result.SuccessWithObject(dtos);
+        }
         public async Task<Result> CreateAsync(CreateRequestDTO dto)
         {
+            if (dto.DeviceId == null)
+            {
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "DeviceId cannot be null.", 0));
+            }
+
             var request = new Request
             {
                 Id = Guid.NewGuid(),
+                DeviceId = dto.DeviceId,
                 RequestTitle = dto.RequestTitle,
                 Description = dto.Description,
                 Status = dto.Status,
