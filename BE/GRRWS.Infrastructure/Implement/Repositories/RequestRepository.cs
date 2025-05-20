@@ -17,14 +17,54 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         public RequestRepository(GRRWSContext context) : base(context) { }
         public async Task<List<Request>> GetAllRequestAsync()
         {
-            return await _context.Set<Request>().Include(r => r.RequestIssues).ThenInclude(ri => ri.Issue).ToListAsync();
+            return await _context.Set<Request>()
+                .Include(r => r.Device)
+                .ThenInclude(d => d.Position)
+                .ThenInclude(p => p.Zone)
+                .ThenInclude(z => z.Area)
+                .Include(r => r.RequestIssues)
+                .ThenInclude(ri => ri.Issue)
+                .Include(r => r.RequestIssues)
+                .ThenInclude(ri => ri.Images).ToListAsync();
         }
         public async Task<Request> GetRequestByIdAsync(Guid id)
         {
             return await _context.Requests
+                .Include(r => r.Device)
+                .ThenInclude(d => d.Position)
+                .ThenInclude(p => p.Zone)
+                .ThenInclude(z => z.Area)
                 .Include(r => r.RequestIssues)
                 .ThenInclude(ri => ri.Issue)
+                .Include(r => r.RequestIssues)
+                .ThenInclude(ri => ri.Images)
                 .FirstOrDefaultAsync(r => r.Id == id);
+        }
+        public async Task<List<Request>> GetRequestByDeviceIdAsync(Guid id)
+        {
+            return await _context.Requests
+                .Include(r => r.Device)
+                .ThenInclude(d => d.Position)
+                .ThenInclude(p => p.Zone)
+                .ThenInclude(z => z.Area)
+                .Include(r => r.RequestIssues)
+                .ThenInclude(ri => ri.Issue)
+                .Include(r => r.RequestIssues)
+                .ThenInclude(ri => ri.Images)
+                .Where(r => r.DeviceId == id).ToListAsync();
+        }
+        public async Task<List<Request>> GetRequestByUserIdAsync(Guid userId)
+        {
+            return await _context.Requests
+                .Include(r => r.Device)
+                .ThenInclude(d => d.Position)
+                .ThenInclude(p => p.Zone)
+                .ThenInclude(z => z.Area)
+                .Include(r => r.RequestIssues)
+                .ThenInclude(ri => ri.Issue)
+                .Include(r => r.RequestIssues)
+                .ThenInclude(ri => ri.Images)
+                .Where(r => r.RequestedById == userId).ToListAsync();
         }
         public async Task UpdateRequestAsync(Request request, List<Guid> newIssueIds)
         {

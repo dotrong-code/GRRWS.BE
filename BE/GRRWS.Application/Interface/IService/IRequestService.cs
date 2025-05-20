@@ -15,5 +15,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> CreateAsync(CreateRequestDTO dto);
         Task<Result> UpdateAsync(UpdateRequestDTO dto, Guid id);
         Task<Result> DeleteAsync(Guid id);
+        Task<Result> GetRequestByDeviceIdAsync(Guid id);
+        Task<Result> GetRequestByUserIdAsync(Guid userId);
     }
 }
