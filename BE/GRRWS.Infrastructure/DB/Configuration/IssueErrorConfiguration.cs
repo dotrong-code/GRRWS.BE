@@ -1,6 +1,6 @@
 ﻿namespace GRRWS.Infrastructure.DB.Configuration
 {
-    public class ErrorConfiguration
+    public class IssueErrorConfiguration
     {
     }
 }

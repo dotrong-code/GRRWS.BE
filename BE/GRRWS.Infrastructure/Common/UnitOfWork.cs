@@ -16,6 +16,7 @@ namespace GRRWS.Infrastructure.Common
         public IFirebaseRepository FirebaseRepository { get; private set; }
 
         public IIssueRepository IssueRepository { get; private set; }
+        public IErrorRepository ErrorRepository { get; private set; }
 
         public IDeviceRepository DeviceRepository { get; private set; }
         public IPositionRepository PositionRepository { get; private set; }
@@ -39,6 +40,7 @@ namespace GRRWS.Infrastructure.Common
             EmailTemplateRepository = new EmailTemplateRepository(_context);
 
             IssueRepository = new IssueRepository(_context);
+            ErrorRepository = new ErrorRepository(_context);
 
             DeviceRepository = new DeviceRepository(_context);
             PositionRepository = new PositionRepository(_context);
