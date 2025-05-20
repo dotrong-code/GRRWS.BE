@@ -108,7 +108,7 @@ builder.Services.AddCors(options =>
         });
 });
 
-
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.RegisterServices();
 builder.Services.AddHttpClient();
 builder.WebHost.UseUrls("http://0.0.0.0:5000");

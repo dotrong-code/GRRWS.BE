@@ -6,6 +6,7 @@ using GRRWS.Application.Common.Validator.AreaVali;
 using GRRWS.Application.Common.Validator.DeviceVali;
 using GRRWS.Application.Common.Validator.DeviceWarranty;
 using GRRWS.Application.Common.Validator.Position;
+using GRRWS.Application.Common.Validator.Task;
 using GRRWS.Application.Common.Validator.UserVali;
 using GRRWS.Application.Common.Validator.Zone;
 using GRRWS.Application.Implement.Service;
@@ -16,6 +17,7 @@ using GRRWS.Infrastructure.DTOs.Area;
 using GRRWS.Infrastructure.DTOs.Device;
 using GRRWS.Infrastructure.DTOs.DeviceWarranty;
 using GRRWS.Infrastructure.DTOs.Position;
+using GRRWS.Infrastructure.DTOs.Task;
 using GRRWS.Infrastructure.DTOs.User.Login;
 using GRRWS.Infrastructure.DTOs.User.Register;
 using GRRWS.Infrastructure.DTOs.User.Update;
@@ -66,6 +68,11 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IValidator<CreateDeviceWarrantyRequest>, CreateDeviceWarrantyRequestValidator>();
             services.AddTransient<IValidator<UpdateDeviceWarrantyRequest>, UpdateDeviceWarrantyRequestValidator>();
 
+
+            services.AddTransient<IValidator<StartTaskRequest>, StartTaskRequestValidator>();
+            services.AddTransient<IValidator<CreateTaskReportRequest>, CreateTaskReportRequestValidator>();
+
+
             #endregion
 
             #region Common
@@ -81,29 +88,42 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IEmailTemplateService, EmailTemplateService>();
             services.AddTransient<IFirebaseService, FirebaseService>();
             services.AddTransient<IUserService, UserService>();
+            services.AddTransient<IReportService, ReportService>();
             services.AddTransient<IRequestService, RequestService>();
             services.AddTransient<IIssueService, IssueService>();
+            services.AddTransient<IErrorService, ErrorService>();
 
             services.AddTransient<IDeviceService, DeviceService>();
+            services.AddTransient<IDeviceErrorHistoryService, DeviceErrorHistoryService>();
+            services.AddTransient<IDeviceIssueHistoryService, DeviceIssueHistoryService>();
+            services.AddTransient<IDeviceHistoryService, DeviceHistoryService>();
             services.AddTransient<IDeviceWarrantyService, DeviceWarrantyService>();
             services.AddTransient<IZoneService, ZoneService>();
             services.AddTransient<IAreaService, AreaService>();
             services.AddTransient<IPositionService, PositionService>();
+            services.AddTransient<ITaskService, TaskService>();
             #endregion
 
             #region Repositories
             services.AddTransient<IUserRepository, UserRepository>();
             services.AddTransient<IFirebaseRepository, FirebaseRepository>();
             services.AddTransient<IEmailTemplateRepository, EmailTemplateRepository>();
+            services.AddTransient<IReportRepository, ReportRepository>();
             services.AddTransient<IRequestRepository, RequestRepository>();
 
             services.AddTransient<IIssueRepository, IssueRepository>();
+            services.AddTransient<IErrorRepository, ErrorRepository>();
 
             services.AddTransient<IDeviceRepository, DeviceRepository>();
+            services.AddTransient<IDeviceErrorHistoryRepository, DeviceErrorHistoryRepository>();
+            services.AddTransient<IDeviceIssueHistoryRepository, DeviceIssueHistoryRepository>();
+            services.AddTransient<IDeviceHistoryRepository, DeviceHistoryRepository>();
             services.AddTransient<IDeviceWarrantyRepository, DeviceWarrantyRepository>();
             services.AddTransient<IZoneRepository, ZoneRepository>();
             services.AddTransient<IAreaRepository, AreaRepository>();
             services.AddTransient<IPositionRepository, PositionRepository>();
+
+            services.AddTransient<ITaskRepository, TaskRepository>();
 
             #endregion
 
@@ -111,10 +131,15 @@ namespace GRRWS.Host.Starup
 
             services.AddTransient<IGenericRepository<User>, GenericRepository<User>>();
             services.AddTransient<IGenericRepository<Device>, GenericRepository<Device>>();
+            services.AddTransient<IGenericRepository<DeviceErrorHistory>, GenericRepository<DeviceErrorHistory>>();
+            services.AddTransient<IGenericRepository<DeviceIssueHistory>, GenericRepository<DeviceIssueHistory>>();
+            services.AddTransient<IGenericRepository<DeviceHistory>, GenericRepository<DeviceHistory>>();
             services.AddTransient<IGenericRepository<DeviceWarranty>, GenericRepository<DeviceWarranty>>();
             services.AddTransient<IGenericRepository<Area>, GenericRepository<Area>>();
             services.AddTransient<IGenericRepository<Zone>, GenericRepository<Zone>>();
             services.AddTransient<IGenericRepository<Position>, GenericRepository<Position>>();
+            services.AddTransient<IGenericRepository<Request>, GenericRepository<Request>>();
+            services.AddTransient<IGenericRepository<Report>, GenericRepository<Report>>();
             #endregion
 
 

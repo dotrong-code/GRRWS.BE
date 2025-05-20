@@ -5,11 +5,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GRRWS.Infrastructure.DTOs.Request
+namespace GRRWS.Infrastructure.DTOs.RequestDTO
 {
     public class RequestDTO
     {
         public Guid Id { get; set; }
+        public Guid? ReportId { get; set; }
+        public Guid? DeviceId { get; set; }
+        public string DeviceName { get; set; }
+        public string DeviceCode { get; set; }
+        public int? PositionIndex { get; set; }
+        public string ZoneName { get; set; }
+        public string AreaName { get; set; }
+        public DateTime RequestDate { get; set; }
         public string RequestTitle { get; set; }
         public string Description { get; set; }
         public string Status { get; set; }
@@ -23,6 +31,7 @@ namespace GRRWS.Infrastructure.DTOs.Request
     }
     public class CreateRequestDTO
     {
+        public Guid DeviceId { get; set; }
         public string RequestTitle { get; set; }
         public string Description { get; set; }
         public string Status { get; set; }
@@ -48,5 +57,6 @@ namespace GRRWS.Infrastructure.DTOs.Request
     {
         public Guid Id { get; set; }
         public string? IssueTitle { get; set; }
+        public List<string>? ImageUrls { get; set; }
     }
 }

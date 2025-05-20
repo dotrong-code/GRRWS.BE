@@ -16,12 +16,21 @@ namespace GRRWS.Infrastructure.Common
         public IFirebaseRepository FirebaseRepository { get; private set; }
 
         public IIssueRepository IssueRepository { get; private set; }
+        public IErrorRepository ErrorRepository { get; private set; }
 
         public IDeviceRepository DeviceRepository { get; private set; }
+        public IDeviceErrorHistoryRepository DeviceErrorHistoryRepository { get; private set; }
+        public IDeviceIssueHistoryRepository DeviceIssueHistoryRepository { get; private set; }
+        public IDeviceHistoryRepository DeviceHistoryRepository { get; private set; }
         public IPositionRepository PositionRepository { get; private set; }
         public IZoneRepository ZoneRepository { get; private set; }
         public IAreaRepository AreaRepository { get; private set; }
         public IDeviceWarrantyRepository DeviceWarrantyRepository { get; private set; }
+        public IReportRepository ReportRepository { get; private set; }
+        public IRequestRepository RequestRepository { get; private set; }
+
+        public ITaskRepository TaskRepository { get; private set; }
+
 
         public async Task<int> SaveChangesAsync()
         {
@@ -36,6 +45,7 @@ namespace GRRWS.Infrastructure.Common
             EmailTemplateRepository = new EmailTemplateRepository(_context);
 
             IssueRepository = new IssueRepository(_context);
+            ErrorRepository = new ErrorRepository(_context);
 
             DeviceRepository = new DeviceRepository(_context);
             PositionRepository = new PositionRepository(_context);
@@ -43,6 +53,12 @@ namespace GRRWS.Infrastructure.Common
             AreaRepository = new AreaRepository(_context);
             DeviceWarrantyRepository = new DeviceWarrantyRepository(_context);
 
+            ReportRepository = new ReportRepository(_context);
+            RequestRepository = new RequestRepository(_context);
+            TaskRepository = new TaskRepository(_context);
+            DeviceErrorHistoryRepository = new DeviceErrorHistoryRepository(_context);
+            DeviceIssueHistoryRepository = new DeviceIssueHistoryRepository(_context);
+            DeviceHistoryRepository = new DeviceHistoryRepository(_context);
 
         }
         public int Complete()

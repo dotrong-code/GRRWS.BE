@@ -1,7 +1,7 @@
 ﻿using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.DTOs.Common;
-using GRRWS.Infrastructure.DTOs.Request;
+using GRRWS.Infrastructure.DTOs.RequestDTO;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GRRWS.Host.Controllers
@@ -21,6 +21,22 @@ namespace GRRWS.Host.Controllers
         public async Task<IResult> GetAll()
         {
             var result = await _requestService.GetAllAsync();
+            return result.IsSuccess
+    ? ResultExtensions.ToSuccessDetails(result, "Successfully")
+    : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpGet("deviceId")]
+        public async Task<IResult> GetRequestByDeviceIdAsync(Guid id)
+        {
+            var result = await _requestService.GetRequestByDeviceIdAsync(id);
+            return result.IsSuccess
+    ? ResultExtensions.ToSuccessDetails(result, "Successfully")
+    : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpGet("userId")]
+        public async Task<IResult> GetRequestByUserIdAsync(Guid userId)
+        {
+            var result = await _requestService.GetRequestByUserIdAsync(userId);
             return result.IsSuccess
     ? ResultExtensions.ToSuccessDetails(result, "Successfully")
     : ResultExtensions.ToProblemDetails(result);
