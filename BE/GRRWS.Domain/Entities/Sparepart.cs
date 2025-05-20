@@ -12,7 +12,7 @@
         public decimal? UnitPrice { get; set; } // Giá linh kiện
 
         // Quan hệ
-        public ICollection<RepairSparepart> RepairSpareparts { get; set; }
-        public ICollection<ErrorSparepart> ErrorSpareparts { get; set; }
+        public ICollection<RepairSparepart>? RepairSpareparts { get; set; }
+        public ICollection<ErrorSparepart>? ErrorSpareparts { get; set; }
     }
 }

@@ -9,6 +9,7 @@ namespace GRRWS.Infrastructure.Interfaces
         IFirebaseRepository FirebaseRepository { get; }
 
         IIssueRepository IssueRepository { get; }
+        IErrorRepository ErrorRepository { get; }
 
         IDeviceRepository DeviceRepository { get; }
         IPositionRepository PositionRepository { get; }
