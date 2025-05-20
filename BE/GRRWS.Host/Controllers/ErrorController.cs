@@ -21,5 +21,14 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+
+        [HttpGet("{id}/spare-parts")]
+        public async Task<IResult> GetSparepartsByErrorId(Guid errorId)
+        {
+            var result = await _errorService.GetSparepartsByErrorIdAsync(errorId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }
