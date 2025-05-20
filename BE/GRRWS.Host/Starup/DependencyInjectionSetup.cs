@@ -84,6 +84,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IReportService, ReportService>();
             services.AddTransient<IRequestService, RequestService>();
             services.AddTransient<IIssueService, IssueService>();
+            services.AddTransient<IErrorService, ErrorService>();
 
             services.AddTransient<IDeviceService, DeviceService>();
             services.AddTransient<IDeviceWarrantyService, DeviceWarrantyService>();
@@ -100,6 +101,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IRequestRepository, RequestRepository>();
 
             services.AddTransient<IIssueRepository, IssueRepository>();
+            services.AddTransient<IErrorRepository, ErrorRepository>();
 
             services.AddTransient<IDeviceRepository, DeviceRepository>();
             services.AddTransient<IDeviceWarrantyRepository, DeviceWarrantyRepository>();

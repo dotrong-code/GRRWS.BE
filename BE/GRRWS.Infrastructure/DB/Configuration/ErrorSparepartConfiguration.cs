@@ -43,12 +43,6 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 },
                 new ErrorSparepart
                 {
-                    ErrorId = Guid.Parse("e1d1a130-0022-0022-0022-000000000022"), // BANH_RANG_MON
-                    SparepartId = Guid.Parse("10000000-0000-0000-0000-000000000012"), // Bánh Răng Truyền Động
-                    QuantityNeeded = 1
-                },
-                new ErrorSparepart
-                {
                     ErrorId = Guid.Parse("e1d1a124-0016-0016-0016-000000000016"), // TRUC_CHINH_LAC
                     SparepartId = Guid.Parse("10000000-0000-0000-0000-000000000013"), // Trục Kim Máy May
                     QuantityNeeded = 1
@@ -57,12 +51,6 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     ErrorId = Guid.Parse("e1d1a133-0025-0025-0025-000000000025"), // DAY_KHOI_DONG_LOI
                     SparepartId = Guid.Parse("10000000-0000-0000-0000-000000000019"), // Dây Điện Động Cơ
-                    QuantityNeeded = 1
-                },
-                new ErrorSparepart
-                {
-                    ErrorId = Guid.Parse("e1d1a126-0018-0018-0018-000000000018"), // MAT_BO_NHO_LUU_THONG_SO
-                    SparepartId = Guid.Parse("10000000-0000-0000-0000-000000000029"), // Bộ Điều Khiển Điện Tử
                     QuantityNeeded = 1
                 },
                 new ErrorSparepart
@@ -97,20 +85,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 },
                 new ErrorSparepart
                 {
-                    ErrorId = Guid.Parse("e1d1a133-0025-0025-0025-000000000025"), // DAY_KHOI_DONG_LOI
-                    SparepartId = Guid.Parse("10000000-0000-0000-0000-000000000019"), // Dây Điện Động Cơ
-                    QuantityNeeded = 1
-                },
-                new ErrorSparepart
-                {
                     ErrorId = Guid.Parse("e1d1a555-0005-0005-0005-000000000005"), // KHOA_KIM_HONG
                     SparepartId = Guid.Parse("10000000-0000-0000-0000-000000000001"), // Kim May Công Nghiệp
-                    QuantityNeeded = 1
-                },
-                new ErrorSparepart
-                {
-                    ErrorId = Guid.Parse("e1d1a555-0005-0005-0005-000000000005"), // KHOA_KIM_HONG
-                    SparepartId = Guid.Parse("10000000-0000-0000-0000-000000000009"), // Trụ Gắn Kim
                     QuantityNeeded = 1
                 },
                 new ErrorSparepart
@@ -128,31 +104,13 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 new ErrorSparepart
                 {
                     ErrorId = Guid.Parse("e1d1a124-0016-0016-0016-000000000016"), // TRUC_CHINH_LAC
-                    SparepartId = Guid.Parse("10000000-0000-0000-0000-000000000013"), // Trục Kim Máy May
-                    QuantityNeeded = 1
-                },
-                new ErrorSparepart
-                {
-                    ErrorId = Guid.Parse("e1d1a124-0016-0016-0016-000000000016"), // TRUC_CHINH_LAC
                     SparepartId = Guid.Parse("10000000-0000-0000-0000-000000000027"), // Đế Máy May
                     QuantityNeeded = 1
                 },
                 new ErrorSparepart
                 {
                     ErrorId = Guid.Parse("e1d1a127-0019-0019-0019-000000000019"), // CAM_BIEN_AP_LUC_LOI
-                    SparepartId = Guid.Parse("10000000-0000-0000-0000-000000000015"), // Cảm Biến Tốc Độ
-                    QuantityNeeded = 1
-                },
-                new ErrorSparepart
-                {
-                    ErrorId = Guid.Parse("e1d1a127-0019-0019-0019-000000000019"), // CAM_BIEN_AP_LUC_LOI
                     SparepartId = Guid.Parse("10000000-0000-0000-0000-000000000028"), // Bộ Điều Khiển Áp Suất
-                    QuantityNeeded = 1
-                },
-                new ErrorSparepart
-                {
-                    ErrorId = Guid.Parse("e1d1a132-0024-0024-0024-000000000024"), // KIM_CHAM_VAI
-                    SparepartId = Guid.Parse("10000000-0000-0000-0000-000000000001"), // Kim May Công Nghiệp
                     QuantityNeeded = 1
                 },
                 new ErrorSparepart
