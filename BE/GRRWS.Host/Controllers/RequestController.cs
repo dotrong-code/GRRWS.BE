@@ -25,6 +25,22 @@ namespace GRRWS.Host.Controllers
     ? ResultExtensions.ToSuccessDetails(result, "Successfully")
     : ResultExtensions.ToProblemDetails(result);
         }
+        [HttpGet("deviceId")]
+        public async Task<IResult> GetRequestByDeviceIdAsync(Guid id)
+        {
+            var result = await _requestService.GetRequestByDeviceIdAsync(id);
+            return result.IsSuccess
+    ? ResultExtensions.ToSuccessDetails(result, "Successfully")
+    : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpGet("userId")]
+        public async Task<IResult> GetRequestByUserIdAsync(Guid userId)
+        {
+            var result = await _requestService.GetRequestByUserIdAsync(userId);
+            return result.IsSuccess
+    ? ResultExtensions.ToSuccessDetails(result, "Successfully")
+    : ResultExtensions.ToProblemDetails(result);
+        }
 
         [HttpGet("{id}")]
         public async Task<IResult> GetById(Guid id)

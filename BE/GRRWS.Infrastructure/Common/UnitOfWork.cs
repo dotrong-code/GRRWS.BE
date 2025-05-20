@@ -20,11 +20,13 @@ namespace GRRWS.Infrastructure.Common
         public IEmailTemplateRepository EmailTemplateRepository { get; private set; }
         public IFirebaseRepository FirebaseRepository { get; private set; }
         public IDeviceRepository DeviceRepository { get; private set; }
+        public IDeviceErrorHistoryRepository DeviceErrorHistoryRepository { get; private set; }
+        public IDeviceIssueHistoryRepository DeviceIssueHistoryRepository { get; private set; }
+        public IDeviceHistoryRepository DeviceHistoryRepository { get; private set; }
         public IPositionRepository PositionRepository { get; private set; }
         public IZoneRepository ZoneRepository { get; private set; }
         public IAreaRepository AreaRepository { get; private set; }
         public IDeviceWarrantyRepository DeviceWarrantyRepository { get; private set; }
-
         public IReportRepository ReportRepository { get; private set; }
         public IRequestRepository RequestRepository { get; private set; }
 
@@ -48,6 +50,10 @@ namespace GRRWS.Infrastructure.Common
             DeviceWarrantyRepository = new DeviceWarrantyRepository(_context);
             ReportRepository = new ReportRepository(_context);
             RequestRepository = new RequestRepository(_context);
+            TaskRepository = new TaskRepository(_context);
+            DeviceErrorHistoryRepository = new DeviceErrorHistoryRepository(_context);
+            DeviceIssueHistoryRepository = new DeviceIssueHistoryRepository(_context);
+            DeviceHistoryRepository = new DeviceHistoryRepository(_context);
         }
         public int Complete()
         {
