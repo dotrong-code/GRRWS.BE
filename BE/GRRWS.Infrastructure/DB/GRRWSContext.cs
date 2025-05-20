@@ -47,6 +47,10 @@ namespace GRRWS.Infrastructure.DB
             #region Data Configuration
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new IssueConfiguration());
+            modelBuilder.ApplyConfiguration(new ErrorConfiguration());
+            modelBuilder.ApplyConfiguration(new SparepartConfiguration());
+            modelBuilder.ApplyConfiguration(new IssueErrorConfiguration());
+            modelBuilder.ApplyConfiguration(new ErrorSparepartConfiguration());
             #endregion
 
 
@@ -323,6 +327,19 @@ namespace GRRWS.Infrastructure.DB
                 .HasForeignKey(es => es.SparepartId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Issue - IssueError (One-to-Many)
+            modelBuilder.Entity<IssueError>()
+                .HasOne(ie => ie.Issue)
+                .WithMany(i => i.IssueErrors)
+                .HasForeignKey(ie => ie.IssueId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Error - IssueError (One-to-Many)
+            modelBuilder.Entity<IssueError>()
+                .HasOne(ie => ie.Error)
+                .WithMany(e => e.IssueErrors)
+                .HasForeignKey(ie => ie.ErrorId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // BaseEntity Defaults
             modelBuilder.Entity<BaseEntity>()
