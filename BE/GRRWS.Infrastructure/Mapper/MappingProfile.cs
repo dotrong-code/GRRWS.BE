@@ -1,21 +1,24 @@
 ﻿using AutoMapper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using GRRWS.Domain.Entities;
+using GRRWS.Infrastructure.DTOs.Report;
 
 namespace GRRWS.Infrastructure.Mapper
 {
     public class MappingProfile : Profile
     {
-        public MappingProfile() 
-        { 
-
-
-
-
-
+        public MappingProfile()
+        {
+            CreateMap<Report, ReportViewDTO>();
+            CreateMap<ReportCreateDTO, Report>();
+            CreateMap<ReportUpdateDTO, Report>();
+            CreateMap<Report, ReportViewDTO>()
+    .ForMember(dest => dest.Errors, opt => opt.MapFrom(src =>
+        src.ErrorDetails.Select(ed => new ErrorSummaryDTO
+        {
+            ErrorId = ed.Error.Id,
+            Name = ed.Error.ErrorCode
+        }).ToList()
+    ));
 
         }
     }
