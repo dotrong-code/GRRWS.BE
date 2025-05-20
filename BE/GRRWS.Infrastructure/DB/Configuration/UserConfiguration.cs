@@ -15,6 +15,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Email = "hod@gmail.com",
                     FullName = "Head of Department",
                     UserName = "Head of Department",
+                    PhoneNumber = "09785628660",
                     PasswordHash = "String123!", // Ensure password is hashed in production
                     Role = 1 // HOD
                 },
@@ -24,6 +25,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Email = "hot@gmail.com",
                     FullName = "Head of Team",
                     UserName = "Head of Team",
+                    PhoneNumber = "09785628660",
                     PasswordHash = "String123!", // Ensure password is hashed in production
                     Role = 2 // HOT
                 },
@@ -33,6 +35,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Email = "staff@gmail.com",
                     FullName = "Staff Member",
                     UserName = "Staff Member",
+                    PhoneNumber = "09785628660",
                     PasswordHash = "String123!", // Ensure password is hashed in production
                     Role = 3 // Staff
                 },
@@ -42,6 +45,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Email = "sk@gmail.com",
                     FullName = "Support Staff",
                     UserName = "Support Staff",
+                    PhoneNumber = "09785628660",
                     PasswordHash = "String123!", // Ensure password is hashed in production
                     Role = 4 // SK
                 },
@@ -51,6 +55,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Email = "admin@gmail.com",
                     FullName = "Administrator",
                     UserName = "Administrator",
+                    PhoneNumber = "09785628660",
                     PasswordHash = "String123!", // Ensure password is hashed in production
                     Role = 5 // Admin
                 }
