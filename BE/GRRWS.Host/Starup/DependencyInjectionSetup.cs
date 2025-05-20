@@ -6,6 +6,7 @@ using GRRWS.Application.Common.Validator.AreaVali;
 using GRRWS.Application.Common.Validator.DeviceVali;
 using GRRWS.Application.Common.Validator.DeviceWarranty;
 using GRRWS.Application.Common.Validator.Position;
+using GRRWS.Application.Common.Validator.Task;
 using GRRWS.Application.Common.Validator.UserVali;
 using GRRWS.Application.Common.Validator.Zone;
 using GRRWS.Application.Implement.Service;
@@ -16,6 +17,7 @@ using GRRWS.Infrastructure.DTOs.Area;
 using GRRWS.Infrastructure.DTOs.Device;
 using GRRWS.Infrastructure.DTOs.DeviceWarranty;
 using GRRWS.Infrastructure.DTOs.Position;
+using GRRWS.Infrastructure.DTOs.Task;
 using GRRWS.Infrastructure.DTOs.User.Login;
 using GRRWS.Infrastructure.DTOs.User.Register;
 using GRRWS.Infrastructure.DTOs.User.Update;
@@ -66,6 +68,11 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IValidator<CreateDeviceWarrantyRequest>, CreateDeviceWarrantyRequestValidator>();
             services.AddTransient<IValidator<UpdateDeviceWarrantyRequest>, UpdateDeviceWarrantyRequestValidator>();
 
+
+            services.AddTransient<IValidator<StartTaskRequest>, StartTaskRequestValidator>();
+            services.AddTransient<IValidator<CreateTaskReportRequest>, CreateTaskReportRequestValidator>();
+
+
             #endregion
 
             #region Common
@@ -91,6 +98,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IZoneService, ZoneService>();
             services.AddTransient<IAreaService, AreaService>();
             services.AddTransient<IPositionService, PositionService>();
+            services.AddTransient<ITaskService, TaskService>();
             #endregion
 
             #region Repositories
@@ -108,6 +116,8 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IZoneRepository, ZoneRepository>();
             services.AddTransient<IAreaRepository, AreaRepository>();
             services.AddTransient<IPositionRepository, PositionRepository>();
+
+            services.AddTransient<ITaskRepository, TaskRepository>();
 
             #endregion
 
