@@ -63,6 +63,10 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.ApplyConfiguration(new DeviceWarrantyConfiguration());
             modelBuilder.ApplyConfiguration(new MachineErrorHistoryConfiguration());
             modelBuilder.ApplyConfiguration(new MachineIssueHistoryConfiguration());
+            modelBuilder.ApplyConfiguration(new TasksConfiguration());
+            modelBuilder.ApplyConfiguration(new ReportConfiguration());
+            modelBuilder.ApplyConfiguration(new RequestIssueConfiguration());
+            modelBuilder.ApplyConfiguration(new ErrorDetailConfiguration());
 
             #endregion
 
