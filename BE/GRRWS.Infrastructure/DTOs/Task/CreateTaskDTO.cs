@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GRRWS.Infrastructure.DTOs.Task
+﻿namespace GRRWS.Infrastructure.DTOs.Task
 {
     public class CreateTaskDTO
     {
+        public Guid ReportId { get; set; }
         public string TaskName { get; set; }
         public string TaskDescription { get; set; }
         public string TaskType { get; set; }

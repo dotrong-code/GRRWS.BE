@@ -314,7 +314,7 @@ namespace GRRWS.Application.Implement.Service
             };
 
             // Link Errors and Spareparts
-            await _unitOfWork.TaskRepository.CreateTaskAsync(task, dto.ErrorIds, dto.SparepartIds);
+            await _unitOfWork.TaskRepository.CreateTaskAsync(task, dto.ReportId, dto.ErrorIds, dto.SparepartIds);
 
             return Result.SuccessWithObject(new { Message = "Task created successfully!", TaskId = task.Id });
         }
