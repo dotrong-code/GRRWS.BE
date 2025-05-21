@@ -14,5 +14,10 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<List<GetTaskResponse>> GetTasksByMechanicIdAsync(Guid mechanicId, int pageNumber, int pageSize);
         Task<GetTaskResponse> GetTaskDetailsAsync(Guid taskId);
         Task<Tasks> GetTaskByIdAsync(Guid taskId);
+
+        Task<List<Tasks>> GetAllTasksAsync();
+        
+        Task CreateTaskAsync(Tasks task, List<Guid> errorIds, List<Guid> sparepartIds);
+        Task UpdateTaskAsync(Tasks task, List<Guid> errorIds, List<Guid> sparepartIds);
     }
 }
