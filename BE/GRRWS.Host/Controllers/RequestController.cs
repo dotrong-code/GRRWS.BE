@@ -1,7 +1,9 @@
-﻿using GRRWS.Application.Common.Result;
+﻿using GRRWS.Application.Common;
+using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GRRWS.Host.Controllers
@@ -11,10 +13,11 @@ namespace GRRWS.Host.Controllers
     public class RequestController : ControllerBase
     {
         private readonly IRequestService _requestService;
-
-        public RequestController(IRequestService requestService)
+        private readonly IHttpContextAccessor _contextAccessor;
+        public RequestController(IRequestService requestService, IHttpContextAccessor contextAccessor)
         {
             _requestService = requestService;
+            _contextAccessor = contextAccessor;
         }
 
         [HttpGet]
@@ -51,10 +54,12 @@ namespace GRRWS.Host.Controllers
 : ResultExtensions.ToProblemDetails(result);
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IResult> Create([FromBody] CreateRequestDTO dto)
         {
-            var result = await _requestService.CreateAsync(dto);
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _requestService.CreateAsync(dto, c.UserId);
             return result.IsSuccess
 ? ResultExtensions.ToSuccessDetails(result, "Successfully")
 : ResultExtensions.ToProblemDetails(result);
