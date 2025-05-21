@@ -95,5 +95,14 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Area retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+
+        [HttpGet("{id}/warranty-status")]
+        public async Task<IResult> GetWarrantyStatus(Guid id)
+        {
+            var result = await _deviceService.GetWarrantyStatusAsync(id);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Warranty status retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }

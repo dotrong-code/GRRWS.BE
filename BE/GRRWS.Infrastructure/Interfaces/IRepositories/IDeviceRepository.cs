@@ -21,5 +21,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
             int pageNumber = 1,
             int pageSize = 10);
         Task<int> DeleteDeviceAsync(Guid id);
+
+        Task<DeviceWarranty> GetActiveWarrantyAsync(Guid deviceId);
     }
 }

@@ -90,5 +90,18 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             _context.Devices.Update(device);
             return await _context.SaveChangesAsync();
         }
+
+        public async Task<DeviceWarranty> GetActiveWarrantyAsync(Guid deviceId)
+        {
+            var currentDate = DateTime.UtcNow;
+            return await _context.DeviceWarranties
+                .Where(dw => dw.DeviceId == deviceId
+                             && !dw.IsDeleted
+                             && (dw.Status == "Completed" || dw.Status == "Pending")
+                             && dw.WarrantyStartDate <= currentDate
+                             && dw.WarrantyEndDate >= currentDate)
+                .OrderByDescending(dw => dw.WarrantyEndDate) // Prefer the longest-lasting warranty
+                .FirstOrDefaultAsync();
+        }
     }
 }
