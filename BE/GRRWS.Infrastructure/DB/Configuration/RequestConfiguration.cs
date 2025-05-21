@@ -1,7 +1,6 @@
 ﻿using GRRWS.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
 
 namespace GRRWS.Infrastructure.DB.Configuration
 {
@@ -9,6 +8,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
     {
         public void Configure(EntityTypeBuilder<Request> builder)
         {
+            // Sample data (10 records)
             builder.HasData(
                 new Request
                 {
@@ -234,6 +234,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow.AddHours(3),
                     IsDeleted = false
+
                 }
             );
         }
