@@ -1,5 +1,6 @@
 ﻿using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DB;
+using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
 using GRRWS.Infrastructure.Interfaces.IRepositories.IGeneric;
@@ -97,6 +98,27 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             await _context.RequestIssues.AddRangeAsync(newRequestIssues);
 
             await _context.SaveChangesAsync();
+        }
+        public async Task<List<IssueSimpleDTO>> GetIssuesByRequestIdAsync(Guid requestId)
+        {
+            var request = await _context.Requests
+                .Include(r => r.RequestIssues)
+                .ThenInclude(ri => ri.Issue)
+                .FirstOrDefaultAsync(r => r.Id == requestId && !r.IsDeleted);
+
+            if (request == null)
+                return new List<IssueSimpleDTO>();
+
+            var issues = request.RequestIssues
+                .Where(ri => !ri.Issue.IsDeleted)
+                .Select(ri => new IssueSimpleDTO
+                {
+                    Id = ri.Issue.Id,
+                    DisplayName = ri.Issue.DisplayName
+                })
+                .ToList();
+
+            return issues;
         }
     }
 }
