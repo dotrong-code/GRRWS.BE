@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.Device;
+using GRRWS.Infrastructure.DTOs.History;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
 using Microsoft.EntityFrameworkCore;
@@ -90,5 +91,96 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             _context.Devices.Update(device);
             return await _context.SaveChangesAsync();
         }
+
+        public async Task<DeviceWarranty> GetActiveWarrantyAsync(Guid deviceId)
+        {
+            var currentDate = DateTime.UtcNow;
+            return await _context.DeviceWarranties
+                .Where(dw => dw.DeviceId == deviceId
+                             && !dw.IsDeleted
+                             && (dw.Status == "Completed" || dw.Status == "Pending")
+                             && dw.WarrantyStartDate <= currentDate
+                             && dw.WarrantyEndDate >= currentDate)
+                .OrderByDescending(dw => dw.WarrantyEndDate) // Prefer the longest-lasting warranty
+                .FirstOrDefaultAsync();
+        }
+
+
+        public async Task<List<DeviceIssueHistoryResponse>> GetDeviceIssueHistoryByDeviceIdAsync(Guid deviceId)
+        {
+            return await _context.DeviceIssueHistories
+                .Where(dih => dih.DeviceId == deviceId && !dih.IsDeleted)
+                .OrderByDescending(dih => dih.OccurrenceCount)
+                .Select(dih => new DeviceIssueHistoryResponse
+                {
+                    Id = dih.Id,
+                    DeviceId = dih.DeviceId,
+                    IssueId = dih.IssueId,
+                    IssueCode = dih.Issue.IssueKey,
+                    IssueDescription = dih.Issue.Description,
+                    LastOccurredDate = dih.LastOccurredDate,
+                    OccurrenceCount = dih.OccurrenceCount,
+                    Notes = dih.Notes
+                })
+                .ToListAsync();
+        }
+
+        public async Task<List<MachineIssueHistoryResponse>> GetMachineIssueHistoryByMachineIdAsync(Guid machineId)
+        {
+            return await _context.MachineIssueHistories
+                .Where(mih => mih.MachineId == machineId && !mih.IsDeleted)
+                .OrderByDescending(mih => mih.OccurrenceCount)
+                .Select(mih => new MachineIssueHistoryResponse
+                {
+                    Id = mih.Id,
+                    MachineId = mih.MachineId,
+                    IssueId = mih.IssueId,
+                    IssueCode = mih.Issue.IssueKey,
+                    IssueDescription = mih.Issue.Description,
+                    LastOccurredDate = mih.LastOccurredDate,
+                    OccurrenceCount = mih.OccurrenceCount,
+                    Notes = mih.Notes
+                })
+                .ToListAsync();
+        }
+
+        public async Task<List<DeviceErrorHistoryResponse>> GetDeviceErrorHistoryByDeviceIdAsync(Guid deviceId)
+        {
+            return await _context.DeviceErrorHistories
+                .Where(deh => deh.DeviceId == deviceId && !deh.IsDeleted)
+                .OrderByDescending(deh => deh.OccurrenceCount)
+                .Select(deh => new DeviceErrorHistoryResponse
+                {
+                    Id = deh.Id,
+                    DeviceId = deh.DeviceId,
+                    ErrorId = deh.ErrorId,
+                    ErrorCode = deh.Error.ErrorCode,
+                    ErrorDescription = deh.Error.Description,
+                    LastOccurredDate = deh.LastOccurredDate,
+                    OccurrenceCount = deh.OccurrenceCount,
+                    Notes = deh.Notes
+                })
+                .ToListAsync();
+        }
+
+        public async Task<List<MachineErrorHistoryResponse>> GetMachineErrorHistoryByMachineIdAsync(Guid machineId)
+        {
+            return await _context.MachineErrorHistories
+                .Where(meh => meh.MachineId == machineId && !meh.IsDeleted)
+                .OrderByDescending(meh => meh.OccurrenceCount)
+                .Select(meh => new MachineErrorHistoryResponse
+                {
+                    Id = meh.Id,
+                    MachineId = meh.MachineId,
+                    ErrorId = meh.ErrorId,
+                    ErrorCode = meh.Error.ErrorCode,
+                    ErrorDescription = meh.Error.Description,
+                    LastOccurredDate = meh.LastOccurredDate,
+                    OccurrenceCount = meh.OccurrenceCount,
+                    Notes = meh.Notes
+                })
+                .ToListAsync();
+        }
+
     }
 }

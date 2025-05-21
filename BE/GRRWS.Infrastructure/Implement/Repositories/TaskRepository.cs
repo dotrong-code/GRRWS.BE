@@ -197,5 +197,73 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             await _context.SaveChangesAsync();
         }
+        public async Task UpdateErrorDetailsAsync(List<Guid> errorDetailIds, Guid taskId)
+        {
+            if (errorDetailIds == null || !errorDetailIds.Any())
+                return;
+
+            var errorDetails = await _context.ErrorDetails
+                .Where(ed => errorDetailIds.Contains(ed.ErrorId) && !ed.TaskId.HasValue)
+                .ToListAsync();
+
+            foreach (var errorDetail in errorDetails)
+            {
+                errorDetail.TaskId = taskId;
+            }
+
+            _context.ErrorDetails.UpdateRange(errorDetails);
+            await _context.SaveChangesAsync();
+        }
+        public async Task<(List<GetTaskResponse> Tasks, int TotalCount)> GetAllTasksAsync(string? taskType, string? status, int? priority, int pageNumber, int pageSize)
+        {
+            var query = _context.Tasks
+                .Where(t => !t.IsDeleted);
+
+            if (!string.IsNullOrWhiteSpace(taskType))
+                query = query.Where(t => t.TaskType == taskType);
+
+            if (!string.IsNullOrWhiteSpace(status))
+                query = query.Where(t => t.Status == status);
+
+            if (priority.HasValue)
+                query = query.Where(t => t.Priority == priority.Value);
+
+            query = query.OrderByDescending(t => t.CreatedDate);
+
+            var totalCount = await query.CountAsync();
+            var tasks = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(t => new GetTaskResponse
+                {
+                    Id = t.Id,
+                    TaskName = t.TaskName,
+                    TaskDescription = t.TaskDescription,
+                    TaskType = t.TaskType,
+                    Priority = t.Priority,
+                    Status = t.Status,
+                    StartTime = t.StartTime,
+                    ExpectedTime = t.ExpectedTime,
+                    EndTime = t.EndTime,
+                    AssigneeId = t.AssigneeId,
+                    AssigneeName = t.Assignee.FullName,
+                    DeviceReturnTime = t.DeviceReturnTime,
+                    DeviceCondition = t.DeviceCondition,
+                    ReportNotes = t.ReportNotes,
+                    RepairSpareparts = t.RepairSpareparts.Select(rs => new RepairSparepartDto
+                    {
+                        SpareId = rs.SpareId,
+                        SparepartName = rs.Sparepart.SparepartName
+                    }).ToList(),
+                    ErrorDetails = t.ErrorDetails.Select(ed => new ErrorDetailDto
+                    {
+                        ErrorId = ed.ErrorId,
+                        ErrorCode = ed.Error.ErrorCode
+                    }).ToList()
+                })
+                .ToListAsync();
+
+            return (tasks, totalCount);
+        }
     }
 }

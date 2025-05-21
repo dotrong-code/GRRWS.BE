@@ -12,7 +12,6 @@ namespace GRRWS.Infrastructure.DTOs.Report
         public Guid? RequestId { get; set; }
         public int Priority { get; set; }
         public string Location { get; set; }
-        public string Status { get; set; }
         public List<Guid> ErrorIds { get; set; }
     }
 
@@ -32,6 +31,7 @@ namespace GRRWS.Infrastructure.DTOs.Report
         public int Priority { get; set; }
         public string Location { get; set; }
         public string Status { get; set; }
+        public DateTime CreatedDate { get; set; }
         public List<ErrorSummaryDTO> Errors { get; set; }
     }
     public class ErrorSummaryDTO
