@@ -47,6 +47,23 @@ namespace GRRWS.Infrastructure.DB
             #region Data Configuration
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new IssueConfiguration());
+            modelBuilder.ApplyConfiguration(new ErrorConfiguration());
+            modelBuilder.ApplyConfiguration(new SparepartConfiguration());
+            modelBuilder.ApplyConfiguration(new IssueErrorConfiguration());
+            modelBuilder.ApplyConfiguration(new ErrorSparepartConfiguration());
+            modelBuilder.ApplyConfiguration(new MachineConfiguration());
+            modelBuilder.ApplyConfiguration(new DeviceConfiguration());
+            modelBuilder.ApplyConfiguration(new RequestConfiguration());
+            modelBuilder.ApplyConfiguration(new ZoneConfiguration());
+            modelBuilder.ApplyConfiguration(new AreaConfiguration());
+            modelBuilder.ApplyConfiguration(new PositionConfiguration());
+            modelBuilder.ApplyConfiguration(new DeviceErrorHistoryConfiguration());
+            modelBuilder.ApplyConfiguration(new DeviceIssueHistoryConfiguration());
+            modelBuilder.ApplyConfiguration(new DeviceHistoryConfiguration());
+            modelBuilder.ApplyConfiguration(new DeviceWarrantyConfiguration());
+            modelBuilder.ApplyConfiguration(new MachineErrorHistoryConfiguration());
+            modelBuilder.ApplyConfiguration(new MachineIssueHistoryConfiguration());
+
             #endregion
 
 
@@ -81,6 +98,27 @@ namespace GRRWS.Infrastructure.DB
                 entity.Property(d => d.Status).IsRequired();
                 entity.HasIndex(d => d.DeviceCode).IsUnique();
             });
+
+            // Device - Position (One-to-One)
+            modelBuilder.Entity<Device>()
+                .HasOne(d => d.Position)
+                .WithOne(p => p.Device)
+                .HasForeignKey<Position>(p => p.DeviceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // User - Feedback (One-to-One)
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Feedback)
+                .WithOne(f => f.User)
+                .HasForeignKey<Feedback>(f => f.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Request - Report (One-to-One)
+            modelBuilder.Entity<Request>()
+                .HasOne(r => r.Report)
+                .WithOne(rep => rep.Request)
+                .HasForeignKey<Report>(rep => rep.RequestId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // DeviceHistory
             modelBuilder.Entity<DeviceHistory>()
@@ -329,44 +367,31 @@ namespace GRRWS.Infrastructure.DB
                 .HasForeignKey(es => es.SparepartId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Device>()
-    .HasOne(d => d.Position)
-    .WithOne(p => p.Device)
-    .HasForeignKey<Position>(p => p.DeviceId)
-    .OnDelete(DeleteBehavior.Restrict);
-            modelBuilder.Entity<Feedback>()
-    .HasOne(f => f.User)
-    .WithOne(u => u.Feedback)
-    .HasForeignKey<Feedback>(f => f.UserId)
-    .OnDelete(DeleteBehavior.Restrict);
-            modelBuilder.Entity<Request>()
-    .HasOne(r => r.Report)
-    .WithOne(r => r.Request)
-    .HasForeignKey<Report>(r => r.RequestId)
-    .OnDelete(DeleteBehavior.Restrict);
-
+            // Issue - IssueError (One-to-Many)
             modelBuilder.Entity<IssueError>()
-    .HasOne(ie => ie.Issue)
-    .WithMany(i => i.IssueErrors)
-    .HasForeignKey(ie => ie.IssueId)
-    .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(ie => ie.Issue)
+                .WithMany(i => i.IssueErrors)
+                .HasForeignKey(ie => ie.IssueId)
+                .OnDelete(DeleteBehavior.Restrict);
 
+            // Error - IssueError (One-to-Many)
             modelBuilder.Entity<IssueError>()
                 .HasOne(ie => ie.Error)
                 .WithMany(e => e.IssueErrors)
                 .HasForeignKey(ie => ie.ErrorId)
                 .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<DeviceHistory>()
-    .HasOne(dh => dh.Device)
-    .WithMany(d => d.Histories)
-    .HasForeignKey(dh => dh.DeviceId)
-    .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(dh => dh.Device)
+                .WithMany(d => d.Histories)
+                .HasForeignKey(dh => dh.DeviceId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<DeviceWarranty>()
-    .HasOne(dw => dw.Device)
-    .WithMany(d => d.Warranties)
-    .HasForeignKey(dw => dw.DeviceId)
-    .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(dw => dw.Device)
+                .WithMany(d => d.Warranties)
+                .HasForeignKey(dw => dw.DeviceId)
+                .OnDelete(DeleteBehavior.Restrict);
             // Add this relationship configuration
             modelBuilder.Entity<DeviceWarrantyHistory>()
                 .HasOne(dwh => dwh.Device)
