@@ -1,7 +1,7 @@
-﻿using GRRWS.Domain.Entities;
+using GRRWS.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
+
 
 namespace GRRWS.Infrastructure.DB.Configuration
 {
@@ -9,6 +9,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
     {
         public void Configure(EntityTypeBuilder<Device> builder)
         {
+
             builder.HasIndex(d => d.DeviceCode)
                    .IsUnique()
                    .HasDatabaseName("IX_Devices_DeviceCode");
@@ -78,11 +79,13 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Supplier = "Juki Vietnam",
                     MachineId = Guid.Parse("a1b2c3d4-0003-0003-0003-000000000003"), // Juki DDL-8700-03
                     PositionId = null, // Not assigned to any position
+
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
                 new Device
                 {
+
                     Id = Guid.Parse("d1e2f3a4-0004-0004-0004-000000000004"),
                     DeviceCode = "DEV004-JUKI-DDL8700-04",
                     DeviceName = "Juki DDL-8700 Unit 4",
@@ -100,11 +103,13 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Supplier = "Juki Vietnam",
                     MachineId = Guid.Parse("a1b2c3d4-0004-0004-0004-000000000004"), // Juki DDL-8700-04
                     PositionId = Guid.Parse("f1e2d3c4-0003-0003-0003-000000000003"), // Position in Sewing Line A, Index 3
+
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
                 new Device
                 {
+
                     Id = Guid.Parse("d1e2f3a4-0005-0005-0005-000000000005"),
                     DeviceCode = "DEV005-JUKI-DDL8700-05",
                     DeviceName = "Juki DDL-8700 Unit 5",
@@ -122,11 +127,13 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Supplier = "Juki Vietnam",
                     MachineId = Guid.Parse("a1b2c3d4-0005-0005-0005-000000000005"), // Juki DDL-8700-05
                     PositionId = Guid.Parse("f1e2d3c4-0004-0004-0004-000000000004"), // Position in Sewing Line A, Index 4
+
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
                 new Device
                 {
+
                     Id = Guid.Parse("d1e2f3a4-0006-0006-0006-000000000006"),
                     DeviceCode = "DEV006-JUKI-DDL8700-06",
                     DeviceName = "Juki DDL-8700 Unit 6",
@@ -144,11 +151,34 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Supplier = "Juki Vietnam",
                     MachineId = Guid.Parse("a1b2c3d4-0006-0006-0006-000000000006"), // Juki DDL-8700-06
                     PositionId = null, // Not assigned to any position
+
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
                 new Device
                 {
+
+                    Id = Guid.Parse("66666666-6666-6666-6666-666666666667"),
+                    DeviceName = "Sewing Machine 4",
+                    DeviceCode = "SM004",
+                    SerialNumber = "SN006",
+                    Model = "Model F",
+                    Manufacturer = "Brother",
+                    ManufactureDate = new DateTime(2021, 5, 10),
+                    InstallationDate = new DateTime(2021, 6, 1),
+                    Description = "Compact sewing machine",
+                    PhotoUrl = "http://example.com/photos/sm004.jpg",
+                    Status = "Active",
+                    IsUnderWarranty = true,
+                    Specifications = "{\"speed\": \"800 SPM\", \"type\": \"Compact\"}",
+                    PurchasePrice = 1000.00m,
+                    Supplier = "Brother Industries",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Device
+                {
+
                     Id = Guid.Parse("d1e2f3a4-0007-0007-0007-000000000007"),
                     DeviceCode = "DEV007-JUKI-DDL8700-07",
                     DeviceName = "Juki DDL-8700 Unit 7",
@@ -299,11 +329,13 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Supplier = "Juki Vietnam",
                     MachineId = Guid.Parse("a1b2c3d4-0013-0013-0013-000000000013"), // Juki DDL-9000C-03
                     PositionId = null, // Not assigned to any position
+
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
                 new Device
                 {
+
                     Id = Guid.Parse("d1e2f3a4-0014-0014-0014-000000000014"),
                     DeviceCode = "DEV014-JUKI-DDL9000C-04",
                     DeviceName = "Juki DDL-9000C Unit 4",
@@ -344,6 +376,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Supplier = "Brother Vietnam",
                     MachineId = Guid.Parse("a1b2c3d4-0015-0015-0015-000000000015"), // Brother B957-01
                     PositionId = Guid.Parse("f1e2d3c4-0019-0019-0019-000000000019"), // Position in Overlock Section, Index 1
+
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -411,6 +444,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Supplier = "Singer Vietnam",
                     MachineId = Guid.Parse("a1b2c3d4-0018-0018-0018-000000000018"), // Singer 4452-01
                     PositionId = Guid.Parse("f1e2d3c4-0023-0023-0023-000000000023"), // Position in Heavy Duty Stitching Zone, Index 1
+
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -461,4 +495,5 @@ namespace GRRWS.Infrastructure.DB.Configuration
             );
         }
     }
+
 }

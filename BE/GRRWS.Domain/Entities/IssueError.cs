@@ -7,8 +7,10 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GRRWS.Domain.Entities
 {
-    public class IssueError
+    public class IssueError 
     {
+        public Guid Id { get; set; } = Guid.NewGuid();
+        
         public Guid IssueId { get; set; }
         public Guid ErrorId { get; set; }
 
