@@ -17,7 +17,15 @@ namespace GRRWS.Host.Controllers
             _taskService = taskService;
         }
 
-        
+        [HttpGet("ByReport/{reportId}")]
+        public async Task<IResult> GetTasksByReportId(Guid reportId)
+        {
+            var result = await _taskService.GetTasksByReportIdAsync(reportId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Tasks retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
         [HttpGet("mechanic/{mechanicId}")]
         public async Task<IResult> GetTasksByMechanicId(Guid mechanicId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
