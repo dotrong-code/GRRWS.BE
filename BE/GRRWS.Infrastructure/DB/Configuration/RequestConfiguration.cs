@@ -1,11 +1,6 @@
 ﻿using GRRWS.Domain.Entities;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace GRRWS.Infrastructure.DB.Configuration
 {
@@ -17,143 +12,229 @@ namespace GRRWS.Infrastructure.DB.Configuration
             builder.HasData(
                 new Request
                 {
-                    Id = Guid.Parse("11111111-1111-1111-1111-111111111122"),
-                    RequestTitle = "Repair Sewing Machine 1",
-                    Description = "Sewing machine overheating issue.",
+                    Id = Guid.Parse("a1e2f3a4-0001-0001-1001-000000000001"),
+                    RequestTitle = "Máy bị đứt chỉ Juki DDL-8700 Đơn vị 1",
+                    Description = "Máy ngừng hoạt động do đứt chỉ tại Dây chuyền May A, Vị trí 1, làm gián đoạn sản xuất vải mỏng.",
                     Status = "Pending",
-                    DueDate = DateTime.UtcNow.AddDays(3),
                     Priority = "High",
-                    DeviceId = Guid.Parse("11111111-1111-1111-1111-111111111112"),
-                    RequestedById = Guid.Parse("43333333-3333-3333-3333-333333333333"),
-                    SerderId = Guid.Parse("43333333-3333-3333-3333-333333333333"),
+                    DueDate = new DateTime(2025, 5, 23, 0, 0, 0, DateTimeKind.Utc),
+                    DeviceId = Guid.Parse("d1e2f3a4-0001-0001-0001-000000000001"),
+                    RequestedById = Guid.Parse("32222222-2222-2222-2222-222222222222"),
+                    ReportId = null,
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
                 },
                 new Request
                 {
-                    Id = Guid.Parse("22222222-2222-2222-2222-222222222233"),
-                    RequestTitle = "Fix Needle Breakage",
-                    Description = "Needle broke during operation.",
+                    Id = Guid.Parse("a1f2e3d4-0002-0002-1002-000000000002"),
+                    RequestTitle = "Hỏng động cơ Juki DDL-8700 Đơn vị 4",
+                    Description = "Động cơ ngừng hoạt động tại Dây chuyền May A, Vị trí 3. Quan trọng cho sản xuất vải cotton.",
                     Status = "Approved",
-                    DueDate = DateTime.UtcNow.AddDays(2),
-                    Priority = "Medium",
-                    DeviceId = Guid.Parse("22222222-2222-2222-2222-222222222223"),
-                    RequestedById = Guid.Parse("43333333-3333-3333-3333-333333333333"),
-                    SerderId = Guid.Parse("43333333-3333-3333-3333-333333333333"),
-                    CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
-                },
-                new Request
-                {
-                    Id = Guid.Parse("33333333-3333-3333-3333-333333333344"),
-                    RequestTitle = "Machine Not Starting",
-                    Description = "Machine fails to start.",
-                    Status = "Pending",
-                    DueDate = DateTime.UtcNow.AddDays(4),
                     Priority = "High",
-                    DeviceId = Guid.Parse("33333333-3333-3333-3333-333333333334"),
-                    RequestedById = Guid.Parse("43333333-3333-3333-3333-333333333333"),
-                    SerderId = Guid.Parse("43333333-3333-3333-3333-333333333333"),
+                    DueDate = new DateTime(2025, 5, 22, 0, 0, 0, DateTimeKind.Utc),
+                    DeviceId = Guid.Parse("d1e2f3a4-0004-0004-0004-000000000004"),
+                    RequestedById = Guid.Parse("32222222-2222-2222-2222-222222222222"),
+                    ReportId = null,
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow.AddHours(2),
+                    IsDeleted = false
                 },
                 new Request
                 {
-                    Id = Guid.Parse("44444444-4444-4444-4444-444444444455"),
-                    RequestTitle = "Oil Leak Repair",
-                    Description = "Oil leaking from machine.",
-                    Status = "Denied",
-                    DueDate = DateTime.UtcNow.AddDays(5),
-                    Priority = "High",
-                    DeviceId = Guid.Parse("44444444-4444-4444-4444-444444444445"),
-                    RequestedById = Guid.Parse("43333333-3333-3333-3333-333333333333"),
-                    SerderId = Guid.Parse("43333333-3333-3333-3333-333333333333"),
-                    CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
-                },
-                new Request
-                {
-                    Id = Guid.Parse("55555555-5555-5555-5555-555555555566"),
-                    RequestTitle = "Noise Issue",
-                    Description = "Machine making loud noise.",
-                    Status = "Pending",
-                    DueDate = DateTime.UtcNow.AddDays(3),
+                    Id = Guid.Parse("a1f2e3d4-0003-0003-1003-000000000003"),
+                    RequestTitle = "Kẹt kim Juki DDL-8700 Đơn vị 7",
+                    Description = "Kim bị kẹt tại Dây chuyền May B, Vị trí 1. Ảnh hưởng đến sản xuất vải dày.",
+                    Status = "InProgress",
                     Priority = "Medium",
-                    DeviceId = Guid.Parse("55555555-5555-5555-5555-555555555556"),
-                    RequestedById = Guid.Parse("43333333-3333-3333-3333-333333333333"),
-                    SerderId = Guid.Parse("43333333-3333-3333-3333-333333333333"),
+                    DueDate = new DateTime(2025, 5, 24, 0, 0, 0, DateTimeKind.Utc),
+                    DeviceId = Guid.Parse("d1e2f3a4-0007-0007-0007-000000000007"),
+                    RequestedById = Guid.Parse("32222222-2222-2222-2222-222222222222"),
+                    ReportId = null,
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow.AddHours(1),
+                    IsDeleted = false
                 },
                 new Request
                 {
-                    Id = Guid.Parse("66666666-6666-6666-6666-666666666677"),
-                    RequestTitle = "Thread Tension Adjustment",
-                    Description = "Thread tension causing uneven stitches.",
+                    Id = Guid.Parse("a1f2e3d4-0004-0004-1004-000000000004"),
+                    RequestTitle = "Sự cố hiệu chỉnh Juki DDL-9000C Đơn vị 1",
+                    Description = "Máy cắt chỉ tự động bị lệch tại Dây chuyền May B, Vị trí 3. Gây ra mũi may không đều.",
+                    Status = "Pending",
+                    Priority = "Medium",
+                    DueDate = new DateTime(2025, 5, 25, 0, 0, 0, DateTimeKind.Utc),
+                    DeviceId = Guid.Parse("d1e2f3a4-0011-0011-0011-000000000011"),
+                    RequestedById = Guid.Parse("32222222-2222-2222-2222-222222222222"),
+                    ReportId = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                new Request
+                {
+                    Id = Guid.Parse("a1f2e3d4-0005-0005-1005-000000000005"),
+                    RequestTitle = "Sự cố máy vắt sổ Brother B957 Đơn vị 1",
+                    Description = "Bộ phận cấp liệu khác biệt bị trục trặc tại Khu vực Vắt Sổ, Vị trí 1. Ảnh hưởng đến hoàn thiện vải mỏng.",
                     Status = "Approved",
-                    DueDate = DateTime.UtcNow.AddDays(2),
-                    Priority = "Medium",
-                    DeviceId = Guid.Parse("66666666-6666-6666-6666-666666666667"),
-                    RequestedById = Guid.Parse("43333333-3333-3333-3333-333333333333"),
-                    SerderId = Guid.Parse("43333333-3333-3333-3333-333333333333"),
+                    Priority = "High",
+                    DueDate = new DateTime(2025, 5, 22, 0, 0, 0, DateTimeKind.Utc),
+                    DeviceId = Guid.Parse("d1e2f3a4-0015-0015-0015-000000000015"),
+                    RequestedById = Guid.Parse("32222222-2222-2222-2222-222222222222"),
+                    ReportId = null,
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow.AddHours(2),
+                    IsDeleted = false
                 },
                 new Request
                 {
-                    Id = Guid.Parse("77777777-7777-7777-7777-777777777788"),
-                    RequestTitle = "Bobbin Issue",
-                    Description = "Bobbin not winding properly.",
+                    Id = Guid.Parse("a1f2e3d4-0006-0006-1006-000000000006"),
+                    RequestTitle = "Sự cố nguồn điện Singer 4452 Đơn vị 1",
+                    Description = "Nguồn điện bị gián đoạn tại Khu vực May Nặng, Vị trí 1. Ảnh hưởng đến sản xuất vải denim.",
+                    Status = "InProgress",
+                    Priority = "High",
+                    DueDate = new DateTime(2025, 5, 23, 0, 0, 0, DateTimeKind.Utc),
+                    DeviceId = Guid.Parse("d1e2f3a4-0018-0018-0018-000000000018"),
+                    RequestedById = Guid.Parse("23333333-3333-3333-3333-333333333343"),
+                    ReportId = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow.AddHours(1),
+                    IsDeleted = false
+                },
+                new Request
+                {
+                    Id = Guid.Parse("a1f2e3d4-0007-0007-1007-000000000007"),
+                    RequestTitle = "Kiểm tra bảo trì Juki DDL-8700 Đơn vị 9",
+                    Description = "Cần bảo trì định kỳ cho Juki DDL-8700 tại Dây chuyền May C, Vị trí 1 để ngăn ngừa sự cố.",
                     Status = "Pending",
-                    DueDate = DateTime.UtcNow.AddDays(3),
                     Priority = "Low",
-                    DeviceId = Guid.Parse("77777777-7777-7777-7777-777777777778"),
-                    RequestedById = Guid.Parse("43333333-3333-3333-3333-333333333333"),
-                    SerderId = Guid.Parse("43333333-3333-3333-3333-333333333333"),
+                    DueDate = new DateTime(2025, 5, 28, 0, 0, 0, DateTimeKind.Utc),
+                    DeviceId = Guid.Parse("d1e2f3a4-0009-0009-0009-000000000009"),
+                    RequestedById = Guid.Parse("23333333-3333-3333-3333-333333333343"),
+                    ReportId = null,
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
                 },
                 new Request
                 {
-                    Id = Guid.Parse("88888888-8888-8888-8888-888888888899"),
-                    RequestTitle = "Slow Machine Operation",
-                    Description = "Machine running slower than usual.",
-                    Status = "Approved",
-                    DueDate = DateTime.UtcNow.AddDays(4),
+                    Id = Guid.Parse("a1f2e3d4-0008-0008-1008-000000000008"),
+                    RequestTitle = "Sự cố căng chỉ Juki DDL-9000C Đơn vị 2",
+                    Description = "Căng chỉ không đúng tại Dây chuyền May C, Vị trí 3. Ảnh hưởng đến chất lượng mũi may.",
+                    Status = "Completed",
                     Priority = "Medium",
-                    DeviceId = Guid.Parse("88888888-8888-8888-8888-888888888889"),
-                    RequestedById = Guid.Parse("43333333-3333-3333-3333-333333333333"),
-                    SerderId = Guid.Parse("43333333-3333-3333-3333-333333333333"),
+                    DueDate = new DateTime(2025, 5, 18, 0, 0, 0, DateTimeKind.Utc),
+                    DeviceId = Guid.Parse("d1e2f3a4-0012-0012-0012-000000000012"),
+                    RequestedById = Guid.Parse("23333333-3333-3333-3333-333333333343"),
+                    ReportId = null,
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow.AddHours(3),
+                    IsDeleted = false
                 },
                 new Request
                 {
-                    Id = Guid.Parse("99999999-9999-9999-9999-999999991010"),
-                    RequestTitle = "Stitch Irregularity",
-                    Description = "Irregular stitches detected.",
+                    Id = Guid.Parse("a1f2e3d4-0009-0009-1009-000000000009"),
+                    RequestTitle = "Yêu cầu sửa chữa Juki DDL-8700 Đơn vị 3",
+                    Description = "Máy đang sửa chữa cần thay động cơ. Hiện không được gán vị trí.",
+                    Status = "InProgress",
+                    Priority = "Medium",
+                    DueDate = new DateTime(2025, 5, 26, 0, 0, 0, DateTimeKind.Utc),
+                    DeviceId = Guid.Parse("d1e2f3a4-0003-0003-0003-000000000003"),
+                    RequestedById = Guid.Parse("23333333-3333-3333-3333-333333333343"),
+                    ReportId = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow.AddHours(1),
+                    IsDeleted = false
+                },
+                new Request
+                {
+                    Id = Guid.Parse("a1f2e3d4-0010-0010-1010-000000000010"),
+                    RequestTitle = "Sự cố dây đai Singer 4452 Đơn vị 2",
+                    Description = "Dây đai truyền động bị trượt tại Khu vực May Nặng, Vị trí 2. Ảnh hưởng đến sản xuất da.",
                     Status = "Pending",
-                    DueDate = DateTime.UtcNow.AddDays(3),
-                    Priority = "Medium",
-                    DeviceId = Guid.Parse("99999999-9999-9999-9999-999999999910"),
-                    RequestedById = Guid.Parse("43333333-3333-3333-3333-333333333333"),
-                    SerderId = Guid.Parse("43333333-3333-3333-3333-333333333333"),
+                    Priority = "High",
+                    DueDate = new DateTime(2025, 5, 23, 0, 0, 0, DateTimeKind.Utc),
+                    DeviceId = Guid.Parse("d1e2f3a4-0019-0019-0019-000000000019"),
+                    RequestedById = Guid.Parse("23333333-3333-3333-3333-333333333343"),
+                    ReportId = null,
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
                 },
                 new Request
                 {
-                    Id = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaabb"),
-                    RequestTitle = "Foot Pedal Repair",
-                    Description = "Foot pedal not responding.",
+                    Id = Guid.Parse("a1f2e3d4-0011-0011-1011-000000000011"),
+                    RequestTitle = "Cần bôi trơn Brother B957 Đơn vị 2",
+                    Description = "Máy vắt sổ tại Khu vực Vắt Sổ, Vị trí 2 cần bôi trơn để ngăn mòn.",
                     Status = "Approved",
-                    DueDate = DateTime.UtcNow.AddDays(2),
-                    Priority = "High",
-                    DeviceId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaab"),
-                    RequestedById = Guid.Parse("43333333-3333-3333-3333-333333333333"),
-                    SerderId = Guid.Parse("43333333-3333-3333-3333-333333333333"),
+                    Priority = "Low",
+                    DueDate = new DateTime(2025, 5, 27, 0, 0, 0, DateTimeKind.Utc),
+                    DeviceId = Guid.Parse("d1e2f3a4-0016-0016-0016-000000000016"),
+                    RequestedById = Guid.Parse("23333333-3333-3333-3333-333333333344"),
+                    ReportId = null,
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow.AddHours(2),
+                    IsDeleted = false
+                },
+                new Request
+                {
+                    Id = Guid.Parse("a1f2e3d4-0012-0012-1012-000000000012"),
+                    RequestTitle = "Cập nhật phần mềm Juki DDL-9000C Đơn vị 4",
+                    Description = "Hệ thống điều khiển số cần cập nhật phần mềm tại Dây chuyền May C, Vị trí 4 để tối ưu hiệu suất.",
+                    Status = "Pending",
+                    Priority = "Low",
+                    DueDate = new DateTime(2025, 5, 30, 0, 0, 0, DateTimeKind.Utc),
+                    DeviceId = Guid.Parse("d1e2f3a4-0014-0014-0014-000000000014"),
+                    RequestedById = Guid.Parse("23333333-3333-3333-3333-333333333344"),
+                    ReportId = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                new Request
+                {
+                    Id = Guid.Parse("a1f2e3d4-0013-0013-1013-000000000013"),
+                    RequestTitle = "Yêu cầu sửa chữa Singer 4452 Đơn vị 3",
+                    Description = "Máy đang sửa chữa cần thay cơ chế chân vịt. Hiện không được gán vị trí.",
+                    Status = "Approved",
+                    Priority = "Medium",
+                    DueDate = new DateTime(2025, 5, 25, 0, 0, 0, DateTimeKind.Utc),
+                    DeviceId = Guid.Parse("d1e2f3a4-0020-0020-0020-000000000020"),
+                    RequestedById = Guid.Parse("23333333-3333-3333-3333-333333333344"),
+                    ReportId = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow.AddHours(2),
+                    IsDeleted = false
+                },
+                new Request
+                {
+                    Id = Guid.Parse("a1f2e3d4-0014-0014-1014-000000000014"),
+                    RequestTitle = "Tiếng ồn bất thường Juki DDL-8700 Đơn vị 8",
+                    Description = "Tiếng ồn lạ từ máy tại Dây chuyền May B, Vị trí 2. Có thể do vấn đề ổ bi.",
+                    Status = "Denied",
+                    Priority = "Medium",
+                    DueDate = null,
+                    DeviceId = Guid.Parse("d1e2f3a4-0008-0008-0008-000000000008"),
+                    RequestedById = Guid.Parse("23333333-3333-3333-3333-333333333344"),
+                    ReportId = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow.AddHours(3),
+                    IsDeleted = false
+                },
+                new Request
+                {
+                    Id = Guid.Parse("a1f2e3d4-0015-0015-1015-000000000015"),
+                    RequestTitle = "Yêu cầu vệ sinh Brother B957 Đơn vị 3",
+                    Description = "Máy vắt sổ tại Khu vực Vắt Sổ, Vị trí 3 cần vệ sinh để loại bỏ bụi vải tích tụ.",
+                    Status = "Completed",
+                    Priority = "Low",
+                    DueDate = new DateTime(2025, 5, 17, 0, 0, 0, DateTimeKind.Utc),
+                    DeviceId = Guid.Parse("d1e2f3a4-0017-0017-0017-000000000017"),
+                    RequestedById = Guid.Parse("23333333-3333-3333-3333-333333333344"),
+                    ReportId = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow.AddHours(3),
+                    IsDeleted = false
+
                 }
             );
         }

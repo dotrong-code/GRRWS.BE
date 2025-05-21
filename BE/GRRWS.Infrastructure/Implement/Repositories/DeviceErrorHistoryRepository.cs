@@ -24,13 +24,14 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Where(deh => deh.IsDeleted != true)
                 .ToListAsync();
         }
-        public async Task<DeviceErrorHistory> GetDeviceErrorHistoryByDeviceIdAsync(Guid id)
+        public async Task<List<DeviceErrorHistory>> GetDeviceErrorHistoryByDeviceIdAsync(Guid id)
         {
             return await _context.DeviceErrorHistories
                 .Include(deh => deh.Device)
                 .Include(deh => deh.Error)
                 .Where(deh => deh.IsDeleted != true && deh.DeviceId == id)
-                .FirstOrDefaultAsync();
+                .OrderByDescending(de => de.CreatedDate)
+                .ToListAsync();
         }
     }
 }
