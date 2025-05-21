@@ -80,6 +80,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<UnitOfWork>();
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddTransient<IUnitOfWork, UnitOfWork>();
+            services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
             #endregion
 
             #region Service
