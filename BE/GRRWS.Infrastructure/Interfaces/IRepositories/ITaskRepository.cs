@@ -19,5 +19,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task UpdateErrorDetailsAsync(List<Guid> errorDetailIds, Guid taskId);
         Task<(List<GetTaskResponse> Tasks, int TotalCount)> GetAllTasksAsync(string? taskType, string? status, int? priority, int pageNumber, int pageSize);
 
+        Task<List<TaskByReportResponse>> GetTasksByReportIdAsync(Guid reportId);
+
     }
 }

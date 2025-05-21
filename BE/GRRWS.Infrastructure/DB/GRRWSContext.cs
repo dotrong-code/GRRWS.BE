@@ -48,7 +48,9 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new IssueConfiguration());
 
+
             modelBuilder.ApplyConfiguration(new DeviceConfiguration());
+
             modelBuilder.ApplyConfiguration(new ErrorConfiguration());
             modelBuilder.ApplyConfiguration(new SparepartConfiguration());
             modelBuilder.ApplyConfiguration(new IssueErrorConfiguration());

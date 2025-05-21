@@ -24,6 +24,22 @@ namespace GRRWS.Application.Implement.Service
             _startTaskValidator = startTaskValidator;
             _createReportValidator = createReportValidator;
         }
+
+
+        public async Task<Result> GetTasksByReportIdAsync(Guid reportId)
+        {
+            var reportExists = await _unitOfWork.ReportRepository.GetByIdAsync(reportId) != null;
+            if (!reportExists)
+                return Result.Failure(TaskErrorMessage.ReportNotExist());
+
+            var tasks = await _unitOfWork.TaskRepository.GetTasksByReportIdAsync(reportId);
+            if (!tasks.Any())
+                return Result.Failure(TaskErrorMessage.TaskNotExist());
+
+            return Result.SuccessWithObject(tasks);
+        }
+
+
         public async Task<Result> CreateTaskAsync(CreateTaskRequest request)
         {
             var userExists = await _unitOfWork.UserRepository.GetByIdAsync(request.AssigneeId) != null;
