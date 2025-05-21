@@ -30,6 +30,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Include(deh => deh.Device)
                 .Include(deh => deh.Issue)
                 .Where(deh => deh.IsDeleted != true && deh.DeviceId == id)
+                .OrderByDescending(r => r.CreatedDate)
                 .ToListAsync();
         }
     }

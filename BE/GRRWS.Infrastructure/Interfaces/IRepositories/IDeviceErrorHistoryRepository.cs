@@ -11,6 +11,6 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
     public interface IDeviceErrorHistoryRepository : IGenericRepository<DeviceErrorHistory>
     {
         Task<List<DeviceErrorHistory>> GetAllDeviceErrorHistoryAsync();
-        Task<DeviceErrorHistory> GetDeviceErrorHistoryByDeviceIdAsync(Guid id);
+        Task<List<DeviceErrorHistory>> GetDeviceErrorHistoryByDeviceIdAsync(Guid id);
     }
 }

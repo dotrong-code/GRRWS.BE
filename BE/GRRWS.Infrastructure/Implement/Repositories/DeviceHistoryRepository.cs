@@ -26,6 +26,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return await _context.DeviceHistories
                 .Include(dh => dh.Device)
                 .Where(dh => dh.IsDeleted != true && dh.DeviceId == id)
+                .OrderByDescending(r => r.CreatedDate)
                 .ToListAsync();
         }
     }

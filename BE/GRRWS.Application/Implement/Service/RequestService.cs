@@ -170,7 +170,7 @@ namespace GRRWS.Application.Implement.Service
                 DeviceId = dto.DeviceId,
                 RequestTitle = dto.RequestTitle,
                 Description = dto.Description,
-                Status = dto.Status,
+                Status = "Pending",
                 CreatedBy = userId,
                 RequestedById = userId,
                 CreatedDate = DateTime.UtcNow,
