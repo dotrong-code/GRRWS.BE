@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using GRRWS.Domain.Entities;
+﻿using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.Task;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
@@ -108,7 +103,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        
+
 
         public async Task<List<Tasks>> GetAllTasksAsync()
         {
@@ -128,7 +123,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .FirstOrDefaultAsync(t => t.Id == id);
         }
 
-        public async Task CreateTaskAsync(Tasks task, List<Guid> errorIds, List<Guid> sparepartIds)
+        public async Task CreateTaskAsync(Tasks task, Guid reportId, List<Guid> errorIds, List<Guid> sparepartIds)
         {
             // Add task
             await _context.Tasks.AddAsync(task);
@@ -138,7 +133,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             {
                 // Assume ReportId is provided or fetched; here, we'll need a valid ReportId
                 // For simplicity, assume a Report exists or is linked elsewhere
-                var report = await _context.Reports.FirstOrDefaultAsync(); // Placeholder; adjust as needed
+                var report = await _context.Reports
+    .FirstOrDefaultAsync(r => r.Id == reportId); // Placeholder; adjust as needed
                 if (report == null)
                     throw new Exception("No report found to link errors.");
 

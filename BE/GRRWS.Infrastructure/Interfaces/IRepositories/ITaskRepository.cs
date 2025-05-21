@@ -13,7 +13,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
 
         Task<List<Tasks>> GetAllTasksAsync();
 
-        Task CreateTaskAsync(Tasks task, List<Guid> errorIds, List<Guid> sparepartIds);
+        Task CreateTaskAsync(Tasks task, Guid reportId, List<Guid> errorIds, List<Guid> sparepartIds);
         Task UpdateTaskAsync(Tasks task, List<Guid> errorIds, List<Guid> sparepartIds);
 
         Task UpdateErrorDetailsAsync(List<Guid> errorDetailIds, Guid taskId);

@@ -1,8 +1,6 @@
 ﻿using GRRWS.Application.Common.Result;
-using GRRWS.Application.Implement.Service;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.DTOs.Task;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GRRWS.Host.Controllers
@@ -36,7 +34,7 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
-        
+
         [HttpPost("start")]
         public async Task<IResult> StartTask([FromBody] StartTaskRequest request)
         {
@@ -46,7 +44,7 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
-        
+
         [HttpGet("{taskId}")]
         public async Task<IResult> GetTaskDetails(Guid taskId)
         {
@@ -56,7 +54,7 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
-        
+
         [HttpPost("report")]
         public async Task<IResult> CreateTaskReport([FromBody] CreateTaskReportRequest request)
         {
@@ -120,5 +118,6 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Task assigned successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+
     }
 }
