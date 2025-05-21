@@ -17,7 +17,7 @@ namespace GRRWS.Host.Controllers
             _taskService = taskService;
         }
 
-        [Authorize]
+        
         [HttpGet("mechanic/{mechanicId}")]
         public async Task<IResult> GetTasksByMechanicId(Guid mechanicId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
@@ -27,7 +27,7 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
-        [Authorize]
+        
         [HttpPost("start")]
         public async Task<IResult> StartTask([FromBody] StartTaskRequest request)
         {
@@ -37,7 +37,7 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
-        [Authorize]
+        
         [HttpGet("{taskId}")]
         public async Task<IResult> GetTaskDetails(Guid taskId)
         {
@@ -47,7 +47,7 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
-        [Authorize]
+        
         [HttpPost("report")]
         public async Task<IResult> CreateTaskReport([FromBody] CreateTaskReportRequest request)
         {

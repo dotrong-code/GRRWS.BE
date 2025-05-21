@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DTOs.Device;
+using GRRWS.Infrastructure.DTOs.History;
 using GRRWS.Infrastructure.Interfaces.IRepositories.IGeneric;
 
 namespace GRRWS.Infrastructure.Interfaces.IRepositories
@@ -23,5 +24,10 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<int> DeleteDeviceAsync(Guid id);
 
         Task<DeviceWarranty> GetActiveWarrantyAsync(Guid deviceId);
+
+        Task<List<DeviceIssueHistoryResponse>> GetDeviceIssueHistoryByDeviceIdAsync(Guid deviceId);
+        Task<List<MachineIssueHistoryResponse>> GetMachineIssueHistoryByMachineIdAsync(Guid machineId);
+        Task<List<DeviceErrorHistoryResponse>> GetDeviceErrorHistoryByDeviceIdAsync(Guid deviceId);
+        Task<List<MachineErrorHistoryResponse>> GetMachineErrorHistoryByMachineIdAsync(Guid machineId);
     }
 }
