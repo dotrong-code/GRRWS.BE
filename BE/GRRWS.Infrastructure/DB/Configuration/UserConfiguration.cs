@@ -58,6 +58,116 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     PhoneNumber = "09785628660",
                     PasswordHash = "String123!", // Ensure password is hashed in production
                     Role = 5 // Admin
+                },
+                new User
+                {
+                    Id = Guid.Parse("43333333-3333-3333-3333-333333333334"),
+                    Email = "staff2@gmail.com",
+                    FullName = "Staff Member 2",
+                    UserName = "Staff Member 2",
+                    PhoneNumber = "09785628660",
+                    PasswordHash = "String123!",
+                    Role = 3, // Staff
+                },
+                new User
+                {
+                    Id = Guid.Parse("43333333-3333-3333-3333-333333333335"),
+                    Email = "staff3@gmail.com",
+                    FullName = "Staff Member 3",
+                    UserName = "Staff Member 3",
+                    PhoneNumber = "09785628660",
+                    PasswordHash = "String123!", 
+                    Role = 3, // Staff
+                },
+                new User
+                {
+                    Id = Guid.Parse("43333333-3333-3333-3333-333333333336"),
+                    Email = "staff4@gmail.com",
+                    FullName = "Staff Member 4",
+                    UserName = "Staff Member 4",
+                    PhoneNumber = "09785628660",
+                    PasswordHash = "String123!",
+                    Role = 3, // Staff
+                },
+                new User
+                {
+                    Id = Guid.Parse("43333333-3333-3333-3333-333333333337"),
+                    Email = "staff5@gmail.com",
+                    FullName = "Staff Member 5",
+                    UserName = "Staff Member 5",
+                    PhoneNumber = "09785628660",
+                    PasswordHash = "String123!", 
+                    Role = 3, // Staff
+                },
+                new User
+                {
+                    Id = Guid.Parse("43333333-3333-3333-3333-333333333338"),
+                    Email = "staff6@gmail.com",
+                    FullName = "Staff Member 6",
+                    UserName = "Staff Member 6",
+                    PhoneNumber = "09785628660",
+                    PasswordHash = "String123!", 
+                    Role = 3, // Staff
+                },
+                new User
+                {
+                    Id = Guid.Parse("43333333-3333-3333-3333-333333333339"),
+                    Email = "staff7@gmail.com",
+                    FullName = "Staff Member 7",
+                    UserName = "Staff Member 7",
+                    PhoneNumber = "09785628660",
+                    PasswordHash = "String123!",
+                    Role = 3, // Staff
+                },
+                new User
+                {
+                    Id = Guid.Parse("43333333-3333-3333-3333-333333333340"),
+                    Email = "staff8@gmail.com",
+                    FullName = "Staff Member 8",
+                    UserName = "Staff Member 8",
+                    PhoneNumber = "09785628660",
+                    PasswordHash = "String123!", 
+                    Role = 3, // Staff
+                },
+                new User
+                {
+                    Id = Guid.Parse("43333333-3333-3333-3333-333333333341"),
+                    Email = "staff9@gmail.com",
+                    FullName = "Staff Member 9",
+                    UserName = "Staff Member 9",
+                    PhoneNumber = "09785628660",
+                    PasswordHash = "String123!",
+                    Role = 3, // Staff
+                },
+                new User
+                {
+                    Id = Guid.Parse("43333333-3333-3333-3333-333333333342"),
+                    Email = "staff10@gmail.com",
+                    FullName = "Staff Member 10",
+                    UserName = "Staff Member 10",
+                    PhoneNumber = "09785628660",
+                    PasswordHash = "String123!", 
+                    Role = 3, // Staff
+                },
+                new User
+                {
+                    Id = Guid.Parse("23333333-3333-3333-3333-333333333343"),
+                    Email = "tech2@gmail.com",
+                    FullName = "Head of Tech 2",
+                    UserName = "Head of Tech 3",
+                    PhoneNumber = "09785628660",
+                    PasswordHash = "String123!", 
+                    Role = 2, 
+                },
+                new User
+                {
+                    Id = Guid.Parse("23333333-3333-3333-3333-333333333344"),
+                    Email = "tech3@gmail.com",
+                    FullName = "Head of Tech 3",
+                    UserName = "Head of Tech 3",
+                    PhoneNumber = "09785628660",
+                    PasswordHash = "String123!",
+                    Role = 2, 
                 }
                 );
         }
