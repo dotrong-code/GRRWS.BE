@@ -25,5 +25,8 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetZoneByPositionAsync(Guid positionId);
         Task<Result> GetAreaByZoneAsync(Guid zoneId);
         Task<Result> GetWarrantyStatusAsync(Guid deviceId);
+
+        Task<Result> GetAllDeviceAndMachineIssueHistoryByDeviceIdAsync(Guid deviceId);
+        Task<Result> GetAllDeviceAndMachineErrorHistoryByDeviceIdAsync(Guid deviceId);
     }
 }

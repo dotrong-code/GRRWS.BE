@@ -132,7 +132,7 @@ namespace GRRWS.Application.Implement.Service
             var validationResult = await _startTaskValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
-                var errors = validationResult.Errors.Select(e => (Error)e.CustomState).ToList();
+                var errors = validationResult.Errors.Select(e => (Infrastructure.DTOs.Common.Error)e.CustomState).ToList();
                 return Result.Failures(errors);
             }
 
@@ -165,7 +165,7 @@ namespace GRRWS.Application.Implement.Service
             var validationResult = await _createReportValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
-                var errors = validationResult.Errors.Select(e => (Error)e.CustomState).ToList();
+                var errors = validationResult.Errors.Select(e => (Infrastructure.DTOs.Common.Error)e.CustomState).ToList();
                 return Result.Failures(errors);
             }
 

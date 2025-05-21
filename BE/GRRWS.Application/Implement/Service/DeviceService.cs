@@ -12,6 +12,7 @@ using GRRWS.Infrastructure.DTOs.Device;
 using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
+using GRRWS.Infrastructure.DTOs.History;
 
 public class DeviceService : IDeviceService
 {
@@ -278,6 +279,46 @@ public class DeviceService : IDeviceService
                 ? (int)(warranty.WarrantyEndDate!.Value.Date - DateTime.UtcNow.Date).TotalDays
                 : null,
             LowDayWarning = warranty != null && (warranty.WarrantyEndDate!.Value.Date - DateTime.UtcNow.Date).TotalDays <= 10
+        };
+
+        return Result.SuccessWithObject(response);
+    }
+
+    public async Task<Result> GetAllDeviceAndMachineIssueHistoryByDeviceIdAsync(Guid deviceId)
+    {
+        var device = await _unitOfWork.DeviceRepository.GetByIdAsync(deviceId);
+        if (device == null)
+            return Result.Failure(DeviceErrorMessage.DeviceNotExist());
+
+        var deviceHistory = await _unitOfWork.DeviceRepository.GetDeviceIssueHistoryByDeviceIdAsync(deviceId);
+        var machineHistory = device.MachineId.HasValue
+            ? await _unitOfWork.DeviceRepository.GetMachineIssueHistoryByMachineIdAsync(device.MachineId.Value)
+            : new List<MachineIssueHistoryResponse>();
+
+        var response = new DeviceAndMachineIssueHistoryResponse
+        {
+            DeviceHistory = deviceHistory,
+            MachineHistory = machineHistory
+        };
+
+        return Result.SuccessWithObject(response);
+    }
+
+    public async Task<Result> GetAllDeviceAndMachineErrorHistoryByDeviceIdAsync(Guid deviceId)
+    {
+        var device = await _unitOfWork.DeviceRepository.GetByIdAsync(deviceId);
+        if (device == null)
+            return Result.Failure(DeviceErrorMessage.DeviceNotExist());
+
+        var deviceHistory = await _unitOfWork.DeviceRepository.GetDeviceErrorHistoryByDeviceIdAsync(deviceId);
+        var machineHistory = device.MachineId.HasValue
+            ? await _unitOfWork.DeviceRepository.GetMachineErrorHistoryByMachineIdAsync(device.MachineId.Value)
+            : new List<MachineErrorHistoryResponse>();
+
+        var response = new DeviceAndMachineErrorHistoryResponse
+        {
+            DeviceHistory = deviceHistory,
+            MachineHistory = machineHistory
         };
 
         return Result.SuccessWithObject(response);
