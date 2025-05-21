@@ -19,6 +19,9 @@ namespace GRRWS.Infrastructure.DTOs.Device
         public string? Description { get; set; }
         public string? PhotoUrl { get; set; }
         public string Status { get; set; }
+        public int? PositionIndex { get; set; }
+        public string ZoneName { get; set; }
+        public string AreaName { get; set; }
         public bool IsUnderWarranty { get; set; }
         public string? Specifications { get; set; }
         public decimal? PurchasePrice { get; set; }
