@@ -289,7 +289,6 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Token wrong", "Token not found."));
             }
 
-
             user.PasswordHash = resetPasswordRequest.NewPassword;
             user.ResetPasswordToken = null;
             await _unitOfWork.UserRepository.UpdateAsync(user);
