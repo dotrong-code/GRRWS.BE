@@ -2,6 +2,7 @@
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.DTOs.Common;
+using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -47,6 +48,25 @@ namespace GRRWS.Application.Implement.Service
             _cache.Set(cacheKey, suggestions, cacheEntryOptions);
 
             return Result.SuccessWithObject(suggestions);
+        }
+
+
+
+
+        public async Task<Result> GetRecommendedErrorsAsync(IssueIdsRequestDTO dto)
+        {
+            if (dto == null || dto.IssueIds == null || !dto.IssueIds.Any())
+            {
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Issue IDs cannot be empty.", 0));
+            }
+
+            var errors = await _unitOfWork.ErrorRepository.GetErrorsByIssueIdsAsync(dto.IssueIds);
+            if (!errors.Any())
+            {
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "No errors found for the provided issues.", 0));
+            }
+
+            return Result.SuccessWithObject(errors);
         }
     }
 }

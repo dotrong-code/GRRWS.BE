@@ -17,5 +17,6 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> DeleteAsync(Guid id);
         Task<Result> GetRequestByDeviceIdAsync(Guid id);
         Task<Result> GetRequestByUserIdAsync(Guid userId);
+        Task<Result> GetIssuesByRequestIdAsync(Guid requestId);
     }
 }
