@@ -293,7 +293,9 @@ namespace GRRWS.Application.Implement.Service
         {
             if (string.IsNullOrWhiteSpace(dto.TaskName))
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Task name cannot be empty.", 0));
-
+            var assignee = await _unitOfWork.UserRepository.GetByIdAsync(dto.AssigneeId);
+            if (assignee == null)
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Assignee user does not exist.", 0));
             var task = new Tasks
             {
                 Id = Guid.NewGuid(),

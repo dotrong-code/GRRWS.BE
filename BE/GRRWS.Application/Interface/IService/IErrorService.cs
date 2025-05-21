@@ -1,8 +1,6 @@
 ﻿using GRRWS.Application.Common.Result;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 
-using GRRWS.Domain.Entities;
-
 namespace GRRWS.Application.Interface.IService
 {
     public interface IErrorService
@@ -12,5 +10,6 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetRecommendedErrorsAsync(IssueIdsRequestDTO dto);
 
         Task<Result> GetSparepartsByErrorIdAsync(Guid errorId);
+        Task<Result> GetErrorsByReportIdWithoutTaskAsync(Guid reportId);
     }
 }

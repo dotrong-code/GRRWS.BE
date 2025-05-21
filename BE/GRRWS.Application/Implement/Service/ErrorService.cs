@@ -52,7 +52,22 @@ namespace GRRWS.Application.Implement.Service
         }
 
 
+        public async Task<Result> GetErrorsByReportIdWithoutTaskAsync(Guid reportId)
+        {
+            if (reportId == Guid.Empty)
+            {
+                return Result.Failure(Error.Validation("InvalidReportId", "Report ID cannot be empty."));
+            }
 
+            var errors = await _unitOfWork.ErrorRepository.GetErrorsByReportIdWithoutTaskAsync(reportId);
+
+            if (errors == null || !errors.Any())
+            {
+                return Result.Failure(Error.NotFound("NoErrors", "No unassigned errors found for this report."));
+            }
+
+            return Result.SuccessWithObject(errors);
+        }
 
         public async Task<Result> GetRecommendedErrorsAsync(IssueIdsRequestDTO dto)
         {
