@@ -18,5 +18,6 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetAllTasksAsync(string? taskType, string? status, int? priority, int pageNumber, int pageSize); // New
         Task<Result> UpdateTaskAsync(UpdateTaskRequest request); // New
         Task<Result> DeleteTaskAsync(Guid taskId); // New
+        Task<Result> GetTasksByReportIdAsync(Guid reportId);
     }
 }
