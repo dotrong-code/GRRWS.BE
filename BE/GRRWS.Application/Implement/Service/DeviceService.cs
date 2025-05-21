@@ -77,7 +77,7 @@ public class DeviceService : IDeviceService
 
     public async Task<Result> GetDeviceByIdAsync(Guid id)
     {
-        var device = await _unitOfWork.DeviceRepository.GetByIdAsync(id);
+        var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(id);
         if (device == null)
         {
             return Result.Failure(DeviceErrorMessage.DeviceNotExist());
@@ -96,6 +96,9 @@ public class DeviceService : IDeviceService
             Description = device.Description,
             PhotoUrl = device.PhotoUrl,
             Status = device.Status,
+            PositionIndex = device.Position?.Index,
+            ZoneName = device.Position?.Zone?.ZoneName,
+            AreaName = device.Position?.Zone?.Area?.AreaName,
             IsUnderWarranty = device.IsUnderWarranty,
             Specifications = device.Specifications,
             PurchasePrice = device.PurchasePrice,
