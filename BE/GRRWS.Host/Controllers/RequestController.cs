@@ -77,5 +77,15 @@ namespace GRRWS.Host.Controllers
 ? ResultExtensions.ToSuccessDetails(result, "Successfully")
 : ResultExtensions.ToProblemDetails(result);
         }
+
+
+        [HttpGet("{requestId}/issues")]
+        public async Task<IResult> GetIssuesByRequestId(Guid requestId)
+        {
+            var result = await _requestService.GetIssuesByRequestIdAsync(requestId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved issues")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }

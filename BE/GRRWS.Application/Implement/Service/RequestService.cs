@@ -228,5 +228,13 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.Success();
         }
+        public async Task<Result> GetIssuesByRequestIdAsync(Guid requestId)
+        {
+            var issues = await _requestRepository.GetIssuesByRequestIdAsync(requestId);
+            if (issues == null || !issues.Any())
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "No issues found for the request.", 0));
+
+            return Result.SuccessWithObject(issues);
+        }
     }
 }
