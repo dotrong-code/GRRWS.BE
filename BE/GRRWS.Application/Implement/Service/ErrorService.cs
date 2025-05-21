@@ -4,9 +4,6 @@ using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.DTOs.Sparepart;
-
-
-using GRRWS.Infrastructure.DTOs.Sparepart;
 using GRRWS.Infrastructure.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -81,6 +78,7 @@ namespace GRRWS.Application.Implement.Service
             }
             var sparepartDtos = spareparts.Select(s => new SparepartDto
             {
+                Id = s.Id,
                 SparepartCode = s.SparepartCode,
                 SparepartName = s.SparepartName,
                 Description = s.Description,
