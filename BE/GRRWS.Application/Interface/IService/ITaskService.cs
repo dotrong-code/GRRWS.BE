@@ -14,5 +14,12 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> StartTaskAsync(StartTaskRequest request);
         Task<Result> GetTaskDetailsAsync(Guid taskId);
         Task<Result> CreateTaskReportAsync(CreateTaskReportRequest request);
+        //CRUD
+        Task<Result> GetAllAsync();
+        Task<Result> GetByIdAsync(Guid id);
+        Task<Result> CreateAsync(CreateTaskDTO dto);
+        Task<Result> UpdateAsync(Guid id, UpdateTaskDTO dto);
+        Task<Result> DeleteAsync(Guid id);
+        Task<Result> AssignTaskAsync(Guid taskId, AssignTaskDTO dto);
     }
 }
