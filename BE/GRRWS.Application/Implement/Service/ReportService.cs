@@ -29,6 +29,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "RequestId is required.", 0));
             var report = _mapper.Map<Report>(dto);
             report.Id = Guid.NewGuid();
+            report.Status = "InProgress";
             if (dto.ErrorIds != null && dto.ErrorIds.Any())
             {
                 report.ErrorDetails = dto.ErrorIds.Select(errorId => new ErrorDetail
@@ -40,6 +41,7 @@ namespace GRRWS.Application.Implement.Service
             await _unit.ReportRepository.CreateAsync(report);
             var request = await _unit.RequestRepository.GetRequestByIdAsync((Guid)report.RequestId);
             request.ReportId = report.Id;
+            request.Status = "Approved";
             await _unit.RequestRepository.UpdateAsync(request);
             return Result.SuccessWithObject(report.Id);
         }

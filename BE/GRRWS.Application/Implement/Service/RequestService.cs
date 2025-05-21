@@ -15,10 +15,11 @@ namespace GRRWS.Application.Implement.Service
     public class RequestService : IRequestService
     {
         private readonly IRequestRepository _requestRepository;
-
-        public RequestService(IRequestRepository requestRepository)
+        private readonly ITokenService _tokenService;
+        public RequestService(IRequestRepository requestRepository, ITokenService tokenService)
         {
             _requestRepository = requestRepository;
+            _tokenService = tokenService;
         }
 
         public async Task<Result> GetAllAsync()
@@ -44,12 +45,10 @@ namespace GRRWS.Application.Implement.Service
                     CreatedBy = r.RequestedById,
                     ModifiedDate = r.ModifiedDate,
                     ModifiedBy = r.ModifiedBy,
-                    DueDate = r.DueDate,
-                    Priority = r.Priority,
                     Issues = r.RequestIssues.Select(ri => new IssueDTO
                     {
                         Id = ri.Issue.Id,
-                        IssueTitle = ri.Issue.IssueKey,
+                        DisplayName = ri.Issue.DisplayName,
                         ImageUrls = ri.Images.Select(img => img.ImageUrl).ToList()
                     }).ToList()
                 }).ToList<object>();
@@ -81,12 +80,10 @@ namespace GRRWS.Application.Implement.Service
                 CreatedBy = r.RequestedById,
                 ModifiedDate = r.ModifiedDate,
                 ModifiedBy = r.ModifiedBy,
-                DueDate = r.DueDate,
-                Priority = r.Priority,
                 Issues = r.RequestIssues.Select(ri => new IssueDTO
                 {
                     Id = ri.Issue.Id,
-                    IssueTitle = ri.Issue.IssueKey,
+                    DisplayName = ri.Issue.DisplayName,
                     ImageUrls = ri.Images.Select(img => img.ImageUrl).ToList()
                 }).ToList()
             };
@@ -118,12 +115,10 @@ namespace GRRWS.Application.Implement.Service
                     CreatedBy = r.RequestedById,
                     ModifiedDate = r.ModifiedDate,
                     ModifiedBy = r.ModifiedBy,
-                    DueDate = r.DueDate,
-                    Priority = r.Priority,
                     Issues = r.RequestIssues.Select(ri => new IssueDTO
                     {
                         Id = ri.Issue.Id,
-                        IssueTitle = ri.Issue.IssueKey,
+                        DisplayName = ri.Issue.DisplayName,
                         ImageUrls = ri.Images.Select(img => img.ImageUrl).ToList()
                     }).ToList()
                 }).ToList<object>();
@@ -153,35 +148,34 @@ namespace GRRWS.Application.Implement.Service
                     CreatedBy = r.RequestedById,
                     ModifiedDate = r.ModifiedDate,
                     ModifiedBy = r.ModifiedBy,
-                    DueDate = r.DueDate,
-                    Priority = r.Priority,
                     Issues = r.RequestIssues.Select(ri => new IssueDTO
                     {
                         Id = ri.Issue.Id,
-                        IssueTitle = ri.Issue.IssueKey,
+                        DisplayName = ri.Issue.DisplayName,
                         ImageUrls = ri.Images.Select(img => img.ImageUrl).ToList()
                     }).ToList()
                 }).ToList<object>();
             return Result.SuccessWithObject(dtos);
         }
-        public async Task<Result> CreateAsync(CreateRequestDTO dto)
+        public async Task<Result> CreateAsync(CreateRequestDTO dto, Guid userId)
         {
             if (dto.DeviceId == null)
             {
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "DeviceId cannot be null.", 0));
             }
-
+            
             var request = new Request
             {
                 Id = Guid.NewGuid(),
                 DeviceId = dto.DeviceId,
                 RequestTitle = dto.RequestTitle,
                 Description = dto.Description,
-                Status = dto.Status,
-                CreatedBy = dto.CreatedBy,
+                Status = "Pending",
+                CreatedBy = userId,
+                RequestedById = userId,
                 CreatedDate = DateTime.UtcNow,
-                DueDate = dto.DueDate,
-                Priority = dto.Priority,
+                DueDate = DateTime.Now,
+                Priority = "None",
                 IsDeleted = false,
                 RequestIssues = dto.IssueIds.Select(issueId => new RequestIssue
                 {
@@ -227,6 +221,14 @@ namespace GRRWS.Application.Implement.Service
             await _requestRepository.UpdateAsync(r);
 
             return Result.Success();
+        }
+        public async Task<Result> GetIssuesByRequestIdAsync(Guid requestId)
+        {
+            var issues = await _requestRepository.GetIssuesByRequestIdAsync(requestId);
+            if (issues == null || !issues.Any())
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "No issues found for the request.", 0));
+
+            return Result.SuccessWithObject(issues);
         }
     }
 }

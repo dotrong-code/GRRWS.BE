@@ -21,8 +21,6 @@ namespace GRRWS.Infrastructure.DTOs.RequestDTO
         public string RequestTitle { get; set; }
         public string Description { get; set; }
         public string Status { get; set; }
-        public DateTime? DueDate { get; set; }
-        public string? Priority { get; set; }
         public DateTime CreatedDate { get; set; }
         public Guid? CreatedBy { get; set; }
         public DateTime? ModifiedDate { get; set; }
@@ -34,10 +32,6 @@ namespace GRRWS.Infrastructure.DTOs.RequestDTO
         public Guid DeviceId { get; set; }
         public string RequestTitle { get; set; }
         public string Description { get; set; }
-        public string Status { get; set; }
-        public Guid? CreatedBy { get; set; }
-        public DateTime? DueDate { get; set; }
-        public string? Priority { get; set; }
 
         public List<Guid> IssueIds { get; set; } = new();
     }
@@ -56,7 +50,7 @@ namespace GRRWS.Infrastructure.DTOs.RequestDTO
     public class IssueDTO
     {
         public Guid Id { get; set; }
-        public string? IssueTitle { get; set; }
+        public string? DisplayName { get; set; }
         public List<string>? ImageUrls { get; set; }
     }
 }

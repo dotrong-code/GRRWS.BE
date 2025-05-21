@@ -1,6 +1,7 @@
 ﻿using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.Common;
+using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +31,21 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 })
                 .Take(maxResults)
                 .ToListAsync();
+        }
+
+        public async Task<List<ErrorSimpleDTO>> GetErrorsByIssueIdsAsync(List<Guid> issueIds)
+        {
+            var errors = await _context.IssueErrors
+                .Where(ie => issueIds.Contains(ie.IssueId) && !ie.Error.IsDeleted)
+                .Select(ie => new ErrorSimpleDTO
+                {
+                    Id = ie.Error.Id,
+                    Name = ie.Error.Name
+                })
+                .Distinct() // Loại bỏ Error trùng lặp
+                .ToListAsync();
+
+            return errors;
         }
         public async Task<List<Sparepart>> GetSparepartsByErrorIdAsync(Guid errorId)
         {

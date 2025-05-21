@@ -1,5 +1,6 @@
 ﻿using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
+using GRRWS.Infrastructure.DTOs.RequestDTO;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GRRWS.Host.Controllers
@@ -21,6 +22,15 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [HttpPost("recommend")]
+        public async Task<IResult> GetRecommendedErrors([FromBody] IssueIdsRequestDTO dto)
+        {
+            var result = await _errorService.GetRecommendedErrorsAsync(dto);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved recommended errors")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
 
         [HttpGet("spare-parts")]
         public async Task<IResult> GetSparepartsByErrorId(Guid errorId)
