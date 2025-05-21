@@ -131,26 +131,45 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             // Link Errors via ErrorDetails
             if (errorIds != null && errorIds.Any())
             {
-                // Assume ReportId is provided or fetched; here, we'll need a valid ReportId
-                // For simplicity, assume a Report exists or is linked elsewhere
+                // Fetch the report
                 var report = await _context.Reports
-    .FirstOrDefaultAsync(r => r.Id == reportId); // Placeholder; adjust as needed
+                    .FirstOrDefaultAsync(r => r.Id == reportId);
                 if (report == null)
                     throw new Exception("No report found to link errors.");
 
-                var errorDetails = errorIds.Select(errorId => new ErrorDetail
+                // Deduplicate errorIds to prevent duplicate ErrorDetail entries
+                var uniqueErrorIds = errorIds.Distinct().ToList();
+
+                // Check for existing ErrorDetails to avoid duplicates
+                var existingErrorDetails = await _context.ErrorDetails
+                    .Where(ed => ed.ReportId == reportId && uniqueErrorIds.Contains(ed.ErrorId))
+                    .Select(ed => ed.ErrorId)
+                    .ToListAsync();
+
+                // Filter out errorIds that already exist
+                var newErrorIds = uniqueErrorIds.Except(existingErrorDetails).ToList();
+
+                // Create new ErrorDetail records only for non-existing pairs
+                var errorDetails = newErrorIds.Select(errorId => new ErrorDetail
                 {
                     ReportId = report.Id,
                     ErrorId = errorId,
                     TaskId = task.Id
                 }).ToList();
-                await _context.ErrorDetails.AddRangeAsync(errorDetails);
+
+                if (errorDetails.Any())
+                {
+                    await _context.ErrorDetails.AddRangeAsync(errorDetails);
+                }
             }
 
             // Link Spareparts via RepairSpareparts
             if (sparepartIds != null && sparepartIds.Any())
             {
-                var repairSpareparts = sparepartIds.Select(sparepartId => new RepairSparepart
+                // Deduplicate sparepartIds to prevent duplicate RepairSparepart entries
+                var uniqueSparepartIds = sparepartIds.Distinct().ToList();
+
+                var repairSpareparts = uniqueSparepartIds.Select(sparepartId => new RepairSparepart
                 {
                     SpareId = sparepartId,
                     TaskId = task.Id
@@ -158,6 +177,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 await _context.RepairSpareparts.AddRangeAsync(repairSpareparts);
             }
 
+            // Save all changes
             await _context.SaveChangesAsync();
         }
 
