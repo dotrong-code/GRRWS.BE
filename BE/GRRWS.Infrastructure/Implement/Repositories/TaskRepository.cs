@@ -15,7 +15,23 @@ namespace GRRWS.Infrastructure.Implement.Repositories
     public class TaskRepository : GenericRepository<Tasks>, ITaskRepository
     {
         public TaskRepository(GRRWSContext context) : base(context) { }
-
+        public async Task<List<TaskByReportResponse>> GetTasksByReportIdAsync(Guid reportId)
+        {
+            return await _context.ErrorDetails
+                .Where(ed => ed.ReportId == reportId && ed.TaskId.HasValue && !ed.Task.IsDeleted)
+                .OrderByDescending(ed => ed.Task.Priority)
+                .ThenBy(ed => ed.Task.StartTime ?? DateTime.MaxValue)
+                .Select(ed => new TaskByReportResponse
+                {
+                    TaskId = ed.TaskId.Value,
+                    TaskType = ed.Task.TaskType,
+                    Priority = ed.Task.Priority.Value,
+                    Status = ed.Task.Status,
+                    AssigneeName = ed.Task.Assignee.FullName,
+                    StartTime = ed.Task.StartTime
+                })
+                .ToListAsync();
+        }
         public async Task<List<GetTaskResponse>> GetTasksByMechanicIdAsync(Guid mechanicId, int pageNumber, int pageSize)
         {
             var query = _context.Tasks
