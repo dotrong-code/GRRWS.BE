@@ -60,7 +60,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Issue IDs cannot be empty.", 0));
             }
 
-            var errors = await _errorRepository.GetErrorsByIssueIdsAsync(dto.IssueIds);
+            var errors = await _unitOfWork.ErrorRepository.GetErrorsByIssueIdsAsync(dto.IssueIds);
             if (!errors.Any())
             {
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "No errors found for the provided issues.", 0));
