@@ -12,6 +12,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
     public interface IDeviceRepository : IGenericRepository<Device>
     {
         Task<bool> DeviceCodeExistsAsync(string deviceCode);
+        Task<Device> GetDeviceByIdAsync(Guid id);
         Task<(List<GetDeviceResponse> Devices, int TotalCount)> GetAllDevicesAsync(
             string? deviceName = null,
             string? deviceCode = null,
