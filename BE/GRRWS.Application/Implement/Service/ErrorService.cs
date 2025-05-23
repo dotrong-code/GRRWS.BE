@@ -27,7 +27,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Error.Validation("InvalidMaxResults", "maxResults must be greater than 0."));
 
             // Generate cache key
-            var cacheKey = $"suggestions_{query.ToLowerInvariant()}";
+            var cacheKey = $"error_suggestions_{query.ToLowerInvariant()}";
 
             // Check cache
             if (_cache.TryGetValue(cacheKey, out List<SuggestObject> cachedSuggestions) && cachedSuggestions != null)
