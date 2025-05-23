@@ -35,7 +35,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     DueDate = new DateTime(2025, 5, 22, 0, 0, 0, DateTimeKind.Utc),
                     DeviceId = Guid.Parse("d1e2f3a4-0004-0004-0004-000000000004"),
                     RequestedById = Guid.Parse("32222222-2222-2222-2222-222222222222"),
-                    ReportId = null,
+                    ReportId = Guid.Parse("e1f2a3b4-0001-0001-0001-300000000001"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow.AddHours(2),
                     IsDeleted = false
@@ -50,7 +50,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     DueDate = new DateTime(2025, 5, 24, 0, 0, 0, DateTimeKind.Utc),
                     DeviceId = Guid.Parse("d1e2f3a4-0007-0007-0007-000000000007"),
                     RequestedById = Guid.Parse("32222222-2222-2222-2222-222222222222"),
-                    ReportId = null,
+                    ReportId = Guid.Parse("e1f2a3b4-0002-0002-0002-300000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow.AddHours(1),
                     IsDeleted = false
@@ -80,7 +80,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     DueDate = new DateTime(2025, 5, 22, 0, 0, 0, DateTimeKind.Utc),
                     DeviceId = Guid.Parse("d1e2f3a4-0015-0015-0015-000000000015"),
                     RequestedById = Guid.Parse("32222222-2222-2222-2222-222222222222"),
-                    ReportId = null,
+                    ReportId = Guid.Parse("e1f2a3b4-0003-0003-0003-300000000003"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow.AddHours(2),
                     IsDeleted = false
@@ -95,7 +95,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     DueDate = new DateTime(2025, 5, 23, 0, 0, 0, DateTimeKind.Utc),
                     DeviceId = Guid.Parse("d1e2f3a4-0018-0018-0018-000000000018"),
                     RequestedById = Guid.Parse("23333333-3333-3333-3333-333333333343"),
-                    ReportId = null,
+                    ReportId = Guid.Parse("e1f2a3b4-0004-0004-0004-300000000004"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow.AddHours(1),
                     IsDeleted = false
@@ -125,7 +125,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     DueDate = new DateTime(2025, 5, 18, 0, 0, 0, DateTimeKind.Utc),
                     DeviceId = Guid.Parse("d1e2f3a4-0012-0012-0012-000000000012"),
                     RequestedById = Guid.Parse("23333333-3333-3333-3333-333333333343"),
-                    ReportId = null,
+                    ReportId = Guid.Parse("e1f2a3b4-0005-0005-0005-300000000005"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow.AddHours(3),
                     IsDeleted = false
@@ -140,7 +140,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     DueDate = new DateTime(2025, 5, 26, 0, 0, 0, DateTimeKind.Utc),
                     DeviceId = Guid.Parse("d1e2f3a4-0003-0003-0003-000000000003"),
                     RequestedById = Guid.Parse("23333333-3333-3333-3333-333333333343"),
-                    ReportId = null,
+                    ReportId = Guid.Parse("e1f2a3b4-0006-0006-0006-300000000006"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow.AddHours(1),
                     IsDeleted = false
@@ -170,7 +170,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     DueDate = new DateTime(2025, 5, 27, 0, 0, 0, DateTimeKind.Utc),
                     DeviceId = Guid.Parse("d1e2f3a4-0016-0016-0016-000000000016"),
                     RequestedById = Guid.Parse("23333333-3333-3333-3333-333333333344"),
-                    ReportId = null,
+                    ReportId = Guid.Parse("e1f2a3b4-0007-0007-0007-300000000007"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow.AddHours(2),
                     IsDeleted = false
@@ -200,7 +200,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     DueDate = new DateTime(2025, 5, 25, 0, 0, 0, DateTimeKind.Utc),
                     DeviceId = Guid.Parse("d1e2f3a4-0020-0020-0020-000000000020"),
                     RequestedById = Guid.Parse("23333333-3333-3333-3333-333333333344"),
-                    ReportId = null,
+                    ReportId = Guid.Parse("e1f2a3b4-0008-0008-0008-300000000008"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow.AddHours(2),
                     IsDeleted = false
@@ -230,7 +230,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     DueDate = new DateTime(2025, 5, 17, 0, 0, 0, DateTimeKind.Utc),
                     DeviceId = Guid.Parse("d1e2f3a4-0017-0017-0017-000000000017"),
                     RequestedById = Guid.Parse("23333333-3333-3333-3333-333333333344"),
-                    ReportId = null,
+                    ReportId = Guid.Parse("e1f2a3b4-0009-0009-0009-300000000009"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow.AddHours(3),
                     IsDeleted = false
