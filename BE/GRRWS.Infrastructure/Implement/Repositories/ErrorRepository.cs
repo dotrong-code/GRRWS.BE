@@ -55,5 +55,20 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Select(es => es.Sparepart)
                 .ToListAsync();
         }
+        public async Task<List<ErrorSimpleDTO>> GetErrorsByReportIdWithoutTaskAsync(Guid reportId)
+        {
+            var errors = await _context.ErrorDetails
+                .Where(ed => ed.ReportId == reportId && ed.TaskId == null && !ed.Error.IsDeleted)
+                .Select(ed => new ErrorSimpleDTO
+                {
+                    Id = ed.Error.Id,
+                    Name = ed.Error.Name
+                })
+                .Distinct()
+                .ToListAsync();
+
+            return errors;
+        }
+
     }
 }
