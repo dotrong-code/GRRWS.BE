@@ -1,11 +1,7 @@
-﻿using GRRWS.Domain.Entities;
+using GRRWS.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace GRRWS.Infrastructure.DB.Configuration
 {
@@ -13,6 +9,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
     {
         public void Configure(EntityTypeBuilder<Error> builder)
         {
+
             builder.HasIndex(e => e.ErrorCode)
                    .HasDatabaseName("IX_Errors_ErrorCode");
 
@@ -51,6 +48,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Description = "Bo điều khiển bị lỗi, không kiểm soát được tốc độ.",
                     EstimatedRepairTime = TimeSpan.FromHours(2),
                     IsCommon = false,
+
                     OccurrenceCount = 5,
                     Severity = "High",
                     CreatedDate = DateTime.UtcNow,
@@ -58,6 +56,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 },
                 new Error
                 {
+
                     Id = Guid.Parse("e1d1a444-0004-0004-0004-000000000004"),
                     ErrorCode = "CHAY_MOTOR",
                     Name = "Cháy Motor",
@@ -84,10 +83,12 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 },
                 new Error
                 {
+
                     Id = Guid.Parse("e1d1a666-0006-0006-0006-000000000006"),
                     ErrorCode = "GIOANG_DAU_BI_RO",
                     Name = "Gioăng Dầu Bị Rò",
                     Description = "Dầu rò ra ngoài do gioăng hoặc phớt bị mòn.",
+
                     EstimatedRepairTime = TimeSpan.FromHours(1.5),
                     IsCommon = true,
                     OccurrenceCount = 10,
@@ -117,12 +118,14 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     EstimatedRepairTime = TimeSpan.FromHours(2),
                     IsCommon = false,
                     OccurrenceCount = 4,
+
                     Severity = "High",
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
                 new Error
                 {
+
                     Id = Guid.Parse("e1d1a999-0009-0009-0009-000000000009"),
                     ErrorCode = "CHONG_TROI_KHONG_HOAT_DONG",
                     Name = "Chống Trôi Không Hoạt Động",
@@ -130,12 +133,14 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     EstimatedRepairTime = TimeSpan.FromMinutes(50),
                     IsCommon = true,
                     OccurrenceCount = 12,
+
                     Severity = "Medium",
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
                 new Error
                 {
+
                     Id = Guid.Parse("e1d1abbb-0010-0010-0010-000000000010"),
                     ErrorCode = "CHOT_VAI_KET",
                     Name = "Chốt Vải Kẹt",
@@ -144,11 +149,13 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     IsCommon = true,
                     OccurrenceCount = 22,
                     Severity = "Low",
+
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
                 new Error
                 {
+
                     Id = Guid.Parse("e1d1addd-0011-0011-0011-000000000011"),
                     ErrorCode = "VONG_BAC_MON",
                     Name = "Vòng Bạc Mòn",
@@ -205,6 +212,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     ErrorCode = "LOI_QUAT_GIO",
                     Name = "Lỗi Quạt Gió",
                     Description = "Quạt tản nhiệt không hoạt động gây quá nhiệt.",
+
                     EstimatedRepairTime = TimeSpan.FromHours(1),
                     IsCommon = true,
                     OccurrenceCount = 7,
@@ -214,16 +222,19 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 },
                 new Error
                 {
+
                     Id = Guid.Parse("e1d1a124-0016-0016-0016-000000000016"),
                     ErrorCode = "TRUC_CHINH_LAC",
                     Name = "Trục Chính Lệch",
                     Description = "Trục chính không quay đồng tâm gây rung.",
+
                     EstimatedRepairTime = TimeSpan.FromHours(2),
                     IsCommon = false,
                     OccurrenceCount = 4,
                     Severity = "High",
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
+
                 },
                 new Error
                 {
@@ -406,6 +417,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Severity = "Medium",
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
+
                 }
             );
         }

@@ -1,0 +1,32 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH to VPS as root and deploy
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.VPS_IP }}
+          username: root
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /var/www/back-end
+
+            # Lấy code mới nhất
+            git fetch
+            git checkout production
+            git pull origin production
+            mkdir -p /var/www/back-end/BE/GRRWS.Host/Keys
+            # Tạo file Firebase key từ secret
+            echo '${{ secrets.FIREBASE_KEY }}' > /var/www/back-end/BE/GRRWS.Host/Keys/koiveterinaryservicecent-925db-firebase-adminsdk-vus2r-bd418169a6.json
+            chmod 600 /var/www/back-end/firebase-key.json
+
+            # Triển khai
+            bash ./deploy.sh
