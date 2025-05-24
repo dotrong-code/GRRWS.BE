@@ -1,6 +1,8 @@
-﻿namespace GRRWS.Application.Common
+﻿
+namespace GRRWS.Application.Common
 {
-    public class TitleHelper
+    public static class TitleHelper
     {
+        
     }
 }
