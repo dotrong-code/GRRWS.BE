@@ -3,13 +3,7 @@ using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
-using GRRWS.Infrastructure.Interfaces.IRepositories.IGeneric;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GRRWS.Infrastructure.Implement.Repositories
 {
@@ -119,6 +113,22 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .ToList();
 
             return issues;
+        }
+
+        public async Task<List<RequestSummary>> GetRequestSummaryAsync()
+        {
+            return await _context.Requests
+                .Where(r => !r.IsDeleted)
+                .Select(r => new RequestSummary
+                {
+                    RequestId = r.Id,
+                    RequestTitle = r.RequestTitle ?? "Untitled Request",
+                    Piority = r.Priority ?? "Unknown",
+                    Status = r.Status ?? "Unknown",
+                    RequestDate = r.CreatedDate
+                })
+                .AsNoTracking() // Improves query performance by not tracking entities
+                .ToListAsync();
         }
     }
 }

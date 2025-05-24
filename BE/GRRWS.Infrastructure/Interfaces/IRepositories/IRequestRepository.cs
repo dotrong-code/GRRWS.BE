@@ -1,11 +1,6 @@
 ﻿using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.Interfaces.IRepositories.IGeneric;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GRRWS.Infrastructure.Interfaces.IRepositories
 {
@@ -17,5 +12,6 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<List<Request>> GetRequestByDeviceIdAsync(Guid deviceId);
         Task<List<Request>> GetRequestByUserIdAsync(Guid userId);
         Task<List<IssueSimpleDTO>> GetIssuesByRequestIdAsync(Guid requestId);
+        Task<List<RequestSummary>> GetRequestSummaryAsync();
     }
 }
