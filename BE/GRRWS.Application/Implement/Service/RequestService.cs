@@ -179,9 +179,8 @@ namespace GRRWS.Application.Implement.Service
             if (missingIssues.Any())
             {
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
-    "NotFound",
-    "Some issues do not exist: " + string.Join(", ", missingIssues.Select(x => x.Id))
-));
+                    "NotFound", "Some issues do not exist: " + string.Join(", ", missingIssues.Select(x => x.Id))
+                    ));
             }
 
             var getDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(dto.DeviceId);
@@ -237,7 +236,7 @@ namespace GRRWS.Application.Implement.Service
             };
 
             await _requestRepository.UpdateRequestAsync(updatedRequest, dto.IssueIds);
-            return Result.SuccessWithObject(new { Message = "Successfully!" });
+            return Result.SuccessWithObject(new { Message = "Request updated successfully!" });
         }
 
         public async Task<Result> DeleteAsync(Guid id)
@@ -250,7 +249,7 @@ namespace GRRWS.Application.Implement.Service
             r.ModifiedDate = DateTime.UtcNow;
             await _requestRepository.UpdateAsync(r);
 
-            return Result.Success();
+            return Result.SuccessWithObject(new { Message = "Request canceled successfully!" });
         }
         public async Task<Result> GetIssuesByRequestIdAsync(Guid requestId)
         {
