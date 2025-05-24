@@ -25,6 +25,7 @@ namespace GRRWS.Application.Implement.Service
             var requests = await _requestRepository.GetAllRequestAsync();
             var dtos = requests
                 .Where(r => !r.IsDeleted)
+                .OrderByDescending(r => r.CreatedDate)
                 .Select(r => new RequestDTO
                 {
                     Id = r.Id,
@@ -94,7 +95,7 @@ namespace GRRWS.Application.Implement.Service
             var requests = await _requestRepository.GetRequestByDeviceIdAsync(id);
             var dtos = requests
                 .Where(r => !r.IsDeleted)
-                .OrderBy(r => r.CreatedDate)
+                .OrderByDescending(r => r.CreatedDate)
                 .Select(r => new RequestDTO
                 {
                     Id = r.Id,
@@ -127,7 +128,7 @@ namespace GRRWS.Application.Implement.Service
             var requests = await _requestRepository.GetRequestByUserIdAsync(userId);
             var dtos = requests
                 .Where(r => !r.IsDeleted)
-                .OrderBy(r => r.CreatedDate)
+                .OrderByDescending(r => r.CreatedDate)
                 .Select(r => new RequestDTO
                 {
                     Id = r.Id,
