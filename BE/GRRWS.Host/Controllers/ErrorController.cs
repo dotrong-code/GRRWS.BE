@@ -40,5 +40,13 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [HttpGet("report/{reportId}/unassigned")]
+        public async Task<IResult> GetErrorsByReportIdWithoutTask(Guid reportId)
+        {
+            var result = await _errorService.GetErrorsByReportIdWithoutTaskAsync(reportId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved unassigned errors for the report")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }

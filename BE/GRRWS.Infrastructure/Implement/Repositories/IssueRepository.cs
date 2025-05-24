@@ -30,6 +30,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Take(maxResults)
                 .ToListAsync();
         }
+
         public async Task<List<SuggestObject>> GetNotFoundIssueDisplayNamesAsync(IEnumerable<Guid> issueIds)
         {
             var idSet = issueIds.ToHashSet();
@@ -55,6 +56,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 })
                 .ToList();
         }
+
     }
 
 }
