@@ -1,4 +1,4 @@
-using GRRWS.Domain.Entities;
+﻿using GRRWS.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -26,15 +26,15 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Manufacturer = "Juki",
                     ManufactureDate = new DateTime(2020, 1, 10),
                     InstallationDate = new DateTime(2020, 2, 1),
-                    Description = "Single needle lockstitch device for lightweight fabrics.",
+                    Description = "Máy may kim đơn tốc độ cao cho vải nhẹ.",
                     PhotoUrl = "https://example.com/photos/device_juki_ddl8700_01.jpg",
                     Status = "Active",
                     IsUnderWarranty = true,
-                    Specifications = "Max speed: 5500 SPM, Stitch length: 5mm",
+                    Specifications = "Tốc độ tối đa: 5500 SPM, Độ dài mũi may: 5mm",
                     PurchasePrice = 15000000,
                     Supplier = "Juki Vietnam",
-                    MachineId = Guid.Parse("a1b2c3d4-0001-0001-0001-000000000001"), // Juki DDL-8700-01
-                    PositionId = Guid.Parse("f1e2d3c4-0001-0001-0001-000000000001"), // Position in Sewing Line A, Index 1
+                    MachineId = Guid.Parse("a1b2c3d4-0001-0001-0001-000000000001"),
+                    PositionId = Guid.Parse("f1e2d3c4-0001-0001-0001-000000000001"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -48,15 +48,15 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Manufacturer = "Juki",
                     ManufactureDate = new DateTime(2020, 1, 12),
                     InstallationDate = new DateTime(2020, 2, 3),
-                    Description = "Single needle lockstitch device for medium-weight fabrics.",
+                    Description = "Máy may kim đơn tốc độ cao cho vải trung bình.",
                     PhotoUrl = "https://example.com/photos/device_juki_ddl8700_02.jpg",
                     Status = "Active",
                     IsUnderWarranty = true,
-                    Specifications = "Max speed: 5500 SPM, Stitch length: 5mm",
+                    Specifications = "Tốc độ tối đa: 5500 SPM, Độ dài mũi may: 5mm",
                     PurchasePrice = 15000000,
                     Supplier = "Juki Vietnam",
-                    MachineId = Guid.Parse("a1b2c3d4-0002-0002-0002-000000000002"), // Juki DDL-8700-02
-                    PositionId = Guid.Parse("f1e2d3c4-0002-0002-0002-000000000002"), // Position in Sewing Line A, Index 2
+                    MachineId = Guid.Parse("a1b2c3d4-0002-0002-0002-000000000002"),
+                    PositionId = Guid.Parse("f1e2d3c4-0002-0002-0002-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -70,16 +70,15 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Manufacturer = "Juki",
                     ManufactureDate = new DateTime(2020, 1, 15),
                     InstallationDate = new DateTime(2020, 2, 5),
-                    Description = "Single needle lockstitch device, currently in repair.",
+                    Description = "Máy may kim đơn tốc độ cao, đang sửa chữa.",
                     PhotoUrl = "https://example.com/photos/device_juki_ddl8700_03.jpg",
                     Status = "InRepair",
                     IsUnderWarranty = true,
-                    Specifications = "Max speed: 5500 SPM, Stitch length: 5mm",
+                    Specifications = "Tốc độ tối đa: 5500 SPM, Độ dài mũi may: 5mm",
                     PurchasePrice = 15000000,
                     Supplier = "Juki Vietnam",
-                    MachineId = Guid.Parse("a1b2c3d4-0003-0003-0003-000000000003"), // Juki DDL-8700-03
-                    PositionId = null, // Not assigned to any position
-
+                    MachineId = Guid.Parse("a1b2c3d4-0003-0003-0003-000000000003"),
+                    PositionId = Guid.Parse("f1e2d3c4-0014-0014-0014-000000000014"), // Dây Chuyền May D, Index 1
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -94,16 +93,15 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Manufacturer = "Juki",
                     ManufactureDate = new DateTime(2020, 1, 18),
                     InstallationDate = new DateTime(2020, 2, 7),
-                    Description = "Single needle lockstitch device for cotton fabrics.",
+                    Description = "Máy may kim đơn tốc độ cao cho vải cotton.",
                     PhotoUrl = "https://example.com/photos/device_juki_ddl8700_04.jpg",
                     Status = "Active",
                     IsUnderWarranty = true,
-                    Specifications = "Max speed: 5500 SPM, Stitch length: 5mm",
+                    Specifications = "Tốc độ tối đa: 5500 SPM, Độ dài mũi may: 5mm",
                     PurchasePrice = 15000000,
                     Supplier = "Juki Vietnam",
-                    MachineId = Guid.Parse("a1b2c3d4-0004-0004-0004-000000000004"), // Juki DDL-8700-04
-                    PositionId = Guid.Parse("f1e2d3c4-0003-0003-0003-000000000003"), // Position in Sewing Line A, Index 3
-
+                    MachineId = Guid.Parse("a1b2c3d4-0004-0004-0004-000000000004"),
+                    PositionId = Guid.Parse("f1e2d3c4-0003-0003-0003-000000000003"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -118,16 +116,15 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Manufacturer = "Juki",
                     ManufactureDate = new DateTime(2020, 1, 20),
                     InstallationDate = new DateTime(2020, 2, 10),
-                    Description = "Single needle lockstitch device for synthetic fabrics.",
+                    Description = "Máy may kim đơn tốc độ cao cho vải tổng hợp.",
                     PhotoUrl = "https://example.com/photos/device_juki_ddl8700_05.jpg",
                     Status = "Active",
                     IsUnderWarranty = true,
-                    Specifications = "Max speed: 5500 SPM, Stitch length: 5mm",
+                    Specifications = "Tốc độ tối đa: 5500 SPM, Độ dài mũi may: 5mm",
                     PurchasePrice = 15000000,
                     Supplier = "Juki Vietnam",
-                    MachineId = Guid.Parse("a1b2c3d4-0005-0005-0005-000000000005"), // Juki DDL-8700-05
-                    PositionId = Guid.Parse("f1e2d3c4-0004-0004-0004-000000000004"), // Position in Sewing Line A, Index 4
-
+                    MachineId = Guid.Parse("a1b2c3d4-0005-0005-0005-000000000005"),
+                    PositionId = Guid.Parse("f1e2d3c4-0004-0004-0004-000000000004"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -142,16 +139,15 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Manufacturer = "Juki",
                     ManufactureDate = new DateTime(2020, 1, 22),
                     InstallationDate = new DateTime(2020, 2, 12),
-                    Description = "Single needle lockstitch device, retired.",
+                    Description = "Máy may kim đơn tốc độ cao, đã ngừng sử dụng.",
                     PhotoUrl = "https://example.com/photos/device_juki_ddl8700_06.jpg",
                     Status = "Retired",
                     IsUnderWarranty = false,
-                    Specifications = "Max speed: 5500 SPM, Stitch length: 5mm",
+                    Specifications = "Tốc độ tối đa: 5500 SPM, Độ dài mũi may: 5mm",
                     PurchasePrice = 15000000,
                     Supplier = "Juki Vietnam",
-                    MachineId = Guid.Parse("a1b2c3d4-0006-0006-0006-000000000006"), // Juki DDL-8700-06
-                    PositionId = null, // Not assigned to any position
-
+                    MachineId = Guid.Parse("a1b2c3d4-0006-0006-0006-000000000006"),
+                    PositionId = Guid.Parse("f1e2d3c4-0015-0015-0015-000000000015"), // Dây Chuyền May D, Index 2
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -187,15 +183,15 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Manufacturer = "Juki",
                     ManufactureDate = new DateTime(2020, 1, 25),
                     InstallationDate = new DateTime(2020, 2, 15),
-                    Description = "Single needle lockstitch device for heavy fabrics.",
+                    Description = "Máy may kim đơn tốc độ cao cho vải dày.",
                     PhotoUrl = "https://example.com/photos/device_juki_ddl8700_07.jpg",
                     Status = "Active",
                     IsUnderWarranty = true,
-                    Specifications = "Max speed: 5500 SPM, Stitch length: 5mm",
+                    Specifications = "Tốc độ tối đa: 5500 SPM, Độ dài mũi may: 5mm",
                     PurchasePrice = 15000000,
                     Supplier = "Juki Vietnam",
-                    MachineId = Guid.Parse("a1b2c3d4-0007-0007-0007-000000000007"), // Juki DDL-8700-07
-                    PositionId = Guid.Parse("f1e2d3c4-0006-0006-0006-000000000006"), // Position in Sewing Line B, Index 1
+                    MachineId = Guid.Parse("a1b2c3d4-0007-0007-0007-000000000007"),
+                    PositionId = Guid.Parse("f1e2d3c4-0006-0006-0006-000000000006"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -209,15 +205,15 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Manufacturer = "Juki",
                     ManufactureDate = new DateTime(2020, 1, 28),
                     InstallationDate = new DateTime(2020, 2, 18),
-                    Description = "Single needle lockstitch device for thin fabrics.",
+                    Description = "Máy may kim đơn tốc độ cao cho vải mỏng.",
                     PhotoUrl = "https://example.com/photos/device_juki_ddl8700_08.jpg",
                     Status = "Active",
                     IsUnderWarranty = true,
-                    Specifications = "Max speed: 5500 SPM, Stitch length: 5mm",
+                    Specifications = "Tốc độ tối đa: 5500 SPM, Độ dài mũi may: 5mm",
                     PurchasePrice = 15000000,
                     Supplier = "Juki Vietnam",
-                    MachineId = Guid.Parse("a1b2c3d4-0008-0008-0008-000000000008"), // Juki DDL-8700-08
-                    PositionId = Guid.Parse("f1e2d3c4-0007-0007-0007-000000000007"), // Position in Sewing Line B, Index 2
+                    MachineId = Guid.Parse("a1b2c3d4-0008-0008-0008-000000000008"),
+                    PositionId = Guid.Parse("f1e2d3c4-0007-0007-0007-000000000007"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -231,15 +227,15 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Manufacturer = "Juki",
                     ManufactureDate = new DateTime(2020, 1, 30),
                     InstallationDate = new DateTime(2020, 2, 20),
-                    Description = "Single needle lockstitch device for mixed fabrics.",
+                    Description = "Máy may kim đơn tốc độ cao cho vải hỗn hợp.",
                     PhotoUrl = "https://example.com/photos/device_juki_ddl8700_09.jpg",
                     Status = "Active",
                     IsUnderWarranty = true,
-                    Specifications = "Max speed: 5500 SPM, Stitch length: 5mm",
+                    Specifications = "Tốc độ tối đa: 5500 SPM, Độ dài mũi may: 5mm",
                     PurchasePrice = 15000000,
                     Supplier = "Juki Vietnam",
-                    MachineId = Guid.Parse("a1b2c3d4-0009-0009-0009-000000000009"), // Juki DDL-8700-09
-                    PositionId = Guid.Parse("f1e2d3c4-0010-0010-0010-000000000010"), // Position in Sewing Line C, Index 1
+                    MachineId = Guid.Parse("a1b2c3d4-0009-0009-0009-000000000009"),
+                    PositionId = Guid.Parse("f1e2d3c4-0010-0010-0010-000000000010"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -253,15 +249,15 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Manufacturer = "Juki",
                     ManufactureDate = new DateTime(2020, 2, 1),
                     InstallationDate = new DateTime(2020, 2, 22),
-                    Description = "Single needle lockstitch device for general use.",
+                    Description = "Máy may kim đơn tốc độ cao cho mục đích chung.",
                     PhotoUrl = "https://example.com/photos/device_juki_ddl8700_10.jpg",
                     Status = "Active",
                     IsUnderWarranty = true,
-                    Specifications = "Max speed: 5500 SPM, Stitch length: 5mm",
+                    Specifications = "Tốc độ tối đa: 5500 SPM, Độ dài mũi may: 5mm",
                     PurchasePrice = 15000000,
                     Supplier = "Juki Vietnam",
-                    MachineId = Guid.Parse("a1b2c3d4-0010-0010-0010-000000000010"), // Juki DDL-8700-10
-                    PositionId = Guid.Parse("f1e2d3c4-0011-0011-0011-000000000011"), // Position in Sewing Line C, Index 2
+                    MachineId = Guid.Parse("a1b2c3d4-0010-0010-0010-000000000010"),
+                    PositionId = Guid.Parse("f1e2d3c4-0011-0011-0011-000000000011"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -276,15 +272,15 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Manufacturer = "Juki",
                     ManufactureDate = new DateTime(2022, 2, 5),
                     InstallationDate = new DateTime(2022, 3, 1),
-                    Description = "Digital lockstitch device with auto thread trimmer, unit 1.",
+                    Description = "Máy may kim đơn kỹ thuật số với cắt chỉ tự động, đơn vị 1.",
                     PhotoUrl = "https://example.com/photos/device_juki_ddl9000c_01.jpg",
                     Status = "Active",
                     IsUnderWarranty = true,
-                    Specifications = "Max speed: 5000 SPM, Auto thread trimmer",
+                    Specifications = "Tốc độ tối đa: 5000 SPM, Cắt chỉ tự động",
                     PurchasePrice = 20000000,
                     Supplier = "Juki Vietnam",
-                    MachineId = Guid.Parse("a1b2c3d4-0011-0011-0011-000000000011"), // Juki DDL-9000C-01
-                    PositionId = Guid.Parse("f1e2d3c4-0008-0008-0008-000000000008"), // Position in Sewing Line B, Index 3
+                    MachineId = Guid.Parse("a1b2c3d4-0011-0011-0011-000000000011"),
+                    PositionId = Guid.Parse("f1e2d3c4-0008-0008-0008-000000000008"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -298,15 +294,15 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Manufacturer = "Juki",
                     ManufactureDate = new DateTime(2022, 2, 7),
                     InstallationDate = new DateTime(2022, 3, 3),
-                    Description = "Digital lockstitch device with auto thread trimmer, unit 2.",
+                    Description = "Máy may kim đơn kỹ thuật số với cắt chỉ tự động, đơn vị 2.",
                     PhotoUrl = "https://example.com/photos/device_juki_ddl9000c_02.jpg",
                     Status = "Active",
                     IsUnderWarranty = true,
-                    Specifications = "Max speed: 5000 SPM, Auto thread trimmer",
+                    Specifications = "Tốc độ tối đa: 5000 SPM, Cắt chỉ tự động",
                     PurchasePrice = 20000000,
                     Supplier = "Juki Vietnam",
-                    MachineId = Guid.Parse("a1b2c3d4-0012-0012-0012-000000000012"), // Juki DDL-9000C-02
-                    PositionId = Guid.Parse("f1e2d3c4-0012-0012-0012-000000000012"), // Position in Sewing Line C, Index 3
+                    MachineId = Guid.Parse("a1b2c3d4-0012-0012-0012-000000000012"),
+                    PositionId = Guid.Parse("f1e2d3c4-0012-0012-0012-000000000012"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -320,16 +316,15 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Manufacturer = "Juki",
                     ManufactureDate = new DateTime(2022, 2, 10),
                     InstallationDate = new DateTime(2022, 3, 5),
-                    Description = "Digital lockstitch device with auto thread trimmer, in repair.",
+                    Description = "Máy may kim đơn kỹ thuật số với cắt chỉ tự động, đang sửa chữa.",
                     PhotoUrl = "https://example.com/photos/device_juki_ddl9000c_03.jpg",
                     Status = "InRepair",
                     IsUnderWarranty = true,
-                    Specifications = "Max speed: 5000 SPM, Auto thread trimmer",
+                    Specifications = "Tốc độ tối đa: 5000 SPM, Cắt chỉ tự động",
                     PurchasePrice = 20000000,
                     Supplier = "Juki Vietnam",
-                    MachineId = Guid.Parse("a1b2c3d4-0013-0013-0013-000000000013"), // Juki DDL-9000C-03
-                    PositionId = null, // Not assigned to any position
-
+                    MachineId = Guid.Parse("a1b2c3d4-0013-0013-0013-000000000013"),
+                    PositionId = Guid.Parse("f1e2d3c4-0028-0028-0028-000000000028"), // Khu May Nặng D, Index 1
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -344,15 +339,15 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Manufacturer = "Juki",
                     ManufactureDate = new DateTime(2022, 2, 12),
                     InstallationDate = new DateTime(2022, 3, 7),
-                    Description = "Digital lockstitch device with auto thread trimmer, unit 4.",
+                    Description = "Máy may kim đơn kỹ thuật số với cắt chỉ tự động, đơn vị 4.",
                     PhotoUrl = "https://example.com/photos/device_juki_ddl9000c_04.jpg",
                     Status = "Active",
                     IsUnderWarranty = true,
-                    Specifications = "Max speed: 5000 SPM, Auto thread trimmer",
+                    Specifications = "Tốc độ tối đa: 5000 SPM, Cắt chỉ tự động",
                     PurchasePrice = 20000000,
                     Supplier = "Juki Vietnam",
-                    MachineId = Guid.Parse("a1b2c3d4-0014-0014-0014-000000000014"), // Juki DDL-9000C-04
-                    PositionId = Guid.Parse("f1e2d3c4-0013-0013-0013-000000000013"), // Position in Sewing Line C, Index 4
+                    MachineId = Guid.Parse("a1b2c3d4-0014-0014-0014-000000000014"),
+                    PositionId = Guid.Parse("f1e2d3c4-0013-0013-0013-000000000013"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -367,16 +362,15 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Manufacturer = "Brother",
                     ManufactureDate = new DateTime(2019, 6, 1),
                     InstallationDate = new DateTime(2019, 7, 1),
-                    Description = "Three-thread overlock device for lightweight fabrics.",
+                    Description = "Máy vắt sổ 3 chỉ cho vải nhẹ.",
                     PhotoUrl = "https://example.com/photos/device_brother_b957_01.jpg",
                     Status = "Active",
                     IsUnderWarranty = false,
-                    Specifications = "Max speed: 7000 SPM, Differential feed ratio: 0.7-2.0",
+                    Specifications = "Tốc độ tối đa: 7000 SPM, Tỷ lệ cấp liệu vi sai: 0.7-2.0",
                     PurchasePrice = 12000000,
                     Supplier = "Brother Vietnam",
-                    MachineId = Guid.Parse("a1b2c3d4-0015-0015-0015-000000000015"), // Brother B957-01
-                    PositionId = Guid.Parse("f1e2d3c4-0019-0019-0019-000000000019"), // Position in Overlock Section, Index 1
-
+                    MachineId = Guid.Parse("a1b2c3d4-0015-0015-0015-000000000015"),
+                    PositionId = Guid.Parse("f1e2d3c4-0019-0019-0019-000000000019"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -390,15 +384,15 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Manufacturer = "Brother",
                     ManufactureDate = new DateTime(2019, 6, 3),
                     InstallationDate = new DateTime(2019, 7, 3),
-                    Description = "Three-thread overlock device for synthetic fabrics.",
+                    Description = "Máy vắt sổ 3 chỉ cho vải tổng hợp.",
                     PhotoUrl = "https://example.com/photos/device_brother_b957_02.jpg",
                     Status = "Active",
                     IsUnderWarranty = false,
-                    Specifications = "Max speed: 7000 SPM, Differential feed ratio: 0.7-2.0",
+                    Specifications = "Tốc độ tối đa: 7000 SPM, Tỷ lệ cấp liệu vi sai: 0.7-2.0",
                     PurchasePrice = 12000000,
                     Supplier = "Brother Vietnam",
-                    MachineId = Guid.Parse("a1b2c3d4-0016-0016-0016-000000000016"), // Brother B957-02
-                    PositionId = Guid.Parse("f1e2d3c4-0020-0020-0020-000000000020"), // Position in Overlock Section, Index 2
+                    MachineId = Guid.Parse("a1b2c3d4-0016-0016-0016-000000000016"),
+                    PositionId = Guid.Parse("f1e2d3c4-0020-0020-0020-000000000020"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -412,15 +406,15 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Manufacturer = "Brother",
                     ManufactureDate = new DateTime(2019, 6, 5),
                     InstallationDate = new DateTime(2019, 7, 5),
-                    Description = "Three-thread overlock device for thin materials.",
+                    Description = "Máy vắt sổ 3 chỉ cho vải mỏng.",
                     PhotoUrl = "https://example.com/photos/device_brother_b957_03.jpg",
                     Status = "Active",
                     IsUnderWarranty = false,
-                    Specifications = "Max speed: 7000 SPM, Differential feed ratio: 0.7-2.0",
+                    Specifications = "Tốc độ tối đa: 7000 SPM, Tỷ lệ cấp liệu vi sai: 0.7-2.0",
                     PurchasePrice = 12000000,
                     Supplier = "Brother Vietnam",
-                    MachineId = Guid.Parse("a1b2c3d4-0017-0017-0017-000000000017"), // Brother B957-03
-                    PositionId = Guid.Parse("f1e2d3c4-0021-0021-0021-000000000021"), // Position in Overlock Section, Index 3
+                    MachineId = Guid.Parse("a1b2c3d4-0017-0017-0017-000000000017"),
+                    PositionId = Guid.Parse("f1e2d3c4-0021-0011-0021-000000000021"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -435,16 +429,15 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Manufacturer = "Singer",
                     ManufactureDate = new DateTime(2021, 3, 10),
                     InstallationDate = new DateTime(2021, 4, 1),
-                    Description = "Heavy-duty device for denim fabrics.",
+                    Description = "Máy may nặng cho vải denim.",
                     PhotoUrl = "https://example.com/photos/device_singer_4452_01.jpg",
                     Status = "Active",
                     IsUnderWarranty = true,
-                    Specifications = "Max speed: 1100 SPM, Presser foot lift: 6mm",
+                    Specifications = "Tốc độ tối đa: 1100 SPM, Độ nâng chân vịt: 6mm",
                     PurchasePrice = 18000000,
                     Supplier = "Singer Vietnam",
-                    MachineId = Guid.Parse("a1b2c3d4-0018-0018-0018-000000000018"), // Singer 4452-01
-                    PositionId = Guid.Parse("f1e2d3c4-0023-0023-0023-000000000023"), // Position in Heavy Duty Stitching Zone, Index 1
-
+                    MachineId = Guid.Parse("a1b2c3d4-0018-0018-0018-000000000018"),
+                    PositionId = Guid.Parse("f1e2d3c4-0023-0023-0023-000000000023"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -458,15 +451,15 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Manufacturer = "Singer",
                     ManufactureDate = new DateTime(2021, 3, 12),
                     InstallationDate = new DateTime(2021, 4, 3),
-                    Description = "Heavy-duty device for leather fabrics.",
+                    Description = "Máy may nặng cho vải da.",
                     PhotoUrl = "https://example.com/photos/device_singer_4452_02.jpg",
                     Status = "Active",
                     IsUnderWarranty = true,
-                    Specifications = "Max speed: 1100 SPM, Presser foot lift: 6mm",
+                    Specifications = "Tốc độ tối đa: 1100 SPM, Độ nâng chân vịt: 6mm",
                     PurchasePrice = 18000000,
                     Supplier = "Singer Vietnam",
-                    MachineId = Guid.Parse("a1b2c3d4-0019-0019-0019-000000000019"), // Singer 4452-02
-                    PositionId = Guid.Parse("f1e2d3c4-0024-0024-0024-000000000024"), // Position in Heavy Duty Stitching Zone, Index 2
+                    MachineId = Guid.Parse("a1b2c3d4-0019-0019-0019-000000000019"),
+                    PositionId = Guid.Parse("f1e2d3c4-0024-0024-0024-000000000024"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -480,15 +473,240 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Manufacturer = "Singer",
                     ManufactureDate = new DateTime(2021, 3, 15),
                     InstallationDate = new DateTime(2021, 4, 5),
-                    Description = "Heavy-duty device for canvas, in repair.",
+                    Description = "Máy may nặng cho vải canvas, đang sửa chữa.",
                     PhotoUrl = "https://example.com/photos/device_singer_4452_03.jpg",
                     Status = "InRepair",
                     IsUnderWarranty = true,
-                    Specifications = "Max speed: 1100 SPM, Presser foot lift: 6mm",
+                    Specifications = "Tốc độ tối đa: 1100 SPM, Độ nâng chân vịt: 6mm",
                     PurchasePrice = 18000000,
                     Supplier = "Singer Vietnam",
-                    MachineId = Guid.Parse("a1b2c3d4-0020-0020-0020-000000000020"), // Singer 4452-03
-                    PositionId = null, // Not assigned to any position
+                    MachineId = Guid.Parse("a1b2c3d4-0020-0020-0020-000000000020"),
+                    PositionId = Guid.Parse("f1e2d3c4-0029-0029-0029-000000000029"), // Khu May Nặng D, Index 2
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                // Devices for Juki MO-6714S (2 devices)
+                new Device
+                {
+                    Id = Guid.Parse("d1e2f3a4-0021-0021-0021-000000000021"),
+                    DeviceCode = "DEV021-JUKI-MO6714S-01",
+                    DeviceName = "Juki MO-6714S Unit 1",
+                    SerialNumber = "MO6714S-D001",
+                    Model = "MO-6714S",
+                    Manufacturer = "Juki",
+                    ManufactureDate = new DateTime(2021, 5, 10),
+                    InstallationDate = new DateTime(2021, 6, 1),
+                    Description = "Máy vắt sổ 4 chỉ tốc độ cao cho vải cotton và tổng hợp.",
+                    PhotoUrl = "https://example.com/photos/device_juki_mo6714s_01.jpg",
+                    Status = "Active",
+                    IsUnderWarranty = true,
+                    Specifications = "Tốc độ tối đa: 7000 SPM, Tỷ lệ cấp liệu vi sai: 0.7-2.0",
+                    PurchasePrice = 14000000,
+                    Supplier = "Juki Vietnam",
+                    MachineId = Guid.Parse("a1b2c3d4-0021-0021-0021-000000000021"),
+                    PositionId = Guid.Parse("f1e2d3c4-0009-0009-0009-000000000009"),
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Device
+                {
+                    Id = Guid.Parse("d1e2f3a4-0022-0022-0022-000000000022"),
+                    DeviceCode = "DEV022-JUKI-MO6714S-02",
+                    DeviceName = "Juki MO-6714S Unit 2",
+                    SerialNumber = "MO6714S-D002",
+                    Model = "MO-6714S",
+                    Manufacturer = "Juki",
+                    ManufactureDate = new DateTime(2021, 5, 12),
+                    InstallationDate = new DateTime(2021, 6, 3),
+                    Description = "Máy vắt sổ 4 chỉ tốc độ cao cho vải nhẹ, đang sửa chữa.",
+                    PhotoUrl = "https://example.com/photos/device_juki_mo6714s_02.jpg",
+                    Status = "InRepair",
+                    IsUnderWarranty = true,
+                    Specifications = "Tốc độ tối đa: 7000 SPM, Tỷ lệ cấp liệu vi sai: 0.7-2.0",
+                    PurchasePrice = 14000000,
+                    Supplier = "Juki Vietnam",
+                    MachineId = Guid.Parse("a1b2c3d4-0022-0022-0022-000000000022"),
+                    PositionId = Guid.Parse("f1e2d3c4-0026-0026-0026-000000000026"), // Khu May Nặng C, Index 1
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                // Devices for Brother S-7200C (2 devices)
+                new Device
+                {
+                    Id = Guid.Parse("d1e2f3a4-0023-0023-0023-000000000023"),
+                    DeviceCode = "DEV023-BROTHER-S7200C-01",
+                    DeviceName = "Brother S-7200C Unit 1",
+                    SerialNumber = "S7200C-D001",
+                    Model = "S-7200C",
+                    Manufacturer = "Brother",
+                    ManufactureDate = new DateTime(2022, 8, 15),
+                    InstallationDate = new DateTime(2022, 9, 1),
+                    Description = "Máy may kim đơn kỹ thuật số với cắt chỉ tự động cho vải trung bình.",
+                    PhotoUrl = "https://example.com/photos/device_brother_s7200c_01.jpg",
+                    Status = "Active",
+                    IsUnderWarranty = true,
+                    Specifications = "Tốc độ tối đa: 5000 SPM, Cắt chỉ tự động",
+                    PurchasePrice = 22000000,
+                    Supplier = "Brother Vietnam",
+                    MachineId = Guid.Parse("a1b2c3d4-0023-0023-0023-000000000023"),
+                    PositionId = Guid.Parse("f1e2d3c4-0005-0005-0005-000000000005"),
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Device
+                {
+                    Id = Guid.Parse("d1e2f3a4-0024-0024-0024-000000000024"),
+                    DeviceCode = "DEV024-BROTHER-S7200C-02",
+                    DeviceName = "Brother S-7200C Unit 2",
+                    SerialNumber = "S7200C-D002",
+                    Model = "S-7200C",
+                    Manufacturer = "Brother",
+                    ManufactureDate = new DateTime(2022, 8, 17),
+                    InstallationDate = new DateTime(2022, 9, 3),
+                    Description = "Máy may kim đơn kỹ thuật số với cắt chỉ tự động cho vải dày.",
+                    PhotoUrl = "https://example.com/photos/device_brother_s7200c_02.jpg",
+                    Status = "Active",
+                    IsUnderWarranty = true,
+                    Specifications = "Tốc độ tối đa: 5000 SPM, Cắt chỉ tự động",
+                    PurchasePrice = 22000000,
+                    Supplier = "Brother Vietnam",
+                    MachineId = Guid.Parse("a1b2c3d4-0024-0024-0024-000000000024"),
+                    PositionId = Guid.Parse("f1e2d3c4-0022-0022-0022-000000000022"),
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                // Devices for Singer 4423 (2 devices)
+                new Device
+                {
+                    Id = Guid.Parse("d1e2f3a4-0025-0025-0025-000000000025"),
+                    DeviceCode = "DEV025-SINGER-4423-01",
+                    DeviceName = "Singer 4423 Unit 1",
+                    SerialNumber = "S4423-D001",
+                    Model = "4423",
+                    Manufacturer = "Singer",
+                    ManufactureDate = new DateTime(2020, 10, 5),
+                    InstallationDate = new DateTime(2020, 11, 1),
+                    Description = "Máy may nặng cho vải denim và canvas.",
+                    PhotoUrl = "https://example.com/photos/device_singer_4423_01.jpg",
+                    Status = "Active",
+                    IsUnderWarranty = true,
+                    Specifications = "Tốc độ tối đa: 1100 SPM, Độ nâng chân vịt: 6mm",
+                    PurchasePrice = 17000000,
+                    Supplier = "Singer Vietnam",
+                    MachineId = Guid.Parse("a1b2c3d4-0025-0025-0025-000000000025"),
+                    PositionId = Guid.Parse("f1e2d3c4-0025-0025-0025-000000000025"),
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Device
+                {
+                    Id = Guid.Parse("d1e2f3a4-0026-0026-0026-000000000026"),
+                    DeviceCode = "DEV026-SINGER-4423-02",
+                    DeviceName = "Singer 4423 Unit 2",
+                    SerialNumber = "S4423-D002",
+                    Model = "4423",
+                    Manufacturer = "Singer",
+                    ManufactureDate = new DateTime(2020, 10, 7),
+                    InstallationDate = new DateTime(2020, 11, 3),
+                    Description = "Máy may nặng cho vải da, đã ngừng sử dụng.",
+                    PhotoUrl = "https://example.com/photos/device_singer_4423_02.jpg",
+                    Status = "Retired",
+                    IsUnderWarranty = false,
+                    Specifications = "Tốc độ tối đa: 1100 SPM, Độ nâng chân vịt: 6mm",
+                    PurchasePrice = 17000000,
+                    Supplier = "Singer Vietnam",
+                    MachineId = Guid.Parse("a1b2c3d4-0026-0026-0026-000000000026"),
+                    PositionId = Guid.Parse("f1e2d3c4-0030-0030-0030-000000000030"), // Khu Sản Xuất Nhỏ, Index 1
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                // Devices for Juki LH-3568S (2 devices)
+                new Device
+                {
+                    Id = Guid.Parse("d1e2f3a4-0027-0027-0027-000000000027"),
+                    DeviceCode = "DEV027-JUKI-LH3568S-01",
+                    DeviceName = "Juki LH-3568S Unit 1",
+                    SerialNumber = "LH3568S-D001",
+                    Model = "LH-3568S",
+                    Manufacturer = "Juki",
+                    ManufactureDate = new DateTime(2021, 12, 1),
+                    InstallationDate = new DateTime(2022, 1, 1),
+                    Description = "Máy may hai kim công nghiệp cho vải jeans.",
+                    PhotoUrl = "https://example.com/photos/device_juki_lh3568s_01.jpg",
+                    Status = "Active",
+                    IsUnderWarranty = true,
+                    Specifications = "Tốc độ tối đa: 3000 SPM, Độ dài mũi may: 5mm",
+                    PurchasePrice = 25000000,
+                    Supplier = "Juki Vietnam",
+                    MachineId = Guid.Parse("a1b2c3d4-0027-0027-0027-000000000027"),
+                    PositionId = Guid.Parse("f1e2d3c4-0016-0016-0016-000000000016"),
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Device
+                {
+                    Id = Guid.Parse("d1e2f3a4-0028-0028-0028-000000000028"),
+                    DeviceCode = "DEV028-JUKI-LH3568S-02",
+                    DeviceName = "Juki LH-3568S Unit 2",
+                    SerialNumber = "LH3568S-D002",
+                    Model = "LH-3568S",
+                    Manufacturer = "Juki",
+                    ManufactureDate = new DateTime(2021, 12, 3),
+                    InstallationDate = new DateTime(2022, 1, 3),
+                    Description = "Máy may hai kim công nghiệp cho vải dày, đang sửa chữa.",
+                    PhotoUrl = "https://example.com/photos/device_juki_lh3568s_02.jpg",
+                    Status = "InRepair",
+                    IsUnderWarranty = true,
+                    Specifications = "Tốc độ tối đa: 3000 SPM, Độ dài mũi may: 5mm",
+                    PurchasePrice = 25000000,
+                    Supplier = "Juki Vietnam",
+                    MachineId = Guid.Parse("a1b2c3d4-0028-0028-0028-000000000028"),
+                    PositionId = Guid.Parse("f1e2d3c4-0018-0018-0018-000000000018"), // Khu Chuẩn Bị Vải, Index 3
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                // Devices for Brother B735 (2 devices)
+                new Device
+                {
+                    Id = Guid.Parse("d1e2f3a4-0029-0029-0029-000000000029"),
+                    DeviceCode = "DEV029-BROTHER-B735-01",
+                    DeviceName = "Brother B735 Unit 1",
+                    SerialNumber = "B735-D001",
+                    Model = "B735",
+                    Manufacturer = "Brother",
+                    ManufactureDate = new DateTime(2020, 4, 20),
+                    InstallationDate = new DateTime(2020, 5, 10),
+                    Description = "Máy vắt sổ 3 chỉ cho vải mỏng và tổng hợp.",
+                    PhotoUrl = "https://example.com/photos/device_brother_b735_01.jpg",
+                    Status = "Active",
+                    IsUnderWarranty = true,
+                    Specifications = "Tốc độ tối đa: 6500 SPM, Tỷ lệ cấp liệu vi sai: 0.7-2.0",
+                    PurchasePrice = 13000000,
+                    Supplier = "Brother Vietnam",
+                    MachineId = Guid.Parse("a1b2c3d4-0029-0029-0029-000000000029"),
+                    PositionId = Guid.Parse("f1e2d3c4-0017-0017-0017-000000000017"),
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Device
+                {
+                    Id = Guid.Parse("d1e2f3a4-0030-0030-0030-000000000030"),
+                    DeviceCode = "DEV030-BROTHER-B735-02",
+                    DeviceName = "Brother B735 Unit 2",
+                    SerialNumber = "B735-D002",
+                    Model = "B735",
+                    Manufacturer = "Brother",
+                    ManufactureDate = new DateTime(2020, 4, 22),
+                    InstallationDate = new DateTime(2020, 5, 12),
+                    Description = "Máy vắt sổ 3 chỉ cho vải cotton, đã ngừng sử dụng.",
+                    PhotoUrl = "https://example.com/photos/device_brother_b735_02.jpg",
+                    Status = "Retired",
+                    IsUnderWarranty = false,
+                    Specifications = "Tốc độ tối đa: 6500 SPM, Tỷ lệ cấp liệu vi sai: 0.7-2.0",
+                    PurchasePrice = 13000000,
+                    Supplier = "Brother Vietnam",
+                    MachineId = Guid.Parse("a1b2c3d4-0030-0030-0030-000000000030"),
+                    PositionId = Guid.Parse("f1e2d3c4-0027-0027-0027-000000000027"), // Khu May Nặng C, Index 2
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 }
