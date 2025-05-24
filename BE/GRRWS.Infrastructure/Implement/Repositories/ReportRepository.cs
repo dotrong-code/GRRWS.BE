@@ -17,7 +17,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
         public async Task<List<Report>> GetReportsWithRequestAsync()
         {
-            return await _context.Set<Report>().Include(r => r.Request).Include(r => r.ErrorDetails).ThenInclude(ri => ri.Error).Where(r => r.IsDeleted != true).OrderByDescending(r => r.CreatedDate).ToListAsync();
+            return await _context.Set<Report>().Include(r => r.Request).Include(r => r.ErrorDetails).ThenInclude(ri => ri.Error).Where(r => r.IsDeleted != true).OrderBy(r => r.CreatedDate).ToListAsync();
         }
 
         public async Task<Report> GetReportWithRequestAsync(Guid id)
@@ -30,7 +30,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         }
         public async Task<List<Report>> GetAllReportAsync()
         {
-            return await _context.Set<Report>().Include(r => r.Request).Include(r => r.ErrorDetails).ThenInclude(ri => ri.Error).Where(r => r.IsDeleted != true).OrderByDescending(r => r.CreatedDate).ToListAsync();
+            return await _context.Set<Report>().Include(r => r.Request).Include(r => r.ErrorDetails).ThenInclude(ri => ri.Error).Where(r => r.IsDeleted != true).OrderBy(r => r.CreatedDate).ToListAsync();
         }
         public async Task<Report> GetReportByIdAsync(Guid id)
         {
