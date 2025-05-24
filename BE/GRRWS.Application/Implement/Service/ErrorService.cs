@@ -4,9 +4,6 @@ using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.DTOs.Sparepart;
-
-
-using GRRWS.Infrastructure.DTOs.Sparepart;
 using GRRWS.Infrastructure.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -30,7 +27,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Error.Validation("InvalidMaxResults", "maxResults must be greater than 0."));
 
             // Generate cache key
-            var cacheKey = $"suggestions_{query.ToLowerInvariant()}";
+            var cacheKey = $"error_suggestions_{query.ToLowerInvariant()}";
 
             // Check cache
             if (_cache.TryGetValue(cacheKey, out List<SuggestObject> cachedSuggestions) && cachedSuggestions != null)
@@ -55,7 +52,22 @@ namespace GRRWS.Application.Implement.Service
         }
 
 
+        public async Task<Result> GetErrorsByReportIdWithoutTaskAsync(Guid reportId)
+        {
+            if (reportId == Guid.Empty)
+            {
+                return Result.Failure(Error.Validation("InvalidReportId", "Report ID cannot be empty."));
+            }
 
+            var errors = await _unitOfWork.ErrorRepository.GetErrorsByReportIdWithoutTaskAsync(reportId);
+
+            if (errors == null || !errors.Any())
+            {
+                return Result.Failure(Error.NotFound("NoErrors", "No unassigned errors found for this report."));
+            }
+
+            return Result.SuccessWithObject(errors);
+        }
 
         public async Task<Result> GetRecommendedErrorsAsync(IssueIdsRequestDTO dto)
         {
@@ -81,6 +93,7 @@ namespace GRRWS.Application.Implement.Service
             }
             var sparepartDtos = spareparts.Select(s => new SparepartDto
             {
+                Id = s.Id,
                 SparepartCode = s.SparepartCode,
                 SparepartName = s.SparepartName,
                 Description = s.Description,

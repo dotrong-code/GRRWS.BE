@@ -95,5 +95,33 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Area retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+
+        [HttpGet("{id}/warranty-status")]
+        public async Task<IResult> GetWarrantyStatus(Guid id)
+        {
+            var result = await _deviceService.GetWarrantyStatusAsync(id);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Warranty status retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+
+        [HttpGet("DeviceAndMachineIssueHistory/{deviceId}")]
+        public async Task<IResult> GetAllDeviceAndMachineIssueHistoryByDeviceId(Guid deviceId)
+        {
+            var result = await _deviceService.GetAllDeviceAndMachineIssueHistoryByDeviceIdAsync(deviceId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Issue history retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+        [HttpGet("DeviceAndMachineErrorHistory/{deviceId}")]
+        public async Task<IResult> GetAllDeviceAndMachineErrorHistoryByDeviceId(Guid deviceId)
+        {
+            var result = await _deviceService.GetAllDeviceAndMachineErrorHistoryByDeviceIdAsync(deviceId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Error history retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }

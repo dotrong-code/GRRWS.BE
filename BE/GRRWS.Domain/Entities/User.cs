@@ -2,7 +2,7 @@
 {
     public class User : BaseEntity
     {
-        
+
         public string? FullName { get; set; }
         public string? StaffID { get; set; }
         public string? Email { get; set; }
@@ -20,5 +20,6 @@
         public Feedback? Feedback { get; set; }
         public ICollection<Request>? Requests { get; set; }
         public ICollection<Tasks>? Tasks { get; set; }
+
     }
 }
