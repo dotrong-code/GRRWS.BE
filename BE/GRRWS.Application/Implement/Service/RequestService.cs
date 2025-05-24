@@ -1,14 +1,8 @@
 ﻿using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
-using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -163,7 +157,7 @@ namespace GRRWS.Application.Implement.Service
             {
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "DeviceId cannot be null.", 0));
             }
-            
+
             var request = new Request
             {
                 Id = Guid.NewGuid(),
@@ -229,6 +223,14 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "No issues found for the request.", 0));
 
             return Result.SuccessWithObject(issues);
+        }
+
+        public async Task<Result> GetRequestSummary()
+        {
+            var list = await _requestRepository.GetRequestSummaryAsync();
+            if (list == null || !list.Any())
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not Found", "Not found any list"));
+            return Result.SuccessWithObject(list);
         }
     }
 }

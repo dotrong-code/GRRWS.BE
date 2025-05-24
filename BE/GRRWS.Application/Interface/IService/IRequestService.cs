@@ -1,10 +1,5 @@
 ﻿using GRRWS.Application.Common.Result;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GRRWS.Application.Interface.IService
 {
@@ -18,5 +13,6 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetRequestByDeviceIdAsync(Guid id);
         Task<Result> GetRequestByUserIdAsync(Guid userId);
         Task<Result> GetIssuesByRequestIdAsync(Guid requestId);
+        Task<Result> GetRequestSummary();
     }
 }

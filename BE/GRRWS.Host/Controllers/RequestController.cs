@@ -92,5 +92,15 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved issues")
                 : ResultExtensions.ToProblemDetails(result);
         }
+
+        [HttpGet("get-summary")]
+        public async Task<IResult> GetSummary()
+        {
+            var result = await _requestService.GetRequestSummary();
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved summary")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
     }
 }
