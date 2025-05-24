@@ -259,6 +259,14 @@ namespace GRRWS.Application.Implement.Service
 ));
             }
 
+            var existingRequests = await _unitOfWork.RequestRepository.GetRequestByDeviceIdAsync(request.DeviceId);
+            var restrictStatus = new[] { "Pending", "InProgress" };
+            if (existingRequests.Any(r => !r.IsDeleted && restrictStatus.Contains(r.Status)))
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure(
+                    "RequestFailed", "Cannot create a new request for this device because it has pending or in-progress requests."));
+            }
+
             var getDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(request.DeviceId);
             var createTitle = "";
             try
