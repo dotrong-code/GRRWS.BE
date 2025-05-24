@@ -11,7 +11,6 @@ namespace GRRWS.Infrastructure.DTOs.Report
     {
         public Guid? RequestId { get; set; }
         public int Priority { get; set; }
-        public string Location { get; set; }
         public List<Guid> ErrorIds { get; set; }
     }
 

@@ -7,6 +7,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
     public interface IUserRepository : IGenericRepository<User>
     {
         Task<bool> EmailExistsAsync(string email);
+        Task<bool> IdExistsAsync(Guid id);
         Task<bool> UserNameExistsAsync(string userName);
         Task<User> GetUserByEmailAndPasswordAsync(string email, string password);
         Task<(List<GetUserResponse> Users, int TotalCount)> GetAllUsersAsync(
@@ -20,7 +21,6 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<User> GetUserByIdAsync(Guid id);
         // Task<List<Role>> GetAllRolesAsync();
         Task<int> DeleteUserAsync(Guid id);
-
         Task<List<User>> GetUsers();
         Task<List<User>> GetUsersByRole(int role);
     }

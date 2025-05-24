@@ -30,6 +30,33 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Take(maxResults)
                 .ToListAsync();
         }
+
+        public async Task<List<SuggestObject>> GetNotFoundIssueDisplayNamesAsync(IEnumerable<Guid> issueIds)
+        {
+            var idSet = issueIds.ToHashSet();
+
+            // Get all existing issues with their IDs and DisplayNames
+            var existingIssues = await _context.Issues
+                .AsNoTracking()
+                .Where(i => idSet.Contains(i.Id) && !i.IsDeleted)
+                .Select(i => new { i.Id, i.DisplayName })
+                .ToListAsync();
+
+            var foundIds = existingIssues.Select(i => i.Id).ToHashSet();
+
+            // Find IDs that are missing
+            var notFoundIds = idSet.Except(foundIds);
+
+            // Return SuggestObject for each not found ID (DisplayName can be a placeholder)
+            return notFoundIds
+                .Select(id => new SuggestObject
+                {
+                    Id = id,
+                    Name = "(Not found)"
+                })
+                .ToList();
+        }
+
     }
 
 }
