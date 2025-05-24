@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using GRRWS.Domain.Entities;
+﻿using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DTOs.Device;
 using GRRWS.Infrastructure.DTOs.History;
 using GRRWS.Infrastructure.Interfaces.IRepositories.IGeneric;

@@ -1,10 +1,9 @@
-﻿using GRRWS.Application.Common.Result;
-using GRRWS.Application.Common;
+﻿using GRRWS.Application.Common;
+using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.User.Update;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GRRWS.Host.Controllers
@@ -70,6 +69,14 @@ namespace GRRWS.Host.Controllers
             var result = await _userService.DeleteUserAsync(requestId);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "User deleted successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpGet("role")]
+        public async Task<IResult> GetUsersByRole([FromQuery] int role)
+        {
+            var result = await _userService.GetUsersByRole(role);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Users by role retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
 

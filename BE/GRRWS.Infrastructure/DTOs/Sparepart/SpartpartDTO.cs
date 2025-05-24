@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GRRWS.Infrastructure.DTOs.Sparepart
+﻿namespace GRRWS.Infrastructure.DTOs.Sparepart
 {
     public class SparepartDto
     {
+        public Guid Id { get; set; }
         public string SparepartCode { get; set; }
         public string SparepartName { get; set; }
         public string? Description { get; set; }
