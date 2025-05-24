@@ -112,5 +112,10 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Where(u => u.Role == role && !u.IsDeleted)
                 .ToListAsync();
         }
+
+        public async Task<bool> IdExistsAsync(Guid id)
+        {
+            return await _context.Users.AsNoTracking().AnyAsync(d => d.Id == id && !d.IsDeleted);
+        }
     }
 }

@@ -6,7 +6,7 @@
         //NVT-A52-1-ABCDE
         public string? RequestTitle { get; set; }
         public string? Description { get; set; }
-        public string? Status { get; set; } // e.g., Pending, Approved, Denied
+        public string? Status { get; set; } // e.g., Pending, Inprogress,Approved, Denied
         public DateTime? DueDate { get; set; }
         public string? Priority { get; set; }
         // Foreign key 
