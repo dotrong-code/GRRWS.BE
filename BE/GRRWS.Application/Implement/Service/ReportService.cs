@@ -33,11 +33,11 @@ namespace GRRWS.Application.Implement.Service
                 if (dto.ErrorIds.Any(errorId => errorId == Guid.Empty))
                     return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "ErrorIds cannot contain empty GUIDs.", 0));
             var request = await _unit.RequestRepository.GetRequestByIdAsync((Guid)dto.RequestId);
-            var missingIssues = await _unit.IssueRepository.GetNotFoundIssueDisplayNamesAsync(dto.ErrorIds);
-            if (missingIssues.Any())
+            var missingErrors = await _unit.ErrorRepository.GetNotFoundErrorDisplayNamesAsync(dto.ErrorIds);
+            if (missingErrors.Any())
             {
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
-                    "NotFound", "Some issues do not exist: " + string.Join(", ", missingIssues.Select(x => x.Id))
+                    "NotFound", "Some errors do not exist: " + string.Join(", ", missingErrors.Select(x => x.Id))
                 ));
             }
 
