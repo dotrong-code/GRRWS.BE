@@ -1,7 +1,6 @@
 ﻿using GRRWS.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
 
 namespace GRRWS.Infrastructure.DB.Configuration
 {
@@ -59,7 +58,15 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
-
+                new Zone
+                {
+                    Id = Guid.Parse("c1d2e3f4-0011-0011-0011-000000000011"),
+                    ZoneName = "Dây Chuyền May D",
+                    ZoneCode = "A06",
+                    AreaId = Guid.Parse("b1c2d3e4-0001-0001-0001-000000000001"),
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
                 // SXB
                 new Zone
                 {
