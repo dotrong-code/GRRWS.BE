@@ -1,8 +1,10 @@
-﻿using GRRWS.Application.Common.Result;
+﻿using GRRWS.Application.Common;
+using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
+using GRRWS.Infrastructure.Interfaces;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
 using System;
 using System.Collections.Generic;
@@ -16,10 +18,12 @@ namespace GRRWS.Application.Implement.Service
     {
         private readonly IRequestRepository _requestRepository;
         private readonly ITokenService _tokenService;
-        public RequestService(IRequestRepository requestRepository, ITokenService tokenService)
+        private readonly IUnitOfWork _unitOfWork;
+        public RequestService(IRequestRepository requestRepository, ITokenService tokenService, IUnitOfWork unitOfWork)
         {
             _requestRepository = requestRepository;
             _tokenService = tokenService;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Result> GetAllAsync()
@@ -163,18 +167,44 @@ namespace GRRWS.Application.Implement.Service
             {
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "DeviceId cannot be null.", 0));
             }
-            
+            if (!await _unitOfWork.DeviceRepository.DeviceIdExistsAsync(dto.DeviceId))
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Device does not exist."));
+            }
+            if (!await _unitOfWork.UserRepository.IdExistsAsync(userId))
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "User does not exist."));
+            }
+            var missingIssues = await _unitOfWork.IssueRepository.GetNotFoundIssueDisplayNamesAsync(dto.IssueIds);
+            if (missingIssues.Any())
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
+    "NotFound",
+    "Some issues do not exist: " + string.Join(", ", missingIssues.Select(x => x.Id))
+));
+            }
+
+            var getDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(dto.DeviceId);
+            var createTitle = "";
+            try
+            {
+                createTitle = TitleHelper.GenerateRequestTitle(getDevice.Position.Zone.Area.AreaCode, getDevice.Position.Zone.ZoneCode, getDevice.Position.Index, getDevice.DeviceCode);
+            }
+            catch (Exception)
+            {
+                createTitle = "Create title fail";
+            }
             var request = new Request
             {
                 Id = Guid.NewGuid(),
                 DeviceId = dto.DeviceId,
-                RequestTitle = dto.RequestTitle,
-                Description = dto.Description,
+                RequestTitle = createTitle,
+                Description = createTitle,
                 Status = "Pending",
                 CreatedBy = userId,
                 RequestedById = userId,
                 CreatedDate = DateTime.UtcNow,
-                DueDate = DateTime.Now,
+                DueDate = DateTime.Now.AddDays(7), // Default due date is 7 days from now
                 Priority = "None",
                 IsDeleted = false,
                 RequestIssues = dto.IssueIds.Select(issueId => new RequestIssue
@@ -185,7 +215,7 @@ namespace GRRWS.Application.Implement.Service
 
             await _requestRepository.CreateAsync(request);
 
-            return Result.SuccessWithObject(new { Message = "Successfully!" });
+            return Result.SuccessWithObject(new { Message = "Request created successfully!" });
         }
 
         public async Task<Result> UpdateAsync(UpdateRequestDTO dto, Guid id)

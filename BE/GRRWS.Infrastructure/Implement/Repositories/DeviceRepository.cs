@@ -181,6 +181,9 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 })
                 .ToListAsync();
         }
-
+        public async Task<bool> DeviceIdExistsAsync(Guid deviceId)
+        {
+            return await _context.Devices.AsNoTracking().AnyAsync(d => d.Id == deviceId && !d.IsDeleted);
+        }
     }
 }
