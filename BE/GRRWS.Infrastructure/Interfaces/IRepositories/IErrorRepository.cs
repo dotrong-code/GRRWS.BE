@@ -11,5 +11,6 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<List<SuggestObject>> GetErrorSuggestionsAsync(string normalizedQuery, int maxResults);
         Task<List<ErrorSimpleDTO>> GetErrorsByIssueIdsAsync(List<Guid> issueIds);
         Task<List<Sparepart>> GetSparepartsByErrorIdAsync(Guid errorId);
+        Task<List<SuggestObject>> GetNotFoundErrorDisplayNamesAsync(IEnumerable<Guid> errorIds);
     }
 }
