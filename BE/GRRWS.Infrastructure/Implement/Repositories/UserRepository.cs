@@ -111,6 +111,9 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         {
             return await _context.Users.ToListAsync();
         }
-
+        public async Task<bool> IdExistsAsync(Guid id)
+        {
+            return await _context.Users.AsNoTracking().AnyAsync(d => d.Id == id && !d.IsDeleted);
+        }
     }
 }
