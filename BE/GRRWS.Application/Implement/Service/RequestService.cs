@@ -2,15 +2,9 @@
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
-using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.Interfaces;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -259,5 +253,84 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.SuccessWithObject(issues);
         }
+
+        public async Task<Result> GetRequestSummary()
+        {
+            var list = await _requestRepository.GetRequestSummaryAsync();
+            if (list == null || !list.Any())
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not Found", "Not found any list"));
+            return Result.SuccessWithObject(list);
+        }
+
+        public async Task<Result> CreateRequestAsync(CreateRequest request, Guid userId)
+        {
+            if (!await _unitOfWork.DeviceRepository.DeviceIdExistsAsync(request.DeviceId))
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Device does not exist."));
+            }
+            // check in request : Can create when request status is Approved or Deinied
+
+
+            if (!await _unitOfWork.UserRepository.IdExistsAsync(userId))
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "User does not exist."));
+            }
+            var missingIssues = await _unitOfWork.IssueRepository.GetNotFoundIssueDisplayNamesAsync(request.IssueIds);
+            if (missingIssues.Any())
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
+    "NotFound",
+    "Some issues do not exist: " + string.Join(", ", missingIssues.Select(x => x.Id))
+));
+            }
+
+            var existingRequests = await _unitOfWork.RequestRepository.GetRequestByDeviceIdAsync(request.DeviceId);
+            var restrictStatus = new[] { "Pending", "InProgress" };
+            if (existingRequests.Any(r => !r.IsDeleted && restrictStatus.Contains(r.Status)))
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure(
+                    "RequestFailed", "Cannot create a new request for this device because it has pending or in-progress requests."));
+            }
+
+            var getDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(request.DeviceId);
+            var createTitle = "";
+            try
+            {
+                createTitle = TitleHelper.GenerateRequestTitle(getDevice.Position.Zone.Area.AreaCode, getDevice.Position.Zone.ZoneCode, getDevice.Position.Index, getDevice.DeviceCode);
+            }
+            catch (Exception)
+            {
+
+                createTitle = "Create title fail";
+            }
+            var newRequest = new Request
+            {
+                Id = Guid.NewGuid(),
+                DeviceId = request.DeviceId,
+                RequestTitle = createTitle,
+                Description = "This is description",
+                Status = "Pending",
+                CreatedBy = userId,
+                RequestedById = userId,
+                CreatedDate = DateTime.UtcNow,
+                DueDate = DateTime.Now.AddDays(7), // Default due date is 7 days from now
+                Priority = "None",
+                IsDeleted = false,
+                RequestIssues = request.IssueIds.Select(issueId => new RequestIssue
+                {
+                    IssueId = issueId
+                }).ToList()
+            };
+            await _requestRepository.CreateAsync(newRequest);
+            return Result.SuccessWithObject(new { Message = "Request created successfully!" });
+
+
+
+
+
+
+        }
+
+
     }
 }

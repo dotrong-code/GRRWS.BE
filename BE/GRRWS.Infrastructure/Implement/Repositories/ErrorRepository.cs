@@ -55,27 +55,20 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Select(es => es.Sparepart)
                 .ToListAsync();
         }
-        public async Task<List<SuggestObject>> GetNotFoundErrorDisplayNamesAsync(IEnumerable<Guid> errorIds)
+        public async Task<List<ErrorSimpleDTO>> GetErrorsByReportIdWithoutTaskAsync(Guid reportId)
         {
-            var idSet = errorIds.ToHashSet();
-
-            var existingErrors = await _context.Errors
-                .AsNoTracking()
-                .Where(i => idSet.Contains(i.Id) && !i.IsDeleted)
-                .Select(i => new { i.Id, i.Name })
+            var errors = await _context.ErrorDetails
+                .Where(ed => ed.ReportId == reportId && ed.TaskId == null && !ed.Error.IsDeleted)
+                .Select(ed => new ErrorSimpleDTO
+                {
+                    Id = ed.Error.Id,
+                    Name = ed.Error.Name
+                })
+                .Distinct()
                 .ToListAsync();
 
-            var foundIds = existingErrors.Select(i => i.Id).ToHashSet();
-
-            var notFoundIds = idSet.Except(foundIds);
-
-            return notFoundIds
-                .Select(id => new SuggestObject
-                {
-                    Id = id,
-                    Name = "(Not found)"
-                })
-                .ToList();
+            return errors;
         }
+
     }
 }

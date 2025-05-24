@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentValidation;
+﻿using FluentValidation;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.Common;
@@ -13,7 +8,6 @@ using GRRWS.Infrastructure.DTOs.Firebase.GetImage;
 using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.User.Get;
 using GRRWS.Infrastructure.DTOs.User.Update;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -146,6 +140,15 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(response);
         }
 
+        public async Task<Result> GetUsersByRole(int role)
+        {
+            return await _unitOfWork.UserRepository.GetUsersByRole(role) switch
+            {
+                var users when users == null => Result.Failure(UserErrorMessage.UserNotExist()),
+                var users => Result.SuccessWithObject(users)
+            };
+        }
+
         public async Task<Result> UpdateUserAsync(UpdateUserRequest request)
         {
             var validationResult = await _updateUserValidator.ValidateAsync(request);
@@ -175,7 +178,7 @@ namespace GRRWS.Application.Implement.Service
             {
                 return Result.Failure(UserErrorMessage.UserUpdateFailed());
             }
-            
+
             return Result.SuccessWithObject(user);
         }
     }
