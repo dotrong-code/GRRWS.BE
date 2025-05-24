@@ -94,15 +94,15 @@ namespace GRRWS.Host.Controllers
         }
 
 
-        [HttpPost("create-request")]
-        public async Task<IResult> CreateRequest([FromBody] CreateRequest request)
-        {
-            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
-            var result = await _requestService.CreateRequestAsync(request, c.UserId);
-            return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, "Successfully created request")
-                : ResultExtensions.ToProblemDetails(result);
-        }
+        //[HttpPost("create-request")]
+        //public async Task<IResult> CreateRequest([FromBody] CreateRequest request)
+        //{
+        //    CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+        //    var result = await _requestService.CreateRequestAsync(request, c.UserId);
+        //    return result.IsSuccess
+        //        ? ResultExtensions.ToSuccessDetails(result, "Successfully created request")
+        //        : ResultExtensions.ToProblemDetails(result);
+        //}
 
 
         [HttpGet("get-summary")]
