@@ -35,7 +35,7 @@ namespace GRRWS.Host.Starup
         public static IServiceCollection RegisterServices(this IServiceCollection services)
         {
             var credentialPath = Path.Combine(Directory.GetCurrentDirectory(), "Keys",
-                "koiveterinaryservicecent-925db-firebase-adminsdk-vus2r-bd418169a6.json");
+                "koiveterinaryservicecent-925db-firebase-adminsdk-vus2r-2b14e43049.json");
 
             try
             {

@@ -5,6 +5,7 @@ using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static GRRWS.Infrastructure.DTOs.RequestDTO.CreateRequestFormDTO;
 
 namespace GRRWS.Host.Controllers
 {
@@ -55,7 +56,7 @@ namespace GRRWS.Host.Controllers
         }
 
         [Authorize]
-        [HttpPost]
+        [HttpPost("api/Request")]
         public async Task<IResult> Create([FromBody] CreateRequestDTO dto)
         {
             CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
@@ -64,6 +65,34 @@ namespace GRRWS.Host.Controllers
 ? ResultExtensions.ToSuccessDetails(result, "Successfully")
 : ResultExtensions.ToProblemDetails(result);
         }
+
+        [HttpPost("api/Request/custom")]
+        
+        
+        public async Task<IResult> CreateRequest([FromForm] CreateRequestDTO dto)
+        {
+            // Assume userId is obtained from authentication (e.g., JWT)
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+           
+
+            var result = await _requestService.CreateAsync(dto, c.UserId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Request created successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+        [HttpPost("test-create")]
+        [Consumes("multipart/form-data")]
+        public async Task<IResult> TestCreateRequest([FromForm] TestCreateRequestDTO dto)
+        {
+            var userId = Guid.Parse("B82C0444-4914-4BFC-85BB-0C0DFDD05827"); // Replace with actual user ID retrieval
+            var result = await _requestService.CreateTestAsync(dto, userId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Request created successfully for testing")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+
 
         [HttpPut("{id}")]
         public async Task<IResult> Update(Guid id, [FromBody] UpdateRequestDTO dto)
