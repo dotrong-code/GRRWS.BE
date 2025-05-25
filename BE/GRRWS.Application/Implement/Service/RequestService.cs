@@ -330,14 +330,15 @@ namespace GRRWS.Application.Implement.Service
         //            await _requestRepository.CreateAsync(newRequest);
         //            return Result.SuccessWithObject(new { Message = "Request created successfully!" });
         //        }
-        public async Task<Result> CancelRequestAsync(Guid id)
+        public async Task<Result> CancelRequestAsync(CancelRequestDTO dto)
         {
-            var r = await _requestRepository.GetByIdAsync(id);
+            var r = await _requestRepository.GetByIdAsync(dto.RequestId);
             if (r == null || r.IsDeleted)
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Request not found.", 0));
             if (r.Status == "Approved" || r.Status == "Denied" || r.Status == "InProgress" || r.Status == "Completed")
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Cannot cancel this request! You can only cancel request if the status is Pending.", 0));
             r.Status = "Denied";
+            r.Description = "Request has been denied by reason: " + dto.Reason;
             r.ModifiedDate = DateTime.UtcNow;
             await _requestRepository.UpdateAsync(r);
 
