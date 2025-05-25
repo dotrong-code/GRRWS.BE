@@ -15,5 +15,8 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetIssuesByRequestIdAsync(Guid requestId);
         Task<Result> GetRequestSummary();
         //Task<Result> CreateRequestAsync(CreateRequest request, Guid userId);
+        Task<Result> GetRequestDetailWebByIdAsync(Guid requestId);
+        Task<Result> GetErrorsForRequestDetailWebAsync(Guid requestId);
+        Task<Result> GetTasksForRequestDetailWebAsync(Guid requestId);
     }
 }

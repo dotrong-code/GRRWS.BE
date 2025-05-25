@@ -13,7 +13,9 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<List<Request>> GetRequestByUserIdAsync(Guid userId);
         Task<List<IssueSimpleDTO>> GetIssuesByRequestIdAsync(Guid requestId);
         Task<List<RequestSummary>> GetRequestSummaryAsync();
-
+        Task<RequestDetailWeb?> GetRequestDetailWebByIdAsync(Guid requestId);
+        Task<List<ErrorForRequestDetailWeb>> GetErrorsForRequestDetailWebAsync(Guid requestId);
+        Task<List<TaskForRequestDetailWeb>> GetTasksForRequestDetailWebAsync(Guid requestId);
 
     }
 }

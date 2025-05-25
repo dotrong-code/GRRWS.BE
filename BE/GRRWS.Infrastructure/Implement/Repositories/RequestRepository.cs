@@ -130,5 +130,96 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .AsNoTracking() // Improves query performance by not tracking entities
                 .ToListAsync();
         }
+
+        public async Task<RequestDetailWeb?> GetRequestDetailWebByIdAsync(Guid requestId)
+        {
+            var request = await _context.Requests
+               .AsNoTracking()
+               .Where(r => r.Id == requestId && !r.IsDeleted)
+               .Select(r => new RequestDetailWeb
+               {
+                   RequestId = r.Id,
+                   RequestTitle = r.RequestTitle,
+                   Priority = r.Priority,
+                   Status = r.Status,
+                   RequestDate = r.CreatedDate,
+                   DeviceId = r.DeviceId,
+                   DeviceName = r.Device.DeviceName,
+                   Issues = r.RequestIssues.Select(ri => new IssueForRequestDetailWeb
+                   {
+                       IssueId = ri.Issue.Id,
+                       DisplayName = ri.Issue.DisplayName,
+                       Status = ri.Status,
+                       Images = ri.Images.Select(img => img.ImageUrl).ToList()
+                   }).ToList()
+               })
+               .FirstOrDefaultAsync();
+            return request;
+        }
+
+        public async Task<List<ErrorForRequestDetailWeb>> GetErrorsForRequestDetailWebAsync(Guid requestId)
+        {
+            // Get the reportId from the request
+            var reportId = await _context.Requests
+                .Where(r => r.Id == requestId && !r.IsDeleted)
+                .Select(r => r.ReportId)
+                .FirstOrDefaultAsync();
+
+            if (reportId == null)
+                return new List<ErrorForRequestDetailWeb>();
+
+            // Get errors from ErrorDetails by reportId
+            return await _context.ErrorDetails
+                .AsNoTracking()
+                .Where(ed => ed.ReportId == reportId)
+                .Select(ed => new ErrorForRequestDetailWeb
+                {
+                    ErrorId = ed.Error.Id,
+                    ErrorCode = ed.Error.ErrorCode,
+                    Name = ed.Error.Name,
+                    Severity = ed.Error.Severity,
+                    Status = ed.TaskId == null ? "Unassigned" : "Assigned" // Fixed the incorrect reference to 'ErrorDetails'
+                })
+                .ToListAsync();
+        }
+
+        public async Task<List<TaskForRequestDetailWeb>> GetTasksForRequestDetailWebAsync(Guid requestId)
+        {
+            // Get the reportId from the request
+            var reportId = await _context.Requests
+                .Where(r => r.Id == requestId && !r.IsDeleted)
+                .Select(r => r.ReportId)
+                .FirstOrDefaultAsync();
+
+            if (reportId == null)
+                return new List<TaskForRequestDetailWeb>();
+
+            // Get all unique TaskIds from ErrorDetails for this report
+            var taskIds = await _context.ErrorDetails
+                .Where(ed => ed.ReportId == reportId && ed.TaskId != null)
+                .Select(ed => ed.TaskId.Value)
+                .Distinct()
+                .ToListAsync();
+
+            if (!taskIds.Any())
+                return new List<TaskForRequestDetailWeb>();
+
+            // Get tasks by those TaskIds
+            return await _context.Tasks
+                .AsNoTracking()
+                .Where(t => taskIds.Contains(t.Id) && !t.IsDeleted)
+                .Select(t => new TaskForRequestDetailWeb
+                {
+                    TaskId = t.Id,
+                    TaskType = t.TaskType,
+                    Status = t.Status,
+                    StartTime = t.StartTime,
+                    AssigneeName = t.Assignee.UserName,
+                    ExpectedTime = t.ExpectedTime,
+                    NumberOfErrors = t.ErrorDetails.Count
+                })
+                .ToListAsync();
+        }
+
     }
 }
