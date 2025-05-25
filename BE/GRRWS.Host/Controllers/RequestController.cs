@@ -107,10 +107,17 @@ namespace GRRWS.Host.Controllers
         {
             var result = await _requestService.DeleteAsync(id);
             return result.IsSuccess
-? ResultExtensions.ToSuccessDetails(result, "Successfully")
-: ResultExtensions.ToProblemDetails(result);
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully")
+                : ResultExtensions.ToProblemDetails(result);
         }
-
+        [HttpDelete("Cancel")]
+        public async Task<IResult> CancelRequest([FromBody] CancelRequestDTO dto)
+        {
+            var result = await _requestService.CancelRequestAsync(dto);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
 
         [HttpGet("{requestId}/issues")]
         public async Task<IResult> GetIssuesByRequestId(Guid requestId)
