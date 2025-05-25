@@ -85,8 +85,8 @@ namespace GRRWS.Host.Controllers
         [Consumes("multipart/form-data")]
         public async Task<IResult> TestCreateRequest([FromForm] TestCreateRequestDTO dto)
         {
-            var userId = Guid.Parse("B82C0444-4914-4BFC-85BB-0C0DFDD05827"); // Replace with actual user ID retrieval
-            var result = await _requestService.CreateTestAsync(dto, userId);
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _requestService.CreateTestAsync(dto, c.UserId);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Request created successfully for testing")
                 : ResultExtensions.ToProblemDetails(result);
