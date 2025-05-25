@@ -375,6 +375,27 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(new { Message = "Task assigned successfully!" });
         }
 
+        public async Task<Result> CreateTaskWebAsync(CreateTaskWeb dto)
+        {
+            var request = await _unitOfWork.RequestRepository.GetByIdAsync(dto.RequestId);
+            if (request == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Request is not exist"));
+            }
 
+            var userExists = await _unitOfWork.UserRepository.IdExistsAsync(dto.AssigneeId);
+            if (!userExists)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "User not found"));
+            }
+            var missingErrors = await _unitOfWork.ErrorRepository.GetNotFoundErrorDisplayNamesAsync(dto.ErrorIds);
+            if (missingErrors.Any())
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Error not found"));
+            }
+            var task = _unitOfWork.TaskRepository.CreateTaskWebAsync(dto);
+            return Result.SuccessWithObject(task);
+
+        }
     }
 }

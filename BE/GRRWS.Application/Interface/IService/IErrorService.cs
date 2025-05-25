@@ -11,5 +11,6 @@ namespace GRRWS.Application.Interface.IService
 
         Task<Result> GetSparepartsByErrorIdAsync(Guid errorId);
         Task<Result> GetErrorsByReportIdWithoutTaskAsync(Guid reportId);
+        Task<Result> GetListOfSparepartByErrorAsync(List<Guid> errorIds);
     }
 }

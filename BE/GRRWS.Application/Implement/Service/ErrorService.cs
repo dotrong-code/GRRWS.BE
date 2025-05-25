@@ -103,5 +103,19 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.SuccessWithObject(sparepartDtos);
         }
+
+        public async Task<Result> GetListOfSparepartByErrorAsync(List<Guid> errorIds)
+        {
+            // Await the task to get the result before calling Any()
+            var missingError = await _unitOfWork.ErrorRepository.GetNotFoundErrorDisplayNamesAsync(errorIds);
+            if (missingError.Any())
+            {
+                return Result.Failure(Error.Validation("Error not found", $"The following errors were not found: {string.Join(", ", missingError)}"));
+            }
+            var spareparts = await _unitOfWork.ErrorRepository.GetListOfSparepartByErrorAsync(errorIds);
+
+            // Add appropriate return statement if needed
+            return Result.SuccessWithObject(spareparts);
+        }
     }
 }

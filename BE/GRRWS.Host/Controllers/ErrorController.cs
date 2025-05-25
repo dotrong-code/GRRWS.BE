@@ -48,5 +48,13 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved unassigned errors for the report")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [HttpPost("spare-parts/list")]
+        public async Task<IResult> GetListOfSparepartByError([FromBody] List<Guid> errorIds)
+        {
+            var result = await _errorService.GetListOfSparepartByErrorAsync(errorIds);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved spare parts for the errors")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }

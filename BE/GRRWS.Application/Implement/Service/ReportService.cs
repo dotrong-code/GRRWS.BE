@@ -29,10 +29,31 @@ namespace GRRWS.Application.Implement.Service
         {
             if (dto.RequestId == null)
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "RequestId is required.", 0));
+
             if (dto.ErrorIds != null && dto.ErrorIds.Any())
                 if (dto.ErrorIds.Any(errorId => errorId == Guid.Empty))
                     return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "ErrorIds cannot contain empty GUIDs.", 0));
+
+            if (dto.Priority.GetType() != typeof(int))
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Priority must be an integer.", 0));
+
+            if (dto.Priority < 0 || dto.Priority > 5)
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Priority must be between 0 and 5.", 0));
+
             var request = await _unit.RequestRepository.GetRequestByIdAsync((Guid)dto.RequestId);
+            if (request == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
+                    "NotFound", "Request not found for the provided RequestId."
+                ));
+            }
+            if (request.ReportId != null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict(
+                    "Conflict", "Request already has an associated report."
+                ));
+            }
+
             var missingErrors = await _unit.ErrorRepository.GetNotFoundErrorDisplayNamesAsync(dto.ErrorIds);
             if (missingErrors.Any())
             {
@@ -74,7 +95,7 @@ namespace GRRWS.Application.Implement.Service
             getRequest.ReportId = report.Id;
             getRequest.Status = "Approved";
             await _unit.RequestRepository.UpdateAsync(getRequest);
-            return Result.SuccessWithObject(new { Message = "Report created successfully!" });
+            return Result.SuccessWithObject(new { Message = "Report created successfully!", ReportId = report.Id });
         }
 
         public async Task<Result> UpdateAsync(ReportUpdateDTO dto)

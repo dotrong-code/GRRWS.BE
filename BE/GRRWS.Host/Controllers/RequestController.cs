@@ -5,6 +5,7 @@ using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static GRRWS.Infrastructure.DTOs.RequestDTO.CreateRequestFormDTO;
 
 namespace GRRWS.Host.Controllers
 {
@@ -55,7 +56,7 @@ namespace GRRWS.Host.Controllers
         }
 
         [Authorize]
-        [HttpPost]
+        [HttpPost("api/Request")]
         public async Task<IResult> Create([FromBody] CreateRequestDTO dto)
         {
             CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
@@ -64,6 +65,34 @@ namespace GRRWS.Host.Controllers
 ? ResultExtensions.ToSuccessDetails(result, "Successfully")
 : ResultExtensions.ToProblemDetails(result);
         }
+
+        [HttpPost("api/Request/custom")]
+        
+        
+        public async Task<IResult> CreateRequest([FromForm] CreateRequestDTO dto)
+        {
+            // Assume userId is obtained from authentication (e.g., JWT)
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+           
+
+            var result = await _requestService.CreateAsync(dto, c.UserId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Request created successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+        [HttpPost("test-create")]
+        [Consumes("multipart/form-data")]
+        public async Task<IResult> TestCreateRequest([FromForm] TestCreateRequestDTO dto)
+        {
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _requestService.CreateTestAsync(dto, c.UserId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Request created successfully for testing")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+
 
         [HttpPut("{id}")]
         public async Task<IResult> Update(Guid id, [FromBody] UpdateRequestDTO dto)
@@ -79,10 +108,17 @@ namespace GRRWS.Host.Controllers
         {
             var result = await _requestService.DeleteAsync(id);
             return result.IsSuccess
-? ResultExtensions.ToSuccessDetails(result, "Successfully")
-: ResultExtensions.ToProblemDetails(result);
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully")
+                : ResultExtensions.ToProblemDetails(result);
         }
-
+        [HttpDelete("Cancel")]
+        public async Task<IResult> CancelRequest([FromBody] CancelRequestDTO dto)
+        {
+            var result = await _requestService.CancelRequestAsync(dto);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
 
         [HttpGet("{requestId}/issues")]
         public async Task<IResult> GetIssuesByRequestId(Guid requestId)

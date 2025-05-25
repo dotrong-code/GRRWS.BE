@@ -297,5 +297,78 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             return (tasks, totalCount);
         }
+
+        public async Task<Guid> CreateTaskWebAsync(CreateTaskWeb dto)
+        {
+            // Get the reportId for the request in a single query
+            var reportId = await _context.Requests
+                .Where(r => r.Id == dto.RequestId)
+                .Select(r => r.ReportId)
+                .FirstOrDefaultAsync();
+
+            // Create the task entity
+            var task = new Tasks
+            {
+                Id = Guid.NewGuid(),
+                TaskType = dto.TaskType,
+                StartTime = dto.StartDate,
+                Status = "Pending",
+                TaskDescription = "This is description",
+                AssigneeId = dto.AssigneeId,
+                CreatedDate = DateTime.UtcNow,
+                IsDeleted = false,
+            };
+
+            await _context.Tasks.AddAsync(task);
+
+            // Prepare ErrorDetails updates/creations in bulk
+            if (dto.ErrorIds != null && dto.ErrorIds.Count > 0)
+            {
+                // Get all ErrorDetails for this report and error ids in one query
+                var existingErrorDetails = await _context.ErrorDetails
+                    .Where(ed => ed.ReportId == reportId && dto.ErrorIds.Contains(ed.ErrorId))
+                    .ToListAsync();
+
+                var existingErrorIds = existingErrorDetails.Select(ed => ed.ErrorId).ToHashSet();
+
+                // Update existing ErrorDetails
+                foreach (var ed in existingErrorDetails)
+                {
+                    ed.TaskId = task.Id;
+                }
+
+                // Add new ErrorDetails if not exist
+                var newErrorDetails = dto.ErrorIds
+                    .Where(eid => !existingErrorIds.Contains(eid))
+                    .Select(eid => new ErrorDetail
+                    {
+                        ReportId = (Guid)reportId,
+                        ErrorId = eid,
+                        TaskId = task.Id
+                    }).ToList();
+
+                if (newErrorDetails.Count > 0)
+                    await _context.ErrorDetails.AddRangeAsync(newErrorDetails);
+            }
+
+            // Prepare RepairSparepart links in bulk
+            if (dto.SparepartIds != null && dto.SparepartIds.Count > 0)
+            {
+                var repairSpareparts = dto.SparepartIds
+                    .Select(spid => new RepairSparepart
+                    {
+                        TaskId = task.Id,
+                        SpareId = spid
+                    }).ToList();
+
+                await _context.RepairSpareparts.AddRangeAsync(repairSpareparts);
+            }
+
+            await _context.SaveChangesAsync();
+            return task.Id;
+        }
+
+
+
     }
 }

@@ -1,6 +1,7 @@
 ﻿using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
+using GRRWS.Infrastructure.DTOs.Sparepart;
 
 namespace GRRWS.Infrastructure.Interfaces.IRepositories
 {
@@ -11,6 +12,6 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<List<Sparepart>> GetSparepartsByErrorIdAsync(Guid errorId);
         Task<List<ErrorSimpleDTO>> GetErrorsByReportIdWithoutTaskAsync(Guid reportId);
         Task<List<SuggestObject>> GetNotFoundErrorDisplayNamesAsync(IEnumerable<Guid> errorIds);
-        
+        Task<List<SparepartWeb>> GetListOfSparepartByErrorAsync(List<Guid> errorIds);
     }
 }
