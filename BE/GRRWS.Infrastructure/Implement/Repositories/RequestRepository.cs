@@ -123,7 +123,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 {
                     RequestId = r.Id,
                     RequestTitle = r.RequestTitle ?? "Untitled Request",
-                    Piority = r.Priority ?? "Unknown",
+                    Priority = r.Priority ?? "Unknown",
                     Status = r.Status ?? "Unknown",
                     RequestDate = r.CreatedDate
                 })
