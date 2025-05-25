@@ -29,5 +29,9 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<List<MachineIssueHistoryResponse>> GetMachineIssueHistoryByMachineIdAsync(Guid machineId);
         Task<List<DeviceErrorHistoryResponse>> GetDeviceErrorHistoryByDeviceIdAsync(Guid deviceId);
         Task<List<MachineErrorHistoryResponse>> GetMachineErrorHistoryByMachineIdAsync(Guid machineId);
+
+        
+        
+        Task<List<DeviceWarrantyStatusResponse>> GetAllWarrantiesByDeviceIdAsync(Guid deviceId); // New
     }
 }
