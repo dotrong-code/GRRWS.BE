@@ -180,6 +180,32 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 })
                 .ToListAsync();
         }
+        public async Task<List<DeviceWarrantyStatusResponse>> GetAllWarrantiesByDeviceIdAsync(Guid deviceId)
+        {
+            return await _context.DeviceWarranties
+                .Where(dw => dw.DeviceId == deviceId && !dw.IsDeleted)
+                .OrderByDescending(dw => dw.WarrantyEndDate ?? DateTime.MinValue)
+                .Select(dw => new DeviceWarrantyStatusResponse
+                {
+                    IsUnderWarranty = dw.WarrantyEndDate >= DateTime.UtcNow
+                        && dw.Status != "Rejected" && dw.Status != "Completed",
+                    WarrantyStatus = dw.Status,
+                    WarrantyCode = dw.WarrantyCode,
+                    WarrantyType = dw.WarrantyType,
+                    Provider = dw.Provider,
+                    WarrantyStartDate = dw.WarrantyStartDate,
+                    WarrantyEndDate = dw.WarrantyEndDate,
+                    Notes = dw.Notes,
+                    Cost = dw.Cost,
+                    DocumentUrl = dw.DocumentUrl,
+                    DaysRemaining = dw.WarrantyEndDate.HasValue
+                        ? (int)(dw.WarrantyEndDate.Value.Date - DateTime.UtcNow.Date).TotalDays
+                        : null,
+                    LowDayWarning = dw.WarrantyEndDate.HasValue
+                        && (dw.WarrantyEndDate.Value.Date - DateTime.UtcNow.Date).TotalDays <= 10
+                })
+                .ToListAsync();
+        }
 
     }
 }
