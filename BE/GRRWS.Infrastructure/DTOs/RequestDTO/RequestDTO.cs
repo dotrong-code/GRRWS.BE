@@ -51,4 +51,9 @@ namespace GRRWS.Infrastructure.DTOs.RequestDTO
         public string? DisplayName { get; set; }
         public List<string>? ImageUrls { get; set; }
     }
+    public class CancelRequestDTO
+    {
+        public Guid RequestId { get; set; }
+        public string? Reason { get; set; }
+    }
 }
