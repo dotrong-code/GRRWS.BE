@@ -71,9 +71,10 @@ namespace GRRWS.Host.Controllers
         public async Task<IResult> CreateRequest([FromForm] CreateRequestDTO dto)
         {
             // Assume userId is obtained from authentication (e.g., JWT)
-            var userId = Guid.Parse("B82C0444-4914-4BFC-85BB-0C0DFDD05827"); // Replace with actual user ID retrieval
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+           
 
-            var result = await _requestService.CreateAsync(dto, userId);
+            var result = await _requestService.CreateAsync(dto, c.UserId);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Request created successfully")
                 : ResultExtensions.ToProblemDetails(result);
