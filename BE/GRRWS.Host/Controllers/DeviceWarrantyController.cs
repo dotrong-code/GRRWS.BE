@@ -65,5 +65,13 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Device warranty deleted successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [HttpGet("Warranties/{deviceId}")]
+        public async Task<IResult> GetAllWarrantiesByDeviceId(Guid deviceId)
+        {
+            var result = await _deviceWarrantyService.GetAllWarrantiesByDeviceIdAsync(deviceId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Warranties retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }
