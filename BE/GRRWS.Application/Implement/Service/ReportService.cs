@@ -95,7 +95,7 @@ namespace GRRWS.Application.Implement.Service
             getRequest.ReportId = report.Id;
             getRequest.Status = "Approved";
             await _unit.RequestRepository.UpdateAsync(getRequest);
-            return Result.SuccessWithObject(new { Message = "Report created successfully!" });
+            return Result.SuccessWithObject(new { Message = "Report created successfully!", ReportId = report.Id });
         }
 
         public async Task<Result> UpdateAsync(ReportUpdateDTO dto)
