@@ -98,9 +98,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return await _context.DeviceWarranties
                 .Where(dw => dw.DeviceId == deviceId
                              && !dw.IsDeleted
-                             && (dw.Status == "Completed" || dw.Status == "Pending")
-                             && dw.WarrantyStartDate <= currentDate
-                             && dw.WarrantyEndDate >= currentDate)
+                             && (dw.WarrantyReason == "Máy mới")
+                             )
                 .OrderByDescending(dw => dw.WarrantyEndDate) // Prefer the longest-lasting warranty
                 .FirstOrDefaultAsync();
         }

@@ -40,6 +40,11 @@ namespace GRRWS.Infrastructure.DTOs.Common.Message
 
         public static Error PositionNotExist() =>
             Error.Validation("Device.PositionNotExist", "Specified position does not exist.");
+
+
+        public static Error WarrantyNotExist() =>
+            Error.Validation("Device.warrantyNotExist", "Specified warranty does not exist.");
+
         public static Error PurchasePriceInvalid() =>
            Error.Validation("Device.PurchasePriceInvalid", "Specified position does not PurchasePriceInvalid.");
         public static Error DeviceCreateFailed() =>
