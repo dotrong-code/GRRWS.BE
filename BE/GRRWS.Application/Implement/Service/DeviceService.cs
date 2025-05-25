@@ -263,6 +263,10 @@ public class DeviceService : IDeviceService
         }
 
         var warranty = await _unitOfWork.DeviceRepository.GetActiveWarrantyAsync(deviceId);
+        if (warranty == null)
+        {
+            return Result.Failure(DeviceErrorMessage.WarrantyNotExist());
+        }
         var response = new DeviceWarrantyStatusResponse
         {
             IsUnderWarranty = warranty != null,
