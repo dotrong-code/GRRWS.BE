@@ -1,5 +1,6 @@
 ﻿using GRRWS.Application.Common.Result;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
+using static GRRWS.Infrastructure.DTOs.RequestDTO.CreateRequestFormDTO;
 
 namespace GRRWS.Application.Interface.IService
 {
@@ -8,6 +9,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetAllAsync();
         Task<Result> GetByIdAsync(Guid id);
         Task<Result> CreateAsync(CreateRequestDTO dto, Guid userId);
+        Task<Result> CreateTestAsync(TestCreateRequestDTO dto, Guid userId);
         Task<Result> UpdateAsync(UpdateRequestDTO dto, Guid id);
         Task<Result> CancelRequestAsync(CancelRequestDTO dto);
         Task<Result> DeleteAsync(Guid id);
