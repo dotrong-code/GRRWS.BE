@@ -92,6 +92,30 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved issues")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [HttpGet("detail/{requestId}")]
+        public async Task<IResult> GetRequestDetailWebById(Guid requestId)
+        {
+            var result = await _requestService.GetRequestDetailWebByIdAsync(requestId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved request detail")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpGet("errors/{requestId}")]
+        public async Task<IResult> GetErrorsForRequestDetailWeb(Guid requestId)
+        {
+            var result = await _requestService.GetErrorsForRequestDetailWebAsync(requestId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved errors")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpGet("tasks/{requestId}")]
+        public async Task<IResult> GetTasksForRequestDetailWeb(Guid requestId)
+        {
+            var result = await _requestService.GetTasksForRequestDetailWebAsync(requestId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved tasks")
+                : ResultExtensions.ToProblemDetails(result);
+        }
 
 
         //[HttpPost("create-request")]

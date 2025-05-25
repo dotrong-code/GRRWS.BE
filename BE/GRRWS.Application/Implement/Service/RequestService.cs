@@ -269,73 +269,118 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(list);
         }
 
-//        public async Task<Result> CreateRequestAsync(CreateRequest request, Guid userId)
-//        {
-//            if (!await _unitOfWork.DeviceRepository.DeviceIdExistsAsync(request.DeviceId))
-//            {
-//                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Device does not exist."));
-//            }
-//            // check in request : Can create when request status is Approved or Deinied
+        public async Task<Result> GetRequestDetailWebByIdAsync(Guid requestId)
+        {
+            var request = await _unitOfWork.RequestRepository.GetByIdAsync(requestId);
+            if (request == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Request is not exist"));
+            }
+            var requestDetail = await _requestRepository.GetRequestDetailWebByIdAsync(requestId);
+            if (requestDetail == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Request is not exist"));
+            }
+            return Result.SuccessWithObject(requestDetail);
+        }
 
-//            if (!await _unitOfWork.UserRepository.IdExistsAsync(userId))
-//            {
-//                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "User does not exist."));
-//            }
-//            var missingIssues = await _unitOfWork.IssueRepository.GetNotFoundIssueDisplayNamesAsync(request.IssueIds);
-//            if (missingIssues.Any())
-//            {
-//                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
-//    "NotFound",
-//    "Some issues do not exist: " + string.Join(", ", missingIssues.Select(x => x.Id))
-//));
-//            }
+        public async Task<Result> GetErrorsForRequestDetailWebAsync(Guid requestId)
+        {
+            var request = await _unitOfWork.RequestRepository.GetByIdAsync(requestId);
+            if (request == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Device does not exist."));
+            }
+            var errors = await _requestRepository.GetErrorsForRequestDetailWebAsync(requestId);
+            if (errors == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "No errors found for the request."));
+            }
+            return Result.SuccessWithObject(errors);
+        }
 
-//            var existingRequests = await _unitOfWork.RequestRepository.GetRequestByDeviceIdAsync(request.DeviceId);
-//            var restrictStatus = new[] { "Pending", "InProgress" };
-//            if (existingRequests.Any(r => !r.IsDeleted && restrictStatus.Contains(r.Status)))
-//            {
-//                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure(
-//                    "RequestFailed", "Cannot create a new request for this device because it has pending or in-progress requests."));
-//            }
+        public async Task<Result> GetTasksForRequestDetailWebAsync(Guid requestId)
+        {
+            var request = await _unitOfWork.RequestRepository.GetByIdAsync(requestId);
+            if (request == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Request is not exist"));
+            }
+            var tasks = await _requestRepository.GetTasksForRequestDetailWebAsync(requestId);
+            if (tasks == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "No tasks found for the request."));
+            }
+            return Result.SuccessWithObject(tasks);
+        }
 
-//            var getDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(request.DeviceId);
-//            var createTitle = "";
-//            try
-//            {
-//                createTitle = TitleHelper.GenerateRequestTitle(getDevice.Position.Zone.Area.AreaCode, getDevice.Position.Zone.ZoneCode, getDevice.Position.Index, getDevice.DeviceCode);
-//            }
-//            catch (Exception)
-//            {
+        //        public async Task<Result> CreateRequestAsync(CreateRequest request, Guid userId)
+        //        {
+        //            if (!await _unitOfWork.DeviceRepository.DeviceIdExistsAsync(request.DeviceId))
+        //            {
+        //                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Device does not exist."));
+        //            }
+        //            // check in request : Can create when request status is Approved or Deinied
 
-//                createTitle = "Create title fail";
-//            }
-//            var newRequest = new Request
-//            {
-//                Id = Guid.NewGuid(),
-//                DeviceId = request.DeviceId,
-//                RequestTitle = createTitle,
-//                Description = "This is description",
-//                Status = "Pending",
-//                CreatedBy = userId,
-//                RequestedById = userId,
-//                CreatedDate = DateTime.UtcNow,
-//                DueDate = DateTime.Now.AddDays(7), // Default due date is 7 days from now
-//                Priority = "None",
-//                IsDeleted = false,
-//                RequestIssues = request.IssueIds.Select(issueId => new RequestIssue
-//                {
-//                    IssueId = issueId
-//                }).ToList()
-//            };
-//            await _requestRepository.CreateAsync(newRequest);
-//            return Result.SuccessWithObject(new { Message = "Request created successfully!" });
+        //            if (!await _unitOfWork.UserRepository.IdExistsAsync(userId))
+        //            {
+        //                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "User does not exist."));
+        //            }
+        //            var missingIssues = await _unitOfWork.IssueRepository.GetNotFoundIssueDisplayNamesAsync(request.IssueIds);
+        //            if (missingIssues.Any())
+        //            {
+        //                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
+        //    "NotFound",
+        //    "Some issues do not exist: " + string.Join(", ", missingIssues.Select(x => x.Id))
+        //));
+        //            }
+
+        //            var existingRequests = await _unitOfWork.RequestRepository.GetRequestByDeviceIdAsync(request.DeviceId);
+        //            var restrictStatus = new[] { "Pending", "InProgress" };
+        //            if (existingRequests.Any(r => !r.IsDeleted && restrictStatus.Contains(r.Status)))
+        //            {
+        //                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure(
+        //                    "RequestFailed", "Cannot create a new request for this device because it has pending or in-progress requests."));
+        //            }
+
+        //            var getDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(request.DeviceId);
+        //            var createTitle = "";
+        //            try
+        //            {
+        //                createTitle = TitleHelper.GenerateRequestTitle(getDevice.Position.Zone.Area.AreaCode, getDevice.Position.Zone.ZoneCode, getDevice.Position.Index, getDevice.DeviceCode);
+        //            }
+        //            catch (Exception)
+        //            {
+
+        //                createTitle = "Create title fail";
+        //            }
+        //            var newRequest = new Request
+        //            {
+        //                Id = Guid.NewGuid(),
+        //                DeviceId = request.DeviceId,
+        //                RequestTitle = createTitle,
+        //                Description = "This is description",
+        //                Status = "Pending",
+        //                CreatedBy = userId,
+        //                RequestedById = userId,
+        //                CreatedDate = DateTime.UtcNow,
+        //                DueDate = DateTime.Now.AddDays(7), // Default due date is 7 days from now
+        //                Priority = "None",
+        //                IsDeleted = false,
+        //                RequestIssues = request.IssueIds.Select(issueId => new RequestIssue
+        //                {
+        //                    IssueId = issueId
+        //                }).ToList()
+        //            };
+        //            await _requestRepository.CreateAsync(newRequest);
+        //            return Result.SuccessWithObject(new { Message = "Request created successfully!" });
 
 
 
 
 
 
-//        }
+        //        }
 
 
     }
