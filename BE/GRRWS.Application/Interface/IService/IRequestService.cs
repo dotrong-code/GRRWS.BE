@@ -1,5 +1,6 @@
 ﻿using GRRWS.Application.Common.Result;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
+using static GRRWS.Infrastructure.DTOs.RequestDTO.CreateRequestFormDTO;
 
 namespace GRRWS.Application.Interface.IService
 {

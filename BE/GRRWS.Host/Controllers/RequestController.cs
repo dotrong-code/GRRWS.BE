@@ -5,6 +5,7 @@ using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static GRRWS.Infrastructure.DTOs.RequestDTO.CreateRequestFormDTO;
 
 namespace GRRWS.Host.Controllers
 {
