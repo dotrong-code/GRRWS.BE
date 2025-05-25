@@ -106,12 +106,15 @@ builder.Services.AddCors(options =>
                 .WithExposedHeaders("Authorization")
                   ;
         });
+
+
 });
+
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.RegisterServices();
 builder.Services.AddHttpClient();
-//builder.WebHost.UseUrls("http://0.0.0.0:5000");
+builder.WebHost.UseUrls("http://0.0.0.0:5000");
 var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
@@ -137,7 +140,7 @@ app.UseExceptionHandler(errorApp =>
 });
 
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MigrateDatabases();
