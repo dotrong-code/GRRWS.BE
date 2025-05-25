@@ -10,16 +10,16 @@ namespace GRRWS.Infrastructure.DB.Configuration
         public void Configure(EntityTypeBuilder<DeviceWarranty> builder)
         {
             builder.HasData(
-                // Device 1: Juki DDL-8700 Unit 1 (3 warranties)
+                // Device 1: Juki DDL-8700 Unit 1 (3 warranties, IsUnderWarranty = true)
                 new DeviceWarranty
                 {
                     Id = Guid.Parse("d1e2f3a4-0001-4001-8001-000000000001"),
                     DeviceId = Guid.Parse("d1e2f3a4-0001-0001-0001-000000000001"),
                     Status = "Completed",
                     WarrantyType = "Manufacturer",
-                    WarrantyReason = "NewDevice",
-                    WarrantyStartDate = new DateTime(2020, 2, 1),
-                    WarrantyEndDate = new DateTime(2022, 2, 1),
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 2, 1, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 6, 1, 14, 0, 0, DateTimeKind.Utc),
                     Provider = "Juki Vietnam",
                     WarrantyCode = "WAR-JUKI-001",
                     Notes = "Bảo hành định kỳ cho máy mới, bao gồm kiểm tra cơ chế căng chỉ",
@@ -37,9 +37,9 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     DeviceId = Guid.Parse("d1e2f3a4-0001-0001-0001-000000000001"),
                     Status = "Completed",
                     WarrantyType = "Extended",
-                    WarrantyReason = "AfterWarranty",
-                    WarrantyStartDate = new DateTime(2022, 2, 2),
-                    WarrantyEndDate = new DateTime(2023, 2, 2),
+                    WarrantyReason = "Sau khi hết bảo hành",
+                    WarrantyStartDate = new DateTime(2023, 7, 2, 10, 30, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 8, 2, 15, 30, 0, DateTimeKind.Utc),
                     Provider = "Juki Vietnam",
                     WarrantyCode = "WAR-JUKI-009",
                     Notes = "Gia hạn bảo hành sau khi hết bảo hành nhà sản xuất",
@@ -57,9 +57,9 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     DeviceId = Guid.Parse("d1e2f3a4-0001-0001-0001-000000000001"),
                     Status = "InProgress",
                     WarrantyType = "ThirdParty",
-                    WarrantyReason = "AfterRepair",
-                    WarrantyStartDate = new DateTime(2024, 6, 1),
-                    WarrantyEndDate = new DateTime(2025, 6, 1),
+                    WarrantyReason = "Sau sửa chữa",
+                    WarrantyStartDate = new DateTime(2024, 6, 1, 9, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 9, 1, 17, 0, 0, DateTimeKind.Utc),
                     Provider = "Juki Vietnam",
                     WarrantyCode = "WAR-JUKI-010",
                     Notes = "Bảo hành sau sửa chữa bộ phận cấp liệu",
@@ -71,16 +71,16 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     ModifiedDate = DateTime.UtcNow,
                     IsDeleted = false
                 },
-                // Device 2: Juki DDL-8700 Unit 2 (1 warranty)
+                // Device 2: Juki DDL-8700 Unit 2 (4 warranties, IsUnderWarranty = true)
                 new DeviceWarranty
                 {
                     Id = Guid.Parse("d1e2f3a4-0011-4011-8011-000000000011"),
                     DeviceId = Guid.Parse("d1e2f3a4-0002-0002-0002-000000000002"),
                     Status = "Completed",
                     WarrantyType = "Manufacturer",
-                    WarrantyReason = "NewDevice",
-                    WarrantyStartDate = new DateTime(2020, 2, 3),
-                    WarrantyEndDate = new DateTime(2022, 2, 3),
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 2, 2, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 6, 2, 14, 0, 0, DateTimeKind.Utc),
                     Provider = "Juki Vietnam",
                     WarrantyCode = "WAR-JUKI-011",
                     Notes = "Bảo hành máy mới, kiểm tra hệ thống kim và chỉ",
@@ -92,16 +92,76 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     ModifiedDate = DateTime.UtcNow,
                     IsDeleted = false
                 },
-                // Device 3: Juki DDL-8700 Unit 3 (2 warranties)
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0020-4020-8020-000000000020"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0002-0002-0002-000000000002"),
+                    Status = "InProgress",
+                    WarrantyType = "Extended",
+                    WarrantyReason = "Sau khi hết bảo hành",
+                    WarrantyStartDate = new DateTime(2024, 7, 4, 10, 30, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 10, 4, 15, 30, 0, DateTimeKind.Utc),
+                    Provider = "Juki Vietnam",
+                    WarrantyCode = "WAR-JUKI-022",
+                    Notes = "Gia hạn bảo hành sau khi hết bảo hành nhà sản xuất",
+                    Cost = 500000,
+                    DocumentUrl = "https://example.com/docs/warranty_juki_ddl8700_02_ext.pdf",
+                    SparePartCode = null,
+                    SparePartName = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0021-4021-8021-000000000021"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0002-0002-0002-000000000002"),
+                    Status = "Pending",
+                    WarrantyType = "ThirdParty",
+                    WarrantyReason = "Sau sửa chữa",
+                    WarrantyStartDate = new DateTime(2024, 8, 1, 9, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 11, 1, 17, 0, 0, DateTimeKind.Utc),
+                    Provider = "Juki Vietnam",
+                    WarrantyCode = "WAR-JUKI-023",
+                    Notes = "Bảo hành sau sửa chữa hệ thống căng chỉ",
+                    Cost = 700000,
+                    DocumentUrl = "https://example.com/docs/warranty_juki_ddl8700_02_repair.pdf",
+                    SparePartCode = "SP010",
+                    SparePartName = "Bộ Căng Chỉ",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0022-4022-8022-000000000022"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0002-0002-0002-000000000002"),
+                    Status = "Completed",
+                    WarrantyType = "Manufacturer",
+                    WarrantyReason = "Sau thay thế",
+                    WarrantyStartDate = new DateTime(2024, 9, 1, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 12, 1, 14, 0, 0, DateTimeKind.Utc),
+                    Provider = "Juki Vietnam",
+                    WarrantyCode = "WAR-JUKI-024",
+                    Notes = "Bảo hành sau thay thế động cơ máy",
+                    Cost = 0,
+                    DocumentUrl = "https://example.com/docs/warranty_juki_ddl8700_02_replace.pdf",
+                    SparePartCode = "SP007",
+                    SparePartName = "Mô Tơ Máy May",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                // Device 3: Juki DDL-8700 Unit 3 (2 warranties, IsUnderWarranty = true)
                 new DeviceWarranty
                 {
                     Id = Guid.Parse("d1e2f3a4-0002-4002-8002-000000000002"),
                     DeviceId = Guid.Parse("d1e2f3a4-0003-0003-0003-000000000003"),
                     Status = "Pending",
                     WarrantyType = "Extended",
-                    WarrantyReason = "AfterRepair",
-                    WarrantyStartDate = new DateTime(2025, 5, 10),
-                    WarrantyEndDate = new DateTime(2026, 5, 10),
+                    WarrantyReason = "Sau sửa chữa",
+                    WarrantyStartDate = new DateTime(2024, 5, 10, 9, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2026, 5, 10, 17, 0, 0, DateTimeKind.Utc),
                     Provider = "Juki Vietnam",
                     WarrantyCode = "WAR-JUKI-002",
                     Notes = "Gia hạn bảo hành sau sửa chữa động cơ bị cháy",
@@ -119,9 +179,9 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     DeviceId = Guid.Parse("d1e2f3a4-0003-0003-0003-000000000003"),
                     Status = "Completed",
                     WarrantyType = "Manufacturer",
-                    WarrantyReason = "NewDevice",
-                    WarrantyStartDate = new DateTime(2020, 2, 5),
-                    WarrantyEndDate = new DateTime(2022, 2, 5),
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 2, 5, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 7, 5, 14, 0, 0, DateTimeKind.Utc),
                     Provider = "Juki Vietnam",
                     WarrantyCode = "WAR-JUKI-012",
                     Notes = "Bảo hành máy mới, kiểm tra động cơ và bộ căng chỉ",
@@ -133,16 +193,16 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     ModifiedDate = DateTime.UtcNow,
                     IsDeleted = false
                 },
-                // Device 4: Juki DDL-8700 Unit 4 (1 warranty)
+                // Device 4: Juki DDL-8700 Unit 4 (3 warranties, IsUnderWarranty = true)
                 new DeviceWarranty
                 {
                     Id = Guid.Parse("d1e2f3a4-0003-4003-8003-000000000003"),
                     DeviceId = Guid.Parse("d1e2f3a4-0004-0004-0004-000000000004"),
                     Status = "Completed",
                     WarrantyType = "Manufacturer",
-                    WarrantyReason = "AfterReplacement",
-                    WarrantyStartDate = new DateTime(2024, 11, 20),
-                    WarrantyEndDate = new DateTime(2025, 11, 20),
+                    WarrantyReason = "Sau thay thế",
+                    WarrantyStartDate = new DateTime(2024, 11, 20, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 11, 20, 14, 0, 0, DateTimeKind.Utc),
                     Provider = "Juki Vietnam",
                     WarrantyCode = "WAR-JUKI-003",
                     Notes = "Bảo hành sau khi thay thế động cơ do hỏng hóc",
@@ -154,16 +214,56 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     ModifiedDate = DateTime.UtcNow,
                     IsDeleted = false
                 },
-                // Device 5: Juki DDL-8700 Unit 5 (1 warranty)
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0023-4023-8023-000000000023"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0004-0004-0004-000000000004"),
+                    Status = "InProgress",
+                    WarrantyType = "Extended",
+                    WarrantyReason = "Sau khi hết bảo hành",
+                    WarrantyStartDate = new DateTime(2024, 7, 1, 10, 30, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 10, 1, 15, 30, 0, DateTimeKind.Utc),
+                    Provider = "Juki Vietnam",
+                    WarrantyCode = "WAR-JUKI-020",
+                    Notes = "Gia hạn bảo hành sau khi hết bảo hành nhà sản xuất",
+                    Cost = 500000,
+                    DocumentUrl = "https://example.com/docs/warranty_juki_ddl8700_04_ext.pdf",
+                    SparePartCode = null,
+                    SparePartName = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0024-4024-8024-000000000024"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0004-0004-0004-000000000004"),
+                    Status = "Pending",
+                    WarrantyType = "ThirdParty",
+                    WarrantyReason = "Sau sửa chữa",
+                    WarrantyStartDate = new DateTime(2024, 8, 1, 9, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 11, 1, 17, 0, 0, DateTimeKind.Utc),
+                    Provider = "Juki Vietnam",
+                    WarrantyCode = "WAR-JUKI-021",
+                    Notes = "Bảo hành sau sửa chữa bộ phận cấp liệu",
+                    Cost = 800000,
+                    DocumentUrl = "https://example.com/docs/warranty_juki_ddl8700_04_repair.pdf",
+                    SparePartCode = "SP008",
+                    SparePartName = "Bộ Cấp Liệu",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                // Device 5: Juki DDL-8700 Unit 5 (1 warranty, IsUnderWarranty = true)
                 new DeviceWarranty
                 {
                     Id = Guid.Parse("d1e2f3a4-0013-4013-8013-000000000013"),
                     DeviceId = Guid.Parse("d1e2f3a4-0005-0005-0005-000000000005"),
                     Status = "Completed",
                     WarrantyType = "Manufacturer",
-                    WarrantyReason = "NewDevice",
-                    WarrantyStartDate = new DateTime(2020, 2, 10),
-                    WarrantyEndDate = new DateTime(2022, 2, 10),
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 2, 10, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 7, 10, 14, 0, 0, DateTimeKind.Utc),
                     Provider = "Juki Vietnam",
                     WarrantyCode = "WAR-JUKI-013",
                     Notes = "Bảo hành máy mới, hiệu chỉnh hệ thống cấp liệu",
@@ -175,16 +275,16 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     ModifiedDate = DateTime.UtcNow,
                     IsDeleted = false
                 },
-                // Device 6: Juki DDL-8700 Unit 6 (1 warranty)
+                // Device 6: Juki DDL-8700 Unit 6 (1 warranty, IsUnderWarranty = false)
                 new DeviceWarranty
                 {
                     Id = Guid.Parse("d1e2f3a4-0014-4014-8014-000000000014"),
                     DeviceId = Guid.Parse("d1e2f3a4-0006-0006-0006-000000000006"),
                     Status = "Completed",
                     WarrantyType = "Manufacturer",
-                    WarrantyReason = "NewDevice",
-                    WarrantyStartDate = new DateTime(2020, 2, 12),
-                    WarrantyEndDate = new DateTime(2022, 2, 12),
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 2, 12, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 2, 12, 14, 0, 0, DateTimeKind.Utc),
                     Provider = "Juki Vietnam",
                     WarrantyCode = "WAR-JUKI-014",
                     Notes = "Bảo hành máy mới, đã hết hạn trước khi máy ngừng sử dụng",
@@ -196,16 +296,16 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     ModifiedDate = DateTime.UtcNow,
                     IsDeleted = false
                 },
-                // Device 7: Juki DDL-8700 Unit 7 (1 warranty)
+                // Device 7: Juki DDL-8700 Unit 7 (1 warranty, IsUnderWarranty = true)
                 new DeviceWarranty
                 {
                     Id = Guid.Parse("d1e2f3a4-0004-4004-8004-000000000004"),
                     DeviceId = Guid.Parse("d1e2f3a4-0007-0007-0007-000000000007"),
                     Status = "Completed",
                     WarrantyType = "Manufacturer",
-                    WarrantyReason = "NewDevice",
-                    WarrantyStartDate = new DateTime(2020, 2, 15),
-                    WarrantyEndDate = new DateTime(2022, 2, 15),
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 2, 15, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 7, 15, 14, 0, 0, DateTimeKind.Utc),
                     Provider = "Juki Vietnam",
                     WarrantyCode = "WAR-JUKI-004",
                     Notes = "Bảo hành máy mới, kiểm tra và sửa lỗi kẹt kim",
@@ -217,16 +317,16 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     ModifiedDate = DateTime.UtcNow,
                     IsDeleted = false
                 },
-                // Device 8: Juki DDL-8700 Unit 8 (1 warranty)
+                // Device 8: Juki DDL-8700 Unit 8 (1 warranty, IsUnderWarranty = true)
                 new DeviceWarranty
                 {
                     Id = Guid.Parse("d1e2f3a4-0015-4015-8015-000000000015"),
                     DeviceId = Guid.Parse("d1e2f3a4-0008-0008-0008-000000000008"),
                     Status = "Completed",
                     WarrantyType = "Manufacturer",
-                    WarrantyReason = "NewDevice",
-                    WarrantyStartDate = new DateTime(2020, 2, 18),
-                    WarrantyEndDate = new DateTime(2022, 2, 18),
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 2, 18, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 7, 18, 14, 0, 0, DateTimeKind.Utc),
                     Provider = "Juki Vietnam",
                     WarrantyCode = "WAR-JUKI-015",
                     Notes = "Bảo hành máy mới, kiểm tra hệ thống căng chỉ",
@@ -238,16 +338,16 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     ModifiedDate = DateTime.UtcNow,
                     IsDeleted = false
                 },
-                // Device 9: Juki DDL-8700 Unit 9 (1 warranty)
+                // Device 9: Juki DDL-8700 Unit 9 (1 warranty, IsUnderWarranty = true)
                 new DeviceWarranty
                 {
                     Id = Guid.Parse("d1e2f3a4-0016-4016-8016-000000000016"),
                     DeviceId = Guid.Parse("d1e2f3a4-0009-0009-0009-000000000009"),
                     Status = "Completed",
                     WarrantyType = "Manufacturer",
-                    WarrantyReason = "NewDevice",
-                    WarrantyStartDate = new DateTime(2020, 2, 20),
-                    WarrantyEndDate = new DateTime(2022, 2, 20),
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 2, 20, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 7, 20, 14, 0, 0, DateTimeKind.Utc),
                     Provider = "Juki Vietnam",
                     WarrantyCode = "WAR-JUKI-016",
                     Notes = "Bảo hành máy mới, hiệu chỉnh động cơ",
@@ -259,16 +359,16 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     ModifiedDate = DateTime.UtcNow,
                     IsDeleted = false
                 },
-                // Device 10: Juki DDL-8700 Unit 10 (1 warranty)
+                // Device 10: Juki DDL-8700 Unit 10 (1 warranty, IsUnderWarranty = true)
                 new DeviceWarranty
                 {
                     Id = Guid.Parse("d1e2f3a4-0017-4017-8017-000000000017"),
                     DeviceId = Guid.Parse("d1e2f3a4-0010-0010-0010-000000000010"),
                     Status = "Completed",
                     WarrantyType = "Manufacturer",
-                    WarrantyReason = "NewDevice",
-                    WarrantyStartDate = new DateTime(2020, 2, 22),
-                    WarrantyEndDate = new DateTime(2022, 2, 22),
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 2, 22, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 7, 22, 14, 0, 0, DateTimeKind.Utc),
                     Provider = "Juki Vietnam",
                     WarrantyCode = "WAR-JUKI-017",
                     Notes = "Bảo hành máy mới, kiểm tra hệ thống cấp liệu",
@@ -280,16 +380,16 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     ModifiedDate = DateTime.UtcNow,
                     IsDeleted = false
                 },
-                // Device 11: Juki DDL-9000C Unit 1 (1 warranty)
+                // Device 11: Juki DDL-9000C Unit 1 (1 warranty, IsUnderWarranty = true)
                 new DeviceWarranty
                 {
                     Id = Guid.Parse("d1e2f3a4-0005-4005-8005-000000000005"),
                     DeviceId = Guid.Parse("d1e2f3a4-0011-0011-0011-000000000011"),
                     Status = "Completed",
                     WarrantyType = "Manufacturer",
-                    WarrantyReason = "NewDevice",
-                    WarrantyStartDate = new DateTime(2022, 3, 1),
-                    WarrantyEndDate = new DateTime(2024, 3, 1),
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 3, 1, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 8, 1, 14, 0, 0, DateTimeKind.Utc),
                     Provider = "Juki Vietnam",
                     WarrantyCode = "WAR-JUKI-005",
                     Notes = "Bảo hành máy mới, hiệu chỉnh hệ thống cắt chỉ tự động",
@@ -301,16 +401,16 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     ModifiedDate = DateTime.UtcNow,
                     IsDeleted = false
                 },
-                // Device 12: Juki DDL-9000C Unit 2 (1 warranty)
+                // Device 12: Juki DDL-9000C Unit 2 (1 warranty, IsUnderWarranty = true)
                 new DeviceWarranty
                 {
                     Id = Guid.Parse("d1e2f3a4-0018-4018-8018-000000000018"),
                     DeviceId = Guid.Parse("d1e2f3a4-0012-0012-0012-000000000012"),
                     Status = "Completed",
                     WarrantyType = "Manufacturer",
-                    WarrantyReason = "NewDevice",
-                    WarrantyStartDate = new DateTime(2022, 3, 3),
-                    WarrantyEndDate = new DateTime(2024, 3, 3),
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 3, 3, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 8, 3, 14, 0, 0, DateTimeKind.Utc),
                     Provider = "Juki Vietnam",
                     WarrantyCode = "WAR-JUKI-018",
                     Notes = "Bảo hành máy mới, kiểm tra hệ thống cắt chỉ",
@@ -322,16 +422,16 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     ModifiedDate = DateTime.UtcNow,
                     IsDeleted = false
                 },
-                // Device 13: Juki DDL-9000C Unit 3 (2 warranties)
+                // Device 13: Juki DDL-9000C Unit 3 (2 warranties, IsUnderWarranty = true)
                 new DeviceWarranty
                 {
                     Id = Guid.Parse("d1e2f3a4-0006-4006-8006-000000000006"),
                     DeviceId = Guid.Parse("d1e2f3a4-0013-0013-0013-000000000013"),
                     Status = "Pending",
                     WarrantyType = "Extended",
-                    WarrantyReason = "AfterRepair",
-                    WarrantyStartDate = new DateTime(2025, 5, 12),
-                    WarrantyEndDate = new DateTime(2026, 5, 12),
+                    WarrantyReason = "Sau sửa chữa",
+                    WarrantyStartDate = new DateTime(2024, 5, 12, 9, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2026, 5, 12, 17, 0, 0, DateTimeKind.Utc),
                     Provider = "Juki Vietnam",
                     WarrantyCode = "WAR-JUKI-006",
                     Notes = "Gia hạn bảo hành sau sửa chữa bộ phận cắt chỉ",
@@ -349,9 +449,9 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     DeviceId = Guid.Parse("d1e2f3a4-0013-0013-0013-000000000013"),
                     Status = "Completed",
                     WarrantyType = "Manufacturer",
-                    WarrantyReason = "NewDevice",
-                    WarrantyStartDate = new DateTime(2022, 3, 5),
-                    WarrantyEndDate = new DateTime(2024, 3, 5),
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 3, 5, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 8, 5, 14, 0, 0, DateTimeKind.Utc),
                     Provider = "Juki Vietnam",
                     WarrantyCode = "WAR-JUKI-019",
                     Notes = "Bảo hành máy mới, hiệu chỉnh bộ cắt chỉ tự động",
@@ -363,16 +463,77 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     ModifiedDate = DateTime.UtcNow,
                     IsDeleted = false
                 },
-                // Device 15: Brother B957 Unit 1 (1 warranty)
+                // Device 14: Juki DDL-9000C Unit 4 (3 warranties, IsUnderWarranty = true)
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0025-4025-8025-000000000025"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0014-0014-0014-000000000014"),
+                    Status = "Completed",
+                    WarrantyType = "Manufacturer",
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 3, 7, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 8, 7, 14, 0, 0, DateTimeKind.Utc),
+                    Provider = "Juki Vietnam",
+                    WarrantyCode = "WAR-JUKI-025",
+                    Notes = "Bảo hành máy mới, kiểm tra hệ thống cắt chỉ tự động",
+                    Cost = 0,
+                    DocumentUrl = "https://example.com/docs/warranty_juki_ddl9000c_04.pdf",
+                    SparePartCode = null,
+                    SparePartName = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0026-4026-8026-000000000026"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0014-0014-0014-000000000014"),
+                    Status = "Pending",
+                    WarrantyType = "Extended",
+                    WarrantyReason = "Sau khi hết bảo hành",
+                    WarrantyStartDate = new DateTime(2024, 7, 1, 10, 30, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 10, 1, 15, 30, 0, DateTimeKind.Utc),
+                    Provider = "Juki Vietnam",
+                    WarrantyCode = "WAR-JUKI-026",
+                    Notes = "Gia hạn bảo hành sau khi hết bảo hành nhà sản xuất",
+                    Cost = 500000,
+                    DocumentUrl = "https://example.com/docs/warranty_juki_ddl9000c_04_ext.pdf",
+                    SparePartCode = null,
+                    SparePartName = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0027-4027-8027-000000000027"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0014-0014-0014-000000000014"),
+                    Status = "InProgress",
+                    WarrantyType = "ThirdParty",
+                    WarrantyReason = "Sau sửa chữa",
+                    WarrantyStartDate = new DateTime(2024, 8, 1, 9, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 11, 1, 17, 0, 0, DateTimeKind.Utc),
+                    Provider = "Juki Vietnam",
+                    WarrantyCode = "WAR-JUKI-027",
+                    Notes = "Bảo hành sau sửa chữa bộ phận cắt chỉ",
+                    Cost = 700000,
+                    DocumentUrl = "https://example.com/docs/warranty_juki_ddl9000c_04_repair.pdf",
+                    SparePartCode = "SP029",
+                    SparePartName = "Bộ Điều Khiển Điện Tử",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                // Device 15: Brother B957 Unit 1 (1 warranty, IsUnderWarranty = false)
                 new DeviceWarranty
                 {
                     Id = Guid.Parse("d1e2f3a4-0007-4007-8007-000000000007"),
                     DeviceId = Guid.Parse("d1e2f3a4-0015-0015-0015-000000000015"),
                     Status = "Completed",
                     WarrantyType = "ThirdParty",
-                    WarrantyReason = "AfterReplacement",
-                    WarrantyStartDate = new DateTime(2024, 3, 10),
-                    WarrantyEndDate = new DateTime(2025, 3, 10),
+                    WarrantyReason = "Sau thay thế",
+                    WarrantyStartDate = new DateTime(2023, 3, 10, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2024, 3, 10, 14, 0, 0, DateTimeKind.Utc),
                     Provider = "Brother Vietnam",
                     WarrantyCode = "WAR-BROTHER-001",
                     Notes = "Bảo hành bên thứ ba sau thay thế bộ phận cấp liệu khác biệt",
@@ -384,16 +545,58 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     ModifiedDate = DateTime.UtcNow,
                     IsDeleted = false
                 },
-                // Device 18: Singer 4452 Unit 1 (1 warranty)
+                // Device 16: Brother B957 Unit 2 (1 warranty, IsUnderWarranty = false)
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0028-4028-8028-000000000028"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0016-0016-0016-000000000016"),
+                    Status = "Completed",
+                    WarrantyType = "Manufacturer",
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 3, 12, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2024, 3, 12, 14, 0, 0, DateTimeKind.Utc),
+                    Provider = "Brother Vietnam",
+                    WarrantyCode = "WAR-BROTHER-002",
+                    Notes = "Bảo hành máy mới, kiểm tra hệ thống vắt sổ",
+                    Cost = 0,
+                    DocumentUrl = "https://example.com/docs/warranty_brother_b957_02.pdf",
+                    SparePartCode = null,
+                    SparePartName = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                // Device 17: Brother B957 Unit 3 (1 warranty, IsUnderWarranty = false)
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0029-4029-8029-000000000029"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0017-0017-0017-000000000017"),
+                    Status = "Completed",
+                    WarrantyType = "Manufacturer",
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 3, 14, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2024, 3, 14, 14, 0, 0, DateTimeKind.Utc),
+                    Provider = "Brother Vietnam",
+                    WarrantyCode = "WAR-BROTHER-003",
+                    Notes = "Bảo hành máy mới, kiểm tra hệ thống cấp liệu",
+                    Cost = 0,
+                    DocumentUrl = "https://example.com/docs/warranty_brother_b957_03.pdf",
+                    SparePartCode = null,
+                    SparePartName = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                // Device 18: Singer 4452 Unit 1 (1 warranty, IsUnderWarranty = true)
                 new DeviceWarranty
                 {
                     Id = Guid.Parse("d1e2f3a4-0008-4008-8008-000000000008"),
                     DeviceId = Guid.Parse("d1e2f3a4-0018-0018-0018-000000000018"),
                     Status = "Completed",
                     WarrantyType = "Manufacturer",
-                    WarrantyReason = "NewDevice",
-                    WarrantyStartDate = new DateTime(2021, 4, 1),
-                    WarrantyEndDate = new DateTime(2023, 4, 1),
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 4, 1, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 8, 1, 14, 0, 0, DateTimeKind.Utc),
                     Provider = "Singer Vietnam",
                     WarrantyCode = "WAR-SINGER-001",
                     Notes = "Bảo hành máy mới, sửa chữa bo mạch nguồn bị lỗi",
@@ -401,6 +604,318 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     DocumentUrl = "https://example.com/docs/warranty_singer_4452_01.pdf",
                     SparePartCode = "SP029",
                     SparePartName = "Bộ Điều Khiển Điện Tử",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                // Device 19: Singer 4452 Unit 2 (2 warranties, IsUnderWarranty = true)
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0030-4030-8030-000000000030"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0019-0019-0019-000000000019"),
+                    Status = "Completed",
+                    WarrantyType = "Manufacturer",
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 4, 3, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 8, 3, 14, 0, 0, DateTimeKind.Utc),
+                    Provider = "Singer Vietnam",
+                    WarrantyCode = "WAR-SINGER-002",
+                    Notes = "Bảo hành máy mới, kiểm tra hệ thống may nặng",
+                    Cost = 0,
+                    DocumentUrl = "https://example.com/docs/warranty_singer_4452_02.pdf",
+                    SparePartCode = null,
+                    SparePartName = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0031-4031-8031-000000000031"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0019-0019-0019-000000000019"),
+                    Status = "Pending",
+                    WarrantyType = "Extended",
+                    WarrantyReason = "Sau khi hết bảo hành",
+                    WarrantyStartDate = new DateTime(2024, 7, 1, 10, 30, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 10, 1, 15, 30, 0, DateTimeKind.Utc),
+                    Provider = "Singer Vietnam",
+                    WarrantyCode = "WAR-SINGER-003",
+                    Notes = "Gia hạn bảo hành sau khi hết bảo hành nhà sản xuất",
+                    Cost = 500000,
+                    DocumentUrl = "https://example.com/docs/warranty_singer_4452_02_ext.pdf",
+                    SparePartCode = null,
+                    SparePartName = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                // Device 20: Singer 4452 Unit 3 (1 warranty, IsUnderWarranty = true)
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0032-4032-8032-000000000032"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0020-0020-0020-000000000020"),
+                    Status = "Completed",
+                    WarrantyType = "Manufacturer",
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 4, 5, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 8, 5, 14, 0, 0, DateTimeKind.Utc),
+                    Provider = "Singer Vietnam",
+                    WarrantyCode = "WAR-SINGER-004",
+                    Notes = "Bảo hành máy mới, kiểm tra hệ thống may nặng",
+                    Cost = 0,
+                    DocumentUrl = "https://example.com/docs/warranty_singer_4452_03.pdf",
+                    SparePartCode = null,
+                    SparePartName = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                // Device 21: Juki MO-6714S Unit 1 (2 warranties, IsUnderWarranty = true)
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0033-4033-8033-000000000033"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0021-0021-0021-000000000021"),
+                    Status = "Completed",
+                    WarrantyType = "Manufacturer",
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 5, 10, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 8, 10, 14, 0, 0, DateTimeKind.Utc),
+                    Provider = "Juki Vietnam",
+                    WarrantyCode = "WAR-JUKI-028",
+                    Notes = "Bảo hành máy mới, kiểm tra hệ thống vắt sổ 4 chỉ",
+                    Cost = 0,
+                    DocumentUrl = "https://example.com/docs/warranty_juki_mo6714s_01.pdf",
+                    SparePartCode = null,
+                    SparePartName = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0034-4034-8034-000000000034"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0021-0021-0021-000000000021"),
+                    Status = "Pending",
+                    WarrantyType = "ThirdParty",
+                    WarrantyReason = "Sau sửa chữa",
+                    WarrantyStartDate = new DateTime(2024, 8, 1, 9, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 11, 1, 17, 0, 0, DateTimeKind.Utc),
+                    Provider = "Juki Vietnam",
+                    WarrantyCode = "WAR-JUKI-029",
+                    Notes = "Bảo hành sau sửa chữa bộ phận cấp liệu",
+                    Cost = 700000,
+                    DocumentUrl = "https://example.com/docs/warranty_juki_mo6714s_01_repair.pdf",
+                    SparePartCode = "SP008",
+                    SparePartName = "Bộ Cấp Liệu",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                // Device 22: Juki MO-6714S Unit 2 (1 warranty, IsUnderWarranty = true)
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0035-4035-8035-000000000035"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0022-0022-0022-000000000022"),
+                    Status = "Completed",
+                    WarrantyType = "Manufacturer",
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 5, 12, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 8, 12, 14, 0, 0, DateTimeKind.Utc),
+                    Provider = "Juki Vietnam",
+                    WarrantyCode = "WAR-JUKI-030",
+                    Notes = "Bảo hành máy mới, kiểm tra hệ thống vắt sổ 4 chỉ",
+                    Cost = 0,
+                    DocumentUrl = "https://example.com/docs/warranty_juki_mo6714s_02.pdf",
+                    SparePartCode = null,
+                    SparePartName = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                // Device 23: Brother S-7200C Unit 1 (2 warranties, IsUnderWarranty = true)
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0036-4036-8036-000000000036"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0023-0023-0023-000000000023"),
+                    Status = "Completed",
+                    WarrantyType = "Manufacturer",
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 8, 15, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 9, 15, 14, 0, 0, DateTimeKind.Utc),
+                    Provider = "Brother Vietnam",
+                    WarrantyCode = "WAR-BROTHER-004",
+                    Notes = "Bảo hành máy mới, kiểm tra hệ thống cắt chỉ tự động",
+                    Cost = 0,
+                    DocumentUrl = "https://example.com/docs/warranty_brother_s7200c_01.pdf",
+                    SparePartCode = null,
+                    SparePartName = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0037-4037-8037-000000000037"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0023-0023-0023-000000000023"),
+                    Status = "Pending",
+                    WarrantyType = "Extended",
+                    WarrantyReason = "Sau khi hết bảo hành",
+                    WarrantyStartDate = new DateTime(2024, 9, 1, 10, 30, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 12, 1, 15, 30, 0, DateTimeKind.Utc),
+                    Provider = "Brother Vietnam",
+                    WarrantyCode = "WAR-BROTHER-005",
+                    Notes = "Gia hạn bảo hành sau khi hết bảo hành nhà sản xuất",
+                    Cost = 500000,
+                    DocumentUrl = "https://example.com/docs/warranty_brother_s7200c_01_ext.pdf",
+                    SparePartCode = null,
+                    SparePartName = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                // Device 24: Brother S-7200C Unit 2 (1 warranty, IsUnderWarranty = true)
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0038-4038-8038-000000000038"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0024-0024-0024-000000000024"),
+                    Status = "Completed",
+                    WarrantyType = "Manufacturer",
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 8, 17, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 9, 17, 14, 0, 0, DateTimeKind.Utc),
+                    Provider = "Brother Vietnam",
+                    WarrantyCode = "WAR-BROTHER-006",
+                    Notes = "Bảo hành máy mới, kiểm tra hệ thống cắt chỉ tự động",
+                    Cost = 0,
+                    DocumentUrl = "https://example.com/docs/warranty_brother_s7200c_02.pdf",
+                    SparePartCode = null,
+                    SparePartName = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                // Device 25: Singer 4423 Unit 1 (1 warranty, IsUnderWarranty = true)
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0039-4039-8039-000000000039"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0025-0025-0025-000000000025"),
+                    Status = "Completed",
+                    WarrantyType = "Manufacturer",
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 10, 5, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 11, 5, 14, 0, 0, DateTimeKind.Utc),
+                    Provider = "Singer Vietnam",
+                    WarrantyCode = "WAR-SINGER-005",
+                    Notes = "Bảo hành máy mới, kiểm tra hệ thống may nặng",
+                    Cost = 0,
+                    DocumentUrl = "https://example.com/docs/warranty_singer_4423_01.pdf",
+                    SparePartCode = null,
+                    SparePartName = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                // Device 26: Singer 4423 Unit 2 (1 warranty, IsUnderWarranty = false)
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0040-4040-8040-000000000040"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0026-0026-0026-000000000026"),
+                    Status = "Completed",
+                    WarrantyType = "Manufacturer",
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 10, 7, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2024, 10, 7, 14, 0, 0, DateTimeKind.Utc),
+                    Provider = "Singer Vietnam",
+                    WarrantyCode = "WAR-SINGER-006",
+                    Notes = "Bảo hành máy mới, đã hết hạn trước khi máy ngừng sử dụng",
+                    Cost = 0,
+                    DocumentUrl = "https://example.com/docs/warranty_singer_4423_02.pdf",
+                    SparePartCode = null,
+                    SparePartName = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                // Device 27: Juki LH-3568S Unit 1 (1 warranty, IsUnderWarranty = true)
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0041-4041-8041-000000000041"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0027-0027-0027-000000000027"),
+                    Status = "Completed",
+                    WarrantyType = "Manufacturer",
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 12, 1, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 12, 1, 14, 0, 0, DateTimeKind.Utc),
+                    Provider = "Juki Vietnam",
+                    WarrantyCode = "WAR-JUKI-031",
+                    Notes = "Bảo hành máy mới, kiểm tra hệ thống hai kim",
+                    Cost = 0,
+                    DocumentUrl = "https://example.com/docs/warranty_juki_lh3568s_01.pdf",
+                    SparePartCode = null,
+                    SparePartName = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                // Device 28: Juki LH-3568S Unit 2 (1 warranty, IsUnderWarranty = true)
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0042-4042-8042-000000000042"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0028-0028-0028-000000000028"),
+                    Status = "Completed",
+                    WarrantyType = "Manufacturer",
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 12, 3, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 12, 3, 14, 0, 0, DateTimeKind.Utc),
+                    Provider = "Juki Vietnam",
+                    WarrantyCode = "WAR-JUKI-032",
+                    Notes = "Bảo hành máy mới, kiểm tra hệ thống hai kim",
+                    Cost = 0,
+                    DocumentUrl = "https://example.com/docs/warranty_juki_lh3568s_02.pdf",
+                    SparePartCode = null,
+                    SparePartName = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                // Device 29: Brother B735 Unit 1 (1 warranty, IsUnderWarranty = true)
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0043-4043-8043-000000000043"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0029-0029-0029-000000000029"),
+                    Status = "Completed",
+                    WarrantyType = "Manufacturer",
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 4, 20, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 9, 20, 14, 0, 0, DateTimeKind.Utc),
+                    Provider = "Brother Vietnam",
+                    WarrantyCode = "WAR-BROTHER-007",
+                    Notes = "Bảo hành máy mới, kiểm tra hệ thống vắt sổ 3 chỉ",
+                    Cost = 0,
+                    DocumentUrl = "https://example.com/docs/warranty_brother_b735_01.pdf",
+                    SparePartCode = null,
+                    SparePartName = null,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                },
+                // Device 30: Brother B735 Unit 2 (1 warranty, IsUnderWarranty = false)
+                new DeviceWarranty
+                {
+                    Id = Guid.Parse("d1e2f3a4-0044-4044-8044-000000000044"),
+                    DeviceId = Guid.Parse("d1e2f3a4-0030-0030-0030-000000000030"),
+                    Status = "Completed",
+                    WarrantyType = "Manufacturer",
+                    WarrantyReason = "Máy mới",
+                    WarrantyStartDate = new DateTime(2023, 4, 22, 8, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2024, 4, 22, 14, 0, 0, DateTimeKind.Utc),
+                    Provider = "Brother Vietnam",
+                    WarrantyCode = "WAR-BROTHER-008",
+                    Notes = "Bảo hành máy mới, đã hết hạn trước khi máy ngừng sử dụng",
+                    Cost = 0,
+                    DocumentUrl = "https://example.com/docs/warranty_brother_b735_02.pdf",
+                    SparePartCode = null,
+                    SparePartName = null,
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
                     IsDeleted = false
