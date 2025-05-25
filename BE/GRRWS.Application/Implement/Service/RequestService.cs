@@ -301,33 +301,37 @@ namespace GRRWS.Application.Implement.Service
                 }).ToList()
             };
 
-            // Gán tất cả ảnh vào IssueId đầu tiên
-            if (request.RequestIssues.Any())
+            // Gán ảnh dựa trên IssueIdsMatchWithImage
+            if (request.RequestIssues.Any() && dto.ImageFiles != null && dto.ImageFiles.Any() && dto.IssueIdsMatchWithImage != null)
             {
-                var firstIssueId = request.RequestIssues.First().IssueId;
-                var allImages = new List<IFormFile>();
-                if (dto.ImageFile != null) allImages.Add(dto.ImageFile);
-                if (dto.AdditionalImageFiles != null) allImages.AddRange(dto.AdditionalImageFiles.Where(f => f != null));
-
-                foreach (var imageFile in allImages.Where(f => f != null && f.Length > 0))
+                for (int i = 0; i < Math.Min(dto.ImageFiles.Count, dto.IssueIdsMatchWithImage.Count); i++)
                 {
-                    var imageRequest = new AddImageRequest(imageFile, "RequestIssues");
-                    var uploadResult = await _unitOfWork.FirebaseRepository.UploadImageAsync(imageRequest);
-                    if (!uploadResult.Success)
-                    {
-                        return Result.Failure(uploadResult.Error);
-                    }
+                    var imageFile = dto.ImageFiles[i];
+                    var issueId = dto.IssueIdsMatchWithImage[i];
 
-                    var requestIssue = request.RequestIssues.First(ri => ri.IssueId == firstIssueId);
-                    requestIssue.Images.Add(new Image
+                    if (imageFile != null && imageFile.Length > 0)
                     {
-                        Id = Guid.NewGuid(),
-                        ImageUrl = uploadResult.FilePath,
-                        Type = imageFile.ContentType ?? "image/jpeg",
-                        RequestIssueId = requestIssue.Id,
-                        CreatedDate = DateTime.UtcNow,
-                        IsDeleted = false
-                    });
+                        var imageRequest = new AddImageRequest(imageFile, "RequestIssues");
+                        var uploadResult = await _unitOfWork.FirebaseRepository.UploadImageAsync(imageRequest);
+                        if (!uploadResult.Success)
+                        {
+                            return Result.Failure(uploadResult.Error);
+                        }
+
+                        var requestIssue = request.RequestIssues.FirstOrDefault(ri => ri.IssueId == issueId);
+                        if (requestIssue != null)
+                        {
+                            requestIssue.Images.Add(new Image
+                            {
+                                Id = Guid.NewGuid(),
+                                ImageUrl = uploadResult.FilePath,
+                                Type = imageFile.ContentType ?? "image/jpeg",
+                                RequestIssueId = requestIssue.Id,
+                                CreatedDate = DateTime.UtcNow,
+                                IsDeleted = false
+                            });
+                        }
+                    }
                 }
             }
 
@@ -336,7 +340,6 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.SuccessWithObject(new { Message = "Test request created successfully!" });
         }
-
 
 
 
