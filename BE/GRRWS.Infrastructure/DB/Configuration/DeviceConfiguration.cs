@@ -154,27 +154,6 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 new Device
                 {
 
-                    Id = Guid.Parse("66666666-6666-6666-6666-666666666667"),
-                    DeviceName = "Sewing Machine 4",
-                    DeviceCode = "SM004",
-                    SerialNumber = "SN006",
-                    Model = "Model F",
-                    Manufacturer = "Brother",
-                    ManufactureDate = new DateTime(2021, 5, 10),
-                    InstallationDate = new DateTime(2021, 6, 1),
-                    Description = "Compact sewing machine",
-                    PhotoUrl = "http://example.com/photos/sm004.jpg",
-                    Status = "Active",
-                    IsUnderWarranty = true,
-                    Specifications = "{\"speed\": \"800 SPM\", \"type\": \"Compact\"}",
-                    PurchasePrice = 1000.00m,
-                    Supplier = "Brother Industries",
-                    CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
-                },
-                new Device
-                {
-
                     Id = Guid.Parse("d1e2f3a4-0007-0007-0007-000000000007"),
                     DeviceCode = "DEV007-JUKI-DDL8700-07",
                     DeviceName = "Juki DDL-8700 Unit 7",
