@@ -76,7 +76,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     FullName = "Staff Member 3",
                     UserName = "Staff Member 3",
                     PhoneNumber = "09785628660",
-                    PasswordHash = "String123!", 
+                    PasswordHash = "String123!",
                     Role = 3, // Staff
                 },
                 new User
@@ -96,7 +96,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     FullName = "Staff Member 5",
                     UserName = "Staff Member 5",
                     PhoneNumber = "09785628660",
-                    PasswordHash = "String123!", 
+                    PasswordHash = "String123!",
                     Role = 3, // Staff
                 },
                 new User
@@ -106,7 +106,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     FullName = "Staff Member 6",
                     UserName = "Staff Member 6",
                     PhoneNumber = "09785628660",
-                    PasswordHash = "String123!", 
+                    PasswordHash = "String123!",
                     Role = 3, // Staff
                 },
                 new User
@@ -126,7 +126,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     FullName = "Staff Member 8",
                     UserName = "Staff Member 8",
                     PhoneNumber = "09785628660",
-                    PasswordHash = "String123!", 
+                    PasswordHash = "String123!",
                     Role = 3, // Staff
                 },
                 new User
@@ -146,7 +146,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     FullName = "Staff Member 10",
                     UserName = "Staff Member 10",
                     PhoneNumber = "09785628660",
-                    PasswordHash = "String123!", 
+                    PasswordHash = "String123!",
                     Role = 3, // Staff
                 },
                 new User
@@ -156,8 +156,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     FullName = "Head of Tech 2",
                     UserName = "Head of Tech 3",
                     PhoneNumber = "09785628660",
-                    PasswordHash = "String123!", 
-                    Role = 2, 
+                    PasswordHash = "String123!",
+                    Role = 2,
                 },
                 new User
                 {
@@ -167,9 +167,9 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UserName = "Head of Tech 3",
                     PhoneNumber = "09785628660",
                     PasswordHash = "String123!",
-                    Role = 2, 
+                    Role = 2,
                 }
-                );
+            );
         }
     }
 }

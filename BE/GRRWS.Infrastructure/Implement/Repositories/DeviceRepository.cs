@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using GRRWS.Domain.Entities;
+﻿using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.Device;
 using GRRWS.Infrastructure.DTOs.History;
@@ -205,6 +200,11 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         && (dw.WarrantyEndDate.Value.Date - DateTime.UtcNow.Date).TotalDays <= 10
                 })
                 .ToListAsync();
+        }
+
+        public async Task<bool> DeviceIdExistsAsync(Guid deviceId)
+        {
+            return await _context.Devices.AsNoTracking().AnyAsync(d => d.Id == deviceId && !d.IsDeleted);
         }
 
     }
