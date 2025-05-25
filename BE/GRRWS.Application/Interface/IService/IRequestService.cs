@@ -9,6 +9,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetByIdAsync(Guid id);
         Task<Result> CreateAsync(CreateRequestDTO dto, Guid userId);
         Task<Result> UpdateAsync(UpdateRequestDTO dto, Guid id);
+        Task<Result> CancelRequestAsync(Guid id);
         Task<Result> DeleteAsync(Guid id);
         Task<Result> GetRequestByDeviceIdAsync(Guid id);
         Task<Result> GetRequestByUserIdAsync(Guid userId);
