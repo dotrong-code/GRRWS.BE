@@ -1,4 +1,5 @@
 ﻿using GRRWS.Domain.Entities;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,8 +31,8 @@ namespace GRRWS.Infrastructure.DTOs.RequestDTO
     public class CreateRequestDTO
     {
         public Guid DeviceId { get; set; }
-
-        public List<Guid> IssueIds { get; set; } = new();
+        public List<Guid>? IssueIds { get; set; } = new();
+        public List<IssueImageEntry>? IssueImages { get; set; } = new(); // List of issue-image pairs
     }
 
     public class UpdateRequestDTO
@@ -50,5 +51,17 @@ namespace GRRWS.Infrastructure.DTOs.RequestDTO
         public Guid Id { get; set; }
         public string? DisplayName { get; set; }
         public List<string>? ImageUrls { get; set; }
+    }
+    public class IssueImageEntry
+    {
+        public Guid IssueId { get; set; }
+        public List<IFormFile>? Images { get; set; }
+    }
+
+    public class CreateRequestFormDTO
+    {
+        public Guid DeviceId { get; set; }
+        public List<Guid> IssueIds { get; set; } = new();
+        public List<IssueImageEntry> IssueImages { get; set; } = new(); // Same structure for form data
     }
 }

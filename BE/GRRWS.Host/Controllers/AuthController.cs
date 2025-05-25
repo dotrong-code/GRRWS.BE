@@ -29,7 +29,7 @@ namespace GRRWS.Host.Controllers
         }
 
         [HttpPost("sign-up")]
-        public async Task<IResult> RegisterForUser([FromBody] RegisterRequest registerRequest)
+        public async Task<IResult> RegisterForUser([FromForm] RegisterRequest registerRequest)
         {
             Result result = await _authService.SignUp(registerRequest);
             return result.IsSuccess
