@@ -7,11 +7,12 @@ using Microsoft.AspNetCore.Http;
 
 namespace GRRWS.Infrastructure.DTOs.RequestDTO
 {
+
     public class TestCreateRequestDTO
     {
         public Guid DeviceId { get; set; }
-        public List<Guid>? IssueIds { get; set; } = new();
-        public IFormFile? ImageFile { get; set; } // Ảnh chính (gán vào IssueId đầu tiên)
-        public List<IFormFile>? AdditionalImageFiles { get; set; } // Các ảnh bổ sung (gán vào IssueId đầu tiên)
+        public List<Guid> IssueIds { get; set; } = new();
+        public List<IFormFile> ImageFiles { get; set; } = new();
+        public List<Guid> IssueIdsMatchWithImage { get; set; } = new();
     }
 }
