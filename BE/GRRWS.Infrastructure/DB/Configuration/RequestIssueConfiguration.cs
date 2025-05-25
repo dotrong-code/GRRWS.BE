@@ -1,7 +1,7 @@
-﻿using GRRWS.Domain.Entities;
+
+using GRRWS.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
 
 namespace GRRWS.Infrastructure.DB.Configuration
 {
@@ -9,6 +9,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
     {
         public void Configure(EntityTypeBuilder<RequestIssue> builder)
         {
+
             builder.HasData(
                 new RequestIssue
                 {
@@ -72,8 +73,11 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Status = "Completed",
                     RequestId = Guid.Parse("a1f2e3d4-0015-0015-1015-000000000015"), // Brother B957 Unit 3
                     IssueId = Guid.Parse("55555555-5555-5555-5555-555555555555"), // KEU_TO
+
                 }
             );
         }
     }
+
 }
+

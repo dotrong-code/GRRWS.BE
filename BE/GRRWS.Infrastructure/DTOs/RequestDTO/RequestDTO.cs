@@ -30,8 +30,6 @@ namespace GRRWS.Infrastructure.DTOs.RequestDTO
     public class CreateRequestDTO
     {
         public Guid DeviceId { get; set; }
-        public string RequestTitle { get; set; }
-        public string Description { get; set; }
 
         public List<Guid> IssueIds { get; set; } = new();
     }
