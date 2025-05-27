@@ -180,5 +180,15 @@ namespace GRRWS.Application.Implement.Service
             }
             return Result.SuccessWithObject(result);
         }
+
+        public async Task<Result> GetDeviceWarrantyHistoryAsync(Guid deviceId)
+        {
+            var deviceExists = await _unitOfWork.DeviceRepository.DeviceIdExistsAsync(deviceId);
+            if (!deviceExists)
+                return Result.Failure(DeviceErrorMessage.DeviceNotExist());
+
+            var history = await _unitOfWork.DeviceWarrantyRepository.GetDeviceWarrantyHistoryByDeviceIdAsync(deviceId);
+            return Result.SuccessWithObject(history);
+        }
     }
 }
