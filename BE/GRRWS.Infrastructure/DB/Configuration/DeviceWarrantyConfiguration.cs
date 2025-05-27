@@ -15,7 +15,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0001-4001-8001-000000000001"),
                     DeviceId = Guid.Parse("d1e2f3a4-0001-0001-0001-000000000001"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 2, 1, 8, 0, 0, DateTimeKind.Utc),
@@ -35,7 +35,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0009-4009-8009-000000000009"),
                     DeviceId = Guid.Parse("d1e2f3a4-0001-0001-0001-000000000001"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Extended",
                     WarrantyReason = "Sau khi hết bảo hành",
                     WarrantyStartDate = new DateTime(2023, 7, 2, 10, 30, 0, DateTimeKind.Utc),
@@ -76,7 +76,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0011-4011-8011-000000000011"),
                     DeviceId = Guid.Parse("d1e2f3a4-0002-0002-0002-000000000002"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 2, 2, 8, 0, 0, DateTimeKind.Utc),
@@ -116,7 +116,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0021-4021-8021-000000000021"),
                     DeviceId = Guid.Parse("d1e2f3a4-0002-0002-0002-000000000002"),
-                    Status = "Pending",
+                    Status = "InProgress",
                     WarrantyType = "ThirdParty",
                     WarrantyReason = "Sau sửa chữa",
                     WarrantyStartDate = new DateTime(2024, 8, 1, 9, 0, 0, DateTimeKind.Utc),
@@ -136,7 +136,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0022-4022-8022-000000000022"),
                     DeviceId = Guid.Parse("d1e2f3a4-0002-0002-0002-000000000002"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Sau thay thế",
                     WarrantyStartDate = new DateTime(2024, 9, 1, 8, 0, 0, DateTimeKind.Utc),
@@ -157,7 +157,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0002-4002-8002-000000000002"),
                     DeviceId = Guid.Parse("d1e2f3a4-0003-0003-0003-000000000003"),
-                    Status = "Pending",
+                    Status = "InProgress",
                     WarrantyType = "Extended",
                     WarrantyReason = "Sau sửa chữa",
                     WarrantyStartDate = new DateTime(2024, 5, 10, 9, 0, 0, DateTimeKind.Utc),
@@ -177,7 +177,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0012-4012-8012-000000000012"),
                     DeviceId = Guid.Parse("d1e2f3a4-0003-0003-0003-000000000003"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 2, 5, 8, 0, 0, DateTimeKind.Utc),
@@ -198,7 +198,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0003-4003-8003-000000000003"),
                     DeviceId = Guid.Parse("d1e2f3a4-0004-0004-0004-000000000004"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Sau thay thế",
                     WarrantyStartDate = new DateTime(2024, 11, 20, 8, 0, 0, DateTimeKind.Utc),
@@ -238,7 +238,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0024-4024-8024-000000000024"),
                     DeviceId = Guid.Parse("d1e2f3a4-0004-0004-0004-000000000004"),
-                    Status = "Pending",
+                    Status = "InProgress",
                     WarrantyType = "ThirdParty",
                     WarrantyReason = "Sau sửa chữa",
                     WarrantyStartDate = new DateTime(2024, 8, 1, 9, 0, 0, DateTimeKind.Utc),
@@ -259,7 +259,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0013-4013-8013-000000000013"),
                     DeviceId = Guid.Parse("d1e2f3a4-0005-0005-0005-000000000005"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 2, 10, 8, 0, 0, DateTimeKind.Utc),
@@ -301,7 +301,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0004-4004-8004-000000000004"),
                     DeviceId = Guid.Parse("d1e2f3a4-0007-0007-0007-000000000007"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 2, 15, 8, 0, 0, DateTimeKind.Utc),
@@ -322,7 +322,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0015-4015-8015-000000000015"),
                     DeviceId = Guid.Parse("d1e2f3a4-0008-0008-0008-000000000008"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 2, 18, 8, 0, 0, DateTimeKind.Utc),
@@ -343,7 +343,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0016-4016-8016-000000000016"),
                     DeviceId = Guid.Parse("d1e2f3a4-0009-0009-0009-000000000009"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 2, 20, 8, 0, 0, DateTimeKind.Utc),
@@ -364,7 +364,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0017-4017-8017-000000000017"),
                     DeviceId = Guid.Parse("d1e2f3a4-0010-0010-0010-000000000010"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 2, 22, 8, 0, 0, DateTimeKind.Utc),
@@ -385,7 +385,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0005-4005-8005-000000000005"),
                     DeviceId = Guid.Parse("d1e2f3a4-0011-0011-0011-000000000011"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 3, 1, 8, 0, 0, DateTimeKind.Utc),
@@ -406,7 +406,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0018-4018-8018-000000000018"),
                     DeviceId = Guid.Parse("d1e2f3a4-0012-0012-0012-000000000012"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 3, 3, 8, 0, 0, DateTimeKind.Utc),
@@ -427,7 +427,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0006-4006-8006-000000000006"),
                     DeviceId = Guid.Parse("d1e2f3a4-0013-0013-0013-000000000013"),
-                    Status = "Pending",
+                    Status = "InProgress",
                     WarrantyType = "Extended",
                     WarrantyReason = "Sau sửa chữa",
                     WarrantyStartDate = new DateTime(2024, 5, 12, 9, 0, 0, DateTimeKind.Utc),
@@ -447,7 +447,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0019-4019-8019-000000000019"),
                     DeviceId = Guid.Parse("d1e2f3a4-0013-0013-0013-000000000013"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 3, 5, 8, 0, 0, DateTimeKind.Utc),
@@ -468,7 +468,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0025-4025-8025-000000000025"),
                     DeviceId = Guid.Parse("d1e2f3a4-0014-0014-0014-000000000014"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 3, 7, 8, 0, 0, DateTimeKind.Utc),
@@ -488,7 +488,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0026-4026-8026-000000000026"),
                     DeviceId = Guid.Parse("d1e2f3a4-0014-0014-0014-000000000014"),
-                    Status = "Pending",
+                    Status = "InProgress",
                     WarrantyType = "Extended",
                     WarrantyReason = "Sau khi hết bảo hành",
                     WarrantyStartDate = new DateTime(2024, 7, 1, 10, 30, 0, DateTimeKind.Utc),
@@ -592,7 +592,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0008-4008-8008-000000000008"),
                     DeviceId = Guid.Parse("d1e2f3a4-0018-0018-0018-000000000018"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 4, 1, 8, 0, 0, DateTimeKind.Utc),
@@ -613,7 +613,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0030-4030-8030-000000000030"),
                     DeviceId = Guid.Parse("d1e2f3a4-0019-0019-0019-000000000019"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 4, 3, 8, 0, 0, DateTimeKind.Utc),
@@ -633,7 +633,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0031-4031-8031-000000000031"),
                     DeviceId = Guid.Parse("d1e2f3a4-0019-0019-0019-000000000019"),
-                    Status = "Pending",
+                    Status = "InProgress",
                     WarrantyType = "Extended",
                     WarrantyReason = "Sau khi hết bảo hành",
                     WarrantyStartDate = new DateTime(2024, 7, 1, 10, 30, 0, DateTimeKind.Utc),
@@ -654,7 +654,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0032-4032-8032-000000000032"),
                     DeviceId = Guid.Parse("d1e2f3a4-0020-0020-0020-000000000020"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 4, 5, 8, 0, 0, DateTimeKind.Utc),
@@ -675,7 +675,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0033-4033-8033-000000000033"),
                     DeviceId = Guid.Parse("d1e2f3a4-0021-0021-0021-000000000021"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 5, 10, 8, 0, 0, DateTimeKind.Utc),
@@ -695,7 +695,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0034-4034-8034-000000000034"),
                     DeviceId = Guid.Parse("d1e2f3a4-0021-0021-0021-000000000021"),
-                    Status = "Pending",
+                    Status = "InProgress",
                     WarrantyType = "ThirdParty",
                     WarrantyReason = "Sau sửa chữa",
                     WarrantyStartDate = new DateTime(2024, 8, 1, 9, 0, 0, DateTimeKind.Utc),
@@ -716,7 +716,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0035-4035-8035-000000000035"),
                     DeviceId = Guid.Parse("d1e2f3a4-0022-0022-0022-000000000022"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 5, 12, 8, 0, 0, DateTimeKind.Utc),
@@ -737,7 +737,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0036-4036-8036-000000000036"),
                     DeviceId = Guid.Parse("d1e2f3a4-0023-0023-0023-000000000023"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 8, 15, 8, 0, 0, DateTimeKind.Utc),
@@ -757,7 +757,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0037-4037-8037-000000000037"),
                     DeviceId = Guid.Parse("d1e2f3a4-0023-0023-0023-000000000023"),
-                    Status = "Pending",
+                    Status = "InProgress",
                     WarrantyType = "Extended",
                     WarrantyReason = "Sau khi hết bảo hành",
                     WarrantyStartDate = new DateTime(2024, 9, 1, 10, 30, 0, DateTimeKind.Utc),
@@ -778,7 +778,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0038-4038-8038-000000000038"),
                     DeviceId = Guid.Parse("d1e2f3a4-0024-0024-0024-000000000024"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 8, 17, 8, 0, 0, DateTimeKind.Utc),
@@ -799,7 +799,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0039-4039-8039-000000000039"),
                     DeviceId = Guid.Parse("d1e2f3a4-0025-0025-0025-000000000025"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 10, 5, 8, 0, 0, DateTimeKind.Utc),
@@ -841,7 +841,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0041-4041-8041-000000000041"),
                     DeviceId = Guid.Parse("d1e2f3a4-0027-0027-0027-000000000027"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 12, 1, 8, 0, 0, DateTimeKind.Utc),
@@ -862,7 +862,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0042-4042-8042-000000000042"),
                     DeviceId = Guid.Parse("d1e2f3a4-0028-0028-0028-000000000028"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 12, 3, 8, 0, 0, DateTimeKind.Utc),
@@ -883,7 +883,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 {
                     Id = Guid.Parse("d1e2f3a4-0043-4043-8043-000000000043"),
                     DeviceId = Guid.Parse("d1e2f3a4-0029-0029-0029-000000000029"),
-                    Status = "Completed",
+                    Status = "InProgress",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 4, 20, 8, 0, 0, DateTimeKind.Utc),

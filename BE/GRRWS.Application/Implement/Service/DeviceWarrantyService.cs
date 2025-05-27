@@ -188,7 +188,18 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(DeviceErrorMessage.DeviceNotExist());
 
             var history = await _unitOfWork.DeviceWarrantyRepository.GetDeviceWarrantyHistoryByDeviceIdAsync(deviceId);
-            return Result.SuccessWithObject(history);
+            var historyDTOs = history.Select(dh => new DeviceWarrantyHistoryDTO
+            {
+                DeviceId = dh.DeviceId,
+                DeviceDescription = dh.DeviceDescription,
+                Status = dh.Status,
+                SendDate = dh.SendDate,
+                ReceiveDate = dh.ReceiveDate,
+                Provider = dh.Provider,
+                Note = dh.Note
+            }).ToList();
+
+            return Result.SuccessWithObject(historyDTOs);
         }
     }
 }

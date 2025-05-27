@@ -8,7 +8,7 @@ namespace GRRWS.Domain.Entities
 {
     public class DeviceWarranty : BaseEntity
     {
-        public string? Status { get; set; } // Pending, InProgress, Completed, Rejected
+        public string? Status { get; set; } // InProgress, Completed
         public string? WarrantyType { get; set; } // Manufacturer, Extended, ThirdParty
         public string? WarrantyReason { get; set; } // NewDevice, AfterWarranty, AfterRepair, AfterReplacement
         public DateTime? WarrantyStartDate { get; set; }
