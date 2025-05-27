@@ -47,10 +47,7 @@ namespace GRRWS.Infrastructure.DB
             #region Data Configuration
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new IssueConfiguration());
-
-
             modelBuilder.ApplyConfiguration(new DeviceConfiguration());
-
             modelBuilder.ApplyConfiguration(new ErrorConfiguration());
             modelBuilder.ApplyConfiguration(new SparepartConfiguration());
             modelBuilder.ApplyConfiguration(new IssueErrorConfiguration());
@@ -70,6 +67,7 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.ApplyConfiguration(new ReportConfiguration());
             modelBuilder.ApplyConfiguration(new RequestIssueConfiguration());
             modelBuilder.ApplyConfiguration(new ErrorDetailConfiguration());
+            modelBuilder.ApplyConfiguration(new DeviceWarrantyHistoryConfiguration());
 
 
             #endregion
