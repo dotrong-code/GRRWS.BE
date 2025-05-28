@@ -1,4 +1,5 @@
 ﻿using GRRWS.Domain.Entities;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,15 +26,16 @@ namespace GRRWS.Infrastructure.DTOs.RequestDTO
         public Guid? CreatedBy { get; set; }
         public DateTime? ModifiedDate { get; set; }
         public Guid? ModifiedBy { get; set; }
+        public bool IsRejected { get; set; } // Thêm trường này
+        public string? RejectionReason { get; set; } // Thêm trường này
+        public string? RejectionDetails { get; set; } // Thêm trường này
         public List<IssueDTO> Issues { get; set; } = new();
     }
     public class CreateRequestDTO
     {
         public Guid DeviceId { get; set; }
-        public string RequestTitle { get; set; }
-        public string Description { get; set; }
-
-        public List<Guid> IssueIds { get; set; } = new();
+        public List<Guid>? IssueIds { get; set; } = new();
+        public List<IssueImageEntry>? IssueImages { get; set; } = new(); // List of issue-image pairs
     }
 
     public class UpdateRequestDTO
@@ -52,5 +54,30 @@ namespace GRRWS.Infrastructure.DTOs.RequestDTO
         public Guid Id { get; set; }
         public string? DisplayName { get; set; }
         public List<string>? ImageUrls { get; set; }
+        public string? Status { get; set; }
+
+        public bool IsRejected { get; set; } // Thêm trường này
+        public string? RejectionReason { get; set; } // Thêm trường này
+        public string? RejectionDetails { get; set; } // Thêm trường này
+    }
+
+    public class IssueImageEntry
+    {
+        public Guid IssueId { get; set; }
+        public List<IFormFile>? Images { get; set; }
+    }
+
+    public class CreateRequestFormDTO
+    {
+        public Guid DeviceId { get; set; }
+        public List<Guid> IssueIds { get; set; } = new();
+        public List<IssueImageEntry> IssueImages { get; set; } = new(); // Same structure for form data
+
+        public class CancelRequestDTO
+        {
+            public Guid RequestId { get; set; }
+            public string? Reason { get; set; }
+
+        }
     }
 }

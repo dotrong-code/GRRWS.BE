@@ -106,7 +106,10 @@ builder.Services.AddCors(options =>
                 .WithExposedHeaders("Authorization")
                   ;
         });
+
+
 });
+
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.RegisterServices();
@@ -137,13 +140,15 @@ app.UseExceptionHandler(errorApp =>
 });
 
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MigrateDatabases();
-
+//app.ConfigureMiddleware();
 app.MapControllers();
 
 app.UseCors("AllowAll");
 
 app.Run();
+
+//test commit

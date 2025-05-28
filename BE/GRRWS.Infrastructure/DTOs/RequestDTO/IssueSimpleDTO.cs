@@ -9,6 +9,6 @@ namespace GRRWS.Infrastructure.DTOs.RequestDTO
     public class IssueSimpleDTO
     {
         public Guid Id { get; set; }
-        public string DisplayName { get; set; }
+        public string? DisplayName { get; set; }
     }
 }

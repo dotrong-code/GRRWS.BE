@@ -1,4 +1,4 @@
-﻿using GRRWS.Infrastructure.Middleware;
+﻿using GRRWS.Host.Starup.Middleware;
 
 namespace GRRWS.Host.Starup
 {
@@ -6,7 +6,8 @@ namespace GRRWS.Host.Starup
     {
         public static WebApplication ConfigureMiddleware(this WebApplication app)
         {
-            app.UseMiddleware<ExceptionHandlingMiddleware>();
+            //app.UseMiddleware<ExceptionHandlingMiddleware>();
+            app.UseMiddleware<AuthenticationMiddleware>();
             return app;
         }
     }
