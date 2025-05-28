@@ -22,6 +22,7 @@ namespace GRRWS.Infrastructure.Interfaces
         IReportRepository ReportRepository { get; }
         IRequestRepository RequestRepository { get; }
         ITaskRepository TaskRepository { get; }
+        IWarrantyDetailRepository WarrantyDetailRepository { get; }
 
 
         int Complete();

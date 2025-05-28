@@ -1,4 +1,5 @@
-﻿using GRRWS.Infrastructure.DB;
+﻿using GRRWS.Domain.Entities;
+using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
@@ -55,6 +56,20 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     Name = "(Not found)"
                 })
                 .ToList();
+        }
+        public async Task<Issue> GetByIdAsync(Guid id)
+        {
+            return await _context.Issues
+                .Include(i => i.RequestIssues)
+                .Include(i => i.IssueErrors)
+                .Include(i => i.WarrantyDetail)
+                .FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
+        }
+
+        public async Task UpdateAsync(Issue issue)
+        {
+            _context.Issues.Update(issue);
+            await Task.CompletedTask;
         }
 
     }
