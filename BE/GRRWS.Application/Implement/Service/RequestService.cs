@@ -481,7 +481,7 @@ namespace GRRWS.Application.Implement.Service
             if (r.Status == "Approved" || r.Status == "Denied" || r.Status == "InProgress" || r.Status == "Completed")
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Cannot cancel this request! You can only cancel request if the status is Pending.", 0));
             r.Status = "Denied";
-            r.Description = "Request has been denied by reason: " + dto.Reason;
+            r.Description = "Yêu cầu đã bị hủy với lý do: " + dto.Reason;
             r.ModifiedDate = DateTime.UtcNow;
             await _requestRepository.UpdateAsync(r);
 
