@@ -120,11 +120,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "GRRWS API V1");
-        c.RoutePrefix = "api/swagger";
-    });
+    app.UseSwaggerUI();
 }
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 logger.LogInformation("App is starting...");
