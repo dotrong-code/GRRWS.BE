@@ -14,12 +14,12 @@ namespace GRRWS.Application.Implement.Service
 {
     public class WarrantyDetailService : IWarrantyDetailService
     {
-        private readonly IWarrantyDetailRepository _warrantyDetailRepository;
+        
         private readonly IUnitOfWork _unitOfWork;
 
-        public WarrantyDetailService(IWarrantyDetailRepository warrantyDetailRepository, IUnitOfWork unitOfWork)
+        public WarrantyDetailService( IUnitOfWork unitOfWork)
         {
-            _warrantyDetailRepository = warrantyDetailRepository;
+            
             _unitOfWork = unitOfWork;
         }
 
@@ -62,7 +62,10 @@ namespace GRRWS.Application.Implement.Service
                 WarrantyNotes = dto.WarrantyNotes,
                 ReportId = report.Id
             };
-
+            // Tạo Report và WarrantyDetail trong DB
+            await _unitOfWork.ReportRepository.CreateAsync(report);
+            await _unitOfWork.WarrantyDetailRepository.CreateAsync(warrantyDetail);
+            await _unitOfWork.SaveChangesAsync();
             // Liên kết Issues với WarrantyDetail
             foreach (var issue in issues)
             {
@@ -70,17 +73,14 @@ namespace GRRWS.Application.Implement.Service
                 await _unitOfWork.IssueRepository.UpdateAsync(issue);
             }
 
-            // Tạo Report và WarrantyDetail trong DB
-            await _unitOfWork.ReportRepository.CreateAsync(report);
-            await _warrantyDetailRepository.CreateAsync(warrantyDetail);
-            await _unitOfWork.SaveChangesAsync();
 
+            await _unitOfWork.SaveChangesAsync();
             return Result.SuccessWithObject(new { Message = "WarrantyDetail and Report created successfully!" });
         }
 
         public async Task<Result> GetByIdAsync(Guid id)
         {
-            var warrantyDetail = await _warrantyDetailRepository.GetByIdAsync(id);
+            var warrantyDetail = await _unitOfWork.WarrantyDetailRepository.GetByIdAsync(id);
             if (warrantyDetail == null)
             {
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "WarrantyDetail not found.", 0));
@@ -100,7 +100,7 @@ namespace GRRWS.Application.Implement.Service
 
         public async Task<Result> GetAllAsync()
         {
-            var warrantyDetails = await _warrantyDetailRepository.GetAllAsync();
+            var warrantyDetails = await _unitOfWork.WarrantyDetailRepository.GetAllAsync();
             var dtos = warrantyDetails.Select(wd => new WarrantyDetailDTO
             {
                 Id = wd.Id,
@@ -115,7 +115,7 @@ namespace GRRWS.Application.Implement.Service
 
         public async Task<Result> UpdateAsync(Guid id, UpdateWarrantyDetailDTO dto)
         {
-            var warrantyDetail = await _warrantyDetailRepository.GetByIdAsync(id);
+            var warrantyDetail = await _unitOfWork.WarrantyDetailRepository.GetByIdAsync(id);
             if (warrantyDetail == null)
             {
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "WarrantyDetail not found.", 0));
@@ -124,7 +124,7 @@ namespace GRRWS.Application.Implement.Service
             warrantyDetail.WarrantyNotes = dto.WarrantyNotes ?? warrantyDetail.WarrantyNotes;
             warrantyDetail.TaskId = dto.TaskId ?? warrantyDetail.TaskId;
 
-            await _warrantyDetailRepository.UpdateAsync(warrantyDetail);
+            await _unitOfWork.WarrantyDetailRepository.UpdateAsync(warrantyDetail);
             await _unitOfWork.SaveChangesAsync();
 
             return Result.SuccessWithObject(new { Message = "WarrantyDetail updated successfully!" });
@@ -132,7 +132,7 @@ namespace GRRWS.Application.Implement.Service
 
         public async Task<Result> DeleteAsync(Guid id)
         {
-            var warrantyDetail = await _warrantyDetailRepository.GetByIdAsync(id);
+            var warrantyDetail = await _unitOfWork.WarrantyDetailRepository.GetByIdAsync(id);
             if (warrantyDetail == null)
             {
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "WarrantyDetail not found.", 0));
@@ -148,7 +148,7 @@ namespace GRRWS.Application.Implement.Service
                 }
             }
 
-            await _warrantyDetailRepository.DeleteAsync(id);
+            await _unitOfWork.WarrantyDetailRepository.DeleteAsync(id);
             await _unitOfWork.SaveChangesAsync();
 
             return Result.SuccessWithObject(new { Message = "WarrantyDetail deleted successfully!" });
