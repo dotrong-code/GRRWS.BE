@@ -336,6 +336,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 {
                     ed.TaskId = task.Id;
                 }
+                if (existingErrorDetails.Count > 0)
+                    _context.ErrorDetails.UpdateRange(existingErrorDetails); // <-- Ensure EF tracks the update
 
                 // Add new ErrorDetails if not exist
                 var newErrorDetails = dto.ErrorIds

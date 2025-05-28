@@ -393,8 +393,8 @@ namespace GRRWS.Application.Implement.Service
             {
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Error not found"));
             }
-            var task = _unitOfWork.TaskRepository.CreateTaskWebAsync(dto);
-            return Result.SuccessWithObject(task);
+            var task = await _unitOfWork.TaskRepository.CreateTaskWebAsync(dto);
+            return Result.SuccessWithObject(new { Message = "Task assigned successfully!" });
 
         }
     }
