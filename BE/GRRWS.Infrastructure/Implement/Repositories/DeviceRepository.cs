@@ -188,6 +188,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     WarrantyStatus = dw.Status,
                     WarrantyCode = dw.WarrantyCode,
                     WarrantyType = dw.WarrantyType,
+                    WarrantyReason = dw.WarrantyReason,
                     Provider = dw.Provider,
                     WarrantyStartDate = dw.WarrantyStartDate,
                     WarrantyEndDate = dw.WarrantyEndDate,

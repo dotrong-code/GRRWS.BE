@@ -173,6 +173,30 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved summary")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
+        [HttpPut("request/{requestId}/status")]
+        public async Task<IResult> RejectRequest(
+    Guid requestId,
+    [FromQuery] bool isRejected,
+    [FromQuery] string rejectionReason,
+    [FromQuery] string rejectionDetails)
+        {
+            var result = await _requestService.UpdateRequestStatusAsync(requestId, isRejected, rejectionReason, rejectionDetails);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Request status updated successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpPut("request/{requestId}/issue/{issueId}/status")]
+        public async Task<IResult> RejectRequestIssue(
+            Guid requestId,
+            Guid issueId,
+            [FromQuery] bool isRejected,
+            [FromQuery] string rejectionReason,
+            [FromQuery] string rejectionDetails)
+        {
+            var result = await _requestService.UpdateRequestIssueStatusAsync(requestId, issueId, isRejected, rejectionReason, rejectionDetails);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "RequestIssue status updated successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }

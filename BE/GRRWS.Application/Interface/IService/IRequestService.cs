@@ -17,6 +17,8 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetRequestByUserIdAsync(Guid userId);
         Task<Result> GetIssuesByRequestIdAsync(Guid requestId);
         Task<Result> GetRequestSummary();
+        Task<Result> UpdateRequestIssueStatusAsync(Guid requestId, Guid issueId, bool isRejected, string rejectionReason, string rejectionDetails);
+        Task<Result> UpdateRequestStatusAsync(Guid requestId, bool isRejected, string rejectionReason, string rejectionDetails);
         //Task<Result> CreateRequestAsync(CreateRequest request, Guid userId);
         Task<Result> GetRequestDetailWebByIdAsync(Guid requestId);
         Task<Result> GetErrorsForRequestDetailWebAsync(Guid requestId);

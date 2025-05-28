@@ -164,7 +164,7 @@ namespace GRRWS.Application.Implement.Service
 
             await _unitOfWork.TaskRepository.UpdateAsync(task);
             await _unitOfWork.SaveChangesAsync();
-            return Result.SuccessWithObject(task);
+            return Result.SuccessWithObject(new { Message = "Task start successfully!" });
         }
 
         public async Task<Result> GetTaskDetailsAsync(Guid taskId)
