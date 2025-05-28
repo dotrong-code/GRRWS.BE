@@ -4,25 +4,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GRRWS.Domain.Entities;
+using GRRWS.Infrastructure.DB;
+using GRRWS.Infrastructure.Implement.Repositories.Generic;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace GRRWS.Infrastructure.Implement.Repositories
 {
-    public class WarrantyDetailRepository : IWarrantyDetailRepository
+    public class WarrantyDetailRepository : GenericRepository<WarrantyDetail>, IWarrantyDetailRepository
     {
-        private readonly DbContext _context;
-        private readonly DbSet<WarrantyDetail> _warrantyDetails;
-
-        public WarrantyDetailRepository(DbContext context)
-        {
-            _context = context;
-            _warrantyDetails = context.Set<WarrantyDetail>();
-        }
+        public WarrantyDetailRepository(GRRWSContext context) : base(context) { }
 
         public async Task<WarrantyDetail> GetByIdAsync(Guid id)
         {
-            return await _warrantyDetails
+            return await _context.WarrantyDetails
                 .Include(wd => wd.Issues)
                 .Include(wd => wd.Report)
                 .Include(wd => wd.Task)
@@ -31,7 +26,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
         public async Task<IEnumerable<WarrantyDetail>> GetAllAsync()
         {
-            return await _warrantyDetails
+            return await _context.WarrantyDetails
                 .Include(wd => wd.Issues)
                 .Include(wd => wd.Report)
                 .Include(wd => wd.Task)
@@ -40,21 +35,21 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
         public async Task CreateAsync(WarrantyDetail warrantyDetail)
         {
-            await _warrantyDetails.AddAsync(warrantyDetail);
+            await _context.WarrantyDetails.AddAsync(warrantyDetail);
         }
 
         public async Task UpdateAsync(WarrantyDetail warrantyDetail)
         {
-            _warrantyDetails.Update(warrantyDetail);
+            _context.WarrantyDetails.Update(warrantyDetail);
             await Task.CompletedTask;
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            var warrantyDetail = await _warrantyDetails.FindAsync(id);
+            var warrantyDetail = await _context.WarrantyDetails.FindAsync(id);
             if (warrantyDetail != null)
             {
-                _warrantyDetails.Remove(warrantyDetail);
+                _context.WarrantyDetails.Remove(warrantyDetail);
             }
         }
     }
