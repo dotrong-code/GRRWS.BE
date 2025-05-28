@@ -294,10 +294,25 @@ public class DeviceService : IDeviceService
         if (device == null)
             return Result.Failure(DeviceErrorMessage.DeviceNotExist());
 
+        // Lấy lịch sử Issue của Device
         var deviceHistory = await _unitOfWork.DeviceRepository.GetDeviceIssueHistoryByDeviceIdAsync(deviceId);
+
+        // Lấy lịch sử Issue của Machine (nếu có)
         var machineHistory = device.MachineId.HasValue
             ? await _unitOfWork.DeviceRepository.GetMachineIssueHistoryByMachineIdAsync(device.MachineId.Value)
             : new List<MachineIssueHistoryResponse>();
+
+        // Loại bỏ các Issue trùng lặp trong MachineHistory
+        if (deviceHistory.Any() && machineHistory.Any())
+        {
+            // Lấy danh sách IssueId từ DeviceHistory
+            var deviceIssueIds = deviceHistory.Select(dh => dh.IssueId).ToHashSet();
+
+            // Loại bỏ các bản ghi trong MachineHistory có IssueId trùng với DeviceHistory
+            machineHistory = machineHistory
+                .Where(mh => !deviceIssueIds.Contains(mh.IssueId))
+                .ToList();
+        }
 
         var response = new DeviceAndMachineIssueHistoryResponse
         {
@@ -314,10 +329,25 @@ public class DeviceService : IDeviceService
         if (device == null)
             return Result.Failure(DeviceErrorMessage.DeviceNotExist());
 
+        // Lấy lịch sử Error của Device
         var deviceHistory = await _unitOfWork.DeviceRepository.GetDeviceErrorHistoryByDeviceIdAsync(deviceId);
+
+        // Lấy lịch sử Error của Machine (nếu có)
         var machineHistory = device.MachineId.HasValue
             ? await _unitOfWork.DeviceRepository.GetMachineErrorHistoryByMachineIdAsync(device.MachineId.Value)
             : new List<MachineErrorHistoryResponse>();
+
+        // Loại bỏ các Error trùng lặp trong MachineHistory
+        if (deviceHistory.Any() && machineHistory.Any())
+        {
+            // Lấy danh sách ErrorId từ DeviceHistory
+            var deviceErrorIds = deviceHistory.Select(dh => dh.ErrorId).ToHashSet();
+
+            // Loại bỏ các bản ghi trong MachineHistory có ErrorId trùng với DeviceHistory
+            machineHistory = machineHistory
+                .Where(mh => !deviceErrorIds.Contains(mh.ErrorId))
+                .ToList();
+        }
 
         var response = new DeviceAndMachineErrorHistoryResponse
         {
