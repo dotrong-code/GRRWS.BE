@@ -93,27 +93,24 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             await _context.SaveChangesAsync();
         }
-        public async Task<List<IssueSimpleDTO>> GetIssuesByRequestIdAsync(Guid requestId)
+        public async Task<List<RequestIssue>> GetIssuesByRequestIdAsync(Guid requestId)
         {
             var request = await _context.Requests
                 .Include(r => r.RequestIssues)
                 .ThenInclude(ri => ri.Issue)
+                .ThenInclude(i => i.IssueErrors)
+                .Include(r => r.RequestIssues)
+                .ThenInclude(ri => ri.Images)
                 .FirstOrDefaultAsync(r => r.Id == requestId && !r.IsDeleted);
 
             if (request == null)
-                return new List<IssueSimpleDTO>();
+                return new List<RequestIssue>();
 
-            var issues = request.RequestIssues
+            return request.RequestIssues
                 .Where(ri => !ri.Issue.IsDeleted)
-                .Select(ri => new IssueSimpleDTO
-                {
-                    Id = ri.Issue.Id,
-                    DisplayName = ri.Issue.DisplayName
-                })
                 .ToList();
-
-            return issues;
         }
+
 
         public async Task<List<RequestSummary>> GetRequestSummaryAsync()
         {
@@ -123,7 +120,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 {
                     RequestId = r.Id,
                     RequestTitle = r.RequestTitle ?? "Untitled Request",
-                    Piority = r.Priority ?? "Unknown",
+                    Priority = r.Priority ?? "Unknown",
                     Status = r.Status ?? "Unknown",
                     RequestDate = r.CreatedDate
                 })

@@ -39,6 +39,8 @@ namespace GRRWS.Infrastructure.DB
         public DbSet<MachineErrorHistory> MachineErrorHistories { get; set; }
         public DbSet<DeviceIssueHistory> DeviceIssueHistories { get; set; }
         public DbSet<DeviceErrorHistory> DeviceErrorHistories { get; set; }
+
+        public DbSet<WarrantyDetail> WarrantyDetails { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -456,6 +458,33 @@ namespace GRRWS.Infrastructure.DB
                 .WithMany(t => t.ErrorDetails)
                 .HasForeignKey(ed => ed.TaskId)
                 .OnDelete(DeleteBehavior.Restrict);
+            // Cấu hình cho WarrantyDetail
+            modelBuilder.Entity<WarrantyDetail>(entity =>
+            {
+                entity.Property(wd => wd.ReportId).IsRequired();
+                entity.Property(wd => wd.WarrantyNotes).HasMaxLength(1000);
+            });
+
+            // WarrantyDetail - Report (One-to-Many)
+            modelBuilder.Entity<WarrantyDetail>()
+                .HasOne(wd => wd.Report)
+                .WithMany(r => r.WarrantyDetails)
+                .HasForeignKey(wd => wd.ReportId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // WarrantyDetail - Tasks (One-to-One)
+            modelBuilder.Entity<WarrantyDetail>()
+                .HasOne(wd => wd.Task)
+                .WithMany() // Không cần navigation property trong Tasks
+                .HasForeignKey(wd => wd.TaskId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // WarrantyDetail - Issue (One-to-Many)
+            modelBuilder.Entity<Issue>()
+                .HasOne(i => i.WarrantyDetail)
+                .WithMany(wd => wd.Issues)
+                .HasForeignKey(i => i.WarrantyDetailId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // BaseEntity Defaults
             modelBuilder.Entity<BaseEntity>()
@@ -496,6 +525,7 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<Sparepart>().ToTable("Spareparts");
             modelBuilder.Entity<Tasks>().ToTable("Tasks");
             modelBuilder.Entity<User>().ToTable("Users");
+            modelBuilder.Entity<WarrantyDetail>().ToTable("WarrantyDetails");
             #endregion
         }
     }

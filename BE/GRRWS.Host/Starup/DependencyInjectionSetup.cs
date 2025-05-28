@@ -35,7 +35,7 @@ namespace GRRWS.Host.Starup
         public static IServiceCollection RegisterServices(this IServiceCollection services)
         {
             var credentialPath = Path.Combine(Directory.GetCurrentDirectory(), "Keys",
-                "koiveterinaryservicecent-925db-firebase-adminsdk-vus2r-bd418169a6.json");
+                "koiveterinaryservicecent-925db-firebase-adminsdk-vus2r-2b14e43049.json");
 
             try
             {
@@ -103,6 +103,8 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IAreaService, AreaService>();
             services.AddTransient<IPositionService, PositionService>();
             services.AddTransient<ITaskService, TaskService>();
+            services.AddTransient<IWarrantyDetailService, WarrantyDetailService>();
+            
             #endregion
 
             #region Repositories
@@ -125,7 +127,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IPositionRepository, PositionRepository>();
 
             services.AddTransient<ITaskRepository, TaskRepository>();
-
+            services.AddTransient<IWarrantyDetailRepository, WarrantyDetailRepository>();
             #endregion
 
             #region GenericRepositories
@@ -141,6 +143,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IGenericRepository<Position>, GenericRepository<Position>>();
             services.AddTransient<IGenericRepository<Request>, GenericRepository<Request>>();
             services.AddTransient<IGenericRepository<Report>, GenericRepository<Report>>();
+            services.AddTransient<IGenericRepository<WarrantyDetail>, GenericRepository<WarrantyDetail>>();
             #endregion
 
 

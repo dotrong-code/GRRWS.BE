@@ -11,7 +11,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task UpdateRequestAsync(Request request, List<Guid> newIssueIds);
         Task<List<Request>> GetRequestByDeviceIdAsync(Guid deviceId);
         Task<List<Request>> GetRequestByUserIdAsync(Guid userId);
-        Task<List<IssueSimpleDTO>> GetIssuesByRequestIdAsync(Guid requestId);
+        Task<List<RequestIssue>> GetIssuesByRequestIdAsync(Guid requestId);
         Task<List<RequestSummary>> GetRequestSummaryAsync();
 
 

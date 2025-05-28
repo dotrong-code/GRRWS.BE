@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
+using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.Report;
 using GRRWS.Infrastructure.Interfaces;
 using System;
@@ -27,9 +29,55 @@ namespace GRRWS.Application.Implement.Service
         {
             if (dto.RequestId == null)
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "RequestId is required.", 0));
+
+            if (dto.ErrorIds != null && dto.ErrorIds.Any())
+                if (dto.ErrorIds.Any(errorId => errorId == Guid.Empty))
+                    return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "ErrorIds cannot contain empty GUIDs.", 0));
+
+            if (dto.Priority.GetType() != typeof(int))
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Priority must be an integer.", 0));
+
+            if (dto.Priority < 0 || dto.Priority > 5)
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Priority must be between 0 and 5.", 0));
+
+            var request = await _unit.RequestRepository.GetRequestByIdAsync((Guid)dto.RequestId);
+            if (request == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
+                    "NotFound", "Request not found for the provided RequestId."
+                ));
+            }
+            if (request.ReportId != null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict(
+                    "Conflict", "Request already has an associated report."
+                ));
+            }
+
+            var missingErrors = await _unit.ErrorRepository.GetNotFoundErrorDisplayNamesAsync(dto.ErrorIds);
+            if (missingErrors.Any())
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
+                    "NotFound", "Some errors do not exist: " + string.Join(", ", missingErrors.Select(x => x.Id))
+                ));
+            }
+
+            var createLocation = "";
+            try
+            {
+                createLocation = TitleHelper.GenerateReportTitle(request.Device.Position.Zone.Area.AreaCode, request.Device.Position.Zone.ZoneCode, request.Device.Position.Index, request.Device.DeviceCode);
+            }
+            catch (Exception)
+            {
+                createLocation = "Create title fail";
+            }
+
             var report = _mapper.Map<Report>(dto);
             report.Id = Guid.NewGuid();
             report.Status = "InProgress";
+            report.CreatedDate = DateTime.Now;
+            report.Location = createLocation;
+
             if (dto.ErrorIds != null && dto.ErrorIds.Any())
             {
                 report.ErrorDetails = dto.ErrorIds.Select(errorId => new ErrorDetail
@@ -38,12 +86,16 @@ namespace GRRWS.Application.Implement.Service
                     ErrorId = errorId
                 }).ToList();
             }
+            else
+            {
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "ErrorIds is null!.", 0));
+            }
             await _unit.ReportRepository.CreateAsync(report);
-            var request = await _unit.RequestRepository.GetRequestByIdAsync((Guid)report.RequestId);
-            request.ReportId = report.Id;
-            request.Status = "Approved";
-            await _unit.RequestRepository.UpdateAsync(request);
-            return Result.SuccessWithObject(report.Id);
+            var getRequest = await _unit.RequestRepository.GetRequestByIdAsync((Guid)report.RequestId);
+            getRequest.ReportId = report.Id;
+            getRequest.Status = "Approved";
+            await _unit.RequestRepository.UpdateAsync(getRequest);
+            return Result.SuccessWithObject(new { Message = "Report created successfully!", ReportId = report.Id });
         }
 
         public async Task<Result> UpdateAsync(ReportUpdateDTO dto)
@@ -60,7 +112,7 @@ namespace GRRWS.Application.Implement.Service
                 }).ToList();
             }
             await _unit.ReportRepository.UpdateReportAsync(report, dto.ErrorIds ?? new List<Guid>());
-            return Result.SuccessWithObject(new { Message = "Successfully!" });
+            return Result.SuccessWithObject(new { Message = "Report updated successfully!" });
         }
 
         public async Task<Result> DeleteAsync(Guid id)
@@ -70,7 +122,7 @@ namespace GRRWS.Application.Implement.Service
             report.IsDeleted = true;
             report.ModifiedDate = DateTime.Now;
             await _unit.ReportRepository.UpdateAsync(report);
-            return Result.Success();
+            return Result.SuccessWithObject(new { Message = "Report canceled successfully!" });
         }
 
         public async Task<Result> GetByIdAsync(Guid id)

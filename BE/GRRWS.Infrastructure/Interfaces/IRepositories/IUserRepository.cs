@@ -21,7 +21,6 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<User> GetUserByIdAsync(Guid id);
         // Task<List<Role>> GetAllRolesAsync();
         Task<int> DeleteUserAsync(Guid id);
-
         Task<List<User>> GetUsers();
         Task<List<User>> GetUsersByRole(int role);
     }

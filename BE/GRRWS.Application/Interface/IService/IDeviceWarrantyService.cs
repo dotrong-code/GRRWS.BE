@@ -16,5 +16,8 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> UpdateDeviceWarrantyAsync(UpdateDeviceWarrantyRequest request);
         Task<Result> DeleteDeviceWarrantyAsync(Guid id);
         Task<Result> GetDeviceWarrantyHistoryAsync(Guid deviceId);
+
+        Task<Result> GetWarrantyStatusAsync(Guid deviceId);
+        Task<Result> GetAllWarrantiesByDeviceIdAsync(Guid deviceId); 
     }
 }
