@@ -12,6 +12,7 @@ namespace GRRWS.Infrastructure.DTOs.Device
         public string WarrantyStatus { get; set; }
         public string WarrantyCode { get; set; }
         public string WarrantyType { get; set; }
+        public string WarrantyReason { get; set; }
         public string Provider { get; set; }
         public DateTime? WarrantyStartDate { get; set; }
         public DateTime? WarrantyEndDate { get; set; }
