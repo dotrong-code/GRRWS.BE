@@ -71,7 +71,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 new DeviceIssueHistory
                 {
                     DeviceId = Guid.Parse("d1e2f3a4-0015-0015-0015-000000000015"), // Brother B957 Unit 1
-                    IssueId = Guid.Parse("34343434-3434-3434-3434-343434343434"),   // CHI_DUOI_LOI
+                    IssueId = Guid.Parse("e1e1e1e1-e1e1-e1e1-e1e1-e1e1e1e1e1e1"),   // CHI_DUOI_LOI
                     LastOccurredDate = new DateTime(2025, 5, 15, 12, 10, 0, DateTimeKind.Utc),
                     OccurrenceCount = 3,
                     Notes = "Chỉ dưới không kéo lên, kiểm tra cảm biến và thay mới."

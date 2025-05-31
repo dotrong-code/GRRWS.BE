@@ -15,5 +15,6 @@
         public WarrantyDetail? WarrantyDetail { get; set; }
         public ICollection<RequestIssue>? RequestIssues { get; set; }
         public ICollection<IssueError>? IssueErrors { get; set; }
+        public ICollection<IssueTechnicalSymptom>? IssueTechnicalSymptoms { get; set; }
     }
 }

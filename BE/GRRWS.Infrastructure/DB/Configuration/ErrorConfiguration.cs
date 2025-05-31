@@ -418,6 +418,396 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
 
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a139-0031-0031-0031-000000000031"),
+                    ErrorCode = "ONG_DAN_CHI_HONG",
+                    Name = "Ống Dẫn Chỉ Hỏng",
+                    Description = "Ống dẫn chỉ bị mòn hoặc gãy, gây rối hoặc đứt chỉ.",
+                    EstimatedRepairTime = TimeSpan.FromMinutes(45),
+                    IsCommon = true,
+                    OccurrenceCount = 16,
+                    Severity = "Medium",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a140-0032-0032-0032-000000000032"),
+                    ErrorCode = "SUOT_CHI_KHONG_QUAY",
+                    Name = "Suốt Chỉ Không Quay",
+                    Description = "Suốt chỉ dưới không quay, ngăn chỉ dưới tham gia may.",
+                    EstimatedRepairTime = TimeSpan.FromHours(1),
+                    IsCommon = true,
+                    OccurrenceCount = 14,
+                    Severity = "Medium",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a141-0033-0033-0033-000000000033"),
+                    ErrorCode = "CHAN_VIT_KHONG_DONG_BO",
+                    Name = "Chân Vịt Không Đồng Bộ",
+                    Description = "Chân vịt không đồng bộ với kim, gây rách hoặc lệch vải.",
+                    EstimatedRepairTime = TimeSpan.FromHours(1.5),
+                    IsCommon = true,
+                    OccurrenceCount = 12,
+                    Severity = "Medium",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a142-0034-0034-0034-000000000034"),
+                    ErrorCode = "DAY_DIEN_NGUON_HO",
+                    Name = "Dây Điện Nguồn Hở",
+                    Description = "Dây nguồn bị hở, gây mất điện hoặc chập điện.",
+                    EstimatedRepairTime = TimeSpan.FromHours(1),
+                    IsCommon = false,
+                    OccurrenceCount = 5,
+                    Severity = "High",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a143-0035-0035-0035-000000000035"),
+                    ErrorCode = "BANG_TAI_HONG",
+                    Name = "Băng Tải Hỏng",
+                    Description = "Băng tải truyền động bị lỏng hoặc đứt, dừng chuyển động vải.",
+                    EstimatedRepairTime = TimeSpan.FromHours(2),
+                    IsCommon = false,
+                    OccurrenceCount = 8,
+                    Severity = "High",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a144-0036-0036-0036-000000000036"),
+                    ErrorCode = "TRUC_KIM_GAY",
+                    Name = "Trục Kim Gãy",
+                    Description = "Trục kim bị gãy, ngăn kim di chuyển lên xuống.",
+                    EstimatedRepairTime = TimeSpan.FromHours(2),
+                    IsCommon = false,
+                    OccurrenceCount = 3,
+                    Severity = "High",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a145-0037-0037-0037-000000000037"),
+                    ErrorCode = "CAM_BIEN_NHIET_DO_LOI",
+                    Name = "Cảm Biến Nhiệt Độ Lỗi",
+                    Description = "Cảm biến nhiệt độ không hoạt động, không cảnh báo quá nhiệt.",
+                    EstimatedRepairTime = TimeSpan.FromHours(1),
+                    IsCommon = false,
+                    OccurrenceCount = 6,
+                    Severity = "Medium",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a146-0038-0038-0038-000000000038"),
+                    ErrorCode = "MO_HOP_SO_KHONG_KHOP",
+                    Name = "Mô Hộp Số Không Khớp",
+                    Description = "Hộp số truyền động bị lệch, gây tiếng ồn hoặc mất lực.",
+                    EstimatedRepairTime = TimeSpan.FromHours(2),
+                    IsCommon = false,
+                    OccurrenceCount = 7,
+                    Severity = "High",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a147-0039-0039-0039-000000000039"),
+                    ErrorCode = "RANH_CUA_MON",
+                    Name = "Răng Cưa Mòn",
+                    Description = "Răng cưa kéo vải bị mòn, gây trượt hoặc không kéo vải.",
+                    EstimatedRepairTime = TimeSpan.FromHours(1.5),
+                    IsCommon = true,
+                    OccurrenceCount = 15,
+                    Severity = "Medium",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a148-0040-0040-0040-000000000040"),
+                    ErrorCode = "CAP_NGUON_YEU",
+                    Name = "Cáp Nguồn Yếu",
+                    Description = "Cáp nguồn bị mòn, cung cấp điện không ổn định.",
+                    EstimatedRepairTime = TimeSpan.FromHours(1),
+                    IsCommon = true,
+                    OccurrenceCount = 10,
+                    Severity = "Medium",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a149-0041-0041-0041-000000000041"),
+                    ErrorCode = "MO_CANG_CHI_LOI",
+                    Name = "Mô Căng Chỉ Lỗi",
+                    Description = "Bộ căng chỉ bị kẹt hoặc lỏng, gây chỉ không đều.",
+                    EstimatedRepairTime = TimeSpan.FromMinutes(45),
+                    IsCommon = true,
+                    OccurrenceCount = 18,
+                    Severity = "Medium",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a150-0042-0042-0042-000000000042"),
+                    ErrorCode = "BO_NHO_DIEU_KHIEN_HONG",
+                    Name = "Bộ Nhớ Điều Khiển Hỏng",
+                    Description = "Bộ nhớ lưu chương trình may bị lỗi, gây mất cài đặt.",
+                    EstimatedRepairTime = TimeSpan.FromHours(2),
+                    IsCommon = false,
+                    OccurrenceCount = 4,
+                    Severity = "High",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a151-0043-0043-0043-000000000043"),
+                    ErrorCode = "TRUC_CHUYEN_DONG_KET",
+                    Name = "Trục Chuyển Động Kẹt",
+                    Description = "Trục chuyển động bị kẹt do bẩn hoặc thiếu dầu bôi trơn.",
+                    EstimatedRepairTime = TimeSpan.FromHours(1.5),
+                    IsCommon = true,
+                    OccurrenceCount = 13,
+                    Severity = "Medium",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a152-0044-0044-0044-000000000044"),
+                    ErrorCode = "CAM_BIEN_VAN_TOC_LOI",
+                    Name = "Cảm Biến Vận Tốc Lỗi",
+                    Description = "Cảm biến vận tốc không chính xác, gây tốc độ máy không ổn định.",
+                    EstimatedRepairTime = TimeSpan.FromHours(1),
+                    IsCommon = false,
+                    OccurrenceCount = 5,
+                    Severity = "Medium",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a153-0045-0045-0045-000000000045"),
+                    ErrorCode = "PHAO_CHI_HONG",
+                    Name = "Pháo Chỉ Hỏng",
+                    Description = "Pháo chỉ dưới bị mòn hoặc hỏng, gây lỗi đường may dưới.",
+                    EstimatedRepairTime = TimeSpan.FromHours(1),
+                    IsCommon = true,
+                    OccurrenceCount = 12,
+                    Severity = "Medium",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a154-0046-0046-0046-000000000046"),
+                    ErrorCode = "BO_CAU_CHI_LOI",
+                    Name = "Bộ Câu Chỉ Lỗi",
+                    Description = "Bộ câu chỉ không hoạt động đúng, không kéo chỉ dưới lên.",
+                    EstimatedRepairTime = TimeSpan.FromHours(1.5),
+                    IsCommon = true,
+                    OccurrenceCount = 11,
+                    Severity = "Medium",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a155-0047-0047-0047-000000000047"),
+                    ErrorCode = "ONG_DAU_BI_TAT",
+                    Name = "Ống Dầu Bị Tắc",
+                    Description = "Ống dẫn dầu bôi trơn bị tắc, gây thiếu dầu cho bộ truyền.",
+                    EstimatedRepairTime = TimeSpan.FromHours(1),
+                    IsCommon = true,
+                    OccurrenceCount = 9,
+                    Severity = "Medium",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a156-0048-0048-0048-000000000048"),
+                    ErrorCode = "BO_TRUYEN_DONG_YEU",
+                    Name = "Bộ Truyền Động Yếu",
+                    Description = "Bộ truyền động mất lực do mòn hoặc hỏng bánh răng.",
+                    EstimatedRepairTime = TimeSpan.FromHours(2),
+                    IsCommon = false,
+                    OccurrenceCount = 6,
+                    Severity = "High",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a157-0049-0049-0049-000000000049"),
+                    ErrorCode = "CHAN_VIT_KHONG_NANG",
+                    Name = "Chân Vịt Không Nâng",
+                    Description = "Cơ cấu nâng chân vịt bị kẹt, không di chuyển được.",
+                    EstimatedRepairTime = TimeSpan.FromHours(1),
+                    IsCommon = true,
+                    OccurrenceCount = 10,
+                    Severity = "Medium",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a158-0050-0050-0050-000000000050"),
+                    ErrorCode = "CAM_BIEN_KIM_LOI",
+                    Name = "Cảm Biến Kim Lỗi",
+                    Description = "Cảm biến kim không nhận diện vị trí, gây dừng máy bất thường.",
+                    EstimatedRepairTime = TimeSpan.FromHours(1),
+                    IsCommon = false,
+                    OccurrenceCount = 4,
+                    Severity = "Medium",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a159-0051-0051-0051-000000000051"),
+                    ErrorCode = "MO_DAN_VAI_HONG",
+                    Name = "Mô Dẫn Vải Hỏng",
+                    Description = "Mô dẫn vải bị mòn, không kéo vải đều khi may.",
+                    EstimatedRepairTime = TimeSpan.FromHours(1.5),
+                    IsCommon = true,
+                    OccurrenceCount = 13,
+                    Severity = "Medium",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a160-0052-0052-0052-000000000052"),
+                    ErrorCode = "BO_DIEU_KHIEN_QUA_NHIET",
+                    Name = "Bộ Điều Khiển Quá Nhiệt",
+                    Description = "Bo mạch điều khiển quá nóng, gây gián đoạn hoạt động.",
+                    EstimatedRepairTime = TimeSpan.FromHours(2),
+                    IsCommon = false,
+                    OccurrenceCount = 3,
+                    Severity = "High",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a161-0053-0053-0053-000000000053"),
+                    ErrorCode = "TRUC_CANG_CHI_GAY",
+                    Name = "Trục Căng Chỉ Gãy",
+                    Description = "Trục căng chỉ bị gãy, không điều chỉnh được độ căng chỉ.",
+                    EstimatedRepairTime = TimeSpan.FromHours(1.5),
+                    IsCommon = false,
+                    OccurrenceCount = 5,
+                    Severity = "Medium",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a162-0054-0054-0054-000000000054"),
+                    ErrorCode = "RANH_CUA_KHONG_DONG_BO",
+                    Name = "Răng Cưa Không Đồng Bộ",
+                    Description = "Răng cưa kéo vải không đồng bộ với kim, gây lỗi đường may.",
+                    EstimatedRepairTime = TimeSpan.FromHours(1.5),
+                    IsCommon = true,
+                    OccurrenceCount = 11,
+                    Severity = "Medium",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a163-0055-0055-0055-000000000055"),
+                    ErrorCode = "BO_NGUON_HONG",
+                    Name = "Bộ Nguồn Hỏng",
+                    Description = "Bộ nguồn cung cấp điện bị hỏng, không cấp điện cho máy.",
+                    EstimatedRepairTime = TimeSpan.FromHours(2),
+                    IsCommon = false,
+                    OccurrenceCount = 4,
+                    Severity = "High",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a164-0056-0056-0056-000000000056"),
+                    ErrorCode = "DAY_CUROA_GAY",
+                    Name = "Dây Curoa Gãy",
+                    Description = "Dây curoa truyền động bị gãy, dừng hoàn toàn chuyển động.",
+                    EstimatedRepairTime = TimeSpan.FromHours(1),
+                    IsCommon = true,
+                    OccurrenceCount = 9,
+                    Severity = "High",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a165-0057-0057-0057-000000000057"),
+                    ErrorCode = "CAM_BIEN_CHI_LOI",
+                    Name = "Cảm Biến Chỉ Lỗi",
+                    Description = "Cảm biến chỉ không nhận diện được chỉ, gây lỗi may.",
+                    EstimatedRepairTime = TimeSpan.FromHours(1),
+                    IsCommon = false,
+                    OccurrenceCount = 6,
+                    Severity = "Medium",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a166-0058-0058-0058-000000000058"),
+                    ErrorCode = "BO_KHOP_NOI_HONG",
+                    Name = "Bộ Khớp Nối Hỏng",
+                    Description = "Bộ khớp nối truyền động bị mòn hoặc gãy, gây mất lực.",
+                    EstimatedRepairTime = TimeSpan.FromHours(2),
+                    IsCommon = false,
+                    OccurrenceCount = 7,
+                    Severity = "High",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a167-0059-0059-0059-000000000059"),
+                    ErrorCode = "LO_XO_CANG_CHI_YEU",
+                    Name = "Lò Xo Căng Chỉ Yếu",
+                    Description = "Lò xo căng chỉ mất độ đàn hồi, gây chỉ lỏng khi may.",
+                    EstimatedRepairTime = TimeSpan.FromMinutes(45),
+                    IsCommon = true,
+                    OccurrenceCount = 14,
+                    Severity = "Medium",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Error
+                {
+                    Id = Guid.Parse("e1d1a168-0060-0060-0060-000000000060"),
+                    ErrorCode = "MO_DONG_CO_MON",
+                    Name = "Mô Động Cơ Mòn",
+                    Description = "Mô động cơ bị mòn, giảm công suất và gây rung lắc.",
+                    EstimatedRepairTime = TimeSpan.FromHours(2.5),
+                    IsCommon = false,
+                    OccurrenceCount = 5,
+                    Severity = "High",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
                 }
             );
         }
