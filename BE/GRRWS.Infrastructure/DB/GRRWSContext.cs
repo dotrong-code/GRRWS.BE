@@ -33,13 +33,15 @@ namespace GRRWS.Infrastructure.DB
         public DbSet<Sparepart> Spareparts { get; set; }
         public DbSet<Tasks> Tasks { get; set; }
         public DbSet<User> Users { get; set; }
-        public DbSet<ErrorSparepart> ErrorSpareparts { get; set; } // Added DbSet
+        public DbSet<ErrorSparepart> ErrorSpareparts { get; set; } 
+        public DbSet<TechnicalSymptom> TechnicalSymptoms { get; set; } 
+        public DbSet<IssueTechnicalSymptom> IssueTechnicalSymptoms { get; set; }
+        public DbSet<TechnicalSymptomReport> TechnicalSymptomReports { get; set; }
 
         public DbSet<MachineIssueHistory> MachineIssueHistories { get; set; }
         public DbSet<MachineErrorHistory> MachineErrorHistories { get; set; }
         public DbSet<DeviceIssueHistory> DeviceIssueHistories { get; set; }
         public DbSet<DeviceErrorHistory> DeviceErrorHistories { get; set; }
-
         public DbSet<WarrantyDetail> WarrantyDetails { get; set; }
         #endregion
 
@@ -49,10 +51,7 @@ namespace GRRWS.Infrastructure.DB
             #region Data Configuration
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new IssueConfiguration());
-
-
             modelBuilder.ApplyConfiguration(new DeviceConfiguration());
-
             modelBuilder.ApplyConfiguration(new ErrorConfiguration());
             modelBuilder.ApplyConfiguration(new SparepartConfiguration());
             modelBuilder.ApplyConfiguration(new IssueErrorConfiguration());
@@ -72,7 +71,10 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.ApplyConfiguration(new ReportConfiguration());
             modelBuilder.ApplyConfiguration(new RequestIssueConfiguration());
             modelBuilder.ApplyConfiguration(new ErrorDetailConfiguration());
-
+            modelBuilder.ApplyConfiguration(new DeviceWarrantyHistoryConfiguration());
+            modelBuilder.ApplyConfiguration(new TechnicalSymptomConfiguration());
+            modelBuilder.ApplyConfiguration(new IssueTechnicalSymptomConfiguration());
+            modelBuilder.ApplyConfiguration(new TechnicalSymptomReportConfiguration());
 
             #endregion
 
@@ -488,6 +490,39 @@ namespace GRRWS.Infrastructure.DB
                 .HasForeignKey(i => i.WarrantyDetailId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // IssueTechnicalSymptom
+            modelBuilder.Entity<IssueTechnicalSymptom>()
+                .HasOne(its => its.Issue)
+                .WithMany(i => i.IssueTechnicalSymptoms)
+                .HasForeignKey(its => its.IssueId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<IssueTechnicalSymptom>()
+                .HasOne(its => its.TechnicalSymptom)
+                .WithMany(ts => ts.IssueTechnicalSymptoms)
+                .HasForeignKey(its => its.TechnicalSymptomId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // TechnicalSymptomReport 
+
+            modelBuilder.Entity<TechnicalSymptomReport>()
+                .HasOne(tsr => tsr.Report)
+                .WithMany(r => r.TechnicalSymptomReports)
+                .HasForeignKey(tsr => tsr.ReportId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TechnicalSymptomReport>()
+                .HasOne(tsr => tsr.TechnicalSymptom)
+                .WithMany(ts => ts.TechnicalSymptomReports)
+                .HasForeignKey(tsr => tsr.TechnicalSymptomId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TechnicalSymptomReport>()
+                .HasOne(tsr => tsr.Task)
+                .WithMany(t => t.TechnicalSymptomReports)
+                .HasForeignKey(tsr => tsr.TaskId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // BaseEntity Defaults
             modelBuilder.Entity<BaseEntity>()
                 .Property(b => b.Id)
@@ -528,6 +563,9 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<Tasks>().ToTable("Tasks");
             modelBuilder.Entity<User>().ToTable("Users");
             modelBuilder.Entity<WarrantyDetail>().ToTable("WarrantyDetails");
+            modelBuilder.Entity<TechnicalSymptom>().ToTable("TechnicalSymptoms");
+            modelBuilder.Entity<IssueTechnicalSymptom>().ToTable("IssueTechnicalSymptoms");
+            modelBuilder.Entity<TechnicalSymptomReport>().ToTable("TechnicalSymptomReports");
             #endregion
         }
     }
