@@ -500,6 +500,13 @@ namespace GRRWS.Infrastructure.DB
                 .HasForeignKey(its => its.TechnicalSymptomId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // IssueTechnicalSymptom - Report (One-to-Many)
+            modelBuilder.Entity<IssueTechnicalSymptom>()
+                .HasOne(its => its.Report)
+                .WithMany(r => r.IssueTechnicalSymptoms)
+                .HasForeignKey(its => its.ReportId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // BaseEntity Defaults
             modelBuilder.Entity<BaseEntity>()
                 .Property(b => b.Id)
