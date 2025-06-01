@@ -14,4 +14,12 @@ namespace GRRWS.Infrastructure.DTOs.Report
         public List<Guid> ErrorIds { get; set; } // Errors độc lập
         public Dictionary<Guid, List<Guid>> IssueErrorMappings { get; set; } // IssueId -> List<ErrorId>
     }
+    public class ReportCreateWithIssueSymtomDTO
+    {
+        public Guid? RequestId { get; set; }
+        public int Priority { get; set; }
+        public string Location { get; set; }
+        public List<Guid> TechnicalSymtomIds { get; set; }
+        public Dictionary<Guid, List<Guid>> IssueSymtomMappings { get; set; }
+    }
 }
