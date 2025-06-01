@@ -17,6 +17,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetByIdAsync(Guid id);
         Task<Result> GetAllAsync();
         Task<Result> CreateReportWithIssueErrorAsync(ReportCreateWithIssueErrorDTO dto);
+        Task<Result> CreateReportWithIssueSymtomAsync(ReportCreateWithIssueSymtomDTO dto);
     }
 
 }

@@ -11,6 +11,7 @@ namespace GRRWS.Infrastructure.Interfaces
         IIssueRepository IssueRepository { get; }
         IErrorRepository ErrorRepository { get; }
         ITechnicalSymtomRepository TechnicalSymtomRepository { get; }
+        IIssueTechnicalSymptomRepository IssueTechnicalSymptomRepository { get; }
         IDeviceRepository DeviceRepository { get; }
         IDeviceIssueHistoryRepository DeviceIssueHistoryRepository { get; }
         IDeviceErrorHistoryRepository DeviceErrorHistoryRepository { get; }
