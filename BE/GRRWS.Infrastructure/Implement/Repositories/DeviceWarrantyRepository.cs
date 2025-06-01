@@ -63,5 +63,12 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             _context.DeviceWarranties.Update(deviceWarranty);
             return await _context.SaveChangesAsync();
         }
+
+        public async Task<List<DeviceWarrantyHistory>> GetDeviceWarrantyHistoryByDeviceIdAsync(Guid deviceId)
+        {
+            return await _context.DeviceWarrantyHistories
+                .Where(dh => dh.DeviceId == deviceId)
+                .ToListAsync();
+        }
     }
 }
