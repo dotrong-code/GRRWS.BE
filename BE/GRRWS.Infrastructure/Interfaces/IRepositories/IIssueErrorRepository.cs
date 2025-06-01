@@ -14,5 +14,6 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<List<IssueError>> GetByIssueIdAsync(Guid issueId);
         Task<List<IssueError>> GetByErrorIdAsync(Guid errorId);
         Task DeleteRangeAsync(IEnumerable<IssueError> issueErrors);
+        Task<IssueError> GetByIssueAndErrorIdAsync(Guid issueId, Guid errorId);
     }
 }
