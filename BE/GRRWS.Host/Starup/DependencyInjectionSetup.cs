@@ -93,7 +93,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IRequestService, RequestService>();
             services.AddTransient<IIssueService, IssueService>();
             services.AddTransient<IErrorService, ErrorService>();
-
+            services.AddTransient<ITechnicalSymtomService, TechnicalSymtomService>();
             services.AddTransient<IDeviceService, DeviceService>();
             services.AddTransient<IDeviceErrorHistoryService, DeviceErrorHistoryService>();
             services.AddTransient<IDeviceIssueHistoryService, DeviceIssueHistoryService>();
