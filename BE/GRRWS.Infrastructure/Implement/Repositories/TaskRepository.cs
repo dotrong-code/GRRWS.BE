@@ -370,7 +370,43 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return task.Id;
         }
 
+        public async Task<Guid> CreateSimpleTaskWebAsync(CreateSimpleTaskWeb dto)
+        {
+            // Get the reportId for the request in a single query
+            var reportId = await _context.Requests
+                .Where(r => r.Id == dto.RequestId)
+                .Select(r => r.ReportId)
+                .FirstOrDefaultAsync();
 
+            // Create the task entity
+            var task = new Tasks
+            {
+                Id = Guid.NewGuid(),
+                TaskType = dto.TaskType,
+                StartTime = dto.StartDate,
+                Status = "Pending",
+                TaskDescription = "This is description",
+                AssigneeId = dto.AssigneeId,
+                CreatedDate = DateTime.UtcNow,
+                IsDeleted = false,
+            };
 
+            await _context.Tasks.AddAsync(task);
+
+            // Handle spareparts if provided
+            if (dto.SparepartIds != null && dto.SparepartIds.Count > 0)
+            {
+                var repairSpareparts = dto.SparepartIds.Select(sparepartId => new RepairSparepart
+                {
+                    TaskId = task.Id,
+                    SpareId = sparepartId
+                }).ToList();
+
+                await _context.RepairSpareparts.AddRangeAsync(repairSpareparts);
+            }
+
+            await _context.SaveChangesAsync();
+            return task.Id;
+        }
     }
 }

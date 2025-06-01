@@ -120,7 +120,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.RegisterServices();
 builder.Services.AddHttpClient();
-builder.WebHost.UseUrls("http://0.0.0.0:5000");
+//builder.WebHost.UseUrls("http://0.0.0.0:5000");
 var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
@@ -151,7 +151,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MigrateDatabases();
 //app.ConfigureMiddleware();
-
 app.MapControllers();
 
 app.UseCors("AllowAll");

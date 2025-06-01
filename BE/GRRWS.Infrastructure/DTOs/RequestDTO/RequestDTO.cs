@@ -26,6 +26,9 @@ namespace GRRWS.Infrastructure.DTOs.RequestDTO
         public Guid? CreatedBy { get; set; }
         public DateTime? ModifiedDate { get; set; }
         public Guid? ModifiedBy { get; set; }
+        public bool IsRejected { get; set; } // Thêm trường này
+        public string? RejectionReason { get; set; } // Thêm trường này
+        public string? RejectionDetails { get; set; } // Thêm trường này
         public List<IssueDTO> Issues { get; set; } = new();
     }
     public class CreateRequestDTO
@@ -51,6 +54,11 @@ namespace GRRWS.Infrastructure.DTOs.RequestDTO
         public Guid Id { get; set; }
         public string? DisplayName { get; set; }
         public List<string>? ImageUrls { get; set; }
+        public string? Status { get; set; }
+
+        public bool IsRejected { get; set; } // Thêm trường này
+        public string? RejectionReason { get; set; } // Thêm trường này
+        public string? RejectionDetails { get; set; } // Thêm trường này
     }
 
     public class IssueImageEntry

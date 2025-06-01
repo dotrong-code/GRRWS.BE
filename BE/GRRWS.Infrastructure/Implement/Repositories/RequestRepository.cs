@@ -119,7 +119,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Select(r => new RequestSummary
                 {
                     RequestId = r.Id,
-                    RequestTitle = r.RequestTitle ?? "Untitled Request",
+                    RequestTitle = r.Description ?? "Untitled Request",
                     Priority = r.Priority ?? "Unknown",
                     Status = r.Status ?? "Unknown",
                     RequestDate = r.CreatedDate

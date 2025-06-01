@@ -56,6 +56,24 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
+                new Position
+                {
+                    Id = Guid.Parse("f1e2d3c4-0031-0031-0031-000000000031"),
+                    Index = 6,
+                    ZoneId = Guid.Parse("c1d2e3f4-0001-0001-0001-000000000001"), // Dây Chuyền May A
+                    DeviceId = null, // Dành sẵn cho thiết bị mới
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Position
+                {
+                    Id = Guid.Parse("f1e2d3c4-0032-0032-0032-000000000032"),
+                    Index = 7,
+                    ZoneId = Guid.Parse("c1d2e3f4-0001-0001-0001-000000000001"), // Dây Chuyền May A
+                    DeviceId = null, // Dành sẵn cho thiết bị mới
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
                 // Khu Sản Xuất Chính A: Dây Chuyền May B (4 positions)
                 new Position
                 {
@@ -214,6 +232,24 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
+                new Position
+                {
+                    Id = Guid.Parse("f1e2d3c4-0033-0033-0033-000000000033"),
+                    Index = 5,
+                    ZoneId = Guid.Parse("c1d2e3f4-0006-0006-0006-000000000006"), // Khu May Nặng A
+                    DeviceId = null, // Dành sẵn cho thiết bị mới
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Position
+                {
+                    Id = Guid.Parse("f1e2d3c4-0034-0034-0034-000000000034"),
+                    Index = 6,
+                    ZoneId = Guid.Parse("c1d2e3f4-0006-0006-0006-000000000006"), // Khu May Nặng A
+                    DeviceId = null, // Dành sẵn cho thiết bị mới
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
                 // Khu Sản Xuất Chính B: Khu May Nặng B (3 positions)
                 new Position
                 {
@@ -277,6 +313,15 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Index = 2,
                     ZoneId = Guid.Parse("c1d2e3f4-0014-0014-0014-000000000014"), // Khu May Nặng D
                     DeviceId = Guid.Parse("d1e2f3a4-0020-0020-0020-000000000020"), // Singer 4452 Unit 3 (InRepair)
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+                new Position
+                {
+                    Id = Guid.Parse("f1e2d3c4-0035-0035-0035-000000000035"),
+                    Index = 3,
+                    ZoneId = Guid.Parse("c1d2e3f4-0014-0014-0014-000000000014"), // Khu May Nặng D
+                    DeviceId = null, // Dành sẵn cho thiết bị mới
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },

@@ -397,5 +397,33 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(new { Message = "Task assigned successfully!" });
 
         }
+
+        public async Task<Result> CreateSimpleTaskWebAsync(CreateSimpleTaskWeb dto)
+        {
+            var request = await _unitOfWork.RequestRepository.GetByIdAsync(dto.RequestId);
+            if (request == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Request is not exist"));
+            }
+
+            var userExists = await _unitOfWork.UserRepository.IdExistsAsync(dto.AssigneeId);
+            if (!userExists)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "User not found"));
+            }
+
+            // Optional: Validate spareparts if provided
+            // if (dto.SparepartIds != null && dto.SparepartIds.Any())
+            // {
+            //     var missingSpareParts = await _unitOfWork.SparepartRepository.GetNotFoundSparepartNamesAsync(dto.SparepartIds);
+            //     if (missingSpareParts.Any())
+            //     {
+            //         return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Sparepart not found"));
+            //     }
+            // }
+
+            var taskId = await _unitOfWork.TaskRepository.CreateSimpleTaskWebAsync(dto);
+            return Result.SuccessWithObject(new { Message = "Simple task created successfully!", TaskId = taskId });
+        }
     }
 }

@@ -126,6 +126,14 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Task assigned successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
+        
+        [HttpPost("create-simple-task")]
+        public async Task<IResult> CreateSimpleTaskWeb([FromBody] CreateSimpleTaskWeb createSimpleTaskWeb)
+        {
+            var result = await _taskService.CreateSimpleTaskWebAsync(createSimpleTaskWeb);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Simple task created successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }

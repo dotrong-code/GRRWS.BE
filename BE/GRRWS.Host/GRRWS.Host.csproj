@@ -18,13 +18,19 @@
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
 	</ItemGroup>
-	<ItemGroup>
-		<ProjectReference Include="..\GRRWS.Application\GRRWS.Application.csproj" />
-	</ItemGroup>
-	<ItemGroup>
-		<Content Update="appsettings.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\GRRWS.Application\GRRWS.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Keys\" />
+  </ItemGroup>
+
 
 </Project>

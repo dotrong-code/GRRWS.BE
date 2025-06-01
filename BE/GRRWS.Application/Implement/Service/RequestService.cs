@@ -47,7 +47,11 @@ namespace GRRWS.Application.Implement.Service
                 {
                     Id = ri.Issue.Id,
                     DisplayName = ri.Issue.DisplayName,
-                    ImageUrls = imageUrls
+                    ImageUrls = imageUrls,
+                    Status = ri.Status,
+                    IsRejected = ri.IsRejected, // Ánh xạ trường này
+                    RejectionReason = ri.RejectionReason, // Ánh xạ trường này
+                    RejectionDetails = ri.RejectionDetails // Ánh xạ trường này
                 });
             }
             return issues;
@@ -60,7 +64,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Request not found.", 0));
             }
 
-            var requestIssue = request.RequestIssues?.FirstOrDefault(ri => ri.Id == issueId);
+            var requestIssue = request.RequestIssues?.FirstOrDefault(ri => ri.IssueId == issueId);
             if (requestIssue == null)
             {
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "RequestIssue not found.", 0));
@@ -97,6 +101,9 @@ namespace GRRWS.Application.Implement.Service
                 CreatedBy = r.RequestedById,
                 ModifiedDate = r.ModifiedDate,
                 ModifiedBy = r.ModifiedBy,
+                IsRejected = r.IsRejected, // Ánh xạ trường này
+                RejectionReason = r.RejectionReason, // Ánh xạ trường này
+                RejectionDetails = r.RejectionDetails, // Ánh xạ trường này
                 Issues = await MapIssuesWithImagesAsync(r.RequestIssues)
             };
         }
@@ -199,7 +206,7 @@ namespace GRRWS.Application.Implement.Service
                 Id = Guid.NewGuid(),
                 DeviceId = dto.DeviceId,
                 RequestTitle = createTitle,
-                Description = createTitle,
+                Description = DescriptionHelper.GenerateRequestDescription(getDevice.DeviceName),
                 Status = "Pending",
                 CreatedBy = userId,
                 RequestedById = userId,
