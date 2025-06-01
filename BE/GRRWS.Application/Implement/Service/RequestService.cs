@@ -8,6 +8,7 @@ using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.Interfaces;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
 
+
 namespace GRRWS.Application.Implement.Service
 {
     public class RequestService : IRequestService
@@ -312,7 +313,7 @@ namespace GRRWS.Application.Implement.Service
                 Id = Guid.NewGuid(),
                 DeviceId = dto.DeviceId,
                 RequestTitle = createTitle,
-                Description = createTitle,
+                Description = DescriptionHelper.GenerateRequestDescription(getDevice.DeviceName),
                 Status = "Pending",
                 CreatedBy = userId,
                 RequestedById = userId,
@@ -484,13 +485,13 @@ namespace GRRWS.Application.Implement.Service
             {
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Request is not exist"));
             }
-            
+
             var technicalIssues = await _requestRepository.GetTechnicalIssuesForRequestDetailWebAsync(requestId);
             if (technicalIssues == null)
             {
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "No technical issues found for the request."));
             }
-            
+
             return Result.SuccessWithObject(technicalIssues);
         }
 

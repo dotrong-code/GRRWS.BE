@@ -129,30 +129,45 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         }
 
         public async Task<RequestDetailWeb?> GetRequestDetailWebByIdAsync(Guid requestId)
-        {
-            var request = await _context.Requests
-               .AsNoTracking()
-               .Where(r => r.Id == requestId && !r.IsDeleted)
-               .Select(r => new RequestDetailWeb
-               {
-                   RequestId = r.Id,
-                   RequestTitle = r.RequestTitle,
-                   Priority = r.Priority,
-                   Status = r.Status,
-                   RequestDate = r.CreatedDate,
-                   DeviceId = r.DeviceId,
-                   DeviceName = r.Device.DeviceName,
-                   Issues = r.RequestIssues.Select(ri => new IssueForRequestDetailWeb
-                   {
-                       IssueId = ri.Issue.Id,
-                       DisplayName = ri.Issue.DisplayName,
-                       Status = ri.Status,
-                       Images = ri.Images.Select(img => img.ImageUrl).ToList()
-                   }).ToList()
-               })
-               .FirstOrDefaultAsync();
-            return request;
-        }
+{
+    var request = await _context.Requests
+       .AsNoTracking()
+       .Where(r => r.Id == requestId && !r.IsDeleted)
+       .Include(r => r.Device)
+           .ThenInclude(d => d.Position)
+               .ThenInclude(p => p.Zone)
+                   .ThenInclude(z => z.Area)
+       .Include(r => r.Report) // Include Report to check warranty status
+       .Include(r => r.RequestIssues)
+           .ThenInclude(ri => ri.Issue)
+       .Include(r => r.RequestIssues)
+           .ThenInclude(ri => ri.Images)
+       .Select(r => new RequestDetailWeb
+       {
+           RequestId = r.Id,
+           RequestTitle = r.RequestTitle,
+           Priority = r.Priority,
+           Status = r.Status,
+           RequestDate = r.CreatedDate,
+           IsWarranty = r.Report != null && r.Report.Status == "InWarranty", // Check Report status
+           RemainingWarratyDate = 0, // You can calculate this based on your business logic
+           DeviceId = r.DeviceId,
+           DeviceName = r.Device.DeviceName,
+           Location = r.Device.Position != null && r.Device.Position.Zone != null && r.Device.Position.Zone.Area != null
+               ? $"{r.Device.Position.Zone.Area.AreaName} - {r.Device.Position.Zone.ZoneName} - {r.Device.Position.Index}"
+               : "Location not available", // Combined location
+           Issues = r.RequestIssues.Select(ri => new IssueForRequestDetailWeb
+           {
+               IssueId = ri.Issue.Id,
+               DisplayName = ri.Issue.DisplayName,
+               Status = ri.Status,
+               Images = ri.Images.Select(img => img.ImageUrl).ToList()
+           }).ToList()
+       })
+       .FirstOrDefaultAsync();
+    
+    return request;
+}
 
         public async Task<List<ErrorForRequestDetailWeb>> GetErrorsForRequestDetailWebAsync(Guid requestId)
         {

@@ -11,6 +11,7 @@
         public int RemainingWarratyDate { get; set; }
         public Guid DeviceId { get; set; }
         public string DeviceName { get; set; }
+        public string Location { get; set; }
         public List<IssueForRequestDetailWeb> Issues { get; set; } = new List<IssueForRequestDetailWeb>();
     }
     public class IssueForRequestDetailWeb
