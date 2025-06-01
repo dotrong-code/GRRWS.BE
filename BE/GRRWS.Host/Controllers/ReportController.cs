@@ -43,6 +43,15 @@ namespace GRRWS.Host.Controllers
 : ResultExtensions.ToProblemDetails(result);
         }
 
+        [HttpPost("Warranty")]
+        public async Task<IResult> CreateWarrantyReport([FromBody] ReportWarrantyCreateDTO dto)
+        {
+            var result = await _service.CreateWarrantyReportAsync(dto);
+            return result.IsSuccess
+? ResultExtensions.ToSuccessDetails(result, "Successfully")
+: ResultExtensions.ToProblemDetails(result);
+        }
+
         [HttpPut]
         public async Task<IResult> Update([FromBody] ReportUpdateDTO dto)
         {

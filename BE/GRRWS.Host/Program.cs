@@ -144,11 +144,9 @@ app.UseExceptionHandler(errorApp =>
 app.UseAuthentication();
 app.UseAuthorization();
 app.MigrateDatabases();
-
+//app.ConfigureMiddleware();
 app.MapControllers();
 
 app.UseCors("AllowAll");
 
 app.Run();
-
-//test commit
