@@ -211,6 +211,128 @@ namespace GRRWS.Application.Implement.Service
             var dtos = _mapper.Map<List<ReportViewDTO>>(reports).Cast<object>().ToList();
             return Result.SuccessWithObject(dtos);
         }
+        public async Task<Result> CreateReportWithIssueErrorAsync(ReportCreateWithIssueErrorDTO dto)
+        {
+            // Kiểm tra RequestId
+            if (dto.RequestId == null)
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "RequestId is required.", 0));
+
+            // Kiểm tra Priority
+            if (dto.Priority.GetType() != typeof(int))
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Priority must be an integer.", 0));
+            if (dto.Priority < 0 || dto.Priority > 5)
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Priority must be between 0 and 5.", 0));
+
+            // Lấy Request
+            var request = await _unit.RequestRepository.GetRequestByIdAsync((Guid)dto.RequestId);
+            if (request == null)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
+                    "NotFound", "Request not found for the provided RequestId."
+                ));
+            if (request.ReportId != null)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict(
+                    "Conflict", "Request already has an associated report."
+                ));
+
+            // Kiểm tra ErrorIds
+            var allErrorIds = new List<Guid>();
+            if (dto.ErrorIds != null && dto.ErrorIds.Any())
+            {
+                if (dto.ErrorIds.Any(errorId => errorId == Guid.Empty))
+                    return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "ErrorIds cannot contain empty GUIDs.", 0));
+                allErrorIds.AddRange(dto.ErrorIds);
+            }
+
+            // Kiểm tra IssueErrorMappings
+            var issueErrorMappings = dto.IssueErrorMappings ?? new Dictionary<Guid, List<Guid>>();
+            if (issueErrorMappings.Any())
+            {
+                foreach (var mapping in issueErrorMappings)
+                {
+                    if (mapping.Key == Guid.Empty)
+                        return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "IssueId in IssueErrorMappings cannot be empty GUID.", 0));
+                    if (mapping.Value.Any(errorId => errorId == Guid.Empty))
+                        return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "ErrorIds in IssueErrorMappings cannot contain empty GUIDs.", 0));
+                    allErrorIds.AddRange(mapping.Value);
+                }
+            }
+
+            // Kiểm tra xem các Error tồn tại
+            var missingErrors = await _unit.ErrorRepository.GetNotFoundErrorDisplayNamesAsync(allErrorIds.Distinct());
+            if (missingErrors.Any())
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
+                    "NotFound", "Some errors do not exist: " + string.Join(", ", missingErrors.Select(x => x.Id))
+                ));
+
+            // Tạo Location
+            var createLocation = "";
+            try
+            {
+                createLocation = TitleHelper.GenerateReportTitle(request.Device.Position.Zone.Area.AreaCode, request.Device.Position.Zone.ZoneCode, request.Device.Position.Index, request.Device.DeviceCode);
+            }
+            catch (Exception)
+            {
+                createLocation = "Create title fail";
+            }
+
+            // Tạo Report
+            var report = new Report
+            {
+                Id = Guid.NewGuid(),
+                RequestId = dto.RequestId,
+                Priority = dto.Priority,
+                Location = createLocation,
+                Status = "InProgress",
+                CreatedDate = DateTime.Now
+            };
+
+            // Tạo ErrorDetails
+            if (allErrorIds.Any())
+            {
+                report.ErrorDetails = allErrorIds.Select(errorId => new ErrorDetail
+                {
+                    ReportId = report.Id,
+                    ErrorId = errorId
+                }).ToList();
+            }
+            else
+            {
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "No ErrorIds provided.", 0));
+            }
+
+            // Tạo IssueErrors
+            var issueErrors = new List<IssueError>();
+            foreach (var mapping in issueErrorMappings)
+            {
+                var issueId = mapping.Key;
+                var errorIds = mapping.Value;
+                foreach (var errorId in errorIds)
+                {
+                    issueErrors.Add(new IssueError
+                    {
+                        Id = Guid.NewGuid(),
+                        IssueId = issueId,
+                        ErrorId = errorId
+                    });
+                }
+            }
+            if (issueErrors.Any())
+            {
+                await _unit.IssueErrorRepository.CreateRangeAsync(issueErrors);
+            }
+
+            // Lưu Report
+            await _unit.ReportRepository.CreateAsync(report);
+
+            // Cập nhật Request
+            request.ReportId = report.Id;
+            request.Status = "Approved";
+            await _unit.RequestRepository.UpdateAsync(request);
+
+            await _unit.SaveChangesAsync();
+
+            return Result.SuccessWithObject(new { Message = "Report created successfully with IssueErrors!", ReportId = report.Id });
+        }
     }
 
 }
