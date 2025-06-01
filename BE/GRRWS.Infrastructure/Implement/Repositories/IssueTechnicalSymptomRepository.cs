@@ -18,7 +18,11 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         {
             await _context.AddRangeAsync(issueSymptoms);
         }
-
+        public async Task<IssueTechnicalSymptom> GetByIssueAndSymptomIdAsync(Guid issueId, Guid technicalSymptomId)
+        {
+            return await _context.IssueTechnicalSymptoms
+                .FirstOrDefaultAsync(its => its.IssueId == issueId && its.TechnicalSymptomId == technicalSymptomId);
+        }
         public async Task<List<IssueTechnicalSymptom>> GetByIssueIdAsync(Guid issueId)
         {
             return await _context.IssueTechnicalSymptoms

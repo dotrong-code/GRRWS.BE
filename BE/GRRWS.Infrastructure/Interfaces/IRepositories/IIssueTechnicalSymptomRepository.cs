@@ -14,5 +14,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<List<IssueTechnicalSymptom>> GetByIssueIdAsync(Guid issueId);
         Task<List<IssueTechnicalSymptom>> GetBySymptomIdAsync(Guid symptomId);
         Task DeleteRangeAsync(IEnumerable<IssueTechnicalSymptom> issueTechnicalSymptoms);
+
+        Task<IssueTechnicalSymptom> GetByIssueAndSymptomIdAsync(Guid issueId, Guid technicalSymptomId);
     }
 }
