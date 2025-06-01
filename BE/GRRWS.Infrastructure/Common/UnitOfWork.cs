@@ -17,7 +17,7 @@ namespace GRRWS.Infrastructure.Common
 
         public IIssueRepository IssueRepository { get; private set; }
         public IErrorRepository ErrorRepository { get; private set; }
-
+        public ITechnicalSymtomRepository TechnicalSymtomRepository { get; private set; }
         public IDeviceRepository DeviceRepository { get; private set; }
         public IDeviceErrorHistoryRepository DeviceErrorHistoryRepository { get; private set; }
         public IDeviceIssueHistoryRepository DeviceIssueHistoryRepository { get; private set; }
@@ -31,7 +31,11 @@ namespace GRRWS.Infrastructure.Common
 
         public ITaskRepository TaskRepository { get; private set; }
         public IWarrantyDetailRepository WarrantyDetailRepository { get; private set; }
+
         public IErrorDetailRepository ErrorDetailRepository { get; }
+
+        public IIssueErrorRepository IssueErrorRepository { get; private set; }
+
 
         public async Task<int> SaveChangesAsync()
         {
@@ -47,7 +51,7 @@ namespace GRRWS.Infrastructure.Common
 
             IssueRepository = new IssueRepository(_context);
             ErrorRepository = new ErrorRepository(_context);
-
+            TechnicalSymtomRepository = new TechnicalSymtomRepository(_context);
             DeviceRepository = new DeviceRepository(_context);
             PositionRepository = new PositionRepository(_context);
             ZoneRepository = new ZoneRepository(_context);
@@ -62,6 +66,8 @@ namespace GRRWS.Infrastructure.Common
             DeviceHistoryRepository = new DeviceHistoryRepository(_context);
             WarrantyDetailRepository = new WarrantyDetailRepository(_context);
             ErrorDetailRepository = errorDetailRepository;
+            IssueErrorRepository = new IssueErrorRepository(_context);
+
         }
         public int Complete()
         {

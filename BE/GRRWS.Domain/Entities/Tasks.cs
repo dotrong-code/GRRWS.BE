@@ -25,5 +25,6 @@ namespace GRRWS.Domain.Entities
         public User Assignee { get; set; }
         public ICollection<ErrorDetail> ErrorDetails { get; set; }
         public ICollection<RepairSparepart>? RepairSpareparts { get; set; }
+        public ICollection<TechnicalSymptomReport>? TechnicalSymptomReports { get; set; }
     }
 }
