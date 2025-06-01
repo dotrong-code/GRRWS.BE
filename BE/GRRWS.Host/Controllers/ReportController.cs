@@ -79,6 +79,15 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Report created successfully with IssueErrors")
                 : ResultExtensions.ToProblemDetails(result);
         }
+
+        [HttpPost("with-issue-symptom")]
+        public async Task<IResult> CreateReportWithIssueSymptom([FromBody] ReportCreateWithIssueSymtomDTO dto)
+        {
+            var result = await _service.CreateReportWithIssueSymtomAsync(dto);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Report created successfully with IssueSymptoms!")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 
 }
