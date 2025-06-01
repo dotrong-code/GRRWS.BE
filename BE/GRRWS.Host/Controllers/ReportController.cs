@@ -1,4 +1,5 @@
 ﻿using GRRWS.Application.Common.Result;
+using GRRWS.Application.Implement.Service;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.DTOs.Report;
 using Microsoft.AspNetCore.Mvc;
@@ -68,6 +69,15 @@ namespace GRRWS.Host.Controllers
             return result.IsSuccess
 ? ResultExtensions.ToSuccessDetails(result, "Successfully")
 : ResultExtensions.ToProblemDetails(result);
+        }
+
+        [HttpPost("with-issue-error")]
+        public async Task<IResult> CreateReportWithIssueError([FromBody] ReportCreateWithIssueErrorDTO dto)
+        {
+            var result = await _service.CreateReportWithIssueErrorAsync(dto);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Report created successfully with IssueErrors")
+                : ResultExtensions.ToProblemDetails(result);
         }
     }
 

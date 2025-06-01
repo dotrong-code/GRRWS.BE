@@ -16,6 +16,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> DeleteAsync(Guid id);
         Task<Result> GetByIdAsync(Guid id);
         Task<Result> GetAllAsync();
+        Task<Result> CreateReportWithIssueErrorAsync(ReportCreateWithIssueErrorDTO dto);
     }
 
 }
