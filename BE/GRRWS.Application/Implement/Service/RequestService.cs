@@ -50,10 +50,38 @@ namespace GRRWS.Application.Implement.Service
                 {
                     Id = ri.Issue.Id,
                     DisplayName = ri.Issue.DisplayName,
-                    ImageUrls = imageUrls
+                    ImageUrls = imageUrls,
+                    Status = ri.Status,
+                    IsRejected = ri.IsRejected, // Ánh xạ trường này
+                    RejectionReason = ri.RejectionReason, // Ánh xạ trường này
+                    RejectionDetails = ri.RejectionDetails // Ánh xạ trường này
                 });
             }
             return issues;
+        }
+        public async Task<Result> UpdateRequestIssueStatusAsync(Guid requestId, Guid issueId, bool isRejected, string rejectionReason, string rejectionDetails)
+        {
+            var request = await _requestRepository.GetRequestByIdAsync(requestId);
+            if (request == null || request.IsDeleted)
+            {
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Request not found.", 0));
+            }
+
+            var requestIssue = request.RequestIssues?.FirstOrDefault(ri => ri.IssueId == issueId);
+            if (requestIssue == null)
+            {
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "RequestIssue not found.", 0));
+            }
+
+            requestIssue.IsRejected = isRejected;
+            requestIssue.RejectionReason = rejectionReason;
+            requestIssue.RejectionDetails = rejectionDetails;
+            requestIssue.Status = isRejected ? "Rejected" : "Pending"; // Cập nhật trạng thái
+
+            await _requestRepository.UpdateAsync(request);
+            await _unitOfWork.SaveChangesAsync();
+
+            return Result.SuccessWithObject(new { Message = "RequestIssue status updated successfully!" });
         }
 
         private async Task<RequestDTO> MapRequestToDTOAsync(Request r)
@@ -76,6 +104,9 @@ namespace GRRWS.Application.Implement.Service
                 CreatedBy = r.RequestedById,
                 ModifiedDate = r.ModifiedDate,
                 ModifiedBy = r.ModifiedBy,
+                IsRejected = r.IsRejected, // Ánh xạ trường này
+                RejectionReason = r.RejectionReason, // Ánh xạ trường này
+                RejectionDetails = r.RejectionDetails, // Ánh xạ trường này
                 Issues = await MapIssuesWithImagesAsync(r.RequestIssues)
             };
         }
@@ -490,7 +521,24 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.SuccessWithObject(new { Message = "Request canceled successfully!" });
         }
+        public async Task<Result> UpdateRequestStatusAsync(Guid requestId, bool isRejected, string rejectionReason, string rejectionDetails)
+        {
+            var request = await _requestRepository.GetRequestByIdAsync(requestId);
+            if (request == null || request.IsDeleted)
+            {
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Request not found.", 0));
+            }
 
+            request.IsRejected = isRejected;
+            request.RejectionReason = rejectionReason;
+            request.RejectionDetails = rejectionDetails;
+            request.Status = isRejected ? "Rejected" : "Pending"; // Cập nhật trạng thái
+
+            await _requestRepository.UpdateAsync(request);
+            await _unitOfWork.SaveChangesAsync();
+
+            return Result.SuccessWithObject(new { Message = "Request status updated successfully!" });
+        }
 
     }
 }
