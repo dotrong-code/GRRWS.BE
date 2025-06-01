@@ -313,7 +313,7 @@ namespace GRRWS.Application.Implement.Service
                 Id = Guid.NewGuid(),
                 DeviceId = dto.DeviceId,
                 RequestTitle = createTitle,
-                Description = createTitle,
+                Description = DescriptionHelper.GenerateRequestDescription(getDevice.DeviceName),
                 Status = "Pending",
                 CreatedBy = userId,
                 RequestedById = userId,
