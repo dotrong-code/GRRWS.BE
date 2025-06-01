@@ -233,5 +233,26 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.SuccessWithObject(warranties);
         }
+
+        public async Task<Result> GetDeviceWarrantyHistoryAsync(Guid deviceId)
+        {
+            var deviceExists = await _unitOfWork.DeviceRepository.DeviceIdExistsAsync(deviceId);
+            if (!deviceExists)
+                return Result.Failure(DeviceErrorMessage.DeviceNotExist());
+
+            var history = await _unitOfWork.DeviceWarrantyRepository.GetDeviceWarrantyHistoryByDeviceIdAsync(deviceId);
+            var historyDTOs = history.Select(dh => new DeviceWarrantyHistoryDTO
+            {
+                DeviceId = dh.DeviceId,
+                DeviceDescription = dh.DeviceDescription,
+                Status = dh.Status,
+                SendDate = dh.SendDate,
+                ReceiveDate = dh.ReceiveDate,
+                Provider = dh.Provider,
+                Note = dh.Note
+            }).ToList();
+
+            return Result.SuccessWithObject(historyDTOs);
+        }
     }
 }

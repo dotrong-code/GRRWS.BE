@@ -97,7 +97,78 @@ namespace GRRWS.Application.Implement.Service
             await _unit.RequestRepository.UpdateAsync(getRequest);
             return Result.SuccessWithObject(new { Message = "Report created successfully!", ReportId = report.Id });
         }
+        public async Task<Result> CreateWarrantyReportAsync(ReportWarrantyCreateDTO dto)
+        {
+            if (dto.RequestId == null)
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "RequestId is required.", 0));
 
+            if (dto.TechnicalSymtomIds != null && dto.TechnicalSymtomIds.Any())
+                if (dto.TechnicalSymtomIds.Any(technicalSymtomId => technicalSymtomId == Guid.Empty))
+                    return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "TechnicalSymtomIds cannot contain empty GUIDs.", 0));
+
+            if (dto.Priority.GetType() != typeof(int))
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Priority must be an integer.", 0));
+
+            if (dto.Priority < 0 || dto.Priority > 5)
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Priority must be between 0 and 5.", 0));
+
+            var request = await _unit.RequestRepository.GetRequestByIdAsync((Guid)dto.RequestId);
+            if (request == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
+                    "NotFound", "Request not found for the provided RequestId."
+                ));
+            }
+            if (request.ReportId != null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict(
+                    "Conflict", "Request already has an associated report."
+                ));
+            }
+
+            var missingSymtoms = await _unit.TechnicalSymtomRepository.GetNotFoundTechnicalSymtomDisplayNamesAsync(dto.TechnicalSymtomIds);
+            if (missingSymtoms.Any())
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
+                    "NotFound", "Some symtoms do not exist: " + string.Join(", ", missingSymtoms.Select(x => x.Id))
+                ));
+            }
+
+            var createLocation = "";
+            try
+            {
+                createLocation = TitleHelper.GenerateReportTitle(request.Device.Position.Zone.Area.AreaCode, request.Device.Position.Zone.ZoneCode, request.Device.Position.Index, request.Device.DeviceCode);
+            }
+            catch (Exception)
+            {
+                createLocation = "Create title fail";
+            }
+
+            var report = _mapper.Map<Report>(dto);
+            report.Id = Guid.NewGuid();
+            report.Status = "InProgress";
+            report.CreatedDate = DateTime.Now;
+            report.Location = createLocation;
+
+            if (dto.TechnicalSymtomIds != null && dto.TechnicalSymtomIds.Any())
+            {
+                report.TechnicalSymptomReports = dto.TechnicalSymtomIds.Select(symtomId => new TechnicalSymptomReport
+                {
+                    ReportId = report.Id,
+                    TechnicalSymptomId = symtomId
+                }).ToList();
+            }
+            else
+            {
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "TechnicalSymptomIds is null!.", 0));
+            }
+            await _unit.ReportRepository.CreateAsync(report);
+            var getRequest = await _unit.RequestRepository.GetRequestByIdAsync((Guid)report.RequestId);
+            getRequest.ReportId = report.Id;
+            getRequest.Status = "Approved";
+            await _unit.RequestRepository.UpdateAsync(getRequest);
+            return Result.SuccessWithObject(new { Message = "Report created successfully!", ReportId = report.Id });
+        }
         public async Task<Result> UpdateAsync(ReportUpdateDTO dto)
         {
             var report = await _unit.ReportRepository.GetByIdAsync(dto.Id);
