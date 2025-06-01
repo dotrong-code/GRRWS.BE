@@ -146,7 +146,7 @@ namespace GRRWS.Application.Implement.Service
 
             var report = _mapper.Map<Report>(dto);
             report.Id = Guid.NewGuid();
-            report.Status = "InProgress";
+            report.Status = "InWarranty";
             report.CreatedDate = DateTime.Now;
             report.Location = createLocation;
 
