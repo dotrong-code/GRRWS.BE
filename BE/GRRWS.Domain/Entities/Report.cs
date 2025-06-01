@@ -12,7 +12,7 @@
         public Request? Request { get; set; }
         public ICollection<ErrorDetail>? ErrorDetails { get; set; }
         public ICollection<WarrantyDetail>? WarrantyDetails { get; set; }
-        public ICollection<IssueTechnicalSymptom>? IssueTechnicalSymptoms { get; set; }
+        public ICollection<TechnicalSymptomReport>? TechnicalSymptomReports { get; set; }
     }
 
 }
