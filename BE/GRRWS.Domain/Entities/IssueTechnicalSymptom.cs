@@ -11,9 +11,11 @@ namespace GRRWS.Domain.Entities
         public Guid Id { get; set; } = Guid.NewGuid();
         public Guid IssueId { get; set; }
         public Guid TechnicalSymptomId { get; set; }
+        public Guid ReportId { get; set; }
 
         // Navigation
         public Issue Issue { get; set; }
         public TechnicalSymptom TechnicalSymptom { get; set; }
+        public Report Report { get; set; }
     }
 }
