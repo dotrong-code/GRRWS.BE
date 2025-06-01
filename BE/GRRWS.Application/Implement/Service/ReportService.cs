@@ -308,12 +308,17 @@ namespace GRRWS.Application.Implement.Service
                 var errorIds = mapping.Value;
                 foreach (var errorId in errorIds)
                 {
-                    issueErrors.Add(new IssueError
+                    // Check if the IssueError combination already exists
+                    var existingIssueError = await _unit.IssueErrorRepository.GetByIssueAndErrorIdAsync(issueId, errorId);
+                    if (existingIssueError == null) // Only add if it doesn't exist
                     {
-                        Id = Guid.NewGuid(),
-                        IssueId = issueId,
-                        ErrorId = errorId
-                    });
+                        issueErrors.Add(new IssueError
+                        {
+                            Id = Guid.NewGuid(),
+                            IssueId = issueId,
+                            ErrorId = errorId
+                        });
+                    }
                 }
             }
             if (issueErrors.Any())

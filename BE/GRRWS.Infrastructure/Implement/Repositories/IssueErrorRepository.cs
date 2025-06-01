@@ -19,7 +19,11 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         {
             await _context.AddRangeAsync(issueErrors);
         }
-
+        public async Task<IssueError> GetByIssueAndErrorIdAsync(Guid issueId, Guid errorId)
+        {
+            return await _context.IssueErrors
+                .FirstOrDefaultAsync(ie => ie.IssueId == issueId && ie.ErrorId == errorId);
+        }
         public async Task<List<IssueError>> GetByIssueIdAsync(Guid issueId)
         {
             return await _context.IssueErrors
