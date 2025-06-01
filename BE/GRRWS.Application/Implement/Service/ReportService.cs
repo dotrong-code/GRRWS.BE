@@ -333,6 +333,127 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.SuccessWithObject(new { Message = "Report created successfully with IssueErrors!", ReportId = report.Id });
         }
-    }
+        public async Task<Result> CreateReportWithIssueSymtomAsync(ReportCreateWithIssueSymtomDTO dto)
+        {
+            // Kiểm tra RequestId
+            if (dto.RequestId == null)
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "RequestId is required.", 0));
 
+            // Kiểm tra Priority
+            if (dto.Priority.GetType() != typeof(int))
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Priority must be an integer.", 0));
+            if (dto.Priority < 0 || dto.Priority > 5)
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Priority must be between 0 and 5.", 0));
+
+            // Lấy Request
+            var request = await _unit.RequestRepository.GetRequestByIdAsync((Guid)dto.RequestId);
+            if (request == null)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
+                    "NotFound", "Request not found for the provided RequestId."
+                ));
+            if (request.ReportId != null)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict(
+                    "Conflict", "Request already has an associated report."
+                ));
+
+            // Kiểm tra ErrorIds
+            var allSymtomIds = new List<Guid>();
+            if (dto.TechnicalSymtomIds != null && dto.TechnicalSymtomIds.Any())
+            {
+                if (dto.TechnicalSymtomIds.Any(symtomId => symtomId == Guid.Empty))
+                    return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "SymtomIds cannot contain empty GUIDs.", 0));
+                allSymtomIds.AddRange(dto.TechnicalSymtomIds);
+            }
+
+            // Kiểm tra IssueSymtomMappings
+            var issueSymtomMappings = dto.IssueSymtomMappings ?? new Dictionary<Guid, List<Guid>>();
+            if (issueSymtomMappings.Any())
+            {
+                foreach (var mapping in issueSymtomMappings)
+                {
+                    if (mapping.Key == Guid.Empty)
+                        return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "SymtomId in IssueSymtomMappings cannot be empty GUID.", 0));
+                    if (mapping.Value.Any(symtomId => symtomId == Guid.Empty))
+                        return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "SymtomIds in IssueSymtomMappings cannot contain empty GUIDs.", 0));
+                    allSymtomIds.AddRange(mapping.Value);
+                }
+            }
+
+            // Kiểm tra xem các Symtom tồn tại
+            var missingSymtoms = await _unit.TechnicalSymtomRepository.GetNotFoundTechnicalSymtomDisplayNamesAsync(allSymtomIds.Distinct());
+            if (missingSymtoms.Any())
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
+                    "NotFound", "Some symtoms do not exist: " + string.Join(", ", missingSymtoms.Select(x => x.Id))
+                ));
+
+            // Tạo Location
+            var createLocation = "";
+            try
+            {
+                createLocation = TitleHelper.GenerateReportTitle(request.Device.Position.Zone.Area.AreaCode, request.Device.Position.Zone.ZoneCode, request.Device.Position.Index, request.Device.DeviceCode);
+            }
+            catch (Exception)
+            {
+                createLocation = "Create title fail";
+            }
+
+            // Tạo Report
+            var report = new Report
+            {
+                Id = Guid.NewGuid(),
+                RequestId = dto.RequestId,
+                Priority = dto.Priority,
+                Location = createLocation,
+                Status = "InWarranty",
+                CreatedDate = DateTime.Now
+            };
+
+            // Tạo ErrorDetails
+            if (allSymtomIds.Any())
+            {
+                report.TechnicalSymptomReports = allSymtomIds.Select(symtomId => new TechnicalSymptomReport
+                {
+                    ReportId = report.Id,
+                    TechnicalSymptomId = symtomId
+                }).ToList();
+            }
+            else
+            {
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "No SymptomIds provided.", 0));
+            }
+
+            // Tạo IssueErrors
+            var issueSymptoms = new List<IssueTechnicalSymptom>();
+            foreach (var mapping in issueSymtomMappings)
+            {
+                var issueId = mapping.Key;
+                var symtomIds = mapping.Value;
+                foreach (var symtomId in symtomIds)
+                {
+                    issueSymptoms.Add(new IssueTechnicalSymptom
+                    {
+                        Id = Guid.NewGuid(),
+                        IssueId = issueId,
+                        TechnicalSymptomId = symtomId
+                    });
+                }
+            }
+            if (issueSymptoms.Any())
+            {
+                await _unit.IssueTechnicalSymptomRepository.CreateRangeAsync(issueSymptoms);
+            }
+
+            // Lưu Report
+            await _unit.ReportRepository.CreateAsync(report);
+
+            // Cập nhật Request
+            request.ReportId = report.Id;
+            request.Status = "Approved";
+            await _unit.RequestRepository.UpdateAsync(request);
+
+            await _unit.SaveChangesAsync();
+
+            return Result.SuccessWithObject(new { Message = "Report created successfully with IssueSymtoms!", ReportId = report.Id });
+        }
+    }
 }

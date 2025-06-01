@@ -117,6 +117,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IIssueRepository, IssueRepository>();
             services.AddTransient<IErrorRepository, ErrorRepository>();
             services.AddTransient<ITechnicalSymtomRepository, TechnicalSymtomRepository>();
+            services.AddTransient<IIssueTechnicalSymptomRepository, IssueTechnicalSymptomRepository>();
             services.AddTransient<IDeviceRepository, DeviceRepository>();
             services.AddTransient<IDeviceErrorHistoryRepository, DeviceErrorHistoryRepository>();
             services.AddTransient<IDeviceIssueHistoryRepository, DeviceIssueHistoryRepository>();
