@@ -408,5 +408,291 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             await _context.SaveChangesAsync();
             return task.Id;
         }
+
+        public async Task<Guid> CreateTaskFromTechnicalIssueAsync(CreateTaskFromTechnicalIssueRequest request, Guid reportId)
+        {
+            var task = new Tasks
+            {
+                Id = Guid.NewGuid(),
+                TaskType = request.TaskType,
+                StartTime = request.StartDate,
+                Status = "Pending",
+                TaskDescription = "Warranty task created from technical issue",
+                AssigneeId = request.AssigneeId,
+                CreatedDate = DateTime.UtcNow,
+                IsDeleted = false,
+            };
+
+            await _context.Tasks.AddAsync(task);
+
+            // Link technical issues via TechnicalSymptomReport
+            if (request.TechnicalIssueIds != null && request.TechnicalIssueIds.Count > 0)
+            {
+                var technicalSymptomReports = request.TechnicalIssueIds
+                    .Select(issueId => new TechnicalSymptomReport
+                    {
+                        TaskId = task.Id,
+                        TechnicalSymptomId = issueId,
+                        ReportId = reportId
+                    }).ToList();
+
+                await _context.TechnicalSymptomReports.AddRangeAsync(technicalSymptomReports);
+            }
+
+            // NO spareparts linking for warranty tasks
+
+            await _context.SaveChangesAsync();
+            return task.Id;
+        }
+
+        public async Task<Guid> CreateSimpleTaskAsync(CreateSimpleTaskRequest request, Guid reportId)
+        {
+            var task = new Tasks
+            {
+                Id = Guid.NewGuid(),
+                TaskType = request.TaskType,
+                StartTime = request.StartDate,
+                Status = "Pending",
+                TaskDescription = request.TaskDescription ?? "Simple replacement task",
+                AssigneeId = request.AssigneeId,
+                CreatedDate = DateTime.UtcNow,
+                IsDeleted = false,
+            };
+
+            await _context.Tasks.AddAsync(task);
+
+            // NO spareparts linking for simple tasks
+
+            await _context.SaveChangesAsync();
+            return task.Id;
+        }
+
+        public async Task<Guid> CreateTaskFromErrorsAsync(CreateTaskFromErrorsRequest request, Guid reportId)
+        {
+            var task = new Tasks
+            {
+                Id = Guid.NewGuid(),
+                TaskType = request.TaskType,
+                StartTime = request.StartDate,
+                Status = "Pending",
+                TaskDescription = "Task created from error analysis",
+                AssigneeId = request.AssigneeId,
+                CreatedDate = DateTime.UtcNow,
+                IsDeleted = false,
+            };
+
+            await _context.Tasks.AddAsync(task);
+
+            // Link errors via ErrorDetails
+            if (request.ErrorIds != null && request.ErrorIds.Count > 0)
+            {
+                var existingErrorDetails = await _context.ErrorDetails
+                    .Where(ed => ed.ReportId == reportId && request.ErrorIds.Contains(ed.ErrorId))
+                    .ToListAsync();
+
+                var existingErrorIds = existingErrorDetails.Select(ed => ed.ErrorId).ToHashSet();
+
+                // Update existing ErrorDetails
+                foreach (var ed in existingErrorDetails)
+                {
+                    ed.TaskId = task.Id;
+                }
+                if (existingErrorDetails.Count > 0)
+                    _context.ErrorDetails.UpdateRange(existingErrorDetails);
+
+                // Add new ErrorDetails
+                var newErrorDetails = request.ErrorIds
+                    .Where(eid => !existingErrorIds.Contains(eid))
+                    .Select(eid => new ErrorDetail
+                    {
+                        ReportId = reportId,
+                        ErrorId = eid,
+                        TaskId = task.Id
+                    }).ToList();
+
+                if (newErrorDetails.Count > 0)
+                    await _context.ErrorDetails.AddRangeAsync(newErrorDetails);
+            }
+
+            // Link spareparts if provided
+            if (request.SparepartIds != null && request.SparepartIds.Count > 0)
+            {
+                var repairSpareparts = request.SparepartIds
+                    .Select(spid => new RepairSparepart
+                    {
+                        TaskId = task.Id,
+                        SpareId = spid
+                    }).ToList();
+
+                await _context.RepairSpareparts.AddRangeAsync(repairSpareparts);
+            }
+
+            await _context.SaveChangesAsync();
+            return task.Id;
+        }
+
+        public async Task<Guid> CreateTaskFromErrorsAsync(CreateTaskFromErrorsRequest request)
+        {
+            // Get reportId from requestId
+            var reportId = await _context.Requests
+                .Where(r => r.Id == request.RequestId)
+                .Select(r => r.ReportId)
+                .FirstOrDefaultAsync();
+
+            var task = new Tasks
+            {
+                Id = Guid.NewGuid(),
+                TaskType = request.TaskType,
+                StartTime = request.StartDate,
+                Status = "Pending",
+                TaskDescription = "Task created from error analysis",
+                AssigneeId = request.AssigneeId,
+                CreatedDate = DateTime.UtcNow,
+                IsDeleted = false,
+            };
+
+            await _context.Tasks.AddAsync(task);
+
+            // Link errors via ErrorDetails
+            if (request.ErrorIds != null && request.ErrorIds.Count > 0)
+            {
+                var existingErrorDetails = await _context.ErrorDetails
+                    .Where(ed => ed.ReportId == reportId && request.ErrorIds.Contains(ed.ErrorId))
+                    .ToListAsync();
+
+                var existingErrorIds = existingErrorDetails.Select(ed => ed.ErrorId).ToHashSet();
+
+                // Update existing ErrorDetails
+                foreach (var ed in existingErrorDetails)
+                {
+                    ed.TaskId = task.Id;
+                }
+                if (existingErrorDetails.Count > 0)
+                    _context.ErrorDetails.UpdateRange(existingErrorDetails);
+
+                // Add new ErrorDetails
+                var newErrorDetails = request.ErrorIds
+                    .Where(eid => !existingErrorIds.Contains(eid))
+                    .Select(eid => new ErrorDetail
+                    {
+                        ReportId = (Guid)reportId,
+                        ErrorId = eid,
+                        TaskId = task.Id
+                    }).ToList();
+
+                if (newErrorDetails.Count > 0)
+                    await _context.ErrorDetails.AddRangeAsync(newErrorDetails);
+            }
+
+            // Link spareparts if provided
+            if (request.SparepartIds != null && request.SparepartIds.Count > 0)
+            {
+                var repairSpareparts = request.SparepartIds
+                    .Select(spid => new RepairSparepart
+                    {
+                        TaskId = task.Id,
+                        SpareId = spid
+                    }).ToList();
+
+                await _context.RepairSpareparts.AddRangeAsync(repairSpareparts);
+            }
+
+            await _context.SaveChangesAsync();
+            return task.Id;
+        }
+
+        public async Task<Guid> CreateTaskFromTechnicalIssueAsync(CreateTaskFromTechnicalIssueRequest request)
+        {
+            // Get reportId from requestId
+            var reportId = await _context.Requests
+                .Where(r => r.Id == request.RequestId)
+                .Select(r => r.ReportId)
+                .FirstOrDefaultAsync();
+
+            var task = new Tasks
+            {
+                Id = Guid.NewGuid(),
+                TaskType = request.TaskType,
+                StartTime = request.StartDate,
+                Status = "Pending",
+                TaskDescription = "Warranty task created from technical issue",
+                AssigneeId = request.AssigneeId,
+                CreatedDate = DateTime.UtcNow,
+                IsDeleted = false,
+            };
+
+            await _context.Tasks.AddAsync(task);
+
+            // Link technical issues via TechnicalSymptomReport
+            if (request.TechnicalIssueIds != null && request.TechnicalIssueIds.Count > 0)
+            {
+                var technicalSymptomReports = request.TechnicalIssueIds
+                    .Select(issueId => new TechnicalSymptomReport
+                    {
+                        TaskId = task.Id,
+                        TechnicalSymptomId = issueId,
+                        ReportId = (Guid)reportId
+                    }).ToList();
+
+                await _context.TechnicalSymptomReports.AddRangeAsync(technicalSymptomReports);
+            }
+
+            await _context.SaveChangesAsync();
+            return task.Id;
+        }
+
+        public async Task<Guid> CreateSimpleTaskAsync(CreateSimpleTaskRequest request)
+        {
+            // Get reportId from requestId
+            var reportId = await _context.Requests
+                .Where(r => r.Id == request.RequestId)
+                .Select(r => r.ReportId)
+                .FirstOrDefaultAsync();
+
+            // Build task description based on actions
+            var actions = new List<string>();
+            if (request.BringDeviceToRepairPlace)
+                actions.Add("Remove faulty device and bring to repair facility");
+            if (request.SetupReplacementDevice)
+                actions.Add("Install and configure replacement device");
+            
+            var taskDescription = request.TaskDescription ?? 
+                $"Device replacement task: {string.Join("; ", actions)}";
+
+            var task = new Tasks
+            {
+                Id = Guid.NewGuid(),
+                TaskType = request.TaskType,
+                StartTime = request.StartDate,
+                Status = "Pending",
+                TaskDescription = taskDescription,
+                AssigneeId = request.AssigneeId,
+                CreatedDate = DateTime.UtcNow,
+                IsDeleted = false,
+            };
+
+            await _context.Tasks.AddAsync(task);
+
+            // Create device replacement record if you have such an entity
+            // This would track which device is being replaced with which
+            // if (request.DeviceToRemoveId != Guid.Empty)
+            // {
+            //     var deviceReplacement = new DeviceReplacement
+            //     {
+            //         TaskId = task.Id,
+            //         OldDeviceId = request.DeviceToRemoveId,
+            //         NewDeviceId = request.ReplacementDeviceId,
+            //         InstallationLocation = request.InstallationLocation,
+            //         BringToRepairPlace = request.BringDeviceToRepairPlace,
+            //         SetupReplacement = request.SetupReplacementDevice,
+            //         CreatedDate = DateTime.UtcNow
+            //     };
+
+            //     await _context.DeviceReplacements.AddAsync(deviceReplacement);
+            // }
+
+            await _context.SaveChangesAsync();
+            return task.Id;
+        }
     }
 }

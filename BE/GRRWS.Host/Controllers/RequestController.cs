@@ -144,6 +144,16 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved errors")
                 : ResultExtensions.ToProblemDetails(result);
         }
+
+        [HttpGet("technical-issues/{requestId}")]
+        public async Task<IResult> GetTechnicalIssuesForRequestDetailWeb(Guid requestId)
+        {
+            var result = await _requestService.GetTechnicalIssuesForRequestDetailWebAsync(requestId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved technical issues")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
         [HttpGet("tasks/{requestId}")]
         public async Task<IResult> GetTasksForRequestDetailWeb(Guid requestId)
         {
@@ -152,18 +162,6 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved tasks")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
-
-        //[HttpPost("create-request")]
-        //public async Task<IResult> CreateRequest([FromBody] CreateRequest request)
-        //{
-        //    CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
-        //    var result = await _requestService.CreateRequestAsync(request, c.UserId);
-        //    return result.IsSuccess
-        //        ? ResultExtensions.ToSuccessDetails(result, "Successfully created request")
-        //        : ResultExtensions.ToProblemDetails(result);
-        //}
-
 
         [HttpGet("get-summary")]
         public async Task<IResult> GetSummary()

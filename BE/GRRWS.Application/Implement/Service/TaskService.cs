@@ -425,5 +425,121 @@ namespace GRRWS.Application.Implement.Service
             var taskId = await _unitOfWork.TaskRepository.CreateSimpleTaskWebAsync(dto);
             return Result.SuccessWithObject(new { Message = "Simple task created successfully!", TaskId = taskId });
         }
+
+        public async Task<Result> CreateTaskFromTechnicalIssueAsync(CreateTaskFromTechnicalIssueRequest request)
+        {
+            // Validate Request exists
+            var requestEntity = await _unitOfWork.RequestRepository.GetByIdAsync(request.RequestId);
+            if (requestEntity == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Request not found"));
+            }
+
+            // Validate User exists
+            var userExists = await _unitOfWork.UserRepository.IdExistsAsync(request.AssigneeId);
+            if (!userExists)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "User not found"));
+            }
+
+            // Validate Technical Issues exist
+            if (request.TechnicalIssueIds == null || !request.TechnicalIssueIds.Any())
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not Found", "At least one technical issue must be specified"));
+            }
+
+            // Get reportId from request
+            var reportId = await _unitOfWork.ErrorDetailRepository.GetReportIdByRequestIdAsync(request.RequestId);
+            if (reportId == Guid.Empty)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Report not found for this request"));
+            }
+
+            var taskId = await _unitOfWork.TaskRepository.CreateTaskFromTechnicalIssueAsync(request);
+            return Result.SuccessWithObject(new { Message = "Warranty task created from technical issue successfully!", TaskId = taskId });
+        }
+
+        public async Task<Result> CreateSimpleTaskAsync(CreateSimpleTaskRequest request)
+        {
+            // Validate Request exists
+            var requestEntity = await _unitOfWork.RequestRepository.GetByIdAsync(request.RequestId);
+            if (requestEntity == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Request not found"));
+            }
+
+            // Validate User exists
+            var userExists = await _unitOfWork.UserRepository.IdExistsAsync(request.AssigneeId);
+            if (!userExists)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "User not found"));
+            }
+
+            // Validate Device to Remove exists
+            if (request.DeviceToRemoveId == Guid.Empty)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not Found", "Device to remove must be specified"));
+            }
+
+            var deviceExists = await _unitOfWork.DeviceRepository.GetByIdAsync(request.DeviceToRemoveId);
+            if (deviceExists == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Device to remove not found"));
+            }
+
+            // Validate Replacement Device if provided
+            if (request.ReplacementDeviceId.HasValue)
+            {
+                var replacementDeviceExists = await _unitOfWork.DeviceRepository.GetByIdAsync(request.ReplacementDeviceId.Value);
+                if (replacementDeviceExists == null)
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Replacement device not found"));
+                }
+            }
+
+            // Validate Installation Location
+            if (string.IsNullOrWhiteSpace(request.InstallationLocation))
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", "Installation location is required"));
+            }
+
+            // Validate at least one action is selected
+            if (!request.BringDeviceToRepairPlace && !request.SetupReplacementDevice)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", "At least one replacement action must be selected"));
+            }
+
+            var taskId = await _unitOfWork.TaskRepository.CreateSimpleTaskAsync(request);
+            return Result.SuccessWithObject(new { 
+                Message = "Device replacement task created successfully!", 
+                TaskId = taskId,
+                Actions = new {
+                    RemoveDevice = request.BringDeviceToRepairPlace,
+                    SetupReplacement = request.SetupReplacementDevice
+                }
+            });
+        }
+
+        public async Task<Result> CreateTaskFromErrorsAsync(CreateTaskFromErrorsRequest dto)
+        {
+            var request = await _unitOfWork.RequestRepository.GetByIdAsync(dto.RequestId);
+            if (request == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Request is not exist"));
+            }
+
+            var userExists = await _unitOfWork.UserRepository.IdExistsAsync(dto.AssigneeId);
+            if (!userExists)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "User not found"));
+            }
+            var missingErrors = await _unitOfWork.ErrorRepository.GetNotFoundErrorDisplayNamesAsync(dto.ErrorIds);
+            if (missingErrors.Any())
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Error not found"));
+            }
+            var task = await _unitOfWork.TaskRepository.CreateTaskFromErrorsAsync(dto);
+            return Result.SuccessWithObject(new { Message = "Task assigned successfully!" });
+        }
     }
 }

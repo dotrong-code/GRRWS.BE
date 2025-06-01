@@ -39,5 +39,13 @@
         public int? NumberOfErrors { get; set; } // Number of errors associated with the task
 
     }
-
+    public class TechnicalIssueForRequestDetailWeb
+    {
+        public Guid TechnicalIssueId { get; set; }
+        public string SymptomCode { get; set; }
+        public string Name { get; set; }
+        public string? Description { get; set; }
+        public bool IsCommon { get; set; }
+        public string Status { get; set; } // Indicates if the technical issue has been processed (Unassigned/Assigned)
+    }
 }

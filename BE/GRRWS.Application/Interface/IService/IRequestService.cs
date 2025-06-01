@@ -22,6 +22,7 @@ namespace GRRWS.Application.Interface.IService
         //Task<Result> CreateRequestAsync(CreateRequest request, Guid userId);
         Task<Result> GetRequestDetailWebByIdAsync(Guid requestId);
         Task<Result> GetErrorsForRequestDetailWebAsync(Guid requestId);
+        Task<Result> GetTechnicalIssuesForRequestDetailWebAsync(Guid requestId);
         Task<Result> GetTasksForRequestDetailWebAsync(Guid requestId);
     }
 }

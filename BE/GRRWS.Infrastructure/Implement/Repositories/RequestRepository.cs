@@ -218,5 +218,31 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<TechnicalIssueForRequestDetailWeb>> GetTechnicalIssuesForRequestDetailWebAsync(Guid requestId)
+        {
+            // Get the reportId from the request
+            var reportId = await _context.Requests
+                .Where(r => r.Id == requestId && !r.IsDeleted)
+                .Select(r => r.ReportId)
+                .FirstOrDefaultAsync();
+
+            if (reportId == null)
+                return new List<TechnicalIssueForRequestDetailWeb>();
+
+            // Get technical issues from TechnicalSymptomReports by reportId
+            return await _context.TechnicalSymptomReports
+                .AsNoTracking()
+                .Where(tsr => tsr.ReportId == reportId)
+                .Select(tsr => new TechnicalIssueForRequestDetailWeb
+                {
+                    TechnicalIssueId = tsr.TechnicalSymptom.Id,
+                    SymptomCode = tsr.TechnicalSymptom.SymptomCode,
+                    Name = tsr.TechnicalSymptom.Name,
+                    Description = tsr.TechnicalSymptom.Description,
+                    IsCommon = tsr.TechnicalSymptom.IsCommon,
+                    Status = tsr.TaskId == null ? "Unassigned" : "Assigned"
+                })
+                .ToListAsync();
+        }
     }
 }

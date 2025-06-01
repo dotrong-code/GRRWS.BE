@@ -477,6 +477,23 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(tasks);
         }
 
+        public async Task<Result> GetTechnicalIssuesForRequestDetailWebAsync(Guid requestId)
+        {
+            var request = await _unitOfWork.RequestRepository.GetByIdAsync(requestId);
+            if (request == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Request is not exist"));
+            }
+            
+            var technicalIssues = await _requestRepository.GetTechnicalIssuesForRequestDetailWebAsync(requestId);
+            if (technicalIssues == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "No technical issues found for the request."));
+            }
+            
+            return Result.SuccessWithObject(technicalIssues);
+        }
+
         //        public async Task<Result> CreateRequestAsync(CreateRequest request, Guid userId)
         //        {
         //            if (!await _unitOfWork.DeviceRepository.DeviceIdExistsAsync(request.DeviceId))
