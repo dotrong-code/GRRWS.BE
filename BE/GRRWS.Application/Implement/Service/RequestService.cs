@@ -1,4 +1,5 @@
-﻿using GRRWS.Application.Common;
+﻿using System.Collections.Generic;
+using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
@@ -7,6 +8,7 @@ using GRRWS.Infrastructure.DTOs.Firebase.GetImage;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.Interfaces;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
+using Microsoft.AspNetCore.Http;
 using static GRRWS.Infrastructure.DTOs.RequestDTO.CreateRequestFormDTO;
 
 namespace GRRWS.Application.Implement.Service
@@ -207,7 +209,7 @@ namespace GRRWS.Application.Implement.Service
                 Id = Guid.NewGuid(),
                 DeviceId = dto.DeviceId,
                 RequestTitle = createTitle,
-                Description = DescriptionHelper.GenerateRequestDescription(getDevice.DeviceName),
+                Description = createTitle,
                 Status = "Pending",
                 CreatedBy = userId,
                 RequestedById = userId,
@@ -422,7 +424,7 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(new { Message = "Request canceled successfully!" });
         }
 
-
+        
 
         public async Task<Result> GetRequestSummary()
         {
