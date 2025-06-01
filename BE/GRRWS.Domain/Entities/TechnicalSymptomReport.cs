@@ -6,14 +6,15 @@ using System.Threading.Tasks;
 
 namespace GRRWS.Domain.Entities
 {
-    public class IssueTechnicalSymptom
+    public class TechnicalSymptomReport
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public Guid IssueId { get; set; }
+        public Guid ReportId { get; set; }
         public Guid TechnicalSymptomId { get; set; }
+        public Guid? TaskId { get; set; }
 
         // Navigation
-        public Issue Issue { get; set; }
+        public Report Report { get; set; }
         public TechnicalSymptom TechnicalSymptom { get; set; }
+        public Tasks Task { get; set; }
     }
 }

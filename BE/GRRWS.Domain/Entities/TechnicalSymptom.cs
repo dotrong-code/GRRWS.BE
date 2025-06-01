@@ -13,5 +13,6 @@ namespace GRRWS.Domain.Entities
 
         // Navigation
         public ICollection<IssueTechnicalSymptom>? IssueTechnicalSymptoms { get; set; }
+        public ICollection<TechnicalSymptomReport>? TechnicalSymptomReports { get; set; }
     }
 }
