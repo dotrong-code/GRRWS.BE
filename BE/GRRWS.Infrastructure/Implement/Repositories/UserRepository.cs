@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using GRRWS.Domain.Entities;
-using GRRWS.Domain.Enum;
+﻿using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.User.Get;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
@@ -112,5 +106,16 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return await _context.Users.ToListAsync();
         }
 
+        public async Task<List<User>> GetUsersByRole(int role)
+        {
+            return await _context.Users
+                .Where(u => u.Role == role && !u.IsDeleted)
+                .ToListAsync();
+        }
+
+        public async Task<bool> IdExistsAsync(Guid id)
+        {
+            return await _context.Users.AsNoTracking().AnyAsync(d => d.Id == id && !d.IsDeleted);
+        }
     }
 }

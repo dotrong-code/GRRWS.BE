@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using GRRWS.Application.Common.Result;
+﻿using GRRWS.Application.Common.Result;
 using GRRWS.Infrastructure.DTOs.User.Update;
 
 namespace GRRWS.Application.Interface.IService
@@ -22,6 +17,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetUserByIdAsync(Guid id);
         Task<Result> UpdateUserAsync(UpdateUserRequest updateUserRequest);
         Task<Result> DeleteUserAsync(Guid id);
+        Task<Result> GetUsersByRole(int role);
         //Task<Result> GetAllRolesAsync();
     }
 }

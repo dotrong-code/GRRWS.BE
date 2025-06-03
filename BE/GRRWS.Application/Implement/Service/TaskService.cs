@@ -3,7 +3,6 @@ using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.Common;
-using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
 using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
@@ -24,6 +23,104 @@ namespace GRRWS.Application.Implement.Service
             _unitOfWork = unitOfWork;
             _startTaskValidator = startTaskValidator;
             _createReportValidator = createReportValidator;
+        }
+
+
+        public async Task<Result> GetTasksByReportIdAsync(Guid reportId)
+        {
+            var reportExists = await _unitOfWork.ReportRepository.GetByIdAsync(reportId) != null;
+            if (!reportExists)
+                return Result.Failure(TaskErrorMessage.ReportNotExist());
+
+            var tasks = await _unitOfWork.TaskRepository.GetTasksByReportIdAsync(reportId);
+            if (!tasks.Any())
+                return Result.Failure(TaskErrorMessage.TaskNotExist());
+
+            return Result.SuccessWithObject(tasks);
+        }
+
+
+        public async Task<Result> CreateTaskAsync(CreateTaskRequest request)
+        {
+            var userExists = await _unitOfWork.UserRepository.GetByIdAsync(request.AssigneeId) != null;
+            if (!userExists)
+                return Result.Failure(TaskErrorMessage.UserNotExist());
+
+            var task = new Tasks
+            {
+                Id = Guid.NewGuid(),
+                TaskName = request.TaskName,
+                TaskDescription = request.TaskDescription,
+                TaskType = request.TaskType,
+                Priority = request.Priority,
+                Status = request.Status,
+                ExpectedTime = request.ExpectedTime,
+                AssigneeId = request.AssigneeId,
+                CreatedDate = DateTime.UtcNow,
+                ModifiedDate = DateTime.UtcNow,
+                IsDeleted = false
+            };
+
+            await _unitOfWork.TaskRepository.CreateAsync(task);
+            await _unitOfWork.TaskRepository.UpdateErrorDetailsAsync(request.ErrorDetailIds, task.Id);
+            await _unitOfWork.SaveChangesAsync();
+            return Result.SuccessWithObject(task);
+        }
+
+
+
+        public async Task<Result> GetAllTasksAsync(string? taskType, string? status, int? priority, int pageNumber, int pageSize)
+        {
+            var (tasks, totalCount) = await _unitOfWork.TaskRepository.GetAllTasksAsync(taskType, status, priority, pageNumber, pageSize);
+            if (!tasks.Any())
+                return Result.Failure(TaskErrorMessage.TaskNotExist());
+
+            var response = new PagedResponse<GetTaskResponse>
+            {
+                Data = tasks,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+            return Result.SuccessWithObject(response);
+        }
+
+        public async Task<Result> UpdateTaskAsync(UpdateTaskRequest request)
+        {
+            var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(request.Id);
+            if (task == null)
+                return Result.Failure(TaskErrorMessage.TaskNotExist());
+
+            var userExists = await _unitOfWork.UserRepository.GetByIdAsync(request.AssigneeId) != null;
+            if (!userExists)
+                return Result.Failure(TaskErrorMessage.UserNotExist());
+
+            task.TaskName = request.TaskName;
+            task.TaskDescription = request.TaskDescription;
+            task.TaskType = request.TaskType;
+            task.Priority = request.Priority;
+            task.Status = request.Status;
+            task.ExpectedTime = request.ExpectedTime;
+            task.AssigneeId = request.AssigneeId;
+            task.ModifiedDate = DateTime.UtcNow;
+
+            await _unitOfWork.TaskRepository.UpdateAsync(task);
+            await _unitOfWork.SaveChangesAsync();
+            return Result.SuccessWithObject(task);
+        }
+
+        public async Task<Result> DeleteTaskAsync(Guid taskId)
+        {
+            var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
+            if (task == null)
+                return Result.Failure(TaskErrorMessage.TaskNotExist());
+
+            task.IsDeleted = true;
+            task.ModifiedDate = DateTime.UtcNow;
+
+            await _unitOfWork.TaskRepository.UpdateAsync(task);
+            await _unitOfWork.SaveChangesAsync();
+            return Result.SuccessWithObject(true);
         }
 
         public async Task<Result> GetTasksByMechanicIdAsync(Guid mechanicId, int pageNumber, int pageSize)
@@ -67,7 +164,7 @@ namespace GRRWS.Application.Implement.Service
 
             await _unitOfWork.TaskRepository.UpdateAsync(task);
             await _unitOfWork.SaveChangesAsync();
-            return Result.SuccessWithObject(task);
+            return Result.SuccessWithObject(new { Message = "Task start successfully!" });
         }
 
         public async Task<Result> GetTaskDetailsAsync(Guid taskId)
@@ -196,7 +293,9 @@ namespace GRRWS.Application.Implement.Service
         {
             if (string.IsNullOrWhiteSpace(dto.TaskName))
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Task name cannot be empty.", 0));
-
+            var assignee = await _unitOfWork.UserRepository.GetByIdAsync(dto.AssigneeId);
+            if (assignee == null)
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Assignee user does not exist.", 0));
             var task = new Tasks
             {
                 Id = Guid.NewGuid(),
@@ -217,7 +316,7 @@ namespace GRRWS.Application.Implement.Service
             };
 
             // Link Errors and Spareparts
-            await _unitOfWork.TaskRepository.CreateTaskAsync(task, dto.ErrorIds, dto.SparepartIds);
+            await _unitOfWork.TaskRepository.CreateTaskAsync(task, dto.ReportId, dto.ErrorIds, dto.SparepartIds);
 
             return Result.SuccessWithObject(new { Message = "Task created successfully!", TaskId = task.Id });
         }

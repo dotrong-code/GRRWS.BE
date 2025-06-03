@@ -1,9 +1,9 @@
 ﻿using GRRWS.Application.Common.Result;
-using GRRWS.Application.Implement.Service;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.DTOs.Task;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace GRRWS.Host.Controllers
 {
@@ -18,7 +18,32 @@ namespace GRRWS.Host.Controllers
             _taskService = taskService;
         }
 
-        [Authorize]
+        [HttpGet("ByReport/{reportId}")]
+        public async Task<IResult> GetTasksByReportId(Guid reportId)
+        {
+            var result = await _taskService.GetTasksByReportIdAsync(reportId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Tasks retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+        //[Authorize] 
+        //[HttpGet("MyTasks")]
+        //public async Task<IResult> GetMyTasks([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        //{
+        //    // Lấy mechanicId từ claims của user đã xác thực
+        //    var mechanicIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        //    if (string.IsNullOrEmpty(mechanicIdClaim) || !Guid.TryParse(mechanicIdClaim, out var mechanicId))
+        //    {
+        //        return ResultExtensions.ToProblemDetails(Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Invalid user authentication.", 0)));
+        //    }
+
+        //    var result = await _taskService.GetTasksByMechanicIdAsync(mechanicId, pageNumber, pageSize);
+        //    return result.IsSuccess
+        //        ? ResultExtensions.ToSuccessDetails(result, "Tasks retrieved successfully")
+        //        : ResultExtensions.ToProblemDetails(result);
+        //}
+
         [HttpGet("mechanic/{mechanicId}")]
         public async Task<IResult> GetTasksByMechanicId(Guid mechanicId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
@@ -28,7 +53,7 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
-        [Authorize]
+
         [HttpPost("start")]
         public async Task<IResult> StartTask([FromBody] StartTaskRequest request)
         {
@@ -38,8 +63,8 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
-        [Authorize]
-        [HttpGet("{taskId}")]
+
+        [HttpGet("details/{taskId}")]
         public async Task<IResult> GetTaskDetails(Guid taskId)
         {
             var result = await _taskService.GetTaskDetailsAsync(taskId);
@@ -48,7 +73,7 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
-        [Authorize]
+
         [HttpPost("report")]
         public async Task<IResult> CreateTaskReport([FromBody] CreateTaskReportRequest request)
         {
@@ -112,5 +137,6 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Task assigned successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+
     }
 }

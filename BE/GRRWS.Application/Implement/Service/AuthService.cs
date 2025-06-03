@@ -20,6 +20,7 @@ using GRRWS.Infrastructure.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using GRRWS.Infrastructure.DTOs.User.Register;
+using GRRWS.Infrastructure.DTOs.Firebase.AddImage;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -119,7 +120,17 @@ namespace GRRWS.Application.Implement.Service
                     .ToList();
                 return Result.Failures(errors);
             }
-
+            string mainImageUrl = null;
+            if (registerRequest.ProfilePictureUrl != null)
+            {
+                var imageRequest = new AddImageRequest(registerRequest.ProfilePictureUrl, "Users");
+                var uploadImageResult = await _unitOfWork.FirebaseRepository.UploadImageAsync(imageRequest);
+                if (!uploadImageResult.Success)
+                {
+                    return Result.Failure(uploadImageResult.Error);
+                }
+                mainImageUrl = uploadImageResult.FilePath;
+            }
 
             User newUser = new User
             {
@@ -130,6 +141,7 @@ namespace GRRWS.Application.Implement.Service
                 UserName = registerRequest.UserName,
                 PhoneNumber = registerRequest.PhoneNumber,
                 DateOfBirth = registerRequest.DateOfBirth,
+                ProfilePictureUrl = mainImageUrl,
                 Role = registerRequest.Role
 
             };
@@ -288,7 +300,6 @@ namespace GRRWS.Application.Implement.Service
             {
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Token wrong", "Token not found."));
             }
-
 
             user.PasswordHash = resetPasswordRequest.NewPassword;
             user.ResetPasswordToken = null;

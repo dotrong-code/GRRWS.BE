@@ -15,5 +15,6 @@ namespace GRRWS.Infrastructure.DTOs.Common.Message
         public static Error InvalidDeviceCondition() => Error.Validation("Task.InvalidDeviceCondition", "Invalid device condition.");
         public static Error InvalidDeviceReturnTime() => Error.Validation("Task.InvalidDeviceReturnTime", "Device return time must be in the past or present.");
         public static Error ReportAlreadyCreated() => Error.Validation("Task.ReportAlreadyCreated", "Report already created for this task.");
+        public static Error ReportNotExist() => Error.Validation("Task.ReportNotExist", "ReportNotExist.");
     }
 }

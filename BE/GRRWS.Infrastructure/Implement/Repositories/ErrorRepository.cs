@@ -1,4 +1,5 @@
-﻿using GRRWS.Infrastructure.DB;
+﻿using GRRWS.Domain.Entities;
+using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
@@ -45,6 +46,50 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .ToListAsync();
 
             return errors;
+        }
+        public async Task<List<Sparepart>> GetSparepartsByErrorIdAsync(Guid errorId)
+        {
+            return await _context.ErrorSpareparts
+                .Where(es => es.ErrorId == errorId)
+                .Include(es => es.Sparepart)
+                .Select(es => es.Sparepart)
+                .ToListAsync();
+        }
+        public async Task<List<ErrorSimpleDTO>> GetErrorsByReportIdWithoutTaskAsync(Guid reportId)
+        {
+            var errors = await _context.ErrorDetails
+                .Where(ed => ed.ReportId == reportId && ed.TaskId == null && !ed.Error.IsDeleted)
+                .Select(ed => new ErrorSimpleDTO
+                {
+                    Id = ed.Error.Id,
+                    Name = ed.Error.Name
+                })
+                .Distinct()
+                .ToListAsync();
+
+            return errors;
+        }
+        public async Task<List<SuggestObject>> GetNotFoundErrorDisplayNamesAsync(IEnumerable<Guid> errorIds)
+        {
+            var idSet = errorIds.ToHashSet();
+
+            var existingErrors = await _context.Errors
+                .AsNoTracking()
+                .Where(i => idSet.Contains(i.Id) && !i.IsDeleted)
+                .Select(i => new { i.Id, i.Name })
+                .ToListAsync();
+
+            var foundIds = existingErrors.Select(i => i.Id).ToHashSet();
+
+            var notFoundIds = idSet.Except(foundIds);
+
+            return notFoundIds
+                .Select(id => new SuggestObject
+                {
+                    Id = id,
+                    Name = "(Not found)"
+                })
+                .ToList();
         }
     }
 }

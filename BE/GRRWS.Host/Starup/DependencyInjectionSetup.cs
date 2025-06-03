@@ -35,7 +35,7 @@ namespace GRRWS.Host.Starup
         public static IServiceCollection RegisterServices(this IServiceCollection services)
         {
             var credentialPath = Path.Combine(Directory.GetCurrentDirectory(), "Keys",
-                "koiveterinaryservicecent-925db-firebase-adminsdk-vus2r-bd418169a6.json");
+                "koiveterinaryservicecent-925db-firebase-adminsdk-vus2r-2b14e43049.json");
 
             try
             {
@@ -80,6 +80,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<UnitOfWork>();
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddTransient<IUnitOfWork, UnitOfWork>();
+            services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
             #endregion
 
             #region Service
@@ -92,7 +93,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IRequestService, RequestService>();
             services.AddTransient<IIssueService, IssueService>();
             services.AddTransient<IErrorService, ErrorService>();
-
+            services.AddTransient<ITechnicalSymtomService, TechnicalSymtomService>();
             services.AddTransient<IDeviceService, DeviceService>();
             services.AddTransient<IDeviceErrorHistoryService, DeviceErrorHistoryService>();
             services.AddTransient<IDeviceIssueHistoryService, DeviceIssueHistoryService>();
@@ -102,6 +103,8 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IAreaService, AreaService>();
             services.AddTransient<IPositionService, PositionService>();
             services.AddTransient<ITaskService, TaskService>();
+            services.AddTransient<IWarrantyDetailService, WarrantyDetailService>();
+            
             #endregion
 
             #region Repositories
@@ -113,7 +116,8 @@ namespace GRRWS.Host.Starup
 
             services.AddTransient<IIssueRepository, IssueRepository>();
             services.AddTransient<IErrorRepository, ErrorRepository>();
-
+            services.AddTransient<ITechnicalSymtomRepository, TechnicalSymtomRepository>();
+            services.AddTransient<IIssueTechnicalSymptomRepository, IssueTechnicalSymptomRepository>();
             services.AddTransient<IDeviceRepository, DeviceRepository>();
             services.AddTransient<IDeviceErrorHistoryRepository, DeviceErrorHistoryRepository>();
             services.AddTransient<IDeviceIssueHistoryRepository, DeviceIssueHistoryRepository>();
@@ -124,7 +128,8 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IPositionRepository, PositionRepository>();
 
             services.AddTransient<ITaskRepository, TaskRepository>();
-
+            services.AddTransient<IWarrantyDetailRepository, WarrantyDetailRepository>();
+            services.AddTransient<IIssueErrorRepository, IssueErrorRepository>();
             #endregion
 
             #region GenericRepositories
@@ -140,6 +145,8 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IGenericRepository<Position>, GenericRepository<Position>>();
             services.AddTransient<IGenericRepository<Request>, GenericRepository<Request>>();
             services.AddTransient<IGenericRepository<Report>, GenericRepository<Report>>();
+            services.AddTransient<IGenericRepository<WarrantyDetail>, GenericRepository<WarrantyDetail>>();
+            services.AddTransient<IGenericRepository<IssueError>, GenericRepository<IssueError>>();
             #endregion
 
 
