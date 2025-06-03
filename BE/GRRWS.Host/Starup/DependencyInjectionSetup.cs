@@ -93,7 +93,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IRequestService, RequestService>();
             services.AddTransient<IIssueService, IssueService>();
             services.AddTransient<IErrorService, ErrorService>();
-
+            services.AddTransient<ITechnicalSymtomService, TechnicalSymtomService>();
             services.AddTransient<IDeviceService, DeviceService>();
             services.AddTransient<IDeviceErrorHistoryService, DeviceErrorHistoryService>();
             services.AddTransient<IDeviceIssueHistoryService, DeviceIssueHistoryService>();
@@ -116,7 +116,8 @@ namespace GRRWS.Host.Starup
 
             services.AddTransient<IIssueRepository, IssueRepository>();
             services.AddTransient<IErrorRepository, ErrorRepository>();
-
+            services.AddTransient<ITechnicalSymtomRepository, TechnicalSymtomRepository>();
+            services.AddTransient<IIssueTechnicalSymptomRepository, IssueTechnicalSymptomRepository>();
             services.AddTransient<IDeviceRepository, DeviceRepository>();
             services.AddTransient<IDeviceErrorHistoryRepository, DeviceErrorHistoryRepository>();
             services.AddTransient<IDeviceIssueHistoryRepository, DeviceIssueHistoryRepository>();
@@ -128,6 +129,7 @@ namespace GRRWS.Host.Starup
 
             services.AddTransient<ITaskRepository, TaskRepository>();
             services.AddTransient<IWarrantyDetailRepository, WarrantyDetailRepository>();
+            services.AddTransient<IIssueErrorRepository, IssueErrorRepository>();
             #endregion
 
             #region GenericRepositories
@@ -144,6 +146,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IGenericRepository<Request>, GenericRepository<Request>>();
             services.AddTransient<IGenericRepository<Report>, GenericRepository<Report>>();
             services.AddTransient<IGenericRepository<WarrantyDetail>, GenericRepository<WarrantyDetail>>();
+            services.AddTransient<IGenericRepository<IssueError>, GenericRepository<IssueError>>();
             #endregion
 
 
