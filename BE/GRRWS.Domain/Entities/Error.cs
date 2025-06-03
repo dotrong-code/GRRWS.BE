@@ -13,5 +13,6 @@
         public ICollection<IssueError>? IssueErrors { get; set; }
         public ICollection<ErrorDetail>? ErrorDetails { get; set; }
         public ICollection<ErrorSparepart>? ErrorSpareparts { get; set; }
+        public ICollection<ErrorAction>? ErrorActions { get; set; }
     }
 }
