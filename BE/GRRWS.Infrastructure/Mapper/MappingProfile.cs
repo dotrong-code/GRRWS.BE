@@ -14,18 +14,23 @@ namespace GRRWS.Infrastructure.Mapper
             //Report
             CreateMap<Report, ReportViewDTO>();
             CreateMap<ReportCreateDTO, Report>();
+            CreateMap<ReportWarrantyCreateDTO, Report>();
             CreateMap<ReportUpdateDTO, Report>();
             CreateMap<Report, ReportViewDTO>()
-
-
            .ForMember(dest => dest.Errors, opt => opt.MapFrom(src =>
             src.ErrorDetails.Select(ed => new ErrorSummaryDTO
             {
                 ErrorId = ed.Error.Id,
                 Name = ed.Error.Name
             }).ToList()
+            ))
+            .ForMember(dest => dest.TechnicalSymptoms, opt => opt.MapFrom(src =>
+            src.TechnicalSymptomReports.Select(ed => new SymtomsSummaryDTO
+            {
+                TechnicalSymtomId = ed.TechnicalSymptom.Id,
+                Name = ed.TechnicalSymptom.Name
+            }).ToList()
             ));
-
 
             //DeviceHistory
             CreateMap<DeviceHistory, DeviceHistoryDTO>();
