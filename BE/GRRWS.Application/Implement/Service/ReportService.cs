@@ -435,12 +435,17 @@ namespace GRRWS.Application.Implement.Service
                 var symtomIds = mapping.Value;
                 foreach (var symtomId in symtomIds)
                 {
-                    issueSymptoms.Add(new IssueTechnicalSymptom
+                    // Check if the IssueTechnicalSymptom combination already exists
+                    var existingIssueSymptom = await _unit.IssueTechnicalSymptomRepository.GetByIssueAndSymptomIdAsync(issueId, symtomId);
+                    if (existingIssueSymptom == null) // Only add if it doesn't exist
                     {
-                        Id = Guid.NewGuid(),
-                        IssueId = issueId,
-                        TechnicalSymptomId = symtomId
-                    });
+                        issueSymptoms.Add(new IssueTechnicalSymptom
+                        {
+                            Id = Guid.NewGuid(),
+                            IssueId = issueId,
+                            TechnicalSymptomId = symtomId
+                        });
+                    }
                 }
             }
             if (issueSymptoms.Any())

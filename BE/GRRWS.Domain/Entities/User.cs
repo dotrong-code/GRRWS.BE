@@ -20,6 +20,7 @@
         public Feedback? Feedback { get; set; }
         public ICollection<Request>? Requests { get; set; }
         public ICollection<Tasks>? Tasks { get; set; }
+        public ICollection<TaskAction>? TaskActions { get; set; }
 
     }
 }

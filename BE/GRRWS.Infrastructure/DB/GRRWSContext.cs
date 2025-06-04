@@ -38,6 +38,9 @@ namespace GRRWS.Infrastructure.DB
         public DbSet<IssueTechnicalSymptom> IssueTechnicalSymptoms { get; set; }
         public DbSet<TechnicalSymptomReport> TechnicalSymptomReports { get; set; }
 
+        public DbSet<ErrorAction> ErrorActions { get; set; }
+        public DbSet<TaskAction> TaskActions { get; set; }
+
         public DbSet<MachineIssueHistory> MachineIssueHistories { get; set; }
         public DbSet<MachineErrorHistory> MachineErrorHistories { get; set; }
         public DbSet<DeviceIssueHistory> DeviceIssueHistories { get; set; }
@@ -75,6 +78,8 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.ApplyConfiguration(new TechnicalSymptomConfiguration());
             modelBuilder.ApplyConfiguration(new IssueTechnicalSymptomConfiguration());
             modelBuilder.ApplyConfiguration(new TechnicalSymptomReportConfiguration());
+            modelBuilder.ApplyConfiguration(new ErrorActionConfiguration());
+            modelBuilder.ApplyConfiguration(new TaskActionConfiguration());
 
             #endregion
 
@@ -523,6 +528,34 @@ namespace GRRWS.Infrastructure.DB
                 .HasForeignKey(tsr => tsr.TaskId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            //ErrorAction
+            modelBuilder.Entity<ErrorAction>()
+                .HasOne(ea => ea.Error)
+                .WithMany(e => e.ErrorActions)
+                .HasForeignKey(ea => ea.ErrorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //TaskAction
+            modelBuilder.Entity<TaskAction>()
+                .HasOne(ta => ta.Task)
+                .WithMany(t => t.TaskActions)
+                .HasForeignKey(ta => ta.TaskId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //TaskAction → ErrorAction (Many-to-One):
+            modelBuilder.Entity<TaskAction>()
+                .HasOne(ta => ta.ErrorAction)
+                .WithMany(ea => ea.TaskActions)
+                .HasForeignKey(ta => ta.ErrorActionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //TaskAction → User(Many - to - One):
+            modelBuilder.Entity<TaskAction>()
+                .HasOne(ta => ta.PerformedBy)
+                .WithMany(u => u.TaskActions)
+                .HasForeignKey(ta => ta.PerformedById)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // BaseEntity Defaults
             modelBuilder.Entity<BaseEntity>()
                 .Property(b => b.Id)
@@ -566,6 +599,8 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<TechnicalSymptom>().ToTable("TechnicalSymptoms");
             modelBuilder.Entity<IssueTechnicalSymptom>().ToTable("IssueTechnicalSymptoms");
             modelBuilder.Entity<TechnicalSymptomReport>().ToTable("TechnicalSymptomReports");
+            modelBuilder.Entity<ErrorAction>().ToTable("ErrorActions");
+            modelBuilder.Entity<TaskAction>().ToTable("TaskActions");
             #endregion
         }
     }
