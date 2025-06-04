@@ -53,7 +53,7 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.ApplyConfiguration(new IssueConfiguration());
             modelBuilder.ApplyConfiguration(new DeviceConfiguration());
             modelBuilder.ApplyConfiguration(new ErrorConfiguration());
-            modelBuilder.ApplyConfiguration(new SparepartConfiguration());
+            //modelBuilder.ApplyConfiguration(new SparepartConfiguration());
             modelBuilder.ApplyConfiguration(new IssueErrorConfiguration());
             modelBuilder.ApplyConfiguration(new ErrorSparepartConfiguration());
             modelBuilder.ApplyConfiguration(new MachineConfiguration());
@@ -85,6 +85,12 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<Area>()
                 .Property(a => a.AreaName)
                 .IsRequired();
+
+            modelBuilder.Entity<User>()
+               .HasOne(u => u.Area)
+               .WithMany(a => a.Users)
+               .HasForeignKey(u => u.AreaId)
+               .OnDelete(DeleteBehavior.Restrict);
 
             // Zone
             modelBuilder.Entity<Zone>()
@@ -279,9 +285,9 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<Sparepart>(entity =>
             {
                 entity.Property(s => s.SparepartName).IsRequired();
-                // Removed IsAvailable configuration as it's a calculated property
                 entity.Property(s => s.StockQuantity).IsRequired().HasDefaultValue(0);
                 entity.HasIndex(s => s.SparepartCode).IsUnique();
+                entity.Property(s => s.ExpectedAvailabilityDate); // Cấu hình trường mới
             });
 
 
