@@ -66,6 +66,15 @@ namespace GRRWS.Host.Controllers
 : ResultExtensions.ToProblemDetails(result);
         }
 
+        [HttpPost("test-create-signal")]
+        public async Task<IResult> TestCreateRequestSignal()
+        {
+            var result = await _requestService.TestCreateRequestSignalAsync();
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "SignalR notification sent successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
         [HttpPost("api/Request/custom")]
         
         

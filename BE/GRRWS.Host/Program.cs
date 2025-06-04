@@ -1,6 +1,8 @@
 ﻿using GRRWS.Application.Common;
+using GRRWS.Application.Implement.Service;
 using GRRWS.Host.Starup;
 using GRRWS.Infrastructure.DB;
+using GRRWS.Infrastructure.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +12,11 @@ using System.Text;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+// Add SignalR services
+builder.Services.AddSignalR();
+builder.Services.AddScoped<RequestNotificationService>();
 
 // Add services to the container.
 CommonObject.Initialize(builder.Configuration);
@@ -100,11 +107,13 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAll",
         policy =>
         {
-            policy.AllowAnyOrigin()
+            //policy.AllowAnyOrigin()
+            policy.WithOrigins("http://localhost:8081", "exp://192.168.1.6:8081")
                   .AllowAnyMethod()
                   .AllowAnyHeader()
                 .WithExposedHeaders("Authorization")
-                  ;
+                .AllowCredentials();
+            ;
         });
 
 
@@ -139,6 +148,8 @@ app.UseExceptionHandler(errorApp =>
     });
 });
 
+// Map SignalR hub
+app.MapHub<RequestHub>("/hubs/request");
 
 //app.UseHttpsRedirection();
 app.UseAuthentication();

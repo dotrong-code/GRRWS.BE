@@ -18,12 +18,15 @@ namespace GRRWS.Application.Implement.Service
         private readonly IRequestRepository _requestRepository;
         private readonly ITokenService _tokenService;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly RequestNotificationService _notificationService;
 
-        public RequestService(IRequestRepository requestRepository, ITokenService tokenService, IUnitOfWork unitOfWork)
+
+        public RequestService(IRequestRepository requestRepository, ITokenService tokenService, IUnitOfWork unitOfWork, RequestNotificationService notificationService)
         {
             _requestRepository = requestRepository;
             _tokenService = tokenService;
             _unitOfWork = unitOfWork;
+            _notificationService = notificationService;
         }
 
         private async Task<List<IssueDTO>> MapIssuesWithImagesAsync(ICollection<RequestIssue> requestIssues)
@@ -258,10 +261,15 @@ namespace GRRWS.Application.Implement.Service
 
             await _requestRepository.CreateAsync(request);
             await _unitOfWork.SaveChangesAsync();
-
+            await _notificationService.NotifyAllAsync("New request created");
             return Result.SuccessWithObject(new { Message = "Request created successfully!" });
         }
 
+        public async Task<Result> TestCreateRequestSignalAsync()
+        {
+            await _notificationService.NotifyAllAsync("New request created");
+            return Result.SuccessWithObject(new { Message = "SignalR notification sent successfully!" });
+        }
 
         public async Task<Result> CreateTestAsync(TestCreateRequestDTO dto, Guid userId)
         {
