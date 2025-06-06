@@ -111,7 +111,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .ToList();
         }
 
-
         public async Task<List<RequestSummary>> GetRequestSummaryAsync()
         {
             return await _context.Requests
@@ -120,54 +119,53 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 {
                     RequestId = r.Id,
                     RequestTitle = r.Description ?? "Untitled Request",
-                    Priority = r.Priority ?? "Unknown",
-                    Status = r.Status ?? "Unknown",
+                    Priority = r.Priority.ToString(),
+                    Status = r.Status.ToString(),
                     RequestDate = r.CreatedDate
                 })
-                .AsNoTracking() // Improves query performance by not tracking entities
+                .AsNoTracking()
                 .ToListAsync();
         }
 
         public async Task<RequestDetailWeb?> GetRequestDetailWebByIdAsync(Guid requestId)
-{
-    var request = await _context.Requests
-       .AsNoTracking()
-       .Where(r => r.Id == requestId && !r.IsDeleted)
-       .Include(r => r.Device)
-           .ThenInclude(d => d.Position)
-               .ThenInclude(p => p.Zone)
-                   .ThenInclude(z => z.Area)
-       .Include(r => r.Report) // Include Report to check warranty status
-       .Include(r => r.RequestIssues)
-           .ThenInclude(ri => ri.Issue)
-       .Include(r => r.RequestIssues)
-           .ThenInclude(ri => ri.Images)
-       .Select(r => new RequestDetailWeb
-       {
-           RequestId = r.Id,
-           RequestTitle = r.RequestTitle,
-           Priority = r.Priority,
-           Status = r.Status,
-           RequestDate = r.CreatedDate,
-           IsWarranty = r.Report != null && r.Report.Status == "InWarranty", // Check Report status
-           RemainingWarratyDate = 0, // You can calculate this based on your business logic
-           DeviceId = r.DeviceId,
-           DeviceName = r.Device.DeviceName,
-           Location = r.Device.Position != null && r.Device.Position.Zone != null && r.Device.Position.Zone.Area != null
-               ? $"{r.Device.Position.Zone.Area.AreaName} - {r.Device.Position.Zone.ZoneName} - {r.Device.Position.Index}"
-               : "Location not available", // Combined location
-           Issues = r.RequestIssues.Select(ri => new IssueForRequestDetailWeb
-           {
-               IssueId = ri.Issue.Id,
-               DisplayName = ri.Issue.DisplayName,
-               Status = ri.Status,
-               Images = ri.Images.Select(img => img.ImageUrl).ToList()
-           }).ToList()
-       })
-       .FirstOrDefaultAsync();
-    
-    return request;
-}
+        {
+            var request = await _context.Requests
+               .AsNoTracking()
+               .Where(r => r.Id == requestId && !r.IsDeleted)
+               .Include(r => r.Device)
+                   .ThenInclude(d => d.Position)
+                       .ThenInclude(p => p.Zone)
+                           .ThenInclude(z => z.Area)
+               .Include(r => r.Report)
+               .Include(r => r.RequestIssues)
+                   .ThenInclude(ri => ri.Issue)
+               .Include(r => r.RequestIssues)
+                   .ThenInclude(ri => ri.Images)
+               .Select(r => new RequestDetailWeb
+               {
+                   RequestId = r.Id,
+                   RequestTitle = r.RequestTitle,
+                   Priority = r.Priority.ToString(), // Convert enum to string
+                   Status = r.Status.ToString(), // Convert enum to string
+                   RequestDate = r.CreatedDate,
+                   IsWarranty = r.Report != null, // Simplified check since Report doesn't have Status
+                   RemainingWarratyDate = 0,
+                   DeviceId = r.DeviceId,
+                   DeviceName = r.Device.DeviceName,
+                   Location = r.Device.Position != null && r.Device.Position.Zone != null && r.Device.Position.Zone.Area != null
+                       ? $"{r.Device.Position.Zone.Area.AreaName} - {r.Device.Position.Zone.ZoneName} - {r.Device.Position.Index}"
+                       : "Location not available",
+                   Issues = r.RequestIssues.Select(ri => new IssueForRequestDetailWeb
+                   {
+                       IssueId = ri.Issue.Id,
+                       DisplayName = ri.Issue.DisplayName,
+                       Images = ri.Images.Select(img => img.ImageUrl).ToList()
+                   }).ToList()
+               })
+               .FirstOrDefaultAsync();
+
+            return request;
+        }
 
         public async Task<List<ErrorForRequestDetailWeb>> GetErrorsForRequestDetailWebAsync(Guid requestId)
         {
@@ -197,7 +195,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
         public async Task<List<TaskForRequestDetailWeb>> GetTasksForRequestDetailWebAsync(Guid requestId)
         {
-            // Get the reportId from the request
             var reportId = await _context.Requests
                 .Where(r => r.Id == requestId && !r.IsDeleted)
                 .Select(r => r.ReportId)
@@ -206,7 +203,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             if (reportId == null)
                 return new List<TaskForRequestDetailWeb>();
 
-            // Get all unique TaskIds from ErrorDetails for this report
             var taskIds = await _context.ErrorDetails
                 .Where(ed => ed.ReportId == reportId && ed.TaskId != null)
                 .Select(ed => ed.TaskId.Value)
@@ -216,7 +212,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             if (!taskIds.Any())
                 return new List<TaskForRequestDetailWeb>();
 
-            // Get tasks by those TaskIds
             return await _context.Tasks
                 .AsNoTracking()
                 .Where(t => taskIds.Contains(t.Id) && !t.IsDeleted)
@@ -224,7 +219,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 {
                     TaskId = t.Id,
                     TaskType = t.TaskType,
-                    Status = t.Status,
+                    Status = t.Status.ToString(), // Convert enum to string
                     StartTime = t.StartTime,
                     AssigneeName = t.Assignee.UserName,
                     ExpectedTime = t.ExpectedTime,

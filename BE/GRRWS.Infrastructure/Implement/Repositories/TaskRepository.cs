@@ -1,4 +1,5 @@
 ﻿using GRRWS.Domain.Entities;
+using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.Task;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
@@ -10,6 +11,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
     public class TaskRepository : GenericRepository<Tasks>, ITaskRepository
     {
         public TaskRepository(GRRWSContext context) : base(context) { }
+        
         public async Task<List<TaskByReportResponse>> GetTasksByReportIdAsync(Guid reportId)
         {
             return await _context.ErrorDetails
@@ -20,13 +22,14 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 {
                     TaskId = ed.TaskId.Value,
                     TaskType = ed.Task.TaskType,
-                    Priority = ed.Task.Priority.Value,
-                    Status = ed.Task.Status,
+                    Priority = (int)ed.Task.Priority, // Convert enum to int
+                    Status = ed.Task.Status.ToString(), // Convert enum to string
                     AssigneeName = ed.Task.Assignee.FullName,
                     StartTime = ed.Task.StartTime
                 })
                 .ToListAsync();
         }
+
         public async Task<List<GetTaskResponse>> GetTasksByMechanicIdAsync(Guid mechanicId, int pageNumber, int pageSize)
         {
             var query = _context.Tasks
@@ -43,8 +46,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     TaskName = t.TaskName,
                     TaskDescription = t.TaskDescription,
                     TaskType = t.TaskType,
-                    Priority = t.Priority,
-                    Status = t.Status,
+                    Priority = (int?)t.Priority, // Convert enum to int
+                    Status = t.Status.ToString(), // Convert enum to string
                     StartTime = t.StartTime,
                     ExpectedTime = t.ExpectedTime,
                     EndTime = t.EndTime,
@@ -79,8 +82,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     TaskName = t.TaskName,
                     TaskDescription = t.TaskDescription,
                     TaskType = t.TaskType,
-                    Priority = t.Priority,
-                    Status = t.Status,
+                    Priority = (int?)t.Priority, // Convert enum to int
+                    Status = t.Status.ToString(), // Convert enum to string
                     StartTime = t.StartTime,
                     ExpectedTime = t.ExpectedTime,
                     EndTime = t.EndTime,
@@ -102,8 +105,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 })
                 .FirstOrDefaultAsync();
         }
-
-
 
         public async Task<List<Tasks>> GetAllTasksAsync()
         {
@@ -255,10 +256,18 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 query = query.Where(t => t.TaskType == taskType);
 
             if (!string.IsNullOrWhiteSpace(status))
-                query = query.Where(t => t.Status == status);
+            {
+                // Convert string to Status enum for comparison
+                if (Enum.TryParse<Status>(status, out var statusEnum))
+                    query = query.Where(t => t.Status == statusEnum);
+            }
 
             if (priority.HasValue)
-                query = query.Where(t => t.Priority == priority.Value);
+            {
+                // Convert int to Priority enum for comparison
+                var priorityEnum = (Priority)priority.Value;
+                query = query.Where(t => t.Priority == priorityEnum);
+            }
 
             query = query.OrderByDescending(t => t.CreatedDate);
 
@@ -272,8 +281,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     TaskName = t.TaskName,
                     TaskDescription = t.TaskDescription,
                     TaskType = t.TaskType,
-                    Priority = t.Priority,
-                    Status = t.Status,
+                    Priority = (int?)t.Priority, // Convert enum to int
+                    Status = t.Status.ToString(), // Convert enum to string
                     StartTime = t.StartTime,
                     ExpectedTime = t.ExpectedTime,
                     EndTime = t.EndTime,
@@ -300,53 +309,48 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
         public async Task<Guid> CreateTaskWebAsync(CreateTaskWeb dto)
         {
-            // Get the reportId for the request in a single query
             var reportId = await _context.Requests
                 .Where(r => r.Id == dto.RequestId)
                 .Select(r => r.ReportId)
                 .FirstOrDefaultAsync();
 
-            // Create the task entity
             var task = new Tasks
             {
                 Id = Guid.NewGuid(),
                 TaskType = dto.TaskType,
                 TaskName = "Task for " + dto.TaskType,
                 StartTime = dto.StartDate,
-                Priority = 1, // Default priority, can be adjusted based on your logic
-                Status = "Pending",
+                Priority = Priority.Low, // Use enum value
+                Status = Status.Pending, // Use enum value
                 EndTime = DateTime.UtcNow.AddDays(7),
                 ExpectedTime = DateTime.UtcNow.AddDays(1),
                 TaskDescription = "This is description",
                 AssigneeId = dto.AssigneeId,
                 CreatedDate = DateTime.UtcNow,
-                DeviceReturnTime = DateTime.UtcNow.AddDays(1), // Set to null if not applicable
-                ReportNotes = "Report notes here", // Set to null if not applicable
-                DeviceCondition = "New", // Set to null if not applicable
+                DeviceReturnTime = DateTime.UtcNow.AddDays(1),
+                ReportNotes = "Report notes here",
+                DeviceCondition = "New",
                 IsDeleted = false,
             };
 
             await _context.Tasks.AddAsync(task);
 
-            // Prepare ErrorDetails updates/creations in bulk
+            // Handle ErrorDetails (existing code remains the same)
             if (dto.ErrorIds != null && dto.ErrorIds.Count > 0)
             {
-                // Get all ErrorDetails for this report and error ids in one query
                 var existingErrorDetails = await _context.ErrorDetails
                     .Where(ed => ed.ReportId == reportId && dto.ErrorIds.Contains(ed.ErrorId))
                     .ToListAsync();
 
                 var existingErrorIds = existingErrorDetails.Select(ed => ed.ErrorId).ToHashSet();
 
-                // Update existing ErrorDetails
                 foreach (var ed in existingErrorDetails)
                 {
                     ed.TaskId = task.Id;
                 }
                 if (existingErrorDetails.Count > 0)
-                    _context.ErrorDetails.UpdateRange(existingErrorDetails); // <-- Ensure EF tracks the update
+                    _context.ErrorDetails.UpdateRange(existingErrorDetails);
 
-                // Add new ErrorDetails if not exist
                 var newErrorDetails = dto.ErrorIds
                     .Where(eid => !existingErrorIds.Contains(eid))
                     .Select(eid => new ErrorDetail
@@ -360,7 +364,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     await _context.ErrorDetails.AddRangeAsync(newErrorDetails);
             }
 
-            // Prepare RepairSparepart links in bulk
+            // Handle RepairSpareparts (existing code remains the same)
             if (dto.SparepartIds != null && dto.SparepartIds.Count > 0)
             {
                 var repairSpareparts = dto.SparepartIds
@@ -379,19 +383,18 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
         public async Task<Guid> CreateSimpleTaskWebAsync(CreateSimpleTaskWeb dto)
         {
-            // Get the reportId for the request in a single query
             var reportId = await _context.Requests
                 .Where(r => r.Id == dto.RequestId)
                 .Select(r => r.ReportId)
                 .FirstOrDefaultAsync();
 
-            // Create the task entity
             var task = new Tasks
             {
                 Id = Guid.NewGuid(),
                 TaskType = dto.TaskType,
                 StartTime = dto.StartDate,
-                Status = "Pending",
+                Status = Status.Pending, // Use enum value
+                Priority = Priority.Medium, // Use enum value
                 TaskDescription = "This is description",
                 AssigneeId = dto.AssigneeId,
                 CreatedDate = DateTime.UtcNow,
@@ -400,7 +403,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             await _context.Tasks.AddAsync(task);
 
-            // Handle spareparts if provided
             if (dto.SparepartIds != null && dto.SparepartIds.Count > 0)
             {
                 var repairSpareparts = dto.SparepartIds.Select(sparepartId => new RepairSparepart
@@ -416,131 +418,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return task.Id;
         }
 
-        //public async Task<Guid> CreateTaskFromTechnicalIssueAsync(CreateTaskFromTechnicalIssueRequest request, Guid reportId)
-        //{
-        //    var task = new Tasks
-        //    {
-        //        Id = Guid.NewGuid(),
-        //        TaskType = request.TaskType,
-        //        StartTime = request.StartDate,
-        //        Status = "Pending",
-        //        TaskDescription = "Warranty task created from technical issue",
-        //        AssigneeId = request.AssigneeId,
-        //        CreatedDate = DateTime.UtcNow,
-        //        IsDeleted = false,
-        //    };
-
-        //    await _context.Tasks.AddAsync(task);
-
-        //    // Link technical issues via TechnicalSymptomReport
-        //    if (request.TechnicalIssueIds != null && request.TechnicalIssueIds.Count > 0)
-        //    {
-        //        var technicalSymptomReports = request.TechnicalIssueIds
-        //            .Select(issueId => new TechnicalSymptomReport
-        //            {
-        //                TaskId = task.Id,
-        //                TechnicalSymptomId = issueId,
-        //                ReportId = reportId
-        //            }).ToList();
-
-        //        await _context.TechnicalSymptomReports.AddRangeAsync(technicalSymptomReports);
-        //    }
-
-        //    // NO spareparts linking for warranty tasks
-
-        //    await _context.SaveChangesAsync();
-        //    return task.Id;
-        //}
-
-        public async Task<Guid> CreateSimpleTaskAsync(CreateSimpleTaskRequest request, Guid reportId)
-        {
-            var task = new Tasks
-            {
-                Id = Guid.NewGuid(),
-                TaskType = request.TaskType,
-                StartTime = request.StartDate,
-                Status = "Pending",
-                TaskDescription = request.TaskDescription ?? "Simple replacement task",
-                AssigneeId = request.AssigneeId,
-                CreatedDate = DateTime.UtcNow,
-                IsDeleted = false,
-            };
-
-            await _context.Tasks.AddAsync(task);
-
-            // NO spareparts linking for simple tasks
-
-            await _context.SaveChangesAsync();
-            return task.Id;
-        }
-
-        public async Task<Guid> CreateTaskFromErrorsAsync(CreateTaskFromErrorsRequest request, Guid reportId)
-        {
-            var task = new Tasks
-            {
-                Id = Guid.NewGuid(),
-                TaskType = request.TaskType,
-                StartTime = request.StartDate,
-                Status = "Pending",
-                TaskDescription = "Task created from error analysis",
-                AssigneeId = request.AssigneeId,
-                CreatedDate = DateTime.UtcNow,
-                IsDeleted = false,
-            };
-
-            await _context.Tasks.AddAsync(task);
-
-            // Link errors via ErrorDetails
-            if (request.ErrorIds != null && request.ErrorIds.Count > 0)
-            {
-                var existingErrorDetails = await _context.ErrorDetails
-                    .Where(ed => ed.ReportId == reportId && request.ErrorIds.Contains(ed.ErrorId))
-                    .ToListAsync();
-
-                var existingErrorIds = existingErrorDetails.Select(ed => ed.ErrorId).ToHashSet();
-
-                // Update existing ErrorDetails
-                foreach (var ed in existingErrorDetails)
-                {
-                    ed.TaskId = task.Id;
-                }
-                if (existingErrorDetails.Count > 0)
-                    _context.ErrorDetails.UpdateRange(existingErrorDetails);
-
-                // Add new ErrorDetails
-                var newErrorDetails = request.ErrorIds
-                    .Where(eid => !existingErrorIds.Contains(eid))
-                    .Select(eid => new ErrorDetail
-                    {
-                        ReportId = reportId,
-                        ErrorId = eid,
-                        TaskId = task.Id
-                    }).ToList();
-
-                if (newErrorDetails.Count > 0)
-                    await _context.ErrorDetails.AddRangeAsync(newErrorDetails);
-            }
-
-            // Link spareparts if provided
-            if (request.SparepartIds != null && request.SparepartIds.Count > 0)
-            {
-                var repairSpareparts = request.SparepartIds
-                    .Select(spid => new RepairSparepart
-                    {
-                        TaskId = task.Id,
-                        SpareId = spid
-                    }).ToList();
-
-                await _context.RepairSpareparts.AddRangeAsync(repairSpareparts);
-            }
-
-            await _context.SaveChangesAsync();
-            return task.Id;
-        }
-
         public async Task<Guid> CreateTaskFromErrorsAsync(CreateTaskFromErrorsRequest request)
         {
-            // Get reportId from requestId
             var reportId = await _context.Requests
                 .Where(r => r.Id == request.RequestId)
                 .Select(r => r.ReportId)
@@ -551,7 +430,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 Id = Guid.NewGuid(),
                 TaskType = request.TaskType,
                 StartTime = request.StartDate,
-                Status = "Pending",
+                Status = Status.Pending, // Use enum value
+                Priority = Priority.Medium, // Use enum value
                 TaskDescription = "Task created from error analysis",
                 AssigneeId = request.AssigneeId,
                 CreatedDate = DateTime.UtcNow,
@@ -560,7 +440,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             await _context.Tasks.AddAsync(task);
 
-            // Link errors via ErrorDetails
+            // Handle ErrorDetails
             if (request.ErrorIds != null && request.ErrorIds.Count > 0)
             {
                 var existingErrorDetails = await _context.ErrorDetails
@@ -569,7 +449,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
                 var existingErrorIds = existingErrorDetails.Select(ed => ed.ErrorId).ToHashSet();
 
-                // Update existing ErrorDetails
                 foreach (var ed in existingErrorDetails)
                 {
                     ed.TaskId = task.Id;
@@ -577,7 +456,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 if (existingErrorDetails.Count > 0)
                     _context.ErrorDetails.UpdateRange(existingErrorDetails);
 
-                // Add new ErrorDetails
                 var newErrorDetails = request.ErrorIds
                     .Where(eid => !existingErrorIds.Contains(eid))
                     .Select(eid => new ErrorDetail
@@ -591,7 +469,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     await _context.ErrorDetails.AddRangeAsync(newErrorDetails);
             }
 
-            // Link spareparts if provided
+            // Handle RepairSpareparts
             if (request.SparepartIds != null && request.SparepartIds.Count > 0)
             {
                 var repairSpareparts = request.SparepartIds
@@ -610,7 +488,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
         public async Task<Guid> CreateTaskFromTechnicalIssueAsync(CreateTaskFromTechnicalIssueRequest request)
         {
-            // Get reportId from requestId
             var reportId = await _context.Requests
                 .Where(r => r.Id == request.RequestId)
                 .Select(r => r.ReportId)
@@ -621,7 +498,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 Id = Guid.NewGuid(),
                 TaskType = request.TaskType,
                 StartTime = request.StartDate,
-                Status = "Pending",
+                Status = Status.Pending, // Use enum value
+                Priority = Priority.High, // Use enum value for warranty tasks
                 TaskDescription = "Warranty task created from technical issue",
                 AssigneeId = request.AssigneeId,
                 CreatedDate = DateTime.UtcNow,
@@ -630,10 +508,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             await _context.Tasks.AddAsync(task);
 
-            // Link technical issues via TechnicalSymptomReport
             if (request.TechnicalIssueIds != null && request.TechnicalIssueIds.Count > 0)
             {
-                // Get existing technical symptom reports to avoid duplicates
                 var existingReports = await _context.TechnicalSymptomReports
                     .Where(tsr => tsr.ReportId == reportId &&
                            request.TechnicalIssueIds.Contains(tsr.TechnicalSymptomId))
@@ -641,7 +517,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
                 var existingTechnicalSymptomIds = existingReports.Select(tsr => tsr.TechnicalSymptomId).ToHashSet();
 
-                // Update existing reports
                 foreach (var report in existingReports)
                 {
                     report.TaskId = task.Id;
@@ -650,7 +525,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 if (existingReports.Any())
                     _context.TechnicalSymptomReports.UpdateRange(existingReports);
 
-                // Create new records only for non-existing combinations
                 var newTechnicalSymptomReports = request.TechnicalIssueIds
                     .Where(id => !existingTechnicalSymptomIds.Contains(id))
                     .Select(issueId => new TechnicalSymptomReport
@@ -671,13 +545,11 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
         public async Task<Guid> CreateSimpleTaskAsync(CreateSimpleTaskRequest request)
         {
-            // Get reportId from requestId
             var reportId = await _context.Requests
                 .Where(r => r.Id == request.RequestId)
                 .Select(r => r.ReportId)
                 .FirstOrDefaultAsync();
 
-            // Build task description based on actions
             var actions = new List<string>();
             if (request.BringDeviceToRepairPlace)
                 actions.Add("Remove faulty device and bring to repair facility");
@@ -692,7 +564,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 Id = Guid.NewGuid(),
                 TaskType = request.TaskType,
                 StartTime = request.StartDate,
-                Status = "Pending",
+                Status = Status.Pending, // Use enum value
+                Priority = Priority.Medium, // Use enum value
                 TaskDescription = taskDescription,
                 AssigneeId = request.AssigneeId,
                 CreatedDate = DateTime.UtcNow,
@@ -700,25 +573,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             };
 
             await _context.Tasks.AddAsync(task);
-
-            // Create device replacement record if you have such an entity
-            // This would track which device is being replaced with which
-            // if (request.DeviceToRemoveId != Guid.Empty)
-            // {
-            //     var deviceReplacement = new DeviceReplacement
-            //     {
-            //         TaskId = task.Id,
-            //         OldDeviceId = request.DeviceToRemoveId,
-            //         NewDeviceId = request.ReplacementDeviceId,
-            //         InstallationLocation = request.InstallationLocation,
-            //         BringToRepairPlace = request.BringDeviceToRepairPlace,
-            //         SetupReplacement = request.SetupReplacementDevice,
-            //         CreatedDate = DateTime.UtcNow
-            //     };
-
-            //     await _context.DeviceReplacements.AddAsync(deviceReplacement);
-            // }
-
             await _context.SaveChangesAsync();
             return task.Id;
         }

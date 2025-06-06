@@ -113,7 +113,9 @@ namespace GRRWS.Infrastructure.DB
             {
                 entity.Property(d => d.DeviceName).IsRequired();
                 entity.Property(d => d.DeviceCode).IsRequired();
-                entity.Property(d => d.Status).IsRequired();
+                entity.Property(d => d.Status)
+                    .IsRequired()
+                    .HasConversion<string>();
                 entity.HasIndex(d => d.DeviceCode).IsUnique();
             });
 
@@ -142,6 +144,15 @@ namespace GRRWS.Infrastructure.DB
                 .Property(r => r.Status)
                 .HasConversion<string>();
 
+            modelBuilder.Entity<Request>(entity =>
+            {
+                entity.Property(r => r.DeviceId).IsRequired();
+                entity.Property(r => r.RequestedById).IsRequired();
+                entity.Property(r => r.Status)
+                    .HasConversion<string>();
+                entity.Property(r => r.Priority)
+                    .HasConversion<string>();
+            });
 
             // DeviceHistory
             modelBuilder.Entity<DeviceHistory>()
@@ -158,7 +169,9 @@ namespace GRRWS.Infrastructure.DB
             {
                 entity.Property(dwh => dwh.DeviceId).IsRequired();
                 entity.Property(dwh => dwh.DeviceDescription).IsRequired();
-                entity.Property(dwh => dwh.Status).IsRequired();
+                entity.Property(dwh => dwh.Status)
+                    .IsRequired()
+                    .HasConversion<string>();
             });
 
             // EmailTemplate
@@ -268,15 +281,6 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<Report>(entity =>
             {
                 entity.Property(r => r.Location).IsRequired();
-                entity.Property(r => r.Status).IsRequired();
-                entity.Property(r => r.Priority).IsRequired();
-            });
-
-            // Request
-            modelBuilder.Entity<Request>(entity =>
-            {
-                entity.Property(r => r.DeviceId).IsRequired();
-                entity.Property(r => r.RequestedById).IsRequired();
             });
 
             // RequestIssue

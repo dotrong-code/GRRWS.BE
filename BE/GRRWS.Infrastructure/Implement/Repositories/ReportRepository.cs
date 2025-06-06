@@ -68,10 +68,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 throw new Exception("Report not found.");
 
             existingReport.Location = updatedReport.Location;
-            existingReport.Status = updatedReport.Status;
             existingReport.ModifiedDate = DateTime.Now;
-            existingReport.Priority = updatedReport.Priority;
-
             existingReport.ErrorDetails.Clear();
 
             var newErrorDetails = newErrorIds.Select(errorId => new ErrorDetail

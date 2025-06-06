@@ -2,6 +2,7 @@
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
+using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
 using GRRWS.Infrastructure.DTOs.Paging;
@@ -25,7 +26,6 @@ namespace GRRWS.Application.Implement.Service
             _createReportValidator = createReportValidator;
         }
 
-
         public async Task<Result> GetTasksByReportIdAsync(Guid reportId)
         {
             var reportExists = await _unitOfWork.ReportRepository.GetByIdAsync(reportId) != null;
@@ -39,7 +39,6 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(tasks);
         }
 
-
         public async Task<Result> CreateTaskAsync(CreateTaskRequest request)
         {
             var userExists = await _unitOfWork.UserRepository.GetByIdAsync(request.AssigneeId) != null;
@@ -52,8 +51,8 @@ namespace GRRWS.Application.Implement.Service
                 TaskName = request.TaskName,
                 TaskDescription = request.TaskDescription,
                 TaskType = request.TaskType,
-                Priority = request.Priority,
-                Status = request.Status,
+                Priority = (Domain.Enum.Priority)request.Priority,
+                Status = Status.Pending, // Use enum value
                 ExpectedTime = request.ExpectedTime,
                 AssigneeId = request.AssigneeId,
                 CreatedDate = DateTime.UtcNow,
@@ -66,8 +65,6 @@ namespace GRRWS.Application.Implement.Service
             await _unitOfWork.SaveChangesAsync();
             return Result.SuccessWithObject(task);
         }
-
-
 
         public async Task<Result> GetAllTasksAsync(string? taskType, string? status, int? priority, int pageNumber, int pageSize)
         {
@@ -98,8 +95,10 @@ namespace GRRWS.Application.Implement.Service
             task.TaskName = request.TaskName;
             task.TaskDescription = request.TaskDescription;
             task.TaskType = request.TaskType;
-            task.Priority = request.Priority;
-            task.Status = request.Status;
+            task.Priority = (Domain.Enum.Priority)request.Priority;
+            // Convert string to enum for Status
+            if (Enum.TryParse<Status>(request.Status, out var statusEnum))
+                task.Status = statusEnum;
             task.ExpectedTime = request.ExpectedTime;
             task.AssigneeId = request.AssigneeId;
             task.ModifiedDate = DateTime.UtcNow;
@@ -156,10 +155,10 @@ namespace GRRWS.Application.Implement.Service
             if (task == null)
                 return Result.Failure(TaskErrorMessage.TaskNotExist());
 
-            if (task.Status != "Pending")
+            if (task.Status != Status.Pending) // Use enum comparison
                 return Result.Failure(TaskErrorMessage.InvalidStatusTransition());
 
-            task.Status = "InProgress";
+            task.Status = Status.InProgress; // Use enum value
             task.StartTime = DateTime.UtcNow;
 
             await _unitOfWork.TaskRepository.UpdateAsync(task);
@@ -189,13 +188,13 @@ namespace GRRWS.Application.Implement.Service
             if (task == null)
                 return Result.Failure(TaskErrorMessage.TaskNotExist());
 
-            if (task.Status != "InProgress")
+            if (task.Status != Status.InProgress) // Use enum comparison
                 return Result.Failure(TaskErrorMessage.InvalidStatusTransition());
 
             if (task.DeviceReturnTime.HasValue)
                 return Result.Failure(TaskErrorMessage.ReportAlreadyCreated());
 
-            task.Status = "Completed";
+            task.Status = Status.Completed; // Use enum value
             task.EndTime = DateTime.UtcNow;
             task.DeviceReturnTime = request.DeviceReturnTime;
             task.DeviceCondition = request.DeviceCondition;
@@ -205,8 +204,6 @@ namespace GRRWS.Application.Implement.Service
             await _unitOfWork.SaveChangesAsync();
             return Result.SuccessWithObject(task);
         }
-
-
 
         public async Task<Result> GetAllAsync()
         {
@@ -219,8 +216,8 @@ namespace GRRWS.Application.Implement.Service
                     TaskName = t.TaskName,
                     TaskDescription = t.TaskDescription,
                     TaskType = t.TaskType,
-                    Priority = t.Priority,
-                    Status = t.Status,
+                    Priority = (int?)t.Priority, // Convert enum to int
+                    Status = t.Status.ToString(), // Convert enum to string
                     StartTime = t.StartTime,
                     ExpectedTime = t.ExpectedTime,
                     EndTime = t.EndTime,
@@ -230,7 +227,7 @@ namespace GRRWS.Application.Implement.Service
                     DeviceCondition = t.DeviceCondition,
                     ReportNotes = t.ReportNotes,
                     CreatedDate = t.CreatedDate,
-                    CreatedBy = (Guid)t.CreatedBy,
+                    CreatedBy = t.CreatedBy ?? Guid.Empty, // Handle nullable
                     ModifiedDate = t.ModifiedDate,
                     ModifiedBy = t.ModifiedBy,
                     Errors = t.ErrorDetails?.Select(ed => new ErrorSimpleDTO
@@ -260,8 +257,8 @@ namespace GRRWS.Application.Implement.Service
                 TaskName = task.TaskName,
                 TaskDescription = task.TaskDescription,
                 TaskType = task.TaskType,
-                Priority = task.Priority,
-                Status = task.Status,
+                Priority = (int?)task.Priority, // Convert enum to int
+                Status = task.Status.ToString(), // Convert enum to string
                 StartTime = task.StartTime,
                 ExpectedTime = task.ExpectedTime,
                 EndTime = task.EndTime,
@@ -271,7 +268,7 @@ namespace GRRWS.Application.Implement.Service
                 DeviceCondition = task.DeviceCondition,
                 ReportNotes = task.ReportNotes,
                 CreatedDate = task.CreatedDate,
-                CreatedBy = (Guid)task.CreatedBy,
+                CreatedBy = task.CreatedBy ?? Guid.Empty, // Handle nullable
                 ModifiedDate = task.ModifiedDate,
                 ModifiedBy = task.ModifiedBy,
                 Errors = task.ErrorDetails?.Select(ed => new ErrorSimpleDTO
@@ -293,17 +290,20 @@ namespace GRRWS.Application.Implement.Service
         {
             if (string.IsNullOrWhiteSpace(dto.TaskName))
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Task name cannot be empty.", 0));
+            
             var assignee = await _unitOfWork.UserRepository.GetByIdAsync(dto.AssigneeId);
             if (assignee == null)
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Assignee user does not exist.", 0));
+            
             var task = new Tasks
             {
                 Id = Guid.NewGuid(),
                 TaskName = dto.TaskName,
                 TaskDescription = dto.TaskDescription,
                 TaskType = dto.TaskType,
-                Priority = dto.Priority,
-                Status = dto.Status ?? "Pending",
+                Priority = dto.Priority.HasValue ? (Priority)dto.Priority.Value : Priority.Low, // Convert int to enum
+                Status = !string.IsNullOrEmpty(dto.Status) && Enum.TryParse<Status>(dto.Status, out var status) 
+                    ? status : Status.Pending, // Convert string to enum
                 StartTime = dto.StartTime,
                 ExpectedTime = dto.ExpectedTime,
                 AssigneeId = dto.AssigneeId,
@@ -330,8 +330,10 @@ namespace GRRWS.Application.Implement.Service
             task.TaskName = dto.TaskName;
             task.TaskDescription = dto.TaskDescription;
             task.TaskType = dto.TaskType;
-            task.Priority = dto.Priority;
-            task.Status = dto.Status;
+            task.Priority = dto.Priority.HasValue ? (Priority)dto.Priority.Value : Priority.Low; // Convert int to enum
+            // Convert string to enum for Status
+            if (!string.IsNullOrEmpty(dto.Status) && Enum.TryParse<Status>(dto.Status, out var status))
+                task.Status = status;
             task.StartTime = dto.StartTime;
             task.ExpectedTime = dto.ExpectedTime;
             task.EndTime = dto.EndTime;
@@ -395,7 +397,6 @@ namespace GRRWS.Application.Implement.Service
             }
             var task = await _unitOfWork.TaskRepository.CreateTaskWebAsync(dto);
             return Result.SuccessWithObject(new { Message = "Task assigned successfully!" });
-
         }
 
         public async Task<Result> CreateSimpleTaskWebAsync(CreateSimpleTaskWeb dto)
@@ -411,16 +412,6 @@ namespace GRRWS.Application.Implement.Service
             {
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "User not found"));
             }
-
-            // Optional: Validate spareparts if provided
-            // if (dto.SparepartIds != null && dto.SparepartIds.Any())
-            // {
-            //     var missingSpareParts = await _unitOfWork.SparepartRepository.GetNotFoundSparepartNamesAsync(dto.SparepartIds);
-            //     if (missingSpareParts.Any())
-            //     {
-            //         return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Sparepart not found"));
-            //     }
-            // }
 
             var taskId = await _unitOfWork.TaskRepository.CreateSimpleTaskWebAsync(dto);
             return Result.SuccessWithObject(new { Message = "Simple task created successfully!", TaskId = taskId });
@@ -510,10 +501,12 @@ namespace GRRWS.Application.Implement.Service
             }
 
             var taskId = await _unitOfWork.TaskRepository.CreateSimpleTaskAsync(request);
-            return Result.SuccessWithObject(new { 
-                Message = "Device replacement task created successfully!", 
+            return Result.SuccessWithObject(new
+            {
+                Message = "Device replacement task created successfully!",
                 TaskId = taskId,
-                Actions = new {
+                Actions = new
+                {
                     RemoveDevice = request.BringDeviceToRepairPlace,
                     SetupReplacement = request.SetupReplacementDevice
                 }
