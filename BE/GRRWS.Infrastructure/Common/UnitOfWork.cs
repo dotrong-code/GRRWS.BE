@@ -36,6 +36,7 @@ namespace GRRWS.Infrastructure.Common
         public IErrorDetailRepository ErrorDetailRepository { get; }
 
         public IIssueErrorRepository IssueErrorRepository { get; private set; }
+        public ISparepartRepository SparepartRepository { get; private set; }
 
 
         public async Task<int> SaveChangesAsync()
@@ -69,6 +70,7 @@ namespace GRRWS.Infrastructure.Common
             WarrantyDetailRepository = new WarrantyDetailRepository(_context);
             ErrorDetailRepository = errorDetailRepository;
             IssueErrorRepository = new IssueErrorRepository(_context);
+            SparepartRepository = new SparepartRepository(_context);
 
         }
         public int Complete()

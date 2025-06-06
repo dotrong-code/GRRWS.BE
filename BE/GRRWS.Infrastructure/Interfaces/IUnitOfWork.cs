@@ -26,7 +26,7 @@ namespace GRRWS.Infrastructure.Interfaces
         IWarrantyDetailRepository WarrantyDetailRepository { get; }
         IIssueErrorRepository IssueErrorRepository { get; }
 
-
+        ISparepartRepository SparepartRepository { get; }
         int Complete();
         Task<int> SaveChangesAsync();
     }
