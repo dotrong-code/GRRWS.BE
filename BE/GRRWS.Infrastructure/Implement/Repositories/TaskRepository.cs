@@ -311,11 +311,18 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             {
                 Id = Guid.NewGuid(),
                 TaskType = dto.TaskType,
+                TaskName = "Task for " + dto.TaskType,
                 StartTime = dto.StartDate,
+                Priority = 1, // Default priority, can be adjusted based on your logic
                 Status = "Pending",
+                EndTime = DateTime.UtcNow.AddDays(7),
+                ExpectedTime = DateTime.UtcNow.AddDays(1),
                 TaskDescription = "This is description",
                 AssigneeId = dto.AssigneeId,
                 CreatedDate = DateTime.UtcNow,
+                DeviceReturnTime = DateTime.UtcNow.AddDays(1), // Set to null if not applicable
+                ReportNotes = "Report notes here", // Set to null if not applicable
+                DeviceCondition = "New", // Set to null if not applicable
                 IsDeleted = false,
             };
 
@@ -409,41 +416,41 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return task.Id;
         }
 
-        public async Task<Guid> CreateTaskFromTechnicalIssueAsync(CreateTaskFromTechnicalIssueRequest request, Guid reportId)
-        {
-            var task = new Tasks
-            {
-                Id = Guid.NewGuid(),
-                TaskType = request.TaskType,
-                StartTime = request.StartDate,
-                Status = "Pending",
-                TaskDescription = "Warranty task created from technical issue",
-                AssigneeId = request.AssigneeId,
-                CreatedDate = DateTime.UtcNow,
-                IsDeleted = false,
-            };
+        //public async Task<Guid> CreateTaskFromTechnicalIssueAsync(CreateTaskFromTechnicalIssueRequest request, Guid reportId)
+        //{
+        //    var task = new Tasks
+        //    {
+        //        Id = Guid.NewGuid(),
+        //        TaskType = request.TaskType,
+        //        StartTime = request.StartDate,
+        //        Status = "Pending",
+        //        TaskDescription = "Warranty task created from technical issue",
+        //        AssigneeId = request.AssigneeId,
+        //        CreatedDate = DateTime.UtcNow,
+        //        IsDeleted = false,
+        //    };
 
-            await _context.Tasks.AddAsync(task);
+        //    await _context.Tasks.AddAsync(task);
 
-            // Link technical issues via TechnicalSymptomReport
-            if (request.TechnicalIssueIds != null && request.TechnicalIssueIds.Count > 0)
-            {
-                var technicalSymptomReports = request.TechnicalIssueIds
-                    .Select(issueId => new TechnicalSymptomReport
-                    {
-                        TaskId = task.Id,
-                        TechnicalSymptomId = issueId,
-                        ReportId = reportId
-                    }).ToList();
+        //    // Link technical issues via TechnicalSymptomReport
+        //    if (request.TechnicalIssueIds != null && request.TechnicalIssueIds.Count > 0)
+        //    {
+        //        var technicalSymptomReports = request.TechnicalIssueIds
+        //            .Select(issueId => new TechnicalSymptomReport
+        //            {
+        //                TaskId = task.Id,
+        //                TechnicalSymptomId = issueId,
+        //                ReportId = reportId
+        //            }).ToList();
 
-                await _context.TechnicalSymptomReports.AddRangeAsync(technicalSymptomReports);
-            }
+        //        await _context.TechnicalSymptomReports.AddRangeAsync(technicalSymptomReports);
+        //    }
 
-            // NO spareparts linking for warranty tasks
+        //    // NO spareparts linking for warranty tasks
 
-            await _context.SaveChangesAsync();
-            return task.Id;
-        }
+        //    await _context.SaveChangesAsync();
+        //    return task.Id;
+        //}
 
         public async Task<Guid> CreateSimpleTaskAsync(CreateSimpleTaskRequest request, Guid reportId)
         {
@@ -626,15 +633,36 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             // Link technical issues via TechnicalSymptomReport
             if (request.TechnicalIssueIds != null && request.TechnicalIssueIds.Count > 0)
             {
-                var technicalSymptomReports = request.TechnicalIssueIds
+                // Get existing technical symptom reports to avoid duplicates
+                var existingReports = await _context.TechnicalSymptomReports
+                    .Where(tsr => tsr.ReportId == reportId &&
+                           request.TechnicalIssueIds.Contains(tsr.TechnicalSymptomId))
+                    .ToListAsync();
+
+                var existingTechnicalSymptomIds = existingReports.Select(tsr => tsr.TechnicalSymptomId).ToHashSet();
+
+                // Update existing reports
+                foreach (var report in existingReports)
+                {
+                    report.TaskId = task.Id;
+                }
+
+                if (existingReports.Any())
+                    _context.TechnicalSymptomReports.UpdateRange(existingReports);
+
+                // Create new records only for non-existing combinations
+                var newTechnicalSymptomReports = request.TechnicalIssueIds
+                    .Where(id => !existingTechnicalSymptomIds.Contains(id))
                     .Select(issueId => new TechnicalSymptomReport
                     {
                         TaskId = task.Id,
                         TechnicalSymptomId = issueId,
                         ReportId = (Guid)reportId
-                    }).ToList();
+                    })
+                    .ToList();
 
-                await _context.TechnicalSymptomReports.AddRangeAsync(technicalSymptomReports);
+                if (newTechnicalSymptomReports.Any())
+                    await _context.TechnicalSymptomReports.AddRangeAsync(newTechnicalSymptomReports);
             }
 
             await _context.SaveChangesAsync();
@@ -655,8 +683,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 actions.Add("Remove faulty device and bring to repair facility");
             if (request.SetupReplacementDevice)
                 actions.Add("Install and configure replacement device");
-            
-            var taskDescription = request.TaskDescription ?? 
+
+            var taskDescription = request.TaskDescription ??
                 $"Device replacement task: {string.Join("; ", actions)}";
 
             var task = new Tasks
