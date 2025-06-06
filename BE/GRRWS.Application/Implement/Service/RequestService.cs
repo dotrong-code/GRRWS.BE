@@ -49,10 +49,10 @@ namespace GRRWS.Application.Implement.Service
                     Id = ri.Issue.Id,
                     DisplayName = ri.Issue.DisplayName,
                     ImageUrls = imageUrls,
-                    Status = ri.Status,
-                    IsRejected = ri.IsRejected, // Ánh xạ trường này
-                    RejectionReason = ri.RejectionReason, // Ánh xạ trường này
-                    RejectionDetails = ri.RejectionDetails // Ánh xạ trường này
+                    //Status = ri.Status,
+                    //IsRejected = ri.IsRejected, // Ánh xạ trường này
+                    //RejectionReason = ri.RejectionReason, // Ánh xạ trường này
+                    //RejectionDetails = ri.RejectionDetails // Ánh xạ trường này
                 });
             }
             return issues;
@@ -71,10 +71,10 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "RequestIssue not found.", 0));
             }
 
-            requestIssue.IsRejected = isRejected;
-            requestIssue.RejectionReason = rejectionReason;
-            requestIssue.RejectionDetails = rejectionDetails;
-            requestIssue.Status = isRejected ? "Rejected" : "Pending"; // Cập nhật trạng thái
+            //requestIssue.IsRejected = isRejected;
+            //requestIssue.RejectionReason = rejectionReason;
+            //requestIssue.RejectionDetails = rejectionDetails;
+            //requestIssue.Status = isRejected ? "Rejected" : "Pending"; // Cập nhật trạng thái
 
             await _requestRepository.UpdateAsync(request);
             await _unitOfWork.SaveChangesAsync();
@@ -97,14 +97,14 @@ namespace GRRWS.Application.Implement.Service
                 RequestDate = r.CreatedDate,
                 RequestTitle = r.RequestTitle,
                 Description = r.Description,
-                Status = r.Status,
+                //Status = r.Status,
                 CreatedDate = r.CreatedDate,
                 CreatedBy = r.RequestedById,
                 ModifiedDate = r.ModifiedDate,
                 ModifiedBy = r.ModifiedBy,
-                IsRejected = r.IsRejected, // Ánh xạ trường này
-                RejectionReason = r.RejectionReason, // Ánh xạ trường này
-                RejectionDetails = r.RejectionDetails, // Ánh xạ trường này
+                //IsRejected = r.IsRejected, // Ánh xạ trường này
+                //RejectionReason = r.RejectionReason, // Ánh xạ trường này
+                //RejectionDetails = r.RejectionDetails, // Ánh xạ trường này
                 Issues = await MapIssuesWithImagesAsync(r.RequestIssues)
             };
         }
@@ -181,11 +181,11 @@ namespace GRRWS.Application.Implement.Service
 
             var existingRequests = await _unitOfWork.RequestRepository.GetRequestByDeviceIdAsync(dto.DeviceId);
             var restrictStatus = new[] { "Pending", "InProgress" };
-            if (existingRequests.Any(r => !r.IsDeleted && restrictStatus.Contains(r.Status)))
-            {
-                return Result.Failure(new Infrastructure.DTOs.Common.Error(
-                    "RequestFailed", "Cannot create a new request for this device because it has pending or in-progress requests.", 0));
-            }
+            //if (existingRequests.Any(r => !r.IsDeleted && restrictStatus.Contains(r.Status)))
+            //{
+            //    return Result.Failure(new Infrastructure.DTOs.Common.Error(
+            //        "RequestFailed", "Cannot create a new request for this device because it has pending or in-progress requests.", 0));
+            //}
 
             var getDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(dto.DeviceId);
             var createTitle = "";
@@ -208,18 +208,18 @@ namespace GRRWS.Application.Implement.Service
                 DeviceId = dto.DeviceId,
                 RequestTitle = createTitle,
                 Description = DescriptionHelper.GenerateRequestDescription(getDevice.DeviceName),
-                Status = "Pending",
+                //Status = "Pending",
                 CreatedBy = userId,
                 RequestedById = userId,
                 CreatedDate = DateTime.UtcNow,
                 DueDate = DateTime.UtcNow.AddDays(7),
-                Priority = "None",
+                //Priority = "None",
                 IsDeleted = false,
                 RequestIssues = dto.IssueIds.Select(issueId => new RequestIssue
                 {
                     Id = Guid.NewGuid(),
                     IssueId = issueId,
-                    Status = "Pending",
+                    //Status = "Pending",
                     Images = new List<Image>()
                 }).ToList()
             };
@@ -287,11 +287,11 @@ namespace GRRWS.Application.Implement.Service
 
             var existingRequests = await _unitOfWork.RequestRepository.GetRequestByDeviceIdAsync(dto.DeviceId);
             var restrictStatus = new[] { "Pending", "InProgress" };
-            if (existingRequests.Any(r => !r.IsDeleted && restrictStatus.Contains(r.Status)))
-            {
-                return Result.Failure(new Infrastructure.DTOs.Common.Error(
-                    "RequestFailed", "Cannot create a new request for this device because it has pending or in-progress requests.", 0));
-            }
+            //if (existingRequests.Any(r => !r.IsDeleted && restrictStatus.Contains(r.Status)))
+            //{
+            //    return Result.Failure(new Infrastructure.DTOs.Common.Error(
+            //        "RequestFailed", "Cannot create a new request for this device because it has pending or in-progress requests.", 0));
+            //}
 
             var getDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(dto.DeviceId);
             var createTitle = "";
@@ -314,18 +314,18 @@ namespace GRRWS.Application.Implement.Service
                 DeviceId = dto.DeviceId,
                 RequestTitle = createTitle,
                 Description = DescriptionHelper.GenerateRequestDescription(getDevice.DeviceName),
-                Status = "Pending",
+                //Status = "Pending",
                 CreatedBy = userId,
                 RequestedById = userId,
                 CreatedDate = DateTime.UtcNow,
                 DueDate = DateTime.UtcNow.AddDays(7),
-                Priority = "None",
+                //Priority = "None",
                 IsDeleted = false,
                 RequestIssues = (dto.IssueIds ?? new List<Guid>()).Select(issueId => new RequestIssue
                 {
                     Id = Guid.NewGuid(),
                     IssueId = issueId,
-                    Status = "Pending",
+                    //Status = "Pending",
                     Images = new List<Image>()
                 }).ToList()
             };
@@ -397,9 +397,9 @@ namespace GRRWS.Application.Implement.Service
                 Id = id,
                 RequestTitle = dto.RequestTitle,
                 Description = dto.Description,
-                Status = dto.Status,
+                //Status = dto.Status,
                 DueDate = dto.DueDate,
-                Priority = dto.Priority,
+                //Priority = dto.Priority,
                 ModifiedBy = dto.ModifiedBy,
                 ModifiedDate = DateTime.UtcNow
             };
@@ -415,7 +415,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Request not found.", 0));
 
             r.IsDeleted = true;
-            r.Status = "Delete";
+            //r.Status = "Delete";
             r.ModifiedDate = DateTime.UtcNow;
             await _requestRepository.UpdateAsync(r);
 
@@ -637,9 +637,9 @@ namespace GRRWS.Application.Implement.Service
             var r = await _requestRepository.GetByIdAsync(dto.RequestId);
             if (r == null || r.IsDeleted)
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Request not found.", 0));
-            if (r.Status == "Approved" || r.Status == "Denied" || r.Status == "InProgress" || r.Status == "Completed")
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Cannot cancel this request! You can only cancel request if the status is Pending.", 0));
-            r.Status = "Denied";
+            //if (r.Status == "Approved" || r.Status == "Denied" || r.Status == "InProgress" || r.Status == "Completed")
+            //    return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Cannot cancel this request! You can only cancel request if the status is Pending.", 0));
+            //r.Status = "Denied";
             r.Description = "Yêu cầu đã bị hủy với lý do: " + dto.Reason;
             r.ModifiedDate = DateTime.UtcNow;
             await _requestRepository.UpdateAsync(r);
@@ -654,10 +654,10 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Request not found.", 0));
             }
 
-            request.IsRejected = isRejected;
-            request.RejectionReason = rejectionReason;
-            request.RejectionDetails = rejectionDetails;
-            request.Status = isRejected ? "Rejected" : "Pending"; // Cập nhật trạng thái
+            //request.IsRejected = isRejected;
+            //request.RejectionReason = rejectionReason;
+            //request.RejectionDetails = rejectionDetails;
+            //request.Status = isRejected ? "Rejected" : "Pending"; // Cập nhật trạng thái
 
             await _requestRepository.UpdateAsync(request);
             await _unitOfWork.SaveChangesAsync();

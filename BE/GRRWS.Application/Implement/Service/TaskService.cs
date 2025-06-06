@@ -52,8 +52,8 @@ namespace GRRWS.Application.Implement.Service
                 TaskName = request.TaskName,
                 TaskDescription = request.TaskDescription,
                 TaskType = request.TaskType,
-                Priority = request.Priority,
-                Status = request.Status,
+                Priority = (Domain.Enum.Priority)request.Priority,
+                //Status = request.Status,
                 ExpectedTime = request.ExpectedTime,
                 AssigneeId = request.AssigneeId,
                 CreatedDate = DateTime.UtcNow,
@@ -98,8 +98,8 @@ namespace GRRWS.Application.Implement.Service
             task.TaskName = request.TaskName;
             task.TaskDescription = request.TaskDescription;
             task.TaskType = request.TaskType;
-            task.Priority = request.Priority;
-            task.Status = request.Status;
+            task.Priority = (Domain.Enum.Priority)request.Priority;
+            //task.Status = request.Status;
             task.ExpectedTime = request.ExpectedTime;
             task.AssigneeId = request.AssigneeId;
             task.ModifiedDate = DateTime.UtcNow;
@@ -156,10 +156,10 @@ namespace GRRWS.Application.Implement.Service
             if (task == null)
                 return Result.Failure(TaskErrorMessage.TaskNotExist());
 
-            if (task.Status != "Pending")
-                return Result.Failure(TaskErrorMessage.InvalidStatusTransition());
+            //if (task.Status != "Pending")
+            //    return Result.Failure(TaskErrorMessage.InvalidStatusTransition());
 
-            task.Status = "InProgress";
+            //task.Status = "InProgress";
             task.StartTime = DateTime.UtcNow;
 
             await _unitOfWork.TaskRepository.UpdateAsync(task);
@@ -189,13 +189,13 @@ namespace GRRWS.Application.Implement.Service
             if (task == null)
                 return Result.Failure(TaskErrorMessage.TaskNotExist());
 
-            if (task.Status != "InProgress")
-                return Result.Failure(TaskErrorMessage.InvalidStatusTransition());
+            //if (task.Status != "InProgress")
+            //    return Result.Failure(TaskErrorMessage.InvalidStatusTransition());
 
             if (task.DeviceReturnTime.HasValue)
                 return Result.Failure(TaskErrorMessage.ReportAlreadyCreated());
 
-            task.Status = "Completed";
+            //task.Status = "Completed";
             task.EndTime = DateTime.UtcNow;
             task.DeviceReturnTime = request.DeviceReturnTime;
             task.DeviceCondition = request.DeviceCondition;
@@ -219,13 +219,13 @@ namespace GRRWS.Application.Implement.Service
                     TaskName = t.TaskName,
                     TaskDescription = t.TaskDescription,
                     TaskType = t.TaskType,
-                    Priority = t.Priority,
-                    Status = t.Status,
+                    //Priority = t.Priority,
+                    //Status = t.Status,
                     StartTime = t.StartTime,
                     ExpectedTime = t.ExpectedTime,
                     EndTime = t.EndTime,
                     AssigneeId = t.AssigneeId,
-                    AssigneeName = t.Assignee?.UserName,
+                    AssigneeName = t.Assignee?.FullName,
                     DeviceReturnTime = t.DeviceReturnTime,
                     DeviceCondition = t.DeviceCondition,
                     ReportNotes = t.ReportNotes,
@@ -260,13 +260,13 @@ namespace GRRWS.Application.Implement.Service
                 TaskName = task.TaskName,
                 TaskDescription = task.TaskDescription,
                 TaskType = task.TaskType,
-                Priority = task.Priority,
-                Status = task.Status,
+                Priority = (int?)task.Priority,
+                //Status = task.Status,
                 StartTime = task.StartTime,
                 ExpectedTime = task.ExpectedTime,
                 EndTime = task.EndTime,
                 AssigneeId = task.AssigneeId,
-                AssigneeName = task.Assignee?.UserName,
+                AssigneeName = task.Assignee?.FullName,
                 DeviceReturnTime = task.DeviceReturnTime,
                 DeviceCondition = task.DeviceCondition,
                 ReportNotes = task.ReportNotes,
@@ -302,8 +302,8 @@ namespace GRRWS.Application.Implement.Service
                 TaskName = dto.TaskName,
                 TaskDescription = dto.TaskDescription,
                 TaskType = dto.TaskType,
-                Priority = dto.Priority,
-                Status = dto.Status ?? "Pending",
+                Priority = (Domain.Enum.Priority)dto.Priority,
+                //Status = dto.Status,
                 StartTime = dto.StartTime,
                 ExpectedTime = dto.ExpectedTime,
                 AssigneeId = dto.AssigneeId,
@@ -330,8 +330,8 @@ namespace GRRWS.Application.Implement.Service
             task.TaskName = dto.TaskName;
             task.TaskDescription = dto.TaskDescription;
             task.TaskType = dto.TaskType;
-            task.Priority = dto.Priority;
-            task.Status = dto.Status;
+            task.Priority = (Domain.Enum.Priority)dto.Priority;
+            //task.Status = dto.Status;
             task.StartTime = dto.StartTime;
             task.ExpectedTime = dto.ExpectedTime;
             task.EndTime = dto.EndTime;
@@ -510,10 +510,12 @@ namespace GRRWS.Application.Implement.Service
             }
 
             var taskId = await _unitOfWork.TaskRepository.CreateSimpleTaskAsync(request);
-            return Result.SuccessWithObject(new { 
-                Message = "Device replacement task created successfully!", 
+            return Result.SuccessWithObject(new
+            {
+                Message = "Device replacement task created successfully!",
                 TaskId = taskId,
-                Actions = new {
+                Actions = new
+                {
                     RemoveDevice = request.BringDeviceToRepairPlace,
                     SetupReplacement = request.SetupReplacementDevice
                 }

@@ -20,8 +20,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 {
                     TaskId = ed.TaskId.Value,
                     TaskType = ed.Task.TaskType,
-                    Priority = ed.Task.Priority.Value,
-                    Status = ed.Task.Status,
+                    //Priority = ed.Task.Priority.Value,
+                    //Status = ed.Task.Status,
                     AssigneeName = ed.Task.Assignee.FullName,
                     StartTime = ed.Task.StartTime
                 })
@@ -43,8 +43,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     TaskName = t.TaskName,
                     TaskDescription = t.TaskDescription,
                     TaskType = t.TaskType,
-                    Priority = t.Priority,
-                    Status = t.Status,
+                    //Priority = t.Priority,
+                    //Status = t.Status,
                     StartTime = t.StartTime,
                     ExpectedTime = t.ExpectedTime,
                     EndTime = t.EndTime,
@@ -79,8 +79,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     TaskName = t.TaskName,
                     TaskDescription = t.TaskDescription,
                     TaskType = t.TaskType,
-                    Priority = t.Priority,
-                    Status = t.Status,
+                    //Priority = t.Priority,
+                    //Status = t.Status,
                     StartTime = t.StartTime,
                     ExpectedTime = t.ExpectedTime,
                     EndTime = t.EndTime,
@@ -254,11 +254,11 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             if (!string.IsNullOrWhiteSpace(taskType))
                 query = query.Where(t => t.TaskType == taskType);
 
-            if (!string.IsNullOrWhiteSpace(status))
-                query = query.Where(t => t.Status == status);
+            //if (!string.IsNullOrWhiteSpace(status))
+            //    query = query.Where(t => t.Status == status);
 
-            if (priority.HasValue)
-                query = query.Where(t => t.Priority == priority.Value);
+            //if (priority.HasValue)
+            //    query = query.Where(t => t.Priority == priority.Value);
 
             query = query.OrderByDescending(t => t.CreatedDate);
 
@@ -272,8 +272,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     TaskName = t.TaskName,
                     TaskDescription = t.TaskDescription,
                     TaskType = t.TaskType,
-                    Priority = t.Priority,
-                    Status = t.Status,
+                    //Priority = t.Priority,
+                    //Status = t.Status,
                     StartTime = t.StartTime,
                     ExpectedTime = t.ExpectedTime,
                     EndTime = t.EndTime,
@@ -313,8 +313,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 TaskType = dto.TaskType,
                 TaskName = "Task for " + dto.TaskType,
                 StartTime = dto.StartDate,
-                Priority = 1, // Default priority, can be adjusted based on your logic
-                Status = "Pending",
+                //Priority = 1, // Default priority, can be adjusted based on your logic
+                //Status = "Pending",
                 EndTime = DateTime.UtcNow.AddDays(7),
                 ExpectedTime = DateTime.UtcNow.AddDays(1),
                 TaskDescription = "This is description",
@@ -391,7 +391,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 Id = Guid.NewGuid(),
                 TaskType = dto.TaskType,
                 StartTime = dto.StartDate,
-                Status = "Pending",
+                //Status = "Pending",
                 TaskDescription = "This is description",
                 AssigneeId = dto.AssigneeId,
                 CreatedDate = DateTime.UtcNow,
@@ -459,7 +459,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 Id = Guid.NewGuid(),
                 TaskType = request.TaskType,
                 StartTime = request.StartDate,
-                Status = "Pending",
+                //Status = "Pending",
                 TaskDescription = request.TaskDescription ?? "Simple replacement task",
                 AssigneeId = request.AssigneeId,
                 CreatedDate = DateTime.UtcNow,
@@ -481,7 +481,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 Id = Guid.NewGuid(),
                 TaskType = request.TaskType,
                 StartTime = request.StartDate,
-                Status = "Pending",
+                //Status = "Pending",
                 TaskDescription = "Task created from error analysis",
                 AssigneeId = request.AssigneeId,
                 CreatedDate = DateTime.UtcNow,
@@ -551,7 +551,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 Id = Guid.NewGuid(),
                 TaskType = request.TaskType,
                 StartTime = request.StartDate,
-                Status = "Pending",
+                //Status = "Pending",
                 TaskDescription = "Task created from error analysis",
                 AssigneeId = request.AssigneeId,
                 CreatedDate = DateTime.UtcNow,
@@ -621,7 +621,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 Id = Guid.NewGuid(),
                 TaskType = request.TaskType,
                 StartTime = request.StartDate,
-                Status = "Pending",
+                //Status = "Pending",
                 TaskDescription = "Warranty task created from technical issue",
                 AssigneeId = request.AssigneeId,
                 CreatedDate = DateTime.UtcNow,
@@ -692,7 +692,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 Id = Guid.NewGuid(),
                 TaskType = request.TaskType,
                 StartTime = request.StartDate,
-                Status = "Pending",
+                //Status = "Pending",
                 TaskDescription = taskDescription,
                 AssigneeId = request.AssigneeId,
                 CreatedDate = DateTime.UtcNow,

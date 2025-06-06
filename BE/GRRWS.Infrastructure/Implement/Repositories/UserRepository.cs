@@ -14,7 +14,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         public async Task<bool> UserNameExistsAsync(string userName)
         {
             // Check if any user exists with the specified username
-            return await _context.Users.AnyAsync(x => x.UserName == userName);
+            return await _context.Users.AnyAsync(x => x.FullName == userName);
         }
 
         public async Task<bool> EmailExistsAsync(string email)
@@ -59,8 +59,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             if (dateOfBirth.HasValue)
                 query = query.Where(u => u.DateOfBirth == dateOfBirth.Value.Date);
 
-            if (role.HasValue)
-                query = query.Where(u => u.Role == role.Value);
+            //if (role.HasValue)
+            //    query = query.Where(u => u.Role == role.Value);
 
             query = query.Where(u => !u.IsDeleted);
 
@@ -76,13 +76,12 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 {
                     Id = u.Id,
                     FullName = u.FullName ?? "",
-                    UserName = u.UserName ?? "", // Chỉnh sửa tên thuộc tính thành chữ hoa
                     Email = u.Email ?? "",
                     PhoneNumber = u.PhoneNumber ?? "",
                     ProfilePictureUrl = u.ProfilePictureUrl ?? "",
                     DateOfBirth = u.DateOfBirth ?? DateTime.MinValue,
                     CreatedDate = u.CreatedDate,
-                    Role = u.Role
+                    //Role = u.Role
                 })
                 .ToListAsync();
 
@@ -109,7 +108,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         public async Task<List<User>> GetUsersByRole(int role)
         {
             return await _context.Users
-                .Where(u => u.Role == role && !u.IsDeleted)
+                //.Where(u => u.Role == role && !u.IsDeleted)
                 .ToListAsync();
         }
 

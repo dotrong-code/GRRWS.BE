@@ -67,9 +67,9 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.ApplyConfiguration(new DeviceWarrantyConfiguration());
             modelBuilder.ApplyConfiguration(new MachineErrorHistoryConfiguration());
             modelBuilder.ApplyConfiguration(new MachineIssueHistoryConfiguration());
-            modelBuilder.ApplyConfiguration(new TasksConfiguration());
-            modelBuilder.ApplyConfiguration(new ReportConfiguration());
-            modelBuilder.ApplyConfiguration(new RequestIssueConfiguration());
+            //modelBuilder.ApplyConfiguration(new TasksConfiguration());
+            //modelBuilder.ApplyConfiguration(new ReportConfiguration());
+            //modelBuilder.ApplyConfiguration(new RequestIssueConfiguration());
             modelBuilder.ApplyConfiguration(new ErrorDetailConfiguration());
             modelBuilder.ApplyConfiguration(new DeviceWarrantyHistoryConfiguration());
             modelBuilder.ApplyConfiguration(new TechnicalSymptomConfiguration());
@@ -268,8 +268,8 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<Report>(entity =>
             {
                 entity.Property(r => r.Location).IsRequired();
-                entity.Property(r => r.Status).IsRequired();
-                entity.Property(r => r.Priority).IsRequired();
+                //entity.Property(r => r.Status).IsRequired();
+                //entity.Property(r => r.Priority).IsRequired();
             });
 
             // Request
