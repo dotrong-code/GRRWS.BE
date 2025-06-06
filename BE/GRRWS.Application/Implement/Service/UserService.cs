@@ -101,10 +101,11 @@ namespace GRRWS.Application.Implement.Service
                 Id = user.Id,
                 FullName = user.FullName ?? "",
                 Email = user.Email ?? "",
+                UserName = user.UserName ?? "",
                 PhoneNumber = user.PhoneNumber ?? "",
                 DateOfBirth = user.DateOfBirth ?? DateTime.MinValue,
                 ProfilePictureUrl = UserImg.ImageUrl ?? string.Empty,
-                Role = (int)user.Role
+                Role = user.Role
 
             };
 
@@ -127,12 +128,14 @@ namespace GRRWS.Application.Implement.Service
             {
                 Id = user.Id,
                 FullName = user.FullName ?? "",
+                UserName = user.UserName ?? "",
                 Email = user.Email ?? "",
+
                 PhoneNumber = user.PhoneNumber ?? "",
                 ProfilePictureUrl = UserImg.ImageUrl ?? string.Empty,
                 CreatedDate = user.CreatedDate,
                 DateOfBirth = user.DateOfBirth ?? DateTime.MinValue,
-                Role = (int)user.Role
+                Role = user.Role
             };
             return Result.SuccessWithObject(response);
         }
@@ -163,10 +166,11 @@ namespace GRRWS.Application.Implement.Service
             }
 
             user.FullName = request.FullName;
+            user.UserName = request.UserName;
             user.Email = request.Email;
             user.PhoneNumber = request.PhoneNumber;
             user.DateOfBirth = request.DateOfBirth;
-            user.Role = (Domain.Enum.Role)request.Role;
+            user.Role = request.Role;
             user.ModifiedDate = DateTime.UtcNow;
 
             var updateResult = await _unitOfWork.UserRepository.UpdateAsync(user);

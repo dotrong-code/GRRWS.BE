@@ -3,8 +3,14 @@ using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
+using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.Report;
 using GRRWS.Infrastructure.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -68,7 +74,7 @@ namespace GRRWS.Application.Implement.Service
 
             var report = _mapper.Map<Report>(dto);
             report.Id = Guid.NewGuid();
-            //report.Status = "InProgress";
+            report.Status = "InProgress";
             report.CreatedDate = DateTime.Now;
             report.Location = createLocation;
 
@@ -87,7 +93,7 @@ namespace GRRWS.Application.Implement.Service
             await _unit.ReportRepository.CreateAsync(report);
             var getRequest = await _unit.RequestRepository.GetRequestByIdAsync((Guid)report.RequestId);
             getRequest.ReportId = report.Id;
-            //getRequest.Status = "Approved";
+            getRequest.Status = "Approved";
             await _unit.RequestRepository.UpdateAsync(getRequest);
             return Result.SuccessWithObject(new { Message = "Report created successfully!", ReportId = report.Id });
         }
@@ -140,7 +146,7 @@ namespace GRRWS.Application.Implement.Service
 
             var report = _mapper.Map<Report>(dto);
             report.Id = Guid.NewGuid();
-            //report.Status = "InWarranty";
+            report.Status = "InWarranty";
             report.CreatedDate = DateTime.Now;
             report.Location = createLocation;
 
@@ -159,7 +165,7 @@ namespace GRRWS.Application.Implement.Service
             await _unit.ReportRepository.CreateAsync(report);
             var getRequest = await _unit.RequestRepository.GetRequestByIdAsync((Guid)report.RequestId);
             getRequest.ReportId = report.Id;
-            //getRequest.Status = "Approved";
+            getRequest.Status = "Approved";
             await _unit.RequestRepository.UpdateAsync(getRequest);
             return Result.SuccessWithObject(new { Message = "Report created successfully!", ReportId = report.Id });
         }
@@ -274,9 +280,9 @@ namespace GRRWS.Application.Implement.Service
             {
                 Id = Guid.NewGuid(),
                 RequestId = dto.RequestId,
-                //Priority = dto.Priority,
+                Priority = dto.Priority,
                 Location = createLocation,
-                //Status = "InProgress",
+                Status = "InProgress",
                 CreatedDate = DateTime.Now
             };
 
@@ -325,7 +331,7 @@ namespace GRRWS.Application.Implement.Service
 
             // Cập nhật Request
             request.ReportId = report.Id;
-            //request.Status = "Approved";
+            request.Status = "Approved";
             await _unit.RequestRepository.UpdateAsync(request);
 
             await _unit.SaveChangesAsync();
@@ -401,9 +407,9 @@ namespace GRRWS.Application.Implement.Service
             {
                 Id = Guid.NewGuid(),
                 RequestId = dto.RequestId,
-                //Priority = dto.Priority,
+                Priority = dto.Priority,
                 Location = createLocation,
-                //Status = "InWarranty",
+                Status = "InWarranty",
                 CreatedDate = DateTime.Now
             };
 
@@ -452,7 +458,7 @@ namespace GRRWS.Application.Implement.Service
 
             // Cập nhật Request
             request.ReportId = report.Id;
-            //request.Status = "Approved";
+            request.Status = "Approved";
             await _unit.RequestRepository.UpdateAsync(request);
 
             await _unit.SaveChangesAsync();

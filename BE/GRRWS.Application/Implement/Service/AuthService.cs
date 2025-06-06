@@ -1,22 +1,26 @@
-﻿using FluentValidation;
+﻿using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks;
+using FluentValidation;
 using Google.Apis.Auth;
-using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
+using GRRWS.Application.Common;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
-using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
+using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.EmailTemplate;
-using GRRWS.Infrastructure.DTOs.Firebase.AddImage;
 using GRRWS.Infrastructure.DTOs.User.Login;
 using GRRWS.Infrastructure.DTOs.User.Password;
-using GRRWS.Infrastructure.DTOs.User.Register;
 using GRRWS.Infrastructure.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+using GRRWS.Infrastructure.DTOs.User.Register;
+using GRRWS.Infrastructure.DTOs.Firebase.AddImage;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -77,22 +81,22 @@ namespace GRRWS.Application.Implement.Service
             //{
             //    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Confirm", "Your email is not activated yet!!, please confirm your mail"));
             //}
-            //var role = userLogin.Role switch
-            //{
-            //    1 => "HOD",
-            //    2 => "HOT",
-            //    3 => "Staff",
-            //    4 => "SK",
-            //    5 => "Admin",
-            //    _ => throw new InvalidOperationException("Unknown role.")
-            //};
+            var role = userLogin.Role switch
+            {
+                1 => "HOD",
+                2 => "HOT",
+                3 => "Staff",
+                4 => "SK",
+                5 => "Admin",
+                _ => throw new InvalidOperationException("Unknown role.")
+            };
             var c = new CurrentUserObject
             {
                 UserId = userLogin.Id,
                 Fullname = userLogin.FullName,
                 Email = userLogin.Email,
                 PhoneNumber = userLogin.PhoneNumber,
-                //RoleName = role,
+                RoleName = role,
             };
             var token = await _tokenService.GenerateTokenAsync(c);
             var accessToken = await _tokenService.GenerateAccessTokenAsync(token);
@@ -134,11 +138,11 @@ namespace GRRWS.Application.Implement.Service
                 FullName = registerRequest.FullName,
                 Email = registerRequest.Email,
                 PasswordHash = registerRequest.Password,
-                //UserName = registerRequest.UserName,
+                UserName = registerRequest.UserName,
                 PhoneNumber = registerRequest.PhoneNumber,
                 DateOfBirth = registerRequest.DateOfBirth,
                 ProfilePictureUrl = mainImageUrl,
-                Role = (Domain.Enum.Role)registerRequest.Role
+                Role = registerRequest.Role
 
             };
 

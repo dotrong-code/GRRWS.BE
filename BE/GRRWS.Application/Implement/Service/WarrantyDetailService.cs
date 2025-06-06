@@ -1,19 +1,25 @@
-﻿using GRRWS.Application.Common.Result;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DTOs.WarrantyDetail;
+using GRRWS.Infrastructure.Interfaces.IRepositories;
 using GRRWS.Infrastructure.Interfaces;
 
 namespace GRRWS.Application.Implement.Service
 {
     public class WarrantyDetailService : IWarrantyDetailService
     {
-
+        
         private readonly IUnitOfWork _unitOfWork;
 
-        public WarrantyDetailService(IUnitOfWork unitOfWork)
+        public WarrantyDetailService( IUnitOfWork unitOfWork)
         {
-
+            
             _unitOfWork = unitOfWork;
         }
 
@@ -43,7 +49,9 @@ namespace GRRWS.Application.Implement.Service
             {
                 Id = Guid.NewGuid(),
                 RequestId = dto.RequestId,
+                Priority = 2, // Medium
                 Location = dto.Location,
+                Status = "Pending",
                 CreatedDate = DateTime.UtcNow
             };
 
