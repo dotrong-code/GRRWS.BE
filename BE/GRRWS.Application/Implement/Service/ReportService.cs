@@ -3,15 +3,8 @@ using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
-using GRRWS.Domain.Enum;
-using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.Report;
 using GRRWS.Infrastructure.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GRRWS.Application.Implement.Service
 {
