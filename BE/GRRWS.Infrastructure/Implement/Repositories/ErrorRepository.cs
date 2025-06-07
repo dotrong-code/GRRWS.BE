@@ -50,14 +50,14 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             return errors;
         }
-        public async Task<List<Sparepart>> GetSparepartsByErrorIdAsync(Guid errorId)
-        {
-            return await _context.ErrorSpareparts
-                .Where(es => es.ErrorId == errorId)
-                .Include(es => es.Sparepart)
-                .Select(es => es.Sparepart)
-                .ToListAsync();
-        }
+        //public async Task<List<Sparepart>> GetSparepartsByErrorIdAsync(Guid errorId)
+        //{
+        //    return await _context.ErrorSpareparts
+        //        .Where(es => es.ErrorId == errorId)
+        //        .Include(es => es.Sparepart)
+        //        .Select(es => es.Sparepart)
+        //        .ToListAsync();
+        //}
         public async Task<List<ErrorSimpleDTO>> GetErrorsByReportIdWithoutTaskAsync(Guid reportId)
         {
             var errors = await _context.ErrorDetails
@@ -95,31 +95,31 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .ToList();
         }
 
-        public async Task<List<SparepartWeb>> GetListOfSparepartByErrorAsync(List<Guid> errorIds)
-        {
-            if (errorIds == null || !errorIds.Any())
-                return new List<SparepartWeb>();
+        //public async Task<List<SparepartWeb>> GetListOfSparepartByErrorAsync(List<Guid> errorIds)
+        //{
+        //    if (errorIds == null || !errorIds.Any())
+        //        return new List<SparepartWeb>();
 
-            var result = await _context.ErrorSpareparts
-                .Where(es => errorIds.Contains(es.ErrorId))
-                .Include(es => es.Error)
-                .Include(es => es.Sparepart)
-                .Select(es => new SparepartWeb
-                {
-                    SpartpartId = es.Sparepart.Id,
-                    SpartpartName = es.Sparepart.SparepartName,
-                    ErrorName = es.Error.Name,
-                    ErrorCode = es.Error.ErrorCode,
-                    QuantityNeed = es.QuantityNeeded ?? 0,
-                    StockQuatity = es.Sparepart.StockQuantity,
-                    Unit = es.Sparepart.Unit
-                })
-                .OrderBy(sp => sp.ErrorName)
-                .ThenBy(sp => sp.SpartpartName)
-                .ToListAsync();
+        //    var result = await _context.ErrorSpareparts
+        //        .Where(es => errorIds.Contains(es.ErrorId))
+        //        .Include(es => es.Error)
+        //        .Include(es => es.Sparepart)
+        //        .Select(es => new SparepartWeb
+        //        {
+        //            SpartpartId = es.Sparepart.Id,
+        //            SpartpartName = es.Sparepart.SparepartName,
+        //            ErrorName = es.Error.Name,
+        //            ErrorCode = es.Error.ErrorCode,
+        //            QuantityNeed = es.QuantityNeeded ?? 0,
+        //            StockQuatity = es.Sparepart.StockQuantity,
+        //            Unit = es.Sparepart.Unit
+        //        })
+        //        .OrderBy(sp => sp.ErrorName)
+        //        .ThenBy(sp => sp.SpartpartName)
+        //        .ToListAsync();
 
-            return result;
-        }
+        //    return result;
+        //}
 
     }
 }
