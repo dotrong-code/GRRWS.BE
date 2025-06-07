@@ -1,5 +1,4 @@
 ﻿using GRRWS.Domain.Entities;
-using GRRWS.Infrastructure.DB.Configuration;
 using Microsoft.EntityFrameworkCore;
 
 namespace GRRWS.Infrastructure.DB
@@ -55,38 +54,38 @@ namespace GRRWS.Infrastructure.DB
         {
             base.OnModelCreating(modelBuilder);
             #region Data Configuration
-            modelBuilder.ApplyConfiguration(new UserConfiguration());
-            modelBuilder.ApplyConfiguration(new IssueConfiguration());
-            modelBuilder.ApplyConfiguration(new DeviceConfiguration());
-            modelBuilder.ApplyConfiguration(new ErrorConfiguration());
-            modelBuilder.ApplyConfiguration(new SparepartConfiguration());
-
+            //modelBuilder.ApplyConfiguration(new UserConfiguration());
+            //modelBuilder.ApplyConfiguration(new IssueConfiguration());
+            //modelBuilder.ApplyConfiguration(new DeviceConfiguration());
+            //modelBuilder.ApplyConfiguration(new ErrorConfiguration());
             //modelBuilder.ApplyConfiguration(new SparepartConfiguration());
 
-            modelBuilder.ApplyConfiguration(new IssueErrorConfiguration());
-            modelBuilder.ApplyConfiguration(new ErrorSparepartConfiguration());
-            modelBuilder.ApplyConfiguration(new MachineConfiguration());
-            modelBuilder.ApplyConfiguration(new RequestConfiguration());
-            modelBuilder.ApplyConfiguration(new ZoneConfiguration());
-            modelBuilder.ApplyConfiguration(new AreaConfiguration());
-            modelBuilder.ApplyConfiguration(new PositionConfiguration());
-            modelBuilder.ApplyConfiguration(new DeviceErrorHistoryConfiguration());
-            modelBuilder.ApplyConfiguration(new DeviceIssueHistoryConfiguration());
-            modelBuilder.ApplyConfiguration(new DeviceHistoryConfiguration());
-            modelBuilder.ApplyConfiguration(new DeviceWarrantyConfiguration());
-            modelBuilder.ApplyConfiguration(new MachineErrorHistoryConfiguration());
-            modelBuilder.ApplyConfiguration(new MachineIssueHistoryConfiguration());
-            modelBuilder.ApplyConfiguration(new TasksConfiguration());
-            modelBuilder.ApplyConfiguration(new ReportConfiguration());
-            modelBuilder.ApplyConfiguration(new RequestIssueConfiguration());
-            modelBuilder.ApplyConfiguration(new ErrorDetailConfiguration());
-            modelBuilder.ApplyConfiguration(new DeviceWarrantyHistoryConfiguration());
-            modelBuilder.ApplyConfiguration(new TechnicalSymptomConfiguration());
-            modelBuilder.ApplyConfiguration(new IssueTechnicalSymptomConfiguration());
-            modelBuilder.ApplyConfiguration(new TechnicalSymptomReportConfiguration());
+            ////modelBuilder.ApplyConfiguration(new SparepartConfiguration());
 
-            modelBuilder.ApplyConfiguration(new ErrorActionConfiguration());
-            modelBuilder.ApplyConfiguration(new TaskActionConfiguration());
+            //modelBuilder.ApplyConfiguration(new IssueErrorConfiguration());
+            //modelBuilder.ApplyConfiguration(new ErrorSparepartConfiguration());
+            //modelBuilder.ApplyConfiguration(new MachineConfiguration());
+            //modelBuilder.ApplyConfiguration(new RequestConfiguration());
+            //modelBuilder.ApplyConfiguration(new ZoneConfiguration());
+            //modelBuilder.ApplyConfiguration(new AreaConfiguration());
+            //modelBuilder.ApplyConfiguration(new PositionConfiguration());
+            //modelBuilder.ApplyConfiguration(new DeviceErrorHistoryConfiguration());
+            //modelBuilder.ApplyConfiguration(new DeviceIssueHistoryConfiguration());
+            //modelBuilder.ApplyConfiguration(new DeviceHistoryConfiguration());
+            //modelBuilder.ApplyConfiguration(new DeviceWarrantyConfiguration());
+            //modelBuilder.ApplyConfiguration(new MachineErrorHistoryConfiguration());
+            //modelBuilder.ApplyConfiguration(new MachineIssueHistoryConfiguration());
+            //modelBuilder.ApplyConfiguration(new TasksConfiguration());
+            //modelBuilder.ApplyConfiguration(new ReportConfiguration());
+            //modelBuilder.ApplyConfiguration(new RequestIssueConfiguration());
+            //modelBuilder.ApplyConfiguration(new ErrorDetailConfiguration());
+            //modelBuilder.ApplyConfiguration(new DeviceWarrantyHistoryConfiguration());
+            //modelBuilder.ApplyConfiguration(new TechnicalSymptomConfiguration());
+            //modelBuilder.ApplyConfiguration(new IssueTechnicalSymptomConfiguration());
+            //modelBuilder.ApplyConfiguration(new TechnicalSymptomReportConfiguration());
+
+            //modelBuilder.ApplyConfiguration(new ErrorActionConfiguration());
+            //modelBuilder.ApplyConfiguration(new TaskActionConfiguration());
 
 
             #endregion
@@ -167,7 +166,8 @@ namespace GRRWS.Infrastructure.DB
                     .HasConversion<string>();
             });
 
-
+            modelBuilder.Entity<TechnicalSymptomReport>()
+    .HasKey(tsr => new { tsr.ReportId, tsr.TechnicalSymptomId });
             // DeviceHistory
             modelBuilder.Entity<DeviceHistory>()
                 .Property(dh => dh.EventDate)
@@ -576,11 +576,11 @@ namespace GRRWS.Infrastructure.DB
                 .OnDelete(DeleteBehavior.Restrict);
 
             //TaskAction → User(Many - to - One):
-            modelBuilder.Entity<TaskAction>()
-                .HasOne(ta => ta.PerformedBy)
-                .WithMany(u => u.TaskActions)
-                .HasForeignKey(ta => ta.PerformedById)
-                .OnDelete(DeleteBehavior.Restrict);
+            //modelBuilder.Entity<TaskAction>()
+            //    .HasOne(ta => ta.PerformedBy)
+            //    .WithMany(u => u.TaskActions)
+            //    .HasForeignKey(ta => ta.PerformedById)
+            //    .OnDelete(DeleteBehavior.Restrict);
 
 
             // BaseEntity Defaults

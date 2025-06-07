@@ -159,7 +159,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                    {
                        IssueId = ri.Issue.Id,
                        DisplayName = ri.Issue.DisplayName,
-                       Images = ri.Images.Select(img => img.ImageUrl).ToList()
+                       //Images = ri.Images.Select(img => img.ImageUrl).ToList()
                    }).ToList()
                })
                .FirstOrDefaultAsync();

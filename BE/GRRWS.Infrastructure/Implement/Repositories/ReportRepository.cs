@@ -3,11 +3,6 @@ using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GRRWS.Infrastructure.Implement.Repositories
 {
@@ -68,7 +63,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 throw new Exception("Report not found.");
 
             existingReport.Location = updatedReport.Location;
-            existingReport.Status = updatedReport.Status;
+
             existingReport.ModifiedDate = DateTime.Now;
             existingReport.ErrorDetails.Clear();
 

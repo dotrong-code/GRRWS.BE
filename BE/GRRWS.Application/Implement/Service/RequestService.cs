@@ -1,15 +1,9 @@
-﻿using GRRWS.Application.Common;
-using GRRWS.Application.Common.Result;
+﻿using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
-using GRRWS.Infrastructure.DTOs.Common;
-using GRRWS.Infrastructure.DTOs.Request;
+using GRRWS.Infrastructure.DTOs.RequestDTO;
+using GRRWS.Infrastructure.Interfaces;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -22,6 +16,8 @@ namespace GRRWS.Application.Implement.Service
         public RequestService(IRequestRepository requestRepository, ITokenService tokenService, IUnitOfWork unitOfWork)
         {
             _requestRepository = requestRepository;
+            _tokenService = tokenService;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Result> GetAllAsync()
@@ -34,17 +30,17 @@ namespace GRRWS.Application.Implement.Service
                     Id = r.Id,
                     RequestTitle = r.RequestTitle,
                     Description = r.Description,
-                    Status = r.Status,
+                    //Status = r.Status,
                     CreatedDate = r.CreatedDate,
                     CreatedBy = r.CreatedBy,
                     ModifiedDate = r.ModifiedDate,
                     ModifiedBy = r.ModifiedBy,
-                    DueDate = r.DueDate,
-                    Priority = r.Priority,
+                    //DueDate = r.DueDate,
+                    //Priority = r.Priority,
                     Issues = r.RequestIssues.Select(ri => new IssueDTO
                     {
                         Id = ri.Issue.Id,
-                        IssueTitle = ri.Issue.IssueKey
+                        //IssueTitle = ri.Issue.IssueKey
                     }).ToList()
                 }).ToList<object>();
 
@@ -62,51 +58,51 @@ namespace GRRWS.Application.Implement.Service
                 Id = r.Id,
                 RequestTitle = r.RequestTitle,
                 Description = r.Description,
-                Status = r.Status,
+                //Status = r.Status,
                 CreatedDate = r.CreatedDate,
                 CreatedBy = r.CreatedBy,
                 ModifiedDate = r.ModifiedDate,
                 ModifiedBy = r.ModifiedBy,
-                DueDate = r.DueDate,
-                Priority = r.Priority,
+                //DueDate = r.DueDate,
+                //Priority = r.Priority,
                 Issues = r.RequestIssues.Select(ri => new IssueDTO
                 {
                     Id = ri.Issue.Id,
-                    IssueTitle = ri.Issue.IssueKey
+                    //IssueTitle = ri.Issue.IssueKey
                 }).ToList()
             };
 
-            var issueImageMap = dto.IssueImages.ToDictionary(x => x.IssueId, x => x.Images);
-            foreach (var requestIssue in request.RequestIssues)
-            {
-                if (issueImageMap.TryGetValue(requestIssue.IssueId, out var imageFiles) && imageFiles != null)
-                {
-                    foreach (var imageFile in imageFiles)
-                    {
-                        if (imageFile != null && imageFile.Length > 0)
-                        {
-                            var imageRequest = new AddImageRequest(imageFile, "RequestIssues");
-                            var uploadResult = await _unitOfWork.FirebaseRepository.UploadImageAsync(imageRequest);
-                            if (!uploadResult.Success)
-                            {
-                                return Result.Failure(uploadResult.Error);
-                            }
+            //var issueImageMap = dto.IssueImages.ToDictionary(x => x.IssueId, x => x.Images);
+            //foreach (var requestIssue in request.RequestIssues)
+            //{
+            //    if (issueImageMap.TryGetValue(requestIssue.IssueId, out var imageFiles) && imageFiles != null)
+            //    {
+            //        foreach (var imageFile in imageFiles)
+            //        {
+            //            if (imageFile != null && imageFile.Length > 0)
+            //            {
+            //                var imageRequest = new AddImageRequest(imageFile, "RequestIssues");
+            //                var uploadResult = await _unitOfWork.FirebaseRepository.UploadImageAsync(imageRequest);
+            //                if (!uploadResult.Success)
+            //                {
+            //                    return Result.Failure(uploadResult.Error);
+            //                }
 
-                            requestIssue.Images.Add(new Image
-                            {
-                                Id = Guid.NewGuid(),
-                                ImageUrl = uploadResult.FilePath,
-                                Type = imageFile.ContentType ?? "image/jpeg",
-                                RequestIssueId = requestIssue.Id,
-                                CreatedDate = DateTime.UtcNow,
-                                IsDeleted = false
-                            });
-                        }
-                    }
-                }
-            }
+            //                requestIssue.Images.Add(new Image
+            //                {
+            //                    Id = Guid.NewGuid(),
+            //                    ImageUrl = uploadResult.FilePath,
+            //                    Type = imageFile.ContentType ?? "image/jpeg",
+            //                    RequestIssueId = requestIssue.Id,
+            //                    CreatedDate = DateTime.UtcNow,
+            //                    IsDeleted = false
+            //                });
+            //            }
+            //        }
+            //    }
+            //}
 
-            await _requestRepository.CreateAsync(request);
+            //await _requestRepository.CreateAsync(request);
             await _unitOfWork.SaveChangesAsync();
 
             return Result.SuccessWithObject(new { Message = "Request created successfully!" });
@@ -117,13 +113,13 @@ namespace GRRWS.Application.Implement.Service
             var request = new Request
             {
                 Id = Guid.NewGuid(),
-                RequestTitle = dto.RequestTitle,
-                Description = dto.Description,
-                Status = dto.Status,
-                CreatedBy = dto.CreatedBy,
+                //RequestTitle = dto.RequestTitle,
+                //Description = dto.Description,
+                //Status = dto.Status,
+                //CreatedBy = dto.CreatedBy,
                 CreatedDate = DateTime.UtcNow,
-                DueDate = dto.DueDate,
-                Priority = dto.Priority,
+                //DueDate = dto.DueDate,
+                //Priority = dto.Priority,
                 IsDeleted = false,
                 RequestIssues = (dto.IssueIds ?? new List<Guid>()).Select(issueId => new RequestIssue
                 {
@@ -164,9 +160,9 @@ namespace GRRWS.Application.Implement.Service
                 Id = id,
                 RequestTitle = dto.RequestTitle,
                 Description = dto.Description,
-                Status = Enum.TryParse<Status>(dto.Status, out var status) ? status : Status.Pending,
+                //Status = Enum.TryParse<Status>(dto.Status, out var status) ? status : Status.Pending,
                 DueDate = dto.DueDate,
-                Priority = Enum.TryParse<Priority>(dto.Priority, out var priority) ? priority : Priority.Low,
+                //Priority = Enum.TryParse<Priority>(dto.Priority, out var priority) ? priority : Priority.Low,
                 ModifiedBy = dto.ModifiedBy,
                 ModifiedDate = DateTime.UtcNow
             };
@@ -182,7 +178,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Request not found.", 0));
 
             r.IsDeleted = true;
-            r.Status = "Delete";
+            //r.Status = "Delete";
             r.ModifiedDate = DateTime.UtcNow;
             await _requestRepository.UpdateAsync(r);
 
@@ -267,8 +263,8 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "No issues found for the request.", 0));
             }
 
-            var issues = await MapIssuesWithImagesAsync(requestIssues);
-            return Result.SuccessWithObject(issues);
+            //var issues = await MapIssuesWithImagesAsync(requestIssues);
+            return Result.SuccessWithObject(requestIssues);
         }
 
         public async Task<Result> CancelRequestAsync(Infrastructure.DTOs.RequestDTO.CreateRequestFormDTO.CancelRequestDTO dto)
@@ -277,11 +273,7 @@ namespace GRRWS.Application.Implement.Service
             if (r == null || r.IsDeleted)
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Request not found.", 0));
 
-            var restrictedStatuses = new[] { Status.Approved, Status.InProgress, Status.Completed };
-            if (restrictedStatuses.Contains(r.Status))
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Cannot cancel this request! You can only cancel request if the status is Pending.", 0));
 
-            r.Status = Status.Pending; // Use appropriate enum value
             r.Description = "Yêu cầu đã bị hủy với lý do: " + dto.Reason;
             r.ModifiedDate = DateTime.UtcNow;
             await _requestRepository.UpdateAsync(r);
@@ -289,5 +281,34 @@ namespace GRRWS.Application.Implement.Service
             return Result.Success();
         }
 
+        public Task<Result> CreateAsync(CreateRequestDTO dto, Guid userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result> CreateTestAsync(TestCreateRequestDTO dto, Guid userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result> GetRequestByDeviceIdAsync(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result> GetRequestByUserIdAsync(Guid userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result> UpdateRequestIssueStatusAsync(Guid requestId, Guid issueId, bool isRejected, string rejectionReason, string rejectionDetails)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result> UpdateRequestStatusAsync(Guid requestId, bool isRejected, string rejectionReason, string rejectionDetails)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

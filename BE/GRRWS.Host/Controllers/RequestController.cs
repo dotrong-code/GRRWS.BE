@@ -66,40 +66,38 @@ namespace GRRWS.Host.Controllers
 : ResultExtensions.ToProblemDetails(result);
         }
 
+        //[HttpPost("api/Request/custom")]
+
+
+        //public async Task<IResult> CreateRequest([FromForm] CreateRequestDTO dto)
+        //{
+        //    // Assume userId is obtained from authentication (e.g., JWT)
+        //    CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+
+
+        //    var result = await _requestService.CreateAsync(dto, c.UserId);
+        //    return result.IsSuccess
+        //        ? ResultExtensions.ToSuccessDetails(result, "Request created successfully")
+        //        : ResultExtensions.ToProblemDetails(result);
+        //}
+
+        //[HttpPost("test-create")]
+        //[Consumes("multipart/form-data")]
+        //public async Task<IResult> TestCreateRequest([FromForm] TestCreateRequestDTO dto)
+        //{
+        //    CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+        //    var result = await _requestService.CreateTestAsync(dto, c.UserId);
+        //    return result.IsSuccess
+        //        ? ResultExtensions.ToSuccessDetails(result, "Request created successfully for testing")
+        //        : ResultExtensions.ToProblemDetails(result);
+        //}
+
         [HttpPost("api/Request/custom")]
-        
-        
         public async Task<IResult> CreateRequest([FromForm] CreateRequestDTO dto)
         {
             // Assume userId is obtained from authentication (e.g., JWT)
             CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
-           
 
-            var result = await _requestService.CreateAsync(dto, c.UserId);
-            return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, "Request created successfully")
-                : ResultExtensions.ToProblemDetails(result);
-        }
-
-        [HttpPost("test-create")]
-        [Consumes("multipart/form-data")]
-        public async Task<IResult> TestCreateRequest([FromForm] TestCreateRequestDTO dto)
-        {
-            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
-            var result = await _requestService.CreateTestAsync(dto, c.UserId);
-            return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, "Request created successfully for testing")
-                : ResultExtensions.ToProblemDetails(result);
-        }
-
-        [HttpPost("api/Request/custom")]
-        
-        
-        public async Task<IResult> CreateRequest([FromForm] CreateRequestDTO dto)
-        {
-            // Assume userId is obtained from authentication (e.g., JWT)
-            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
-           
 
             var result = await _requestService.CreateAsync(dto, c.UserId);
             return result.IsSuccess
