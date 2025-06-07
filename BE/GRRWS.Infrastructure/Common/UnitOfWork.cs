@@ -32,13 +32,18 @@ namespace GRRWS.Infrastructure.Common
 
         public ITaskRepository TaskRepository { get; private set; }
         public IWarrantyDetailRepository WarrantyDetailRepository { get; private set; }
+
+        public IErrorDetailRepository ErrorDetailRepository { get; }
+
         public IIssueErrorRepository IssueErrorRepository { get; private set; }
+        public ISparepartRepository SparepartRepository { get; private set; }
+
 
         public async Task<int> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync();
         }
-        public UnitOfWork(GRRWSContext context, StorageClient storageClient, ILogger<UnitOfWork> logger)
+        public UnitOfWork(GRRWSContext context, StorageClient storageClient, ILogger<UnitOfWork> logger, IErrorDetailRepository errorDetailRepository)
         {
             _context = context;
             _logger = logger;
@@ -63,7 +68,10 @@ namespace GRRWS.Infrastructure.Common
             DeviceIssueHistoryRepository = new DeviceIssueHistoryRepository(_context);
             DeviceHistoryRepository = new DeviceHistoryRepository(_context);
             WarrantyDetailRepository = new WarrantyDetailRepository(_context);
+            ErrorDetailRepository = errorDetailRepository;
             IssueErrorRepository = new IssueErrorRepository(_context);
+            SparepartRepository = new SparepartRepository(_context);
+
         }
         public int Complete()
         {

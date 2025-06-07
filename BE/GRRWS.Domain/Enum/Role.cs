@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GRRWS.Domain.Enum
+﻿namespace GRRWS.Domain.Enum
 {
     public enum Role
     {
-        Admin,
-        User,
-        Staff,
-        Customer
+        HOT,//Head of Technical 0
+        HOD,//Head of Department 1
+        Mechanic, // 2
+        SKeeper,// Stock Keeper 3
+        Admin/// Admin 4
     }
 }

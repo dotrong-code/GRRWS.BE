@@ -14,12 +14,12 @@ namespace GRRWS.Application.Implement.Service
 {
     public class WarrantyDetailService : IWarrantyDetailService
     {
-        
+
         private readonly IUnitOfWork _unitOfWork;
 
-        public WarrantyDetailService( IUnitOfWork unitOfWork)
+        public WarrantyDetailService(IUnitOfWork unitOfWork)
         {
-            
+
             _unitOfWork = unitOfWork;
         }
 
@@ -49,9 +49,8 @@ namespace GRRWS.Application.Implement.Service
             {
                 Id = Guid.NewGuid(),
                 RequestId = dto.RequestId,
-                Priority = 2, // Medium
+
                 Location = dto.Location,
-                Status = "Pending",
                 CreatedDate = DateTime.UtcNow
             };
 

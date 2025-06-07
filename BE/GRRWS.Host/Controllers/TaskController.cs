@@ -137,6 +137,50 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Task assigned successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [HttpPost("create-task")]
+        public async Task<IResult> CreateTaskWeb(CreateTaskWeb createTaskWeb)
+        {
+            var result = await _taskService.CreateTaskWebAsync(createTaskWeb);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Task assigned successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+        // [HttpPost("create-simple-task")]
+        // public async Task<IResult> CreateSimpleTaskWeb([FromBody] CreateSimpleTaskWeb createSimpleTaskWeb)
+        // {
+        //     var result = await _taskService.CreateSimpleTaskWebAsync(createSimpleTaskWeb);
+        //     return result.IsSuccess
+        //         ? ResultExtensions.ToSuccessDetails(result, "Simple task created successfully")
+        //         : ResultExtensions.ToProblemDetails(result);
+        // }
+        [HttpPost("create-from-errors")]
+        public async Task<IResult> CreateTaskFromErrors([FromBody] CreateTaskFromErrorsRequest request)
+        {
+            var result = await _taskService.CreateTaskFromErrorsAsync(request);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Task created from errors successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+        [HttpPost("create-from-technical-issue")]
+        public async Task<IResult> CreateTaskFromTechnicalIssue([FromBody] CreateTaskFromTechnicalIssueRequest request)
+        {
+            var result = await _taskService.CreateTaskFromTechnicalIssueAsync(request);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Warranty task created from technical issue successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+        [HttpPost("create-simple")]
+        public async Task<IResult> CreateSimpleTask([FromBody] CreateSimpleTaskRequest request)
+        {
+            var result = await _taskService.CreateSimpleTaskAsync(request);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Simple replacement task created successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
 
     }
 }

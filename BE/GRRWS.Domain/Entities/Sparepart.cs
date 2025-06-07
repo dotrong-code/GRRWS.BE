@@ -10,6 +10,7 @@
         public bool IsAvailable { get; set; } // => StockQuantity > 0;
         public string? Unit { get; set; } // Đơn vị tính: cái, bộ, v.v.
         public decimal? UnitPrice { get; set; } // Giá linh kiện
+        public DateTime? ExpectedAvailabilityDate { get; set; } // Ngày dự kiến khả dụng nếu StockQuantity = 0
 
         // Quan hệ
         public ICollection<RepairSparepart>? RepairSpareparts { get; set; }

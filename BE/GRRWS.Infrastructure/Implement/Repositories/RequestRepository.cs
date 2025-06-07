@@ -111,7 +111,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .ToList();
         }
 
-
         public async Task<List<RequestSummary>> GetRequestSummaryAsync()
         {
             return await _context.Requests
@@ -119,12 +118,140 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Select(r => new RequestSummary
                 {
                     RequestId = r.Id,
-                    RequestTitle = r.RequestTitle ?? "Untitled Request",
-                    Priority = r.Priority ?? "Unknown",
-                    Status = r.Status ?? "Unknown",
+                    RequestTitle = r.Description ?? "Untitled Request",
+                    Priority = r.Priority.ToString(),
+                    Status = r.Status.ToString(),
                     RequestDate = r.CreatedDate
                 })
-                .AsNoTracking() // Improves query performance by not tracking entities
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<RequestDetailWeb?> GetRequestDetailWebByIdAsync(Guid requestId)
+        {
+            var request = await _context.Requests
+               .AsNoTracking()
+               .Where(r => r.Id == requestId && !r.IsDeleted)
+               .Include(r => r.Device)
+                   .ThenInclude(d => d.Position)
+                       .ThenInclude(p => p.Zone)
+                           .ThenInclude(z => z.Area)
+               .Include(r => r.Report)
+               .Include(r => r.RequestIssues)
+                   .ThenInclude(ri => ri.Issue)
+               .Include(r => r.RequestIssues)
+                   .ThenInclude(ri => ri.Images)
+               .Select(r => new RequestDetailWeb
+               {
+                   RequestId = r.Id,
+                   RequestTitle = r.RequestTitle,
+                   Priority = r.Priority.ToString(), // Convert enum to string
+                   Status = r.Status.ToString(), // Convert enum to string
+                   RequestDate = r.CreatedDate,
+                   IsWarranty = r.Report != null, // Simplified check since Report doesn't have Status
+                   RemainingWarratyDate = 0,
+                   DeviceId = r.DeviceId,
+                   DeviceName = r.Device.DeviceName,
+                   Location = r.Device.Position != null && r.Device.Position.Zone != null && r.Device.Position.Zone.Area != null
+                       ? $"{r.Device.Position.Zone.Area.AreaName} - {r.Device.Position.Zone.ZoneName} - {r.Device.Position.Index}"
+                       : "Location not available",
+                   Issues = r.RequestIssues.Select(ri => new IssueForRequestDetailWeb
+                   {
+                       IssueId = ri.Issue.Id,
+                       DisplayName = ri.Issue.DisplayName,
+                       Images = ri.Images.Select(img => img.ImageUrl).ToList()
+                   }).ToList()
+               })
+               .FirstOrDefaultAsync();
+
+            return request;
+        }
+
+        public async Task<List<ErrorForRequestDetailWeb>> GetErrorsForRequestDetailWebAsync(Guid requestId)
+        {
+            // Get the reportId from the request
+            var reportId = await _context.Requests
+                .Where(r => r.Id == requestId && !r.IsDeleted)
+                .Select(r => r.ReportId)
+                .FirstOrDefaultAsync();
+
+            if (reportId == null)
+                return new List<ErrorForRequestDetailWeb>();
+
+            // Get errors from ErrorDetails by reportId
+            return await _context.ErrorDetails
+                .AsNoTracking()
+                .Where(ed => ed.ReportId == reportId)
+                .Select(ed => new ErrorForRequestDetailWeb
+                {
+                    ErrorId = ed.Error.Id,
+                    ErrorCode = ed.Error.ErrorCode,
+                    Name = ed.Error.Name,
+                    Severity = ed.Error.Severity,
+                    Status = ed.TaskId == null ? "Unassigned" : "Assigned" // Fixed the incorrect reference to 'ErrorDetails'
+                })
+                .ToListAsync();
+        }
+
+        public async Task<List<TaskForRequestDetailWeb>> GetTasksForRequestDetailWebAsync(Guid requestId)
+        {
+            var reportId = await _context.Requests
+                .Where(r => r.Id == requestId && !r.IsDeleted)
+                .Select(r => r.ReportId)
+                .FirstOrDefaultAsync();
+
+            if (reportId == null)
+                return new List<TaskForRequestDetailWeb>();
+
+            var taskIds = await _context.ErrorDetails
+                .Where(ed => ed.ReportId == reportId && ed.TaskId != null)
+                .Select(ed => ed.TaskId.Value)
+                .Distinct()
+                .ToListAsync();
+
+            if (!taskIds.Any())
+                return new List<TaskForRequestDetailWeb>();
+
+            return await _context.Tasks
+                .AsNoTracking()
+                .Where(t => taskIds.Contains(t.Id) && !t.IsDeleted)
+                .Select(t => new TaskForRequestDetailWeb
+                {
+                    TaskId = t.Id,
+                    TaskType = t.TaskType,
+                    Status = t.Status.ToString(), // Convert enum to string
+                    StartTime = t.StartTime,
+                    AssigneeName = t.Assignee.UserName,
+                    ExpectedTime = t.ExpectedTime,
+                    NumberOfErrors = t.ErrorDetails.Count
+                })
+                .ToListAsync();
+        }
+
+        public async Task<List<TechnicalIssueForRequestDetailWeb>> GetTechnicalIssuesForRequestDetailWebAsync(Guid requestId)
+        {
+            // Get the reportId from the request
+            var reportId = await _context.Requests
+                .Where(r => r.Id == requestId && !r.IsDeleted)
+                .Select(r => r.ReportId)
+                .FirstOrDefaultAsync();
+
+            if (reportId == null)
+                return new List<TechnicalIssueForRequestDetailWeb>();
+
+            // Get technical issues from TechnicalSymptomReports by reportId
+            return await _context.TechnicalSymptomReports
+                .AsNoTracking()
+                .Where(tsr => tsr.ReportId == reportId)
+                .Select(tsr => new TechnicalIssueForRequestDetailWeb
+                {
+                    TechnicalIssueId = tsr.TechnicalSymptom.Id,
+                    SymptomCode = tsr.TechnicalSymptom.SymptomCode,
+                    Name = tsr.TechnicalSymptom.Name,
+                    Description = tsr.TechnicalSymptom.Description,
+                    IsCommon = tsr.TechnicalSymptom.IsCommon,
+                    Status = tsr.TaskId == null ? "Unassigned" : "Assigned"
+                })
                 .ToListAsync();
         }
     }

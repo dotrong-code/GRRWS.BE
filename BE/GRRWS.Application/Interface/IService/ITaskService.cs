@@ -23,6 +23,12 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> UpdateTaskAsync(UpdateTaskRequest request); // New
         Task<Result> DeleteTaskAsync(Guid taskId); // New
         Task<Result> GetTasksByReportIdAsync(Guid reportId);
+        Task<Result> CreateTaskWebAsync(CreateTaskWeb dto);
+        Task<Result> CreateSimpleTaskWebAsync(CreateSimpleTaskWeb dto); // Add this line
 
+        // New task creation methods
+        Task<Result> CreateTaskFromErrorsAsync(CreateTaskFromErrorsRequest request);
+        Task<Result> CreateTaskFromTechnicalIssueAsync(CreateTaskFromTechnicalIssueRequest request);
+        Task<Result> CreateSimpleTaskAsync(CreateSimpleTaskRequest request);
     }
 }

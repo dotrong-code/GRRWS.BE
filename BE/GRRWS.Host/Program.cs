@@ -20,9 +20,15 @@ builder.Services.AddLogging(logging =>
 });
 builder.Services.AddDbContext<GRRWSContext>(opt =>
 {
-    // Set up your database connection string
-    opt.UseSqlServer(builder.Configuration.GetConnectionString("MyDb")).EnableSensitiveDataLogging();
-});
+    opt.UseSqlServer(
+        builder.Configuration.GetConnectionString("MyDb"),
+        sqlOptions => sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null))
+       .EnableSensitiveDataLogging()
+       .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking); // Aligns with AsNoTracking in repository
+}, ServiceLifetime.Scoped);
 builder.Services.AddMemoryCache();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -114,7 +120,6 @@ builder.Services.AddCors(options =>
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.RegisterServices();
 builder.Services.AddHttpClient();
-//builder.WebHost.UseUrls("http://0.0.0.0:5000");
 var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())

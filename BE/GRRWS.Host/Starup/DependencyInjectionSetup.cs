@@ -104,7 +104,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IPositionService, PositionService>();
             services.AddTransient<ITaskService, TaskService>();
             services.AddTransient<IWarrantyDetailService, WarrantyDetailService>();
-            
+            services.AddTransient<IErrorDetailService, ErrorDetailService>();
             #endregion
 
             #region Repositories

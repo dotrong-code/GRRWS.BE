@@ -33,13 +33,16 @@ namespace GRRWS.Infrastructure.DB
         public DbSet<Sparepart> Spareparts { get; set; }
         public DbSet<Tasks> Tasks { get; set; }
         public DbSet<User> Users { get; set; }
-        public DbSet<ErrorSparepart> ErrorSpareparts { get; set; } 
-        public DbSet<TechnicalSymptom> TechnicalSymptoms { get; set; } 
+
+        public DbSet<ErrorSparepart> ErrorSpareparts { get; set; }
+        public DbSet<TechnicalSymptom> TechnicalSymptoms { get; set; }
         public DbSet<IssueTechnicalSymptom> IssueTechnicalSymptoms { get; set; }
         public DbSet<TechnicalSymptomReport> TechnicalSymptomReports { get; set; }
 
         public DbSet<ErrorAction> ErrorActions { get; set; }
         public DbSet<TaskAction> TaskActions { get; set; }
+
+
 
         public DbSet<MachineIssueHistory> MachineIssueHistories { get; set; }
         public DbSet<MachineErrorHistory> MachineErrorHistories { get; set; }
@@ -57,6 +60,9 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.ApplyConfiguration(new DeviceConfiguration());
             modelBuilder.ApplyConfiguration(new ErrorConfiguration());
             modelBuilder.ApplyConfiguration(new SparepartConfiguration());
+
+            //modelBuilder.ApplyConfiguration(new SparepartConfiguration());
+
             modelBuilder.ApplyConfiguration(new IssueErrorConfiguration());
             modelBuilder.ApplyConfiguration(new ErrorSparepartConfiguration());
             modelBuilder.ApplyConfiguration(new MachineConfiguration());
@@ -78,8 +84,10 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.ApplyConfiguration(new TechnicalSymptomConfiguration());
             modelBuilder.ApplyConfiguration(new IssueTechnicalSymptomConfiguration());
             modelBuilder.ApplyConfiguration(new TechnicalSymptomReportConfiguration());
+
             modelBuilder.ApplyConfiguration(new ErrorActionConfiguration());
             modelBuilder.ApplyConfiguration(new TaskActionConfiguration());
+
 
             #endregion
 
@@ -90,6 +98,12 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<Area>()
                 .Property(a => a.AreaName)
                 .IsRequired();
+
+            modelBuilder.Entity<User>()
+               .HasOne(u => u.Area)
+               .WithMany(a => a.Users)
+               .HasForeignKey(u => u.AreaId)
+               .OnDelete(DeleteBehavior.Restrict);
 
             // Zone
             modelBuilder.Entity<Zone>()
@@ -112,7 +126,9 @@ namespace GRRWS.Infrastructure.DB
             {
                 entity.Property(d => d.DeviceName).IsRequired();
                 entity.Property(d => d.DeviceCode).IsRequired();
-                entity.Property(d => d.Status).IsRequired();
+                entity.Property(d => d.Status)
+                    .IsRequired()
+                    .HasConversion<string>();
                 entity.HasIndex(d => d.DeviceCode).IsUnique();
             });
 
@@ -137,6 +153,21 @@ namespace GRRWS.Infrastructure.DB
                 .HasForeignKey<Report>(rep => rep.RequestId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Request>()
+                .Property(r => r.Status)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<Request>(entity =>
+            {
+                entity.Property(r => r.DeviceId).IsRequired();
+                entity.Property(r => r.RequestedById).IsRequired();
+                entity.Property(r => r.Status)
+                    .HasConversion<string>();
+                entity.Property(r => r.Priority)
+                    .HasConversion<string>();
+            });
+
+
             // DeviceHistory
             modelBuilder.Entity<DeviceHistory>()
                 .Property(dh => dh.EventDate)
@@ -152,7 +183,9 @@ namespace GRRWS.Infrastructure.DB
             {
                 entity.Property(dwh => dwh.DeviceId).IsRequired();
                 entity.Property(dwh => dwh.DeviceDescription).IsRequired();
-                entity.Property(dwh => dwh.Status).IsRequired();
+                entity.Property(dwh => dwh.Status)
+                    .IsRequired()
+                    .HasConversion<string>();
             });
 
             // EmailTemplate
@@ -262,15 +295,6 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<Report>(entity =>
             {
                 entity.Property(r => r.Location).IsRequired();
-                entity.Property(r => r.Status).IsRequired();
-                entity.Property(r => r.Priority).IsRequired();
-            });
-
-            // Request
-            modelBuilder.Entity<Request>(entity =>
-            {
-                entity.Property(r => r.DeviceId).IsRequired();
-                entity.Property(r => r.RequestedById).IsRequired();
             });
 
             // RequestIssue
@@ -284,9 +308,11 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<Sparepart>(entity =>
             {
                 entity.Property(s => s.SparepartName).IsRequired();
-                // Removed IsAvailable configuration as it's a calculated property
+
                 entity.Property(s => s.StockQuantity).IsRequired().HasDefaultValue(0);
                 entity.HasIndex(s => s.SparepartCode).IsUnique();
+                entity.Property(s => s.ExpectedAvailabilityDate); // Cấu hình trường mới
+
             });
 
 
@@ -556,6 +582,7 @@ namespace GRRWS.Infrastructure.DB
                 .HasForeignKey(ta => ta.PerformedById)
                 .OnDelete(DeleteBehavior.Restrict);
 
+
             // BaseEntity Defaults
             modelBuilder.Entity<BaseEntity>()
                 .Property(b => b.Id)
@@ -599,8 +626,10 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<TechnicalSymptom>().ToTable("TechnicalSymptoms");
             modelBuilder.Entity<IssueTechnicalSymptom>().ToTable("IssueTechnicalSymptoms");
             modelBuilder.Entity<TechnicalSymptomReport>().ToTable("TechnicalSymptomReports");
+
             modelBuilder.Entity<ErrorAction>().ToTable("ErrorActions");
             modelBuilder.Entity<TaskAction>().ToTable("TaskActions");
+
             #endregion
         }
     }
