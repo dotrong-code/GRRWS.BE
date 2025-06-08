@@ -11,6 +11,7 @@ namespace GRRWS.Domain.Entities
         public string? Resolution { get; set; }
         public string? IssueDescription { get; set; }
         public string? WarrantyNotes { get; set; }
+        public string? ContractNumber { get; set; }
         public decimal? ClaimAmount { get; set; }
         // Foreign keys
         public Guid DeviceWarrantyId { get; set; }

@@ -8,6 +8,7 @@ using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.DTOs.Task;
 using GRRWS.Infrastructure.DTOs.Task.Get;
+using GRRWS.Infrastructure.DTOs.Task.Repair;
 using GRRWS.Infrastructure.DTOs.Task.Warranty;
 
 namespace GRRWS.Application.Implement.Service
@@ -28,7 +29,7 @@ namespace GRRWS.Application.Implement.Service
         }
 
         #region
-        public async Task<Result> CreateWarrantyTask(CreateWarrantyTaskRequest request)
+        public async Task<Result> CreateWarrantyTask(CreateWarrantyTaskRequest request, Guid userId)
         {
             // Validate inputs
             var validationResult = await ValidateRequestAsync(request);
@@ -37,16 +38,35 @@ namespace GRRWS.Application.Implement.Service
                 return validationResult;
             }
             // Create task
-            var taskId = await _unitOfWork.TaskRepository.CreateWarrantyTask(request);
+            var taskId = await _unitOfWork.TaskRepository.CreateWarrantyTask(request, userId);
             return Result.SuccessWithObject(new CreateWarrantyTaskResponse
             {
                 Message = "Warranty task created successfully!",
                 TaskId = taskId
             });
         }
-        public async Task<Result> GetGetDetailWarrantyTaskForMechanicByIdAsync(Guid taskId, string type)
+
+        public async Task<Result> FillInWarrantyTask(FillInWarrantyTask request)
         {
-            var task = await _unitOfWork.TaskRepository.GetGetDetailWarrantyTaskForMechanicByIdAsync(taskId, type);
+            try
+            {
+                var taskId = await _unitOfWork.TaskRepository.FillInWarrantyTask(request);
+                return Result.SuccessWithObject(new
+                {
+                    Message = "Warranty task completed successfully!",
+                    TaskId = taskId
+                });
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(TaskErrorMessage.TaskUpdateFailed(ex.Message));
+            }
+        }
+
+
+        public async Task<Result> GetGetDetailWarrantyTaskForMechanicByIdAsync(Guid taskId)
+        {
+            var task = await _unitOfWork.TaskRepository.GetGetDetailWarrantyTaskForMechanicByIdAsync(taskId, "WarrantySubmission");
             if (task == null)
             {
                 return Result.Failure(TaskErrorMessage.TaskNotExist());
@@ -54,9 +74,9 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(task);
         }
 
-        public async Task<Result> GetDetailtRepairTaskForMechanicByIdAsync(Guid taskId, string type)
+        public async Task<Result> GetDetailtRepairTaskForMechanicByIdAsync(Guid taskId)
         {
-            var task = await _unitOfWork.TaskRepository.GetDetailtRepairTaskForMechanicByIdAsync(taskId, type);
+            var task = await _unitOfWork.TaskRepository.GetDetailtRepairTaskForMechanicByIdAsync(taskId, "Repair");
             if (task == null)
             {
                 return Result.Failure(TaskErrorMessage.TaskNotExist());
@@ -74,6 +94,46 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(task);
         }
 
+        public async Task<Result> CreateRepairTask(CreateRepairTaskRequest request, Guid userId)
+        {
+            try
+            {
+                // Create the repair task
+                var taskId = await _unitOfWork.TaskRepository.CreateRepairTask(request, userId);
+                return Result.SuccessWithObject(new
+                {
+                    Message = "Repair task created successfully!",
+                    TaskId = taskId
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to create repair task: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<Result> UpdateTaskStatusToCompleted(Guid taskId, Guid userId)
+        {
+            try
+            {
+
+                var isUpdated = await _unitOfWork.TaskRepository.UpdateTaskStatusToCompleted(taskId, userId);
+
+                if (!isUpdated)
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Fail", "Task not found or could not be updated."));
+
+                return Result.SuccessWithObject(new
+                {
+                    Message = "Task status updated to completed successfully!",
+                    TaskId = taskId,
+                    CompletedAt = DateTime.UtcNow
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to update task status: {ex.Message}", ex);
+            }
+        }
 
         #endregion
         #region old methods
@@ -584,6 +644,7 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.Success();
         }
+
 
         // Error constants for reuse
         public static class ErrorConstants

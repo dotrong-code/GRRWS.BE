@@ -404,13 +404,13 @@ namespace GRRWS.Infrastructure.DB
                 .HasOne(wc => wc.SubmittedByTask)
                 .WithMany()
                 .HasForeignKey(wc => wc.SubmittedByTaskId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<WarrantyClaim>()
                 .HasOne(wc => wc.ReturnTask)
                 .WithMany()
                 .HasForeignKey(wc => wc.ReturnTaskId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<WarrantyClaim>()
                 .HasOne(wc => wc.CreatedByUser)
@@ -463,7 +463,6 @@ namespace GRRWS.Infrastructure.DB
                 .WithMany()
                 .HasForeignKey(t => t.WarrantyClaimId)
                 .OnDelete(DeleteBehavior.SetNull);
-
 
             // Feedback
             modelBuilder.Entity<Feedback>()
@@ -664,6 +663,13 @@ namespace GRRWS.Infrastructure.DB
                 .WithMany(u => u.Tasks)
                 .HasForeignKey(t => t.AssigneeId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Tasks - WarrantyClaim relationship
+            modelBuilder.Entity<Tasks>()
+                .HasOne(t => t.WarrantyClaim)
+                .WithMany()
+                .HasForeignKey(t => t.WarrantyClaimId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // WarrantyDetail
             modelBuilder.Entity<WarrantyDetail>(entity =>

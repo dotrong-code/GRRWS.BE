@@ -2,6 +2,7 @@
 {
     public class SparePartUsageDTO
     {
+        public Guid SparePartUsageId { get; set; }
         public Guid SparePartId { get; set; } // Required
         public string SparePartName { get; set; } = string.Empty; // Required
         public int QuantityUsed { get; set; }

@@ -2,7 +2,7 @@
 {
     public class ErrorFixProgressDTO
     {
-        public Guid ErrorFixStepId { get; set; }
+        public Guid ErrorFixProgressId { get; set; }
         public string? StepDescription { get; set; } // Unique
         public int StepOrder { get; set; }
         public bool IsCompleted { get; set; }

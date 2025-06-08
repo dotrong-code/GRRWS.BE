@@ -1,7 +1,11 @@
-﻿using GRRWS.Application.Common.Result;
+﻿using GRRWS.Application.Common;
+using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
+using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.Task;
+using GRRWS.Infrastructure.DTOs.Task.Repair;
 using GRRWS.Infrastructure.DTOs.Task.Warranty;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GRRWS.Host.Controllers
@@ -11,17 +15,39 @@ namespace GRRWS.Host.Controllers
     public class TaskController : ControllerBase
     {
         private readonly ITaskService _taskService;
+        private readonly IHttpContextAccessor _contextAccessor;
 
-        public TaskController(ITaskService taskService)
+        public TaskController(ITaskService taskService, IHttpContextAccessor contextAccessor)
         {
             _taskService = taskService;
+            _contextAccessor = contextAccessor;
         }
 
-
+        [Authorize]
         [HttpPost("warranty-task/submit")]
         public async Task<IResult> CreateWarrantyTask([FromBody] CreateWarrantyTaskRequest request)
         {
-            var result = await _taskService.CreateWarrantyTask(request);
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _taskService.CreateWarrantyTask(request, c.UserId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Warranty task created successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [Authorize]
+        [HttpPost("repair-task")]
+        public async Task<IResult> CreateRepairTask([FromBody] CreateRepairTaskRequest request)
+        {
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _taskService.CreateRepairTask(request, c.UserId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Warranty task created successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+        [HttpPut("warranty-task/submit/fill-infor")]
+        public async Task<IResult> FillInWarrantyTask([FromBody] FillInWarrantyTask request)
+        {
+            var result = await _taskService.FillInWarrantyTask(request);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Warranty task created successfully")
                 : ResultExtensions.ToProblemDetails(result);
@@ -35,28 +61,22 @@ namespace GRRWS.Host.Controllers
         //        : ResultExtensions.ToProblemDetails(result);
         //}
 
-
-        [HttpGet("warranty-task/{taskId}")]
-        public async Task<IResult> GetWarrantyTaskDetails(Guid taskId, [FromQuery] string type)
+        [HttpGet("warranty-task-submit/{taskId}")]
+        public async Task<IResult> GetWarrantySubmitTaskDetails(Guid taskId)
         {
-            var result = await _taskService.GetGetDetailWarrantyTaskForMechanicByIdAsync(taskId, type);
+            var result = await _taskService.GetGetDetailWarrantyTaskForMechanicByIdAsync(taskId);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Warranty task details retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
         [HttpGet("repair-task/{taskId}")]
-        public async Task<IResult> GetRepairTaskDetails(Guid taskId, [FromQuery] string type)
+        public async Task<IResult> GetRepairTaskDetails(Guid taskId)
         {
-            var result = await _taskService.GetDetailtRepairTaskForMechanicByIdAsync(taskId, type);
+            var result = await _taskService.GetDetailtRepairTaskForMechanicByIdAsync(taskId);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Warranty task details retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
-
-
-
-
 
         [HttpGet("ByReport/{reportId}")]
         public async Task<IResult> GetTasksByReportId(Guid reportId)
@@ -67,27 +87,20 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
-        //[Authorize] 
-        //[HttpGet("MyTasks")]
-        //public async Task<IResult> GetMyTasks([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
-        //{
-        //    // Lấy mechanicId từ claims của user đã xác thực
-        //    var mechanicIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        //    if (string.IsNullOrEmpty(mechanicIdClaim) || !Guid.TryParse(mechanicIdClaim, out var mechanicId))
-        //    {
-        //        return ResultExtensions.ToProblemDetails(Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Invalid user authentication.", 0)));
-        //    }
-
-        //    var result = await _taskService.GetTasksByMechanicIdAsync(mechanicId, pageNumber, pageSize);
-        //    return result.IsSuccess
-        //        ? ResultExtensions.ToSuccessDetails(result, "Tasks retrieved successfully")
-        //        : ResultExtensions.ToProblemDetails(result);
-        //}
-
         [HttpGet("mechanic/{mechanicId}")]
         public async Task<IResult> GetTasksByMechanicId(Guid mechanicId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             var result = await _taskService.GetTasksByMechanicIdAsync(mechanicId, pageNumber, pageSize);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Tasks retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [Authorize]
+        [HttpGet("mechanic")]
+        public async Task<IResult> GetTasksForMechanic([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _taskService.GetTasksByMechanicIdAsync(c.UserId, pageNumber, pageSize);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Tasks retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
@@ -122,8 +135,6 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Task report created successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
-
         [HttpGet]
         public async Task<IResult> GetAll()
         {
@@ -222,6 +233,15 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
-
+        [Authorize]
+        [HttpPut("complete")]
+        public async Task<IResult> UpdateTaskStatusToCompleted([FromBody] Guid request)
+        {
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _taskService.UpdateTaskStatusToCompleted(request, c.UserId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Task completed successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }

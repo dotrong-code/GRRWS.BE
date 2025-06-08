@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GRRWS.Infrastructure.DTOs.Common.Message
+﻿namespace GRRWS.Infrastructure.DTOs.Common.Message
 {
     public static class TaskErrorMessage
     {
         public static Error TaskNotExist() => Error.Validation("Task.NotExist", "Task does not exist.");
+        public static Error TaskUpdateFailed(string message) => Error.Validation("Task.UpdateFail", $"{message}");
         public static Error UserNotExist() => Error.Validation("Task.UserNotExist", "User does not exist.");
         public static Error InvalidStatusTransition() => Error.Validation("Task.InvalidStatusTransition", "Cannot start task in current status.");
         public static Error InvalidTaskId() => Error.Validation("Task.InvalidTaskId", "Task ID is required.");

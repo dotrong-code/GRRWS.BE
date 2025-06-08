@@ -5,9 +5,6 @@ using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.Sparepart;
 using GRRWS.Infrastructure.DTOs.SparePartUsage;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -51,7 +48,7 @@ namespace GRRWS.Application.Implement.Service
                 RequestCode = r.RequestCode,
                 RequestDate = r.RequestDate,
                 RequestedById = r.RequestedById,
-                Status = r.Status,
+                Status = r.Status.ToString(),
                 ConfirmedDate = r.ConfirmedDate,
                 ConfirmedById = r.ConfirmedById,
                 Notes = r.Notes,
@@ -69,7 +66,7 @@ namespace GRRWS.Application.Implement.Service
         }
 
 
-        
+
         public async Task<Result> UpdateIsTakenFromStockAsync(UpdateIsTakenFromStockRequest request)
         {
             if (request.SparePartUsageIds == null || !request.SparePartUsageIds.Any())
@@ -111,7 +108,7 @@ namespace GRRWS.Application.Implement.Service
                 }
             }
 
-            return Result.Success(); // Trả về thành công nếu không có lỗi
+            return Result.SuccessWithObject(new { Message = "Update successfully" }); // Trả về thành công nếu không có lỗi
         }
 
         public async Task<Result> DeleteAsync(Guid id)
@@ -139,7 +136,7 @@ namespace GRRWS.Application.Implement.Service
                 RequestCode = r.RequestCode,
                 RequestDate = r.RequestDate,
                 RequestedById = r.RequestedById,
-                Status = r.Status,
+                Status = r.Status.ToString(),
                 ConfirmedDate = r.ConfirmedDate,
                 ConfirmedById = r.ConfirmedById,
                 Notes = r.Notes,
@@ -168,7 +165,7 @@ namespace GRRWS.Application.Implement.Service
                 RequestCode = r.RequestCode,
                 RequestDate = r.RequestDate,
                 RequestedById = r.RequestedById,
-                Status = r.Status,
+                Status = r.Status.ToString(),
                 ConfirmedDate = r.ConfirmedDate,
                 ConfirmedById = r.ConfirmedById,
                 Notes = r.Notes,
@@ -197,7 +194,7 @@ namespace GRRWS.Application.Implement.Service
                 RequestCode = r.RequestCode,
                 RequestDate = r.RequestDate,
                 RequestedById = r.RequestedById,
-                Status = r.Status,
+                Status = r.Status.ToString(),
                 ConfirmedDate = r.ConfirmedDate,
                 ConfirmedById = r.ConfirmedById,
                 Notes = r.Notes,
@@ -226,7 +223,7 @@ namespace GRRWS.Application.Implement.Service
                 RequestCode = r.RequestCode,
                 RequestDate = r.RequestDate,
                 RequestedById = r.RequestedById,
-                Status = r.Status,
+                Status = r.Status.ToString(),
                 ConfirmedDate = r.ConfirmedDate,
                 ConfirmedById = r.ConfirmedById,
                 Notes = r.Notes,
@@ -255,7 +252,7 @@ namespace GRRWS.Application.Implement.Service
                 RequestCode = r.RequestCode,
                 RequestDate = r.RequestDate,
                 RequestedById = r.RequestedById,
-                Status = r.Status,
+                Status = r.Status.ToString(),
                 ConfirmedDate = r.ConfirmedDate,
                 ConfirmedById = r.ConfirmedById,
                 Notes = r.Notes,
@@ -278,28 +275,35 @@ namespace GRRWS.Application.Implement.Service
             if (request == null)
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", $"Request take spare part usage with ID {id} not found"));
 
-            var dto = new RequestTakeSparePartUsageDto
+            // Sequential processing instead of parallel to avoid DbContext concurrency issues
+            var sparePartUsageDtos = new List<SparePartUsageDto>();
+
+            foreach (var s in request.SparePartUsages)
             {
-                Id = request.Id,
-                RequestCode = request.RequestCode,
-                RequestDate = request.RequestDate,
-                RequestedById = request.RequestedById,
-                Status = request.Status,
-                ConfirmedDate = request.ConfirmedDate,
-                ConfirmedById = request.ConfirmedById,
-                Notes = request.Notes,
-                SparePartUsages = (await Task.WhenAll(request.SparePartUsages.Select(async s => new SparePartUsageDto
+                var sparepartDto = await MapSparepartDto(s.SparePartId);
+
+                sparePartUsageDtos.Add(new SparePartUsageDto
                 {
                     Id = s.Id,
                     RequestTakeSparePartUsageId = s.RequestTakeSparePartUsageId,
                     SparePartId = s.SparePartId,
                     QuantityUsed = s.QuantityUsed,
                     IsTakenFromStock = s.IsTakenFromStock,
-                    Spareparts = new List<SparepartDto>
-                {
-                    await MapSparepartDto(s.SparePartId)
-                }
-                }))).ToList()
+                    Spareparts = sparepartDto != null ? new List<SparepartDto> { sparepartDto } : new List<SparepartDto>()
+                });
+            }
+
+            var dto = new RequestTakeSparePartUsageDto
+            {
+                Id = request.Id,
+                RequestCode = request.RequestCode,
+                RequestDate = request.RequestDate,
+                RequestedById = request.RequestedById,
+                Status = request.Status.ToString(),
+                ConfirmedDate = request.ConfirmedDate,
+                ConfirmedById = request.ConfirmedById,
+                Notes = request.Notes,
+                SparePartUsages = sparePartUsageDtos
             };
 
             return Result.SuccessWithObject(dto);

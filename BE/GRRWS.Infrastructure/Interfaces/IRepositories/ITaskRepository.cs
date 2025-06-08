@@ -1,6 +1,7 @@
 ﻿using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DTOs.Task;
 using GRRWS.Infrastructure.DTOs.Task.Get;
+using GRRWS.Infrastructure.DTOs.Task.Repair;
 using GRRWS.Infrastructure.DTOs.Task.Warranty;
 using GRRWS.Infrastructure.Interfaces.IRepositories.IGeneric;
 
@@ -28,9 +29,15 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<Guid> CreateSimpleTaskAsync(CreateSimpleTaskRequest request);
 
         //New versions of create task
-        Task<Guid> CreateWarrantyTask(CreateWarrantyTaskRequest request);
+        Task<Guid> CreateWarrantyTask(CreateWarrantyTaskRequest request, Guid userId);
+        Task<Guid> CreateRepairTask(CreateRepairTaskRequest request, Guid userId);
+
         Task<GetDetailWarrantyTaskForMechanic> GetGetDetailWarrantyTaskForMechanicByIdAsync(Guid taskId, string type);
         Task<GetDetailtRepairTaskForMechanic> GetDetailtRepairTaskForMechanicByIdAsync(Guid taskId, string type);
         Task<GetDetailReplaceTaskForMechanic> GetDetailReplaceTaskForMechanicByIdAsync(Guid taskId, string type);
+
+        Task<Guid> FillInWarrantyTask(FillInWarrantyTask request);
+
+        Task<bool> UpdateTaskStatusToCompleted(Guid taskId, Guid userId);
     }
 }

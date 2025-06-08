@@ -4,6 +4,7 @@ using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.DTOs.Firebase.AddImage;
+using GRRWS.Infrastructure.DTOs.Firebase.GetImage;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.Interfaces;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
@@ -26,29 +27,70 @@ namespace GRRWS.Application.Implement.Service
         public async Task<Result> GetAllAsync()
         {
             var requests = await _requestRepository.GetAllRequestAsync();
-            var dtos = requests
-                .Where(r => !r.IsDeleted)
-                .Select(r => new RequestDTO
-                {
-                    Id = r.Id,
-                    RequestTitle = r.RequestTitle,
-                    Description = r.Description,
-                    //Status = r.Status,
-                    CreatedDate = r.CreatedDate,
-                    CreatedBy = r.CreatedBy,
-                    ModifiedDate = r.ModifiedDate,
-                    ModifiedBy = r.ModifiedBy,
-                    //DueDate = r.DueDate,
-                    //Priority = r.Priority,
-                    Issues = r.RequestIssues.Select(ri => new IssueDTO
-                    {
-                        Id = ri.Issue.Id,
-                        //IssueTitle = ri.Issue.IssueKey
-                    }).ToList()
-                }).ToList<object>();
-
+            var dtos = new List<object>();
+            foreach (var r in requests.Where(r => !r.IsDeleted).OrderByDescending(r => r.CreatedDate))
+            {
+                var dto = await MapRequestToDTOAsync(r);
+                dtos.Add(dto);
+            }
             return Result.SuccessWithObject(dtos);
         }
+
+        private async Task<RequestDTO> MapRequestToDTOAsync(Request r)
+        {
+            return new RequestDTO
+            {
+                Id = r.Id,
+                ReportId = r.ReportId,
+                DeviceId = r.DeviceId,
+                DeviceName = r.Device?.DeviceName,
+                DeviceCode = r.Device?.DeviceCode,
+                PositionIndex = r.Device?.Position?.Index,
+                ZoneName = r.Device?.Position?.Zone?.ZoneName,
+                AreaName = r.Device?.Position?.Zone?.Area?.AreaName,
+                RequestDate = r.CreatedDate,
+                RequestTitle = r.RequestTitle,
+                Description = r.Description,
+                Status = r.Status.ToString(),
+                CreatedDate = r.CreatedDate,
+                CreatedBy = r.RequestedById,
+                ModifiedDate = r.ModifiedDate,
+                ModifiedBy = r.ModifiedBy,
+                Issues = await MapIssuesWithImagesAsync(r.RequestIssues)
+            };
+        }
+
+        private async Task<List<IssueDTO>> MapIssuesWithImagesAsync(ICollection<RequestIssue> requestIssues)
+        {
+            var issues = new List<IssueDTO>();
+            foreach (var ri in requestIssues)
+            {
+                var imageUrls = new List<string>();
+                if (ri.Images != null && ri.Images.Any())
+                {
+                    foreach (var image in ri.Images.Where(img => !img.IsDeleted))
+                    {
+                        var getImageRequest = new GetImageRequest(image.ImageUrl);
+                        var imageResult = await _unitOfWork.FirebaseRepository.GetImageAsync(getImageRequest);
+                        if (imageResult.Success && !string.IsNullOrEmpty(imageResult.ImageUrl))
+                        {
+                            imageUrls.Add(imageResult.ImageUrl);
+                        }
+                        // If image fetch fails, skip it (no need to fail the entire request)
+                    }
+                }
+
+                issues.Add(new IssueDTO
+                {
+                    Id = ri.Issue.Id,
+                    DisplayName = ri.Issue.DisplayName,
+                    ImageUrls = imageUrls,
+
+                });
+            }
+            return issues;
+        }
+
 
         public async Task<Result> GetByIdAsync(Guid id)
         {
