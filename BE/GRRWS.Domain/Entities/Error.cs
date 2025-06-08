@@ -13,7 +13,6 @@
         public ICollection<IssueError>? IssueErrors { get; set; }
         public ICollection<ErrorDetail>? ErrorDetails { get; set; }        
         public ICollection<ErrorGuideline>? ErrorGuidelines { get; set; } // Navigation property for guidelines
-        public ICollection<ErrorAction>? ErrorActions { get; set; }
 
     }
 }

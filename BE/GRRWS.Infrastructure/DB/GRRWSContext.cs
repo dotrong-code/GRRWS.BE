@@ -1,4 +1,5 @@
 ﻿using GRRWS.Domain.Entities;
+using GRRWS.Infrastructure.DB.Configuration;
 using Microsoft.EntityFrameworkCore;
 
 namespace GRRWS.Infrastructure.DB
@@ -36,8 +37,6 @@ namespace GRRWS.Infrastructure.DB
         public DbSet<TechnicalSymptom> TechnicalSymptoms { get; set; }
         public DbSet<IssueTechnicalSymptom> IssueTechnicalSymptoms { get; set; }
         public DbSet<TechnicalSymptomReport> TechnicalSymptomReports { get; set; }
-        public DbSet<ErrorAction> ErrorActions { get; set; }
-        public DbSet<TaskAction> TaskActions { get; set; }
         public DbSet<MachineIssueHistory> MachineIssueHistories { get; set; }
         public DbSet<MachineErrorHistory> MachineErrorHistories { get; set; }
         public DbSet<DeviceIssueHistory> DeviceIssueHistories { get; set; }
@@ -54,6 +53,36 @@ namespace GRRWS.Infrastructure.DB
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            #region Data ConfigurationMore actions
+            modelBuilder.ApplyConfiguration(new UserConfiguration());
+            modelBuilder.ApplyConfiguration(new IssueConfiguration());
+            modelBuilder.ApplyConfiguration(new DeviceConfiguration());
+            modelBuilder.ApplyConfiguration(new ErrorConfiguration());
+            modelBuilder.ApplyConfiguration(new SparepartConfiguration());
+            modelBuilder.ApplyConfiguration(new IssueErrorConfiguration());
+            modelBuilder.ApplyConfiguration(new ErrorSparepartConfiguration());
+            modelBuilder.ApplyConfiguration(new MachineConfiguration());
+            modelBuilder.ApplyConfiguration(new RequestConfiguration());
+            modelBuilder.ApplyConfiguration(new ZoneConfiguration());
+            modelBuilder.ApplyConfiguration(new AreaConfiguration());
+            modelBuilder.ApplyConfiguration(new PositionConfiguration());
+            modelBuilder.ApplyConfiguration(new DeviceErrorHistoryConfiguration());
+            modelBuilder.ApplyConfiguration(new DeviceIssueHistoryConfiguration());
+            modelBuilder.ApplyConfiguration(new DeviceHistoryConfiguration());
+            modelBuilder.ApplyConfiguration(new DeviceWarrantyConfiguration());
+            modelBuilder.ApplyConfiguration(new MachineErrorHistoryConfiguration());
+            modelBuilder.ApplyConfiguration(new MachineIssueHistoryConfiguration());
+            modelBuilder.ApplyConfiguration(new TasksConfiguration());
+            modelBuilder.ApplyConfiguration(new ReportConfiguration());
+            modelBuilder.ApplyConfiguration(new RequestIssueConfiguration());
+            modelBuilder.ApplyConfiguration(new ErrorDetailConfiguration());
+            modelBuilder.ApplyConfiguration(new DeviceWarrantyHistoryConfiguration());
+            modelBuilder.ApplyConfiguration(new TechnicalSymptomConfiguration());
+            modelBuilder.ApplyConfiguration(new IssueTechnicalSymptomConfiguration());
+            modelBuilder.ApplyConfiguration(new TechnicalSymptomReportConfiguration());
+
+            #endregion
 
             #region Entity Configurations
 
@@ -125,6 +154,13 @@ namespace GRRWS.Infrastructure.DB
                 entity.Property(r => r.Priority)
                     .HasConversion<string>();
             });
+
+            // Request - Device (Many-to-One)
+            modelBuilder.Entity<Request>()
+                .HasOne(r => r.Device)
+                .WithMany(d => d.Requests)
+                .HasForeignKey(r => r.DeviceId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // DeviceHistory
             modelBuilder.Entity<DeviceHistory>()
@@ -199,7 +235,8 @@ namespace GRRWS.Infrastructure.DB
 
             // ErrorDetail
             modelBuilder.Entity<ErrorDetail>()
-                .HasKey(ed => new { ed.ReportId, ed.ErrorId });
+                .HasKey(ed => ed.Id);
+                //.HasKey(ed => new { ed.ReportId, ed.ErrorId });
 
             modelBuilder.Entity<ErrorDetail>()
                 .Property(ed => ed.ErrorId)
@@ -612,26 +649,6 @@ namespace GRRWS.Infrastructure.DB
                 .HasForeignKey(t => t.AssigneeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // ErrorAction
-            modelBuilder.Entity<ErrorAction>()
-                .HasOne(ea => ea.Error)
-                .WithMany(e => e.ErrorActions)
-                .HasForeignKey(ea => ea.ErrorId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // TaskAction
-            modelBuilder.Entity<TaskAction>()
-                .HasOne(ta => ta.Task)
-                .WithMany(t => t.TaskActions)
-                .HasForeignKey(ta => ta.TaskId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<TaskAction>()
-                .HasOne(ta => ta.ErrorAction)
-                .WithMany(ea => ea.TaskActions)
-                .HasForeignKey(ta => ta.ErrorActionId)
-                .OnDelete(DeleteBehavior.Restrict);
-
             // WarrantyDetail
             modelBuilder.Entity<WarrantyDetail>(entity =>
             {
@@ -729,8 +746,6 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<TechnicalSymptom>().ToTable("TechnicalSymptoms");
             modelBuilder.Entity<IssueTechnicalSymptom>().ToTable("IssueTechnicalSymptoms");
             modelBuilder.Entity<TechnicalSymptomReport>().ToTable("TechnicalSymptomReports");
-            modelBuilder.Entity<ErrorAction>().ToTable("ErrorActions");
-            modelBuilder.Entity<TaskAction>().ToTable("TaskActions");
             modelBuilder.Entity<ErrorGuideline>().ToTable("ErrorGuidelines");
             modelBuilder.Entity<ErrorFixStep>().ToTable("ErrorFixSteps");
             modelBuilder.Entity<ErrorFixProgress>().ToTable("ErrorFixProgresses");
