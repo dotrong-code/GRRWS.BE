@@ -105,6 +105,11 @@ namespace GRRWS.Host.Starup
             services.AddTransient<ITaskService, TaskService>();
             services.AddTransient<IWarrantyDetailService, WarrantyDetailService>();
             services.AddTransient<IErrorDetailService, ErrorDetailService>();
+            services.AddTransient<IErrorFixProgressService, ErrorFixProgressService>();
+            services.AddTransient<IErrorGuidelineService, ErrorGuidelineService>();
+            services.AddTransient<ISparePartUsageService, SparePartUsageService>();
+            services.AddTransient<ISparepartService, SparepartService>();
+            
             #endregion
 
             #region Repositories
@@ -131,6 +136,14 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IWarrantyDetailRepository, WarrantyDetailRepository>();
             services.AddTransient<IIssueErrorRepository, IssueErrorRepository>();
             services.AddTransient<IErrorDetailRepository, ErrorDetailRepository>();
+            services.AddTransient<IErrorSparepartRepository, ErrorSparepartRepository>();
+            services.AddTransient<IErrorFixStepRepository, ErrorFixStepRepository>();
+            services.AddTransient<IErrorFixProgressRepository, ErrorFixProgressRepository>();
+            services.AddTransient<IErrorGuidelineRepository, ErrorGuidelineRepository>();
+            services.AddTransient<ISparePartUsageRepository, SparePartUsageRepository>();
+            services.AddTransient<ISparepartRepository, SparepartRepository>();
+            services.AddTransient<IMachineSparepartRepository, MachineSparepartRepository>();
+            
             #endregion
 
             #region GenericRepositories

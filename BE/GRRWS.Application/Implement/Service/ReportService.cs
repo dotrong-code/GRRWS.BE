@@ -5,6 +5,7 @@ using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
+using GRRWS.Infrastructure.DTOs.ErrorDetail;
 using GRRWS.Infrastructure.DTOs.Report;
 using GRRWS.Infrastructure.Interfaces;
 using System;
@@ -459,6 +460,32 @@ namespace GRRWS.Application.Implement.Service
             await _unit.SaveChangesAsync();
 
             return Result.SuccessWithObject(new { Message = "Report created successfully with IssueSymtoms!", ReportId = report.Id });
+        }
+        public async Task<Result> GetErrorReportByIdAsync(Guid id)
+        {
+            var report = await _unit.ReportRepository.GetReportWithErrorDetailsAsync(id);
+            if (report == null)
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Report not found.", 0));
+
+            // Ánh xạ thủ công sang DTO nếu cần
+            var resultDto = new ReportViewErorDTO
+            {
+                Id = report.Id,
+                RequestId = report.RequestId,
+                Location = report.Location,
+                CreatedDate = report.CreatedDate,
+                ModifiedDate = report.ModifiedDate,
+                IsDeleted = report.IsDeleted,
+                ErrorDetails = report.ErrorDetails?.Select(ed => new ErrorDetailViewDTO
+                {
+                    Id = ed.Id,
+                    ReportId = ed.ReportId,
+                    ErrorId = ed.ErrorId,
+                    ErrorName = ed.Error?.Name 
+                }).ToList()
+            };
+
+            return Result.SuccessWithObject(resultDto);
         }
     }
 }

@@ -34,5 +34,15 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Select(r => r.ReportId)
                 .FirstOrDefaultAsync() ?? Guid.Empty;
         }
+        public async Task<ErrorDetail> GetByIdWithDetailsAsync(Guid id)
+        {
+            return await _context.ErrorDetails
+                .Include(ed => ed.RequestTakeSparePartUsage)
+                    .ThenInclude(rtspu => rtspu.SparePartUsages)
+                    .ThenInclude(spu => spu.SparePart)
+                .Include(ed => ed.ProgressRecords)
+                    .ThenInclude(efp => efp.ErrorFixStep)
+                .FirstOrDefaultAsync(ed => ed.Id == id && !ed.IsDeleted);
+        }
     }
 }

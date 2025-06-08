@@ -69,5 +69,23 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved sparepart availability")
                 : ResultExtensions.ToProblemDetails(result);
         }
+
+        [HttpGet("by-machine/{machineId}")]
+        public async Task<IResult> GetSparepartsByMachineId(Guid machineId)
+        {
+            var result = await _service.GetSparepartsByMachineIdAsync(machineId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved spareparts by machine")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+        [HttpGet("by-supplier/{supplierId}")]
+        public async Task<IResult> GetSparepartsBySupplier(Guid supplierId)
+        {
+            var result = await _service.GetSparepartsBySupplierAsync(supplierId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved spareparts by supplier")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }

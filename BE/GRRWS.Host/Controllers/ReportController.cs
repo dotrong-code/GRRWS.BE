@@ -88,6 +88,14 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Report created successfully with IssueSymptoms!")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [HttpGet("error-report/{id}")]
+        public async Task<IResult> GetErrorReportById(Guid id)
+        {
+            var result = await _service.GetErrorReportByIdAsync(id);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved error report with details")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 
 }

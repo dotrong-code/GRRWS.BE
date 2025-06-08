@@ -839,14 +839,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Notes = "Kim gãy, thay kim mới."
                 },
 
-                new DeviceIssueHistory
-                {
-                    DeviceId = Guid.Parse("d1e2f3a4-0001-0001-0001-000000000001"), // Juki DDL-8700 Unit 1
-                    IssueId = Guid.Parse("88888888-8888-8888-8888-888888888888"),   // DUT_CHI
-                    LastOccurredDate = new DateTime(2025, 4, 15, 10, 30, 0, DateTimeKind.Utc),
-                    OccurrenceCount = 3,
-                    Notes = "Chỉ bị đứt do kẹt ở ống chỉ, đã thay ống chỉ mới."
-                },
+                
                 new DeviceIssueHistory
                 {
                     DeviceId = Guid.Parse("d1e2f3a4-0003-0003-0003-000000000003"), // Juki DDL-8700 Unit 3

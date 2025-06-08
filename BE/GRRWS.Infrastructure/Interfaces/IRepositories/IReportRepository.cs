@@ -15,6 +15,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<List<Report>> GetAllReportAsync();
         Task<Report> GetReportByIdAsync(Guid id);
         Task UpdateReportAsync(Report updatedReport, List<Guid> newErrorIds);
+        Task<Report> GetReportWithErrorDetailsAsync(Guid id);
     }
 
 }

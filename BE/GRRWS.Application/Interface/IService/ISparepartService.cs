@@ -1,9 +1,8 @@
 ﻿using GRRWS.Application.Common.Result;
+using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DTOs.Sparepart;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace GRRWS.Application.Interface.IService
@@ -16,5 +15,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> UpdateAsync(Guid id, UpdateSparepartDTO dto);
         Task<Result> DeleteAsync(Guid id);
         Task<Result> GetAvailabilityAsync();
+        Task<Result> GetSparepartsByMachineIdAsync(Guid machineId);
+        Task<Result> GetSparepartsBySupplierAsync(Guid supplierId);
     }
 }

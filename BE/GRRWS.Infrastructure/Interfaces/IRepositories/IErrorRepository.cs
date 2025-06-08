@@ -3,10 +3,11 @@ using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 
 using GRRWS.Infrastructure.DTOs.Sparepart;
+using GRRWS.Infrastructure.Interfaces.IRepositories.IGeneric;
 
 namespace GRRWS.Infrastructure.Interfaces.IRepositories
 {
-    public interface IErrorRepository
+    public interface IErrorRepository : IGenericRepository<Domain.Entities.Error>
     {
         Task<List<SuggestObject>> GetErrorSuggestionsAsync(string normalizedQuery, int maxResults);
         Task<List<ErrorSimpleDTO>> GetErrorsByIssueIdsAsync(List<Guid> issueIds);

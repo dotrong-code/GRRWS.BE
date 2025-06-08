@@ -23,6 +23,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 150,
                     Unit = "Cái",
                     UnitPrice = 5000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000001"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -36,6 +37,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 60,
                     Unit = "Cái",
                     UnitPrice = 12000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000001"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -49,6 +51,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 20,
                     Unit = "Cái",
                     UnitPrice = 45000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000001"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -62,6 +65,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 500,
                     Unit = "Cái",
                     UnitPrice = 1500,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000001"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -75,6 +79,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 10,
                     Unit = "Bộ",
                     UnitPrice = 120000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000001"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -88,6 +93,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 35,
                     Unit = "Cái",
                     UnitPrice = 8000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -101,6 +107,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 8,
                     Unit = "Cái",
                     UnitPrice = 350000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -114,6 +121,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 120,
                     Unit = "Cái",
                     UnitPrice = 18000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -127,6 +135,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 40,
                     Unit = "Cái",
                     UnitPrice = 22000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -140,6 +149,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 12,
                     Unit = "Bộ",
                     UnitPrice = 85000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -153,6 +163,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 100,
                     Unit = "Cái",
                     UnitPrice = 10000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -166,6 +177,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 60,
                     Unit = "Cái",
                     UnitPrice = 30000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -179,6 +191,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 25,
                     Unit = "Cái",
                     UnitPrice = 40000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -192,6 +205,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 80,
                     Unit = "Cái",
                     UnitPrice = 7000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -205,6 +219,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 15,
                     Unit = "Cái",
                     UnitPrice = 65000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -218,6 +233,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 12,
                     Unit = "Bộ",
                     UnitPrice = 90000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -231,6 +247,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 150,
                     Unit = "Cái",
                     UnitPrice = 3000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -244,6 +261,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 30,
                     Unit = "Cái",
                     UnitPrice = 18000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -257,6 +275,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 100,
                     Unit = "Cuộn",
                     UnitPrice = 10000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -270,6 +289,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 50,
                     Unit = "Bộ",
                     UnitPrice = 22000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -283,6 +303,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 80,
                     Unit = "Cái",
                     UnitPrice = 6000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -296,6 +317,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 40,
                     Unit = "Cái",
                     UnitPrice = 15000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -309,6 +331,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 100,
                     Unit = "Cái",
                     UnitPrice = 20000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -322,6 +345,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 18,
                     Unit = "Bộ",
                     UnitPrice = 95000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -335,6 +359,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 75,
                     Unit = "Cái",
                     UnitPrice = 11000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -348,6 +373,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 25,
                     Unit = "Cái",
                     UnitPrice = 27000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -361,6 +387,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 90,
                     Unit = "Bộ",
                     UnitPrice = 18000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -374,6 +401,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 40,
                     Unit = "Cái",
                     UnitPrice = 9000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -387,6 +415,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 5,
                     Unit = "Bộ",
                     UnitPrice = 350000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -400,6 +429,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 55,
                     Unit = "Cái",
                     UnitPrice = 13000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 }

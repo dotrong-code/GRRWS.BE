@@ -9,5 +9,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetByIdAsync(Guid id);
         Task<Result> GetByRequestIdAsync(Guid requestId);
         Task<Result> DeleteAsync(Guid id);
+        Task<Result> UpdateErrorTaskAsync(Guid id, UpdateErrorTaskRequest request);
+        Task<Result> UpdateErrorGuidelineAsync(Guid id, UpdateErrorGuidelineRequest request);
     }
 }

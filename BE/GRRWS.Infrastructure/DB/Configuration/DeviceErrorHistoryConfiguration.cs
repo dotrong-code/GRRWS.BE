@@ -47,14 +47,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     OccurrenceCount = 1,
                     Notes = "Bộ nguồn hỏng, máy không khởi động. Đã thay mới."
                 },
-                new DeviceErrorHistory
-                {
-                    DeviceId = Guid.Parse("d1e2f3a4-0003-0003-0003-000000000003"),
-                    ErrorId = Guid.Parse("e1d1a444-0004-0004-0004-000000000004"), // CHAY_MOTOR
-                    LastOccurredDate = new DateTime(2025, 5, 11, 11, 0, 0, DateTimeKind.Utc),
-                    OccurrenceCount = 1,
-                    Notes = "Motor cháy do ngắn mạch, phát mùi khét. Đã thay mới."
-                },
+                
                 // DEV004: Singer 4452 Unit 1 (Issues: MAY_RUNG_LAC, KEU_TO)
                 new DeviceErrorHistory
                 {
@@ -177,14 +170,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     OccurrenceCount = 2,
                     Notes = "Bánh răng mòn gây tiếng ồn, đã lên kế hoạch thay mới."
                 },
-                new DeviceErrorHistory
-                {
-                    DeviceId = Guid.Parse("d1e2f3a4-0011-0011-0011-000000000011"), // Juki DDL-9000C Unit 1
-                    ErrorId = Guid.Parse("e1d1a888-0008-0008-0008-000000000008"),  // LOI_MACH_DIEU_KHIEN
-                    LastOccurredDate = new DateTime(2025, 5, 5, 8, 20, 0, DateTimeKind.Utc),
-                    OccurrenceCount = 1,
-                    Notes = "Bo mạch điều khiển lỗi, đang kiểm tra để sửa chữa."
-                },
+                
                 new DeviceErrorHistory
                 {
                     DeviceId = Guid.Parse("d1e2f3a4-0013-0013-0013-000000000013"), // Juki DDL-9000C Unit 3

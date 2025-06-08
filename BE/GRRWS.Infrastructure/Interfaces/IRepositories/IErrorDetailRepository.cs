@@ -9,5 +9,6 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<List<ErrorDetail>> GetByRequestIdAsync(Guid requestId);
         Task<bool> ErrorDetailExistsAsync(Guid errorId, Guid reportId);
         Task<Guid> GetReportIdByRequestIdAsync(Guid requestId);
+        Task<ErrorDetail> GetByIdWithDetailsAsync(Guid id);
     }
 }

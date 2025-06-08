@@ -18,5 +18,6 @@ namespace GRRWS.Domain.Entities
         public string? Specifications { get; set; }
         public string? PhotoUrl { get; set; }
         public ICollection<Device>? Devices { get; set; }
+        public ICollection<MachineSparepart>? MachineSpareparts { get; set; }
     }
 }

@@ -2,13 +2,13 @@
 {
     public class SparePartUsage : BaseEntity
     {
-        public Guid ErrorDetailId { get; set; }
+        public Guid? RequestTakeSparePartUsageId { get; set; } // Liên kết với yêu cầu lấy linh kiện
         public Guid SparePartId { get; set; }
         public int QuantityUsed { get; set; }
-        public bool IsTakenFromStock { get; set; } // Indicates if the spare part was taken from stock or not
-
+        public bool IsTakenFromStock { get; set; } // Indicates if the spare part was taken from stock or not       
         // Navigation properties
-        public ErrorDetail ErrorDetail { get; set; }
+        
         public Sparepart SparePart { get; set; }
+        public RequestTakeSparePartUsage? RequestTakeSparePartUsage { get; set; }
     }
 }

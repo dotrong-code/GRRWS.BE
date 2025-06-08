@@ -9,8 +9,9 @@
         public Report Report { get; set; }
         public Error Error { get; set; }
         public Tasks Task { get; set; }
+        public Guid? RequestTakeSparePartUsageId { get; set; } // Liên kết 1-1 với RequestTakeSparePartUsage
         public ErrorGuideline? ErrorGuideline { get; set; } // Nullable to allow for cases without a guideline
         public ICollection<ErrorFixProgress>? ProgressRecords { get; set; }
-        public ICollection<SparePartUsage>? SparePartUsages { get; set; } // Collection of spare parts used for this error
+        public RequestTakeSparePartUsage? RequestTakeSparePartUsage { get; set; } // Navigation property 1-1
     }
 }

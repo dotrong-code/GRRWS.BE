@@ -256,7 +256,7 @@ public class DeviceService : IDeviceService
 
     public async Task<Result> GetWarrantyStatusAsync(Guid deviceId)
     {
-        var device = await _unitOfWork.DeviceRepository.GetByIdAsync(deviceId);
+        var device = await _unitOfWork.DeviceRepository.    GetByIdAsync(deviceId);
         if (device == null)
         {
             return Result.Failure(DeviceErrorMessage.DeviceNotExist());

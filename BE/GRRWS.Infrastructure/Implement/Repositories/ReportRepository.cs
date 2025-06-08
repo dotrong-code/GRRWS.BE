@@ -80,7 +80,14 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             await _context.SaveChangesAsync();
         }
-
+        public async Task<Report> GetReportWithErrorDetailsAsync(Guid id)
+        {
+            return await _context.Reports
+                .Include(r => r.ErrorDetails)
+                .ThenInclude(ed => ed.Error)
+                .Where(r => r.IsDeleted != true && r.Id == id)
+                .FirstOrDefaultAsync();
+        }
     }
 
 }
