@@ -1,5 +1,6 @@
 ﻿using GRRWS.Application.Common.Result;
 using GRRWS.Infrastructure.DTOs.Task;
+using GRRWS.Infrastructure.DTOs.Task.Warranty;
 
 namespace GRRWS.Application.Interface.IService
 {
@@ -30,5 +31,15 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> CreateTaskFromErrorsAsync(CreateTaskFromErrorsRequest request);
         Task<Result> CreateTaskFromTechnicalIssueAsync(CreateTaskFromTechnicalIssueRequest request);
         Task<Result> CreateSimpleTaskAsync(CreateSimpleTaskRequest request);
+
+        ///New versions of create task
+        Task<Result> CreateWarrantyTask(CreateWarrantyTaskRequest request);
+
+
+
+        Task<Result> GetGetDetailWarrantyTaskForMechanicByIdAsync(Guid taskId, string type);
+        Task<Result> GetDetailtRepairTaskForMechanicByIdAsync(Guid taskId, string type);
+        Task<Result> GetDetailReplaceTaskForMechanicByIdAsync(Guid taskId, string type);
+
     }
 }

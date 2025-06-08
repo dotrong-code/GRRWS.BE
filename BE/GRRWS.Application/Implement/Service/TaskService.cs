@@ -2,12 +2,13 @@
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
-using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
 using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.DTOs.Task;
+using GRRWS.Infrastructure.DTOs.Task.Get;
+using GRRWS.Infrastructure.DTOs.Task.Warranty;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -26,7 +27,56 @@ namespace GRRWS.Application.Implement.Service
             _createReportValidator = createReportValidator;
         }
 
+        #region
+        public async Task<Result> CreateWarrantyTask(CreateWarrantyTaskRequest request)
+        {
+            // Validate inputs
+            var validationResult = await ValidateRequestAsync(request);
+            if (!validationResult.IsSuccess)
+            {
+                return validationResult;
+            }
+            // Create task
+            var taskId = await _unitOfWork.TaskRepository.CreateWarrantyTask(request);
+            return Result.SuccessWithObject(new CreateWarrantyTaskResponse
+            {
+                Message = "Warranty task created successfully!",
+                TaskId = taskId
+            });
+        }
+        public async Task<Result> GetGetDetailWarrantyTaskForMechanicByIdAsync(Guid taskId, string type)
+        {
+            var task = await _unitOfWork.TaskRepository.GetGetDetailWarrantyTaskForMechanicByIdAsync(taskId, type);
+            if (task == null)
+            {
+                return Result.Failure(TaskErrorMessage.TaskNotExist());
+            }
+            return Result.SuccessWithObject(task);
+        }
 
+        public async Task<Result> GetDetailtRepairTaskForMechanicByIdAsync(Guid taskId, string type)
+        {
+            var task = await _unitOfWork.TaskRepository.GetDetailtRepairTaskForMechanicByIdAsync(taskId, type);
+            if (task == null)
+            {
+                return Result.Failure(TaskErrorMessage.TaskNotExist());
+            }
+            return Result.SuccessWithObject(task);
+        }
+
+        public async Task<Result> GetDetailReplaceTaskForMechanicByIdAsync(Guid taskId, string type)
+        {
+            var task = await _unitOfWork.TaskRepository.GetGetDetailWarrantyTaskForMechanicByIdAsync(taskId, type);
+            if (task == null)
+            {
+                return Result.Failure(TaskErrorMessage.TaskNotExist());
+            }
+            return Result.SuccessWithObject(task);
+        }
+
+
+        #endregion
+        #region old methods
         public async Task<Result> GetTasksByReportIdAsync(Guid reportId)
         {
             var reportExists = await _unitOfWork.ReportRepository.GetByIdAsync(reportId) != null;
@@ -39,8 +89,6 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.SuccessWithObject(tasks);
         }
-
-
         public async Task<Result> CreateTaskAsync(CreateTaskRequest request)
         {
             var userExists = await _unitOfWork.UserRepository.GetByIdAsync(request.AssigneeId) != null;
@@ -65,9 +113,6 @@ namespace GRRWS.Application.Implement.Service
             await _unitOfWork.SaveChangesAsync();
             return Result.SuccessWithObject(task);
         }
-
-
-
         public async Task<Result> GetAllTasksAsync(string? taskType, string? status, int? priority, int pageNumber, int pageSize)
         {
             var (tasks, totalCount) = await _unitOfWork.TaskRepository.GetAllTasksAsync(taskType, status, priority, pageNumber, pageSize);
@@ -83,7 +128,6 @@ namespace GRRWS.Application.Implement.Service
             };
             return Result.SuccessWithObject(response);
         }
-
         public async Task<Result> UpdateTaskAsync(UpdateTaskRequest request)
         {
             var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(request.Id);
@@ -105,7 +149,6 @@ namespace GRRWS.Application.Implement.Service
             await _unitOfWork.SaveChangesAsync();
             return Result.SuccessWithObject(task);
         }
-
         public async Task<Result> DeleteTaskAsync(Guid taskId)
         {
             var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
@@ -119,18 +162,18 @@ namespace GRRWS.Application.Implement.Service
             await _unitOfWork.SaveChangesAsync();
             return Result.SuccessWithObject(true);
         }
-
         public async Task<Result> GetTasksByMechanicIdAsync(Guid mechanicId, int pageNumber, int pageSize)
         {
             var userExists = await _unitOfWork.UserRepository.GetByIdAsync(mechanicId) != null;
             if (!userExists)
                 return Result.Failure(TaskErrorMessage.UserNotExist());
 
-            var tasks = await _unitOfWork.TaskRepository.GetTasksByMechanicIdAsync(mechanicId, pageNumber, pageSize);
+            //var tasks = await _unitOfWork.TaskRepository.GetTasksByMechanicIdAsync(mechanicId, pageNumber, pageSize);
+            var tasks = await _unitOfWork.TaskRepository.GetTasksByMechanicIdAsync2(mechanicId, pageNumber, pageSize);
             if (!tasks.Any())
                 return Result.Failure(TaskErrorMessage.TaskNotExist());
 
-            var response = new PagedResponse<GetTaskResponse>
+            var response = new PagedResponse<GetTaskForMechanic>
             {
                 Data = tasks,
                 TotalCount = tasks.Count,
@@ -139,7 +182,6 @@ namespace GRRWS.Application.Implement.Service
             };
             return Result.SuccessWithObject(response);
         }
-
         public async Task<Result> StartTaskAsync(StartTaskRequest request)
         {
             var validationResult = await _startTaskValidator.ValidateAsync(request);
@@ -161,7 +203,6 @@ namespace GRRWS.Application.Implement.Service
             await _unitOfWork.SaveChangesAsync();
             return Result.SuccessWithObject(new { Message = "Task start successfully!" });
         }
-
         public async Task<Result> GetTaskDetailsAsync(Guid taskId)
         {
             var task = await _unitOfWork.TaskRepository.GetTaskDetailsAsync(taskId);
@@ -170,7 +211,6 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.SuccessWithObject(task);
         }
-
         public async Task<Result> CreateTaskReportAsync(CreateTaskReportRequest request)
         {
             var validationResult = await _createReportValidator.ValidateAsync(request);
@@ -198,9 +238,6 @@ namespace GRRWS.Application.Implement.Service
             await _unitOfWork.SaveChangesAsync();
             return Result.SuccessWithObject(task);
         }
-
-
-
         public async Task<Result> GetAllAsync()
         {
             var tasks = await _unitOfWork.TaskRepository.GetAllTasksAsync();
@@ -237,7 +274,6 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.SuccessWithObject(dtos);
         }
-
         public async Task<Result> GetByIdAsync(Guid id)
         {
             var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(id);
@@ -275,7 +311,6 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.SuccessWithObject(dto);
         }
-
         public async Task<Result> CreateAsync(CreateTaskDTO dto)
         {
             if (string.IsNullOrWhiteSpace(dto.TaskName))
@@ -307,7 +342,6 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.SuccessWithObject(new { Message = "Task created successfully!", TaskId = task.Id });
         }
-
         public async Task<Result> UpdateAsync(Guid id, UpdateTaskDTO dto)
         {
             var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(id);
@@ -331,7 +365,6 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.SuccessWithObject(new { Message = "Task updated successfully!" });
         }
-
         public async Task<Result> DeleteAsync(Guid id)
         {
             var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(id);
@@ -344,7 +377,6 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.SuccessWithObject(new { Message = "Task deleted successfully!" });
         }
-
         public async Task<Result> AssignTaskAsync(Guid taskId, AssignTaskDTO dto)
         {
             var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
@@ -359,7 +391,6 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.SuccessWithObject(new { Message = "Task assigned successfully!" });
         }
-
         public async Task<Result> CreateTaskWebAsync(CreateTaskWeb dto)
         {
             var request = await _unitOfWork.RequestRepository.GetByIdAsync(dto.RequestId);
@@ -381,7 +412,6 @@ namespace GRRWS.Application.Implement.Service
             var task = await _unitOfWork.TaskRepository.CreateTaskWebAsync(dto);
             return Result.SuccessWithObject(new { Message = "Task assigned successfully!" });
         }
-
         public async Task<Result> CreateSimpleTaskWebAsync(CreateSimpleTaskWeb dto)
         {
             var request = await _unitOfWork.RequestRepository.GetByIdAsync(dto.RequestId);
@@ -399,7 +429,6 @@ namespace GRRWS.Application.Implement.Service
             var taskId = await _unitOfWork.TaskRepository.CreateSimpleTaskWebAsync(dto);
             return Result.SuccessWithObject(new { Message = "Simple task created successfully!", TaskId = taskId });
         }
-
         public async Task<Result> CreateTaskFromTechnicalIssueAsync(CreateTaskFromTechnicalIssueRequest request)
         {
             // Validate Request exists
@@ -432,7 +461,6 @@ namespace GRRWS.Application.Implement.Service
             var taskId = await _unitOfWork.TaskRepository.CreateTaskFromTechnicalIssueAsync(request);
             return Result.SuccessWithObject(new { Message = "Warranty task created from technical issue successfully!", TaskId = taskId });
         }
-
         public async Task<Result> CreateSimpleTaskAsync(CreateSimpleTaskRequest request)
         {
             // Validate Request exists
@@ -495,7 +523,6 @@ namespace GRRWS.Application.Implement.Service
                 }
             });
         }
-
         public async Task<Result> CreateTaskFromErrorsAsync(CreateTaskFromErrorsRequest dto)
         {
             var request = await _unitOfWork.RequestRepository.GetByIdAsync(dto.RequestId);
@@ -517,5 +544,68 @@ namespace GRRWS.Application.Implement.Service
             var task = await _unitOfWork.TaskRepository.CreateTaskFromErrorsAsync(dto);
             return Result.SuccessWithObject(new { Message = "Task assigned successfully!" });
         }
+        #endregion
+
+
+        #region private methods
+        // You can add any private methods here if needed for internal logic
+        private async Task<Result> ValidateRequestAsync(CreateWarrantyTaskRequest request)
+        {
+            if (request == null)
+            {
+                return Result.Failure(ErrorConstants.RequestNotFound());
+            }
+
+            // Check if request exists
+            var requestExists = await _unitOfWork.RequestRepository.GetByIdAsync(request.RequestId);
+            if (requestExists == null)
+            {
+                return Result.Failure(ErrorConstants.RequestNotFound());
+            }
+
+            // Check if user exists
+            if (!await _unitOfWork.UserRepository.IdExistsAsync(request.AssigneeId))
+            {
+                return Result.Failure(ErrorConstants.UserNotFound());
+            }
+
+            // Check if technical issues are provided
+            if (request.TechnicalIssueIds == null || !request.TechnicalIssueIds.Any())
+            {
+                return Result.Failure(ErrorConstants.TechnicalIssueRequired());
+            }
+
+            // Check if report exists
+            var reportId = await _unitOfWork.ErrorDetailRepository.GetReportIdByRequestIdAsync(request.RequestId);
+            if (reportId == Guid.Empty)
+            {
+                return Result.Failure(ErrorConstants.ReportNotFound());
+            }
+
+            return Result.Success();
+        }
+
+        // Error constants for reuse
+        public static class ErrorConstants
+        {
+            public static Infrastructure.DTOs.Common.Error RequestNotFound() =>
+                Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found");
+            public static Infrastructure.DTOs.Common.Error UserNotFound() =>
+                Infrastructure.DTOs.Common.Error.NotFound("NotFound", "User not found");
+            public static Infrastructure.DTOs.Common.Error TechnicalIssueRequired() =>
+                Infrastructure.DTOs.Common.Error.NotFound("NotFound", "At least one technical issue must be specified");
+            public static Infrastructure.DTOs.Common.Error ReportNotFound() =>
+                Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Report not found for this request");
+        }
+
+        // DTO for response
+        public class CreateWarrantyTaskResponse
+        {
+            public string Message { get; set; }
+            public Guid TaskId { get; set; }
+        }
+
+        #endregion
+
     }
 }

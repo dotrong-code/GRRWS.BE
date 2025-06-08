@@ -46,9 +46,14 @@ namespace GRRWS.Infrastructure.DB
         public DbSet<ErrorFixStep> ErrorFixSteps { get; set; }
         public DbSet<ErrorFixProgress> ErrorFixProgresses { get; set; }
         public DbSet<SparePartUsage> SparePartUsages { get; set; }
+
         public DbSet<RequestTakeSparePartUsage> RequestTakeSparePartUsages { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<MachineSparepart> MachineSpareparts { get; set; }
+
+        public DbSet<WarrantyClaim> WarrantyClaims { get; set; }
+        public DbSet<WarrantyClaimDocument> WarrantyClaimDocuments { get; set; }        
+
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -348,6 +353,7 @@ namespace GRRWS.Infrastructure.DB
                 .Property(spu => spu.IsTakenFromStock)
                 .IsRequired();
 
+
             modelBuilder.Entity<SparePartUsage>()
                 .HasOne(spu => spu.RequestTakeSparePartUsage)
                 .WithMany(rtspu => rtspu.SparePartUsages)
@@ -356,6 +362,108 @@ namespace GRRWS.Infrastructure.DB
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Xóa cấu hình liên kết với ErrorDetail trong SparePartUsage
+
+            // WarrantyClaim
+            modelBuilder.Entity<WarrantyClaim>()
+                .HasKey(wc => wc.Id);
+
+            modelBuilder.Entity<WarrantyClaim>()
+                .Property(wc => wc.ClaimNumber)
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<WarrantyClaim>()
+                .HasIndex(wc => wc.ClaimNumber)
+                .IsUnique();
+
+            modelBuilder.Entity<WarrantyClaim>()
+                .Property(wc => wc.ClaimStatus)
+                .IsRequired()
+                .HasMaxLength(20);
+
+
+
+            modelBuilder.Entity<WarrantyClaim>()
+                .Property(wc => wc.Resolution)
+                .HasMaxLength(1000);
+
+            modelBuilder.Entity<WarrantyClaim>()
+                .Property(wc => wc.WarrantyNotes)
+                .HasMaxLength(500);
+
+            modelBuilder.Entity<WarrantyClaim>()
+                .Property(wc => wc.ClaimAmount)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<WarrantyClaim>()
+                .HasOne(wc => wc.DeviceWarranty)
+                .WithMany(dw => dw.WarrantyClaims)
+                .HasForeignKey(wc => wc.DeviceWarrantyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<WarrantyClaim>()
+                .HasOne(wc => wc.SubmittedByTask)
+                .WithMany()
+                .HasForeignKey(wc => wc.SubmittedByTaskId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<WarrantyClaim>()
+                .HasOne(wc => wc.ReturnTask)
+                .WithMany()
+                .HasForeignKey(wc => wc.ReturnTaskId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<WarrantyClaim>()
+                .HasOne(wc => wc.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(wc => wc.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // WarrantyClaimDocument
+            modelBuilder.Entity<WarrantyClaimDocument>()
+                .HasKey(wcd => wcd.Id);
+
+            modelBuilder.Entity<WarrantyClaimDocument>()
+                .Property(wcd => wcd.DocumentType)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<WarrantyClaimDocument>()
+                .Property(wcd => wcd.DocumentName)
+                .IsRequired()
+                .HasMaxLength(255);
+
+            modelBuilder.Entity<WarrantyClaimDocument>()
+                .Property(wcd => wcd.DocumentUrl)
+                .IsRequired()
+                .HasMaxLength(500);
+
+            modelBuilder.Entity<WarrantyClaimDocument>()
+                .Property(wcd => wcd.Description)
+                .HasMaxLength(500);
+
+            modelBuilder.Entity<WarrantyClaimDocument>()
+                .Property(wcd => wcd.UploadDate)
+                .IsRequired();
+
+            modelBuilder.Entity<WarrantyClaimDocument>()
+                .HasOne(wcd => wcd.WarrantyClaim)
+                .WithMany(wc => wc.Documents)
+                .HasForeignKey(wcd => wcd.WarrantyClaimId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<WarrantyClaimDocument>()
+                .HasOne(wcd => wcd.UploadedByUser)
+                .WithMany()
+                .HasForeignKey(wcd => wcd.UploadedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Tasks - WarrantyClaim relationship
+            modelBuilder.Entity<Tasks>()
+                .HasOne(t => t.WarrantyClaim)
+                .WithMany()
+                .HasForeignKey(t => t.WarrantyClaimId)
+                .OnDelete(DeleteBehavior.SetNull);
+
 
             // Feedback
             modelBuilder.Entity<Feedback>()

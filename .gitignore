@@ -17,8 +17,9 @@
 #firebase key
 /BE/GRRWS.Host/Keys/
 
+
 #migration
-/BE/GRRWS.BackEnd/GRRWS.Infrastructure/Migrations/
+/BE/GRRWS.Infrastructure/Migrations/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

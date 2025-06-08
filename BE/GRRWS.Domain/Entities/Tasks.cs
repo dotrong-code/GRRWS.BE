@@ -17,8 +17,10 @@ namespace GRRWS.Domain.Entities
         public DateTime? DeviceReturnTime { get; set; } // Time device is returned
         public string? DeviceCondition { get; set; } // Condition after repair
         public string? ReportNotes { get; set; } // Additional report details
-        // Navigation
+                                                 // Navigation
+        public Guid? WarrantyClaimId { get; set; }
         public User Assignee { get; set; }
+        public WarrantyClaim? WarrantyClaim { get; set; }
         public ICollection<ErrorDetail> ErrorDetails { get; set; }
         public ICollection<RepairSparepart>? RepairSpareparts { get; set; }
         public ICollection<TechnicalSymptomReport>? TechnicalSymptomReports { get; set; }
