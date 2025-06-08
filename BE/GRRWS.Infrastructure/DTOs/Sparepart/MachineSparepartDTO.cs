@@ -11,9 +11,10 @@ namespace GRRWS.Infrastructure.DTOs.Sparepart
         public Guid SparepartId { get; set; }
         public string SparepartName { get; set; }
         public Guid MachineId { get; set; }
-        public int Quantity { get; set; }
         public int StockQuantity { get; set; }
         public bool IsAvailable { get; set; }
+        public Guid? SupplierId { get; set; }
         public string? SupplierName { get; set; }
+        public string? Category { get; set; }
     }
 }

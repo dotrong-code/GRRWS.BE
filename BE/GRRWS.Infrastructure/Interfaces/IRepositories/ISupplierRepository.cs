@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace GRRWS.Infrastructure.Interfaces.IRepositories
 {
-    public interface IMachineRepository : IGenericRepository<Machine>
+    public interface ISupplierRepository : IGenericRepository<Supplier> 
     {
-        Task<List<Machine>> GetAllActiveMachinesAsync();
+        Task<List<Supplier>> GetAllActiveSuppliersAsync();
     }
 }

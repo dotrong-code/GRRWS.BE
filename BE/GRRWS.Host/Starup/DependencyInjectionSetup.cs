@@ -143,6 +143,9 @@ namespace GRRWS.Host.Starup
             services.AddTransient<ISparePartUsageRepository, SparePartUsageRepository>();
             services.AddTransient<ISparepartRepository, SparepartRepository>();
             services.AddTransient<IMachineSparepartRepository, MachineSparepartRepository>();
+            services.AddTransient<IMachineRepository, MachineRepository>();
+            services.AddTransient<ISupplierRepository, SupplierRepository>();
+            services.AddTransient<IRequestTakeSparePartUsageRepository, RequestTakeSparePartUsageRepository>();
             
             #endregion
 

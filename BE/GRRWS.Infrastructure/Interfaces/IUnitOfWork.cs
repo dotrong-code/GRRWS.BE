@@ -33,6 +33,8 @@ namespace GRRWS.Infrastructure.Interfaces
         ISparePartUsageRepository SparePartUsageRepository { get; }
         IRequestTakeSparePartUsageRepository RequestTakeSparePartUsageRepository { get; }
         IMachineSparepartRepository MachineSparepartRepository { get; }
+        IMachineRepository MachineRepository { get; }
+        ISupplierRepository SupplierRepository { get; }
         int Complete();
         Task<int> SaveChangesAsync();
     }

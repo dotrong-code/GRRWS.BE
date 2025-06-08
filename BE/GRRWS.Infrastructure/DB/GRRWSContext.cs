@@ -37,8 +37,6 @@ namespace GRRWS.Infrastructure.DB
         public DbSet<TechnicalSymptom> TechnicalSymptoms { get; set; }
         public DbSet<IssueTechnicalSymptom> IssueTechnicalSymptoms { get; set; }
         public DbSet<TechnicalSymptomReport> TechnicalSymptomReports { get; set; }
-        public DbSet<ErrorAction> ErrorActions { get; set; }
-        public DbSet<TaskAction> TaskActions { get; set; }
         public DbSet<MachineIssueHistory> MachineIssueHistories { get; set; }
         public DbSet<MachineErrorHistory> MachineErrorHistories { get; set; }
         public DbSet<DeviceIssueHistory> DeviceIssueHistories { get; set; }
@@ -82,8 +80,7 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.ApplyConfiguration(new TechnicalSymptomConfiguration());
             modelBuilder.ApplyConfiguration(new IssueTechnicalSymptomConfiguration());
             modelBuilder.ApplyConfiguration(new TechnicalSymptomReportConfiguration());
-            modelBuilder.ApplyConfiguration(new ErrorActionConfiguration());
-            modelBuilder.ApplyConfiguration(new TaskActionConfiguration());
+
             modelBuilder.ApplyConfiguration(new ErrorGuidelineConfiguration());
             modelBuilder.ApplyConfiguration(new ErrorFixStepConfiguration());
             modelBuilder.ApplyConfiguration(new ErrorSparepartConfiguration());
@@ -169,6 +166,7 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<ErrorSparepart>()
                 .HasKey(es => new { es.ErrorGuidelineId, es.SparepartId }); // Định nghĩa composite key
 
+
             modelBuilder.Entity<ErrorSparepart>()
                 .HasOne(es => es.ErrorGuideline)
                 .WithMany(eg => eg.ErrorSpareparts)
@@ -180,6 +178,15 @@ namespace GRRWS.Infrastructure.DB
                 .WithMany(s => s.ErrorSpareparts)
                 .HasForeignKey(es => es.SparepartId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Request - Device (Many-to-One)
+            modelBuilder.Entity<Request>()
+                .HasOne(r => r.Device)
+                .WithMany(d => d.Requests)
+                .HasForeignKey(r => r.DeviceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
             // DeviceHistory
             modelBuilder.Entity<DeviceHistory>()
                 .Property(dh => dh.EventDate)
@@ -254,9 +261,13 @@ namespace GRRWS.Infrastructure.DB
             // ErrorDetail
             modelBuilder.Entity<ErrorDetail>()
                 .HasKey(ed => ed.Id);
+
             modelBuilder.Entity<ErrorDetail>()
                 .HasIndex(ed => new { ed.ReportId, ed.ErrorId })
                 .IsUnique();
+
+            //.HasKey(ed => new { ed.ReportId, ed.ErrorId });
+
 
             modelBuilder.Entity<ErrorDetail>()
                 .Property(ed => ed.ErrorId)
@@ -546,35 +557,6 @@ namespace GRRWS.Infrastructure.DB
                 .HasForeignKey(t => t.AssigneeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // ErrorAction
-            modelBuilder.Entity<ErrorAction>()
-                .HasOne(ea => ea.Error)
-                .WithMany(e => e.ErrorActions)
-                .HasForeignKey(ea => ea.ErrorId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // TaskAction
-            modelBuilder.Entity<TaskAction>()
-                .HasKey(ta => ta.Id);
-
-            modelBuilder.Entity<TaskAction>()
-                .HasOne(ta => ta.Task)
-                .WithMany(t => t.TaskActions)
-                .HasForeignKey(ta => ta.TaskId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<TaskAction>()
-                .HasOne(ta => ta.ErrorAction)
-                .WithMany(ea => ea.TaskActions)
-                .HasForeignKey(ta => ta.ErrorActionId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<TaskAction>()
-                .HasOne(ta => ta.PerformedBy)
-                .WithMany()
-                .HasForeignKey(ta => ta.PerformedById)
-                .OnDelete(DeleteBehavior.Restrict);
-
             // WarrantyDetail
             modelBuilder.Entity<WarrantyDetail>(entity =>
             {
@@ -652,22 +634,26 @@ namespace GRRWS.Infrastructure.DB
     .WithMany(sp => sp.Spareparts)
     .HasForeignKey(s => s.SupplierId)
     .OnDelete(DeleteBehavior.Restrict);
-
+            modelBuilder.Entity<Sparepart>()
+    .Property(s => s.SupplierId)
+    .IsRequired(false);
 
             modelBuilder.Entity<MachineSparepart>()
     .HasKey(ms => new { ms.MachineId, ms.SparepartId }); // Composite key
 
             modelBuilder.Entity<MachineSparepart>()
-                .HasOne(ms => ms.Machine)
-                .WithMany(m => m.MachineSpareparts)
-                .HasForeignKey(ms => ms.MachineId)
-                .OnDelete(DeleteBehavior.Restrict);
+    .HasOne(ms => ms.Machine)
+    .WithMany(m => m.MachineSpareparts)
+    .HasForeignKey(ms => ms.MachineId)
+    .IsRequired() // Đảm bảo MachineId không NULL
+    .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<MachineSparepart>()
-                .HasOne(ms => ms.Sparepart)
-                .WithMany(s => s.MachineSpareparts)
-                .HasForeignKey(ms => ms.SparepartId)
-                .OnDelete(DeleteBehavior.Restrict);
+    .HasOne(ms => ms.Sparepart)
+    .WithMany(s => s.MachineSpareparts)
+    .HasForeignKey(ms => ms.SparepartId)
+    .IsRequired() // Đảm bảo SparepartId không NULL
+    .OnDelete(DeleteBehavior.Restrict);
             // BaseEntity Defaults
             modelBuilder.Entity<BaseEntity>()
                 .Property(b => b.Id)
@@ -711,8 +697,6 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<TechnicalSymptom>().ToTable("TechnicalSymptoms");
             modelBuilder.Entity<IssueTechnicalSymptom>().ToTable("IssueTechnicalSymptoms");
             modelBuilder.Entity<TechnicalSymptomReport>().ToTable("TechnicalSymptomReports");
-            modelBuilder.Entity<ErrorAction>().ToTable("ErrorActions");
-            modelBuilder.Entity<TaskAction>().ToTable("TaskActions");
             modelBuilder.Entity<ErrorGuideline>().ToTable("ErrorGuidelines");
             modelBuilder.Entity<ErrorFixStep>().ToTable("ErrorFixSteps");
             modelBuilder.Entity<ErrorFixProgress>().ToTable("ErrorFixProgresses");
@@ -720,7 +704,7 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<RequestTakeSparePartUsage>().ToTable("RequestTakeSparePartUsages");
             modelBuilder.Entity<MachineSparepart>().ToTable("MachineSpareparts");
             modelBuilder.Entity<Supplier>().ToTable("Suppliers");
-            
+
             #endregion
         }
     }

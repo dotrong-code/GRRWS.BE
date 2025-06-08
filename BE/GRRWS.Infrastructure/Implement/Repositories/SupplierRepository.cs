@@ -11,13 +11,13 @@ using System.Threading.Tasks;
 
 namespace GRRWS.Infrastructure.Implement.Repositories
 {
-    public class MachineRepository : GenericRepository<Machine>, IMachineRepository
+    public class SupplierRepository : GenericRepository<Supplier>, ISupplierRepository
     {
-        public MachineRepository(GRRWSContext context) : base(context) { }
-        public async Task<List<Machine>> GetAllActiveMachinesAsync()
+        public SupplierRepository(GRRWSContext context) : base(context) { }
+        public async Task<List<Supplier>> GetAllActiveSuppliersAsync()
         {
-            return await _context.Machines
-                .Where(m => !m.IsDeleted)
+            return await _context.Suppliers
+                .Where(s => !s.IsDeleted)
                 .ToListAsync();
         }
     }

@@ -1,9 +1,11 @@
-﻿using AutoMapper;
-using GRRWS.Application.Common.Result;
+﻿using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
+using GRRWS.Infrastructure.DTOs.Machine;
 using GRRWS.Infrastructure.DTOs.Sparepart;
+using GRRWS.Infrastructure.DTOs.Supplier;
 using GRRWS.Infrastructure.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +24,7 @@ namespace GRRWS.Application.Implement.Service
 
         public async Task<Result> GetAllAsync()
         {
-            var spareparts = await _unit.SparepartRepository.GetAllAsync();
+            var spareparts = await _unit.SparepartRepository.GetAllActiveSparepartsAsync();
             var dtos = spareparts.Select(sp => new SparepartViewDTO
             {
                 Id = sp.Id,
@@ -31,11 +33,15 @@ namespace GRRWS.Application.Implement.Service
                 Description = sp.Description,
                 Specification = sp.Specification,
                 StockQuantity = sp.StockQuantity,
-                IsAvailable = sp.StockQuantity > 0, // Đổi logic: StockQuantity < 0 thì IsAvailable = true
+                IsAvailable = sp.StockQuantity > 0,
                 Unit = sp.Unit,
                 UnitPrice = sp.UnitPrice,
                 ExpectedAvailabilityDate = sp.ExpectedAvailabilityDate,
-                SupplierName = sp.Supplier?.SupplierName // Thêm thông tin Supplier
+                SupplierId = sp.SupplierId,
+                SupplierName = sp.Supplier?.SupplierName,
+                Category = sp.Category,
+                MachineIds = sp.MachineSpareparts?.Select(ms => ms.MachineId).ToList(),
+                MachineNames = sp.MachineSpareparts?.Select(ms => ms.Machine.MachineName).ToList()
             }).ToList();
 
             return Result.SuccessWithObject(dtos);
@@ -43,7 +49,7 @@ namespace GRRWS.Application.Implement.Service
 
         public async Task<Result> GetByIdAsync(Guid id)
         {
-            var sparepart = await _unit.SparepartRepository.GetByIdAsync(id);
+            var sparepart = await _unit.SparepartRepository.GetByIdWithDetailsAsync(id);
             if (sparepart == null) return Result.Failure(new Infrastructure.DTOs.Common.Error("NotFound", "Sparepart not found.", 0));
 
             var dto = new SparepartViewDTO
@@ -54,11 +60,15 @@ namespace GRRWS.Application.Implement.Service
                 Description = sparepart.Description,
                 Specification = sparepart.Specification,
                 StockQuantity = sparepart.StockQuantity,
-                IsAvailable = sparepart.StockQuantity > 0, // Đổi logic
+                IsAvailable = sparepart.StockQuantity > 0,
                 Unit = sparepart.Unit,
                 UnitPrice = sparepart.UnitPrice,
                 ExpectedAvailabilityDate = sparepart.ExpectedAvailabilityDate,
-                SupplierName = sparepart.Supplier?.SupplierName
+                SupplierId = sparepart.SupplierId,
+                SupplierName = sparepart.Supplier?.SupplierName,
+                Category = sparepart.Category,
+                MachineIds = sparepart.MachineSpareparts?.Select(ms => ms.MachineId).ToList(),
+                MachineNames = sparepart.MachineSpareparts?.Select(ms => ms.Machine.MachineName).ToList()
             };
 
             return Result.SuccessWithObject(dto);
@@ -75,9 +85,10 @@ namespace GRRWS.Application.Implement.Service
                 StockQuantity = dto.StockQuantity,
                 Unit = dto.Unit,
                 UnitPrice = dto.UnitPrice,
-                ExpectedAvailabilityDate = dto.StockQuantity >= 0 ? dto.ExpectedAvailabilityDate : null, // Nếu Stock < 0, không cần ngày dự kiến
-                IsAvailable = dto.StockQuantity > 0, // Đổi logic
-                SupplierId = dto.SupplierId // Thêm SupplierId
+                ExpectedAvailabilityDate = dto.StockQuantity >= 0 ? dto.ExpectedAvailabilityDate : null,
+                IsAvailable = dto.StockQuantity > 0,
+                SupplierId = dto.SupplierId,
+                Category = dto.Category
             };
 
             await _unit.SparepartRepository.CreateAsync(sparepart);
@@ -95,7 +106,11 @@ namespace GRRWS.Application.Implement.Service
                 Unit = sparepart.Unit,
                 UnitPrice = sparepart.UnitPrice,
                 ExpectedAvailabilityDate = sparepart.ExpectedAvailabilityDate,
-                SupplierName = sparepart.Supplier?.SupplierName
+                SupplierId = sparepart.SupplierId,
+                SupplierName = sparepart.Supplier?.SupplierName,
+                Category = sparepart.Category,
+                MachineIds = sparepart.MachineSpareparts?.Select(ms => ms.MachineId).ToList(),
+                MachineNames = sparepart.MachineSpareparts?.Select(ms => ms.Machine.MachineName).ToList()
             };
 
             return Result.SuccessWithObject(resultDto);
@@ -113,8 +128,9 @@ namespace GRRWS.Application.Implement.Service
             sparepart.Unit = dto.Unit;
             sparepart.UnitPrice = dto.UnitPrice;
             sparepart.ExpectedAvailabilityDate = dto.StockQuantity >= 0 ? dto.ExpectedAvailabilityDate : null;
-            sparepart.IsAvailable = dto.StockQuantity > 0; // Đổi logic
-            sparepart.SupplierId = dto.SupplierId; // Cập nhật SupplierId
+            sparepart.IsAvailable = dto.StockQuantity > 0;
+            sparepart.SupplierId = dto.SupplierId;
+            sparepart.Category = dto.Category;
 
             await _unit.SparepartRepository.UpdateAsync(sparepart);
             await _unit.SaveChangesAsync();
@@ -131,7 +147,11 @@ namespace GRRWS.Application.Implement.Service
                 Unit = sparepart.Unit,
                 UnitPrice = sparepart.UnitPrice,
                 ExpectedAvailabilityDate = sparepart.ExpectedAvailabilityDate,
-                SupplierName = sparepart.Supplier?.SupplierName
+                SupplierId = sparepart.SupplierId,
+                SupplierName = sparepart.Supplier?.SupplierName,
+                Category = sparepart.Category,
+                MachineIds = sparepart.MachineSpareparts?.Select(ms => ms.MachineId).ToList(),
+                MachineNames = sparepart.MachineSpareparts?.Select(ms => ms.Machine.MachineName).ToList()
             };
 
             return Result.SuccessWithObject(resultDto);
@@ -148,14 +168,15 @@ namespace GRRWS.Application.Implement.Service
 
         public async Task<Result> GetAvailabilityAsync()
         {
-            var spareparts = await _unit.SparepartRepository.GetAllAsync();
+            var spareparts = await _unit.SparepartRepository.GetAllActiveSparepartsAsync();
             var availability = spareparts.Select(s => new SparepartAvailabilityDTO
             {
                 Id = s.Id,
                 SparepartCode = s.SparepartCode,
                 SparepartName = s.SparepartName,
-                IsAvailable = s.StockQuantity > 0, // Đổi logic
-                ExpectedAvailabilityDate = s.StockQuantity >= 0 ? s.ExpectedAvailabilityDate : null
+                IsAvailable = s.StockQuantity > 0,
+                ExpectedAvailabilityDate = s.StockQuantity >= 0 ? s.ExpectedAvailabilityDate : null,
+                SupplierName = s.Supplier?.SupplierName
             }).ToList();
 
             return Result.SuccessWithObject(availability);
@@ -172,10 +193,11 @@ namespace GRRWS.Application.Implement.Service
                 SparepartId = ms.SparepartId,
                 SparepartName = ms.Sparepart.SparepartName,
                 MachineId = ms.MachineId,
-                
                 StockQuantity = ms.Sparepart.StockQuantity,
                 IsAvailable = ms.Sparepart.StockQuantity > 0,
-                SupplierName = ms.Sparepart.Supplier?.SupplierName
+                SupplierId = ms.Sparepart.SupplierId,
+                SupplierName = ms.Sparepart.Supplier?.SupplierName,
+                Category = ms.Sparepart.Category
             }).ToList();
 
             return Result.SuccessWithObject(dtos);
@@ -199,7 +221,89 @@ namespace GRRWS.Application.Implement.Service
                 Unit = sp.Unit,
                 UnitPrice = sp.UnitPrice,
                 ExpectedAvailabilityDate = sp.ExpectedAvailabilityDate,
-                SupplierName = sp.Supplier?.SupplierName
+                SupplierId = sp.SupplierId,
+                SupplierName = sp.Supplier?.SupplierName,
+                Category = sp.Category,
+                MachineIds = sp.MachineSpareparts?.Select(ms => ms.MachineId).ToList(),
+                MachineNames = sp.MachineSpareparts?.Select(ms => ms.Machine.MachineName).ToList()
+            }).ToList();
+
+            return Result.SuccessWithObject(dtos);
+        }
+
+        public async Task<Result> GetLowStockSparepartsAsync()
+        {
+            var spareparts = await _unit.SparepartRepository.GetLowStockSparepartsAsync();
+            var dtos = spareparts.Select(sp => new SparepartViewDTO
+            {
+                Id = sp.Id,
+                SparepartCode = sp.SparepartCode,
+                SparepartName = sp.SparepartName,
+                Description = sp.Description,
+                Specification = sp.Specification,
+                StockQuantity = sp.StockQuantity,
+                IsAvailable = sp.StockQuantity > 0,
+                Unit = sp.Unit,
+                UnitPrice = sp.UnitPrice,
+                ExpectedAvailabilityDate = sp.ExpectedAvailabilityDate,
+                SupplierId = sp.SupplierId,
+                SupplierName = sp.Supplier?.SupplierName,
+                Category = sp.Category,
+                MachineIds = sp.MachineSpareparts?.Select(ms => ms.MachineId).ToList(),
+                MachineNames = sp.MachineSpareparts?.Select(ms => ms.Machine.MachineName).ToList()
+            }).ToList();
+
+            return Result.SuccessWithObject(dtos);
+        }
+
+        public async Task<Result> GetOutOfStockSparepartsAsync()
+        {
+            var spareparts = await _unit.SparepartRepository.GetOutOfStockSparepartsAsync();
+            var dtos = spareparts.Select(sp => new SparepartViewDTO
+            {
+                Id = sp.Id,
+                SparepartCode = sp.SparepartCode,
+                SparepartName = sp.SparepartName,
+                Description = sp.Description,
+                Specification = sp.Specification,
+                StockQuantity = sp.StockQuantity,
+                IsAvailable = sp.StockQuantity > 0,
+                Unit = sp.Unit,
+                UnitPrice = sp.UnitPrice,
+                ExpectedAvailabilityDate = sp.ExpectedAvailabilityDate,
+                SupplierId = sp.SupplierId,
+                SupplierName = sp.Supplier?.SupplierName,
+                Category = sp.Category,
+                MachineIds = sp.MachineSpareparts?.Select(ms => ms.MachineId).ToList(),
+                MachineNames = sp.MachineSpareparts?.Select(ms => ms.Machine.MachineName).ToList()
+            }).ToList();
+
+            return Result.SuccessWithObject(dtos);
+        }
+
+        public async Task<Result> GetAllMachinesAsync()
+        {
+            var machines = await _unit.MachineRepository.GetAllActiveMachinesAsync();
+            var dtos = machines.Select(m => new MachineDTO
+            {
+                Id = m.Id,
+                MachineName = m.MachineName
+            }).ToList();
+
+            return Result.SuccessWithObject(dtos);
+        }
+
+        public async Task<Result> GetAllSuppliersAsync()
+        {
+            var suppliers = await _unit.SupplierRepository.GetAllActiveSuppliersAsync();
+            var dtos = suppliers.Select(s => new SupplierDTO
+            {
+                Id = s.Id,
+                SupplierName = s.SupplierName,
+                Address = s.Address,
+                Phone = s.Phone,
+                Email = s.Email,
+                LinkWeb = s.LinkWeb
             }).ToList();
 
             return Result.SuccessWithObject(dtos);

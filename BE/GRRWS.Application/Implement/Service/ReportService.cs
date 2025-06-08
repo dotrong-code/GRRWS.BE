@@ -3,16 +3,13 @@ using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
+
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.ErrorDetail;
+
 using GRRWS.Infrastructure.DTOs.Report;
 using GRRWS.Infrastructure.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -276,7 +273,7 @@ namespace GRRWS.Application.Implement.Service
                 createLocation = "Create title fail";
             }
 
-            // Tạo Report
+            // Tạo Report (ánh xạ thủ công)
             var report = new Report
             {
                 Id = Guid.NewGuid(),
@@ -307,7 +304,6 @@ namespace GRRWS.Application.Implement.Service
                 var errorIds = mapping.Value;
                 foreach (var errorId in errorIds)
                 {
-                    // Check if the IssueError combination already exists
                     var existingIssueError = await _unit.IssueErrorRepository.GetByIssueAndErrorIdAsync(issueId, errorId);
                     if (existingIssueError == null) // Only add if it doesn't exist
                     {
@@ -329,8 +325,9 @@ namespace GRRWS.Application.Implement.Service
             await _unit.ReportRepository.CreateAsync(report);
 
             // Cập nhật Request
-            request.ReportId = report.Id;
-            await _unit.RequestRepository.UpdateAsync(request);
+            var getRequest = await _unit.RequestRepository.GetRequestByIdAsync((Guid)report.RequestId);
+            getRequest.ReportId = report.Id;
+            await _unit.RequestRepository.UpdateAsync(getRequest);
 
             await _unit.SaveChangesAsync();
 

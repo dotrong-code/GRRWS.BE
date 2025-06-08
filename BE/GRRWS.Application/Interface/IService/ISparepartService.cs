@@ -17,5 +17,9 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetAvailabilityAsync();
         Task<Result> GetSparepartsByMachineIdAsync(Guid machineId);
         Task<Result> GetSparepartsBySupplierAsync(Guid supplierId);
+        Task<Result> GetLowStockSparepartsAsync();
+        Task<Result> GetOutOfStockSparepartsAsync();
+        Task<Result> GetAllMachinesAsync();
+        Task<Result> GetAllSuppliersAsync();
     }
 }

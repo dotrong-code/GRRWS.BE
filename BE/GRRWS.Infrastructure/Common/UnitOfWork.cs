@@ -45,7 +45,8 @@ namespace GRRWS.Infrastructure.Common
         public IRequestTakeSparePartUsageRepository RequestTakeSparePartUsageRepository { get; private set; }
         public IMachineSparepartRepository MachineSparepartRepository { get; private set; }
 
-
+        public IMachineRepository MachineRepository { get; private set; }
+        public ISupplierRepository SupplierRepository { get; private set; }
         public async Task<int> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync();
@@ -85,6 +86,9 @@ namespace GRRWS.Infrastructure.Common
             SparePartUsageRepository = new SparePartUsageRepository(_context);
             RequestTakeSparePartUsageRepository = new RequestTakeSparePartUsageRepository(_context);
             MachineSparepartRepository = new MachineSparepartRepository(_context);
+            MachineRepository = new MachineRepository(_context);
+            SupplierRepository = new SupplierRepository(_context);
+
         }
         public int Complete()
         {

@@ -8,6 +8,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
     {
         public void Configure(EntityTypeBuilder<ErrorSparepart> builder)
         {
+
             builder.HasKey(e => new { e.ErrorGuidelineId, e.SparepartId });
 
             builder.HasData(
@@ -38,6 +39,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
             // Để đảm bảo chuẩn như bạn yêu cầu là có vài cái có Sparepart, vài cái không có.
 
             );
+
         }
     }
 }

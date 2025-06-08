@@ -87,5 +87,41 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved spareparts by supplier")
                 : ResultExtensions.ToProblemDetails(result);
         }
+
+        [HttpGet("low-stock")]
+        public async Task<IResult> GetLowStockSpareparts()
+        {
+            var result = await _service.GetLowStockSparepartsAsync();
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved low stock spareparts")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+        [HttpGet("out-of-stock")]
+        public async Task<IResult> GetOutOfStockSpareparts()
+        {
+            var result = await _service.GetOutOfStockSparepartsAsync();
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved out of stock spareparts")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+        [HttpGet("machines")]
+        public async Task<IResult> GetAllMachines()
+        {
+            var result = await _service.GetAllMachinesAsync();
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved all machines")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+        [HttpGet("suppliers")]
+        public async Task<IResult> GetAllSuppliers()
+        {
+            var result = await _service.GetAllSuppliersAsync();
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved all suppliers")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }

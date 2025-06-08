@@ -22,6 +22,5 @@ namespace GRRWS.Domain.Entities
         public ICollection<ErrorDetail> ErrorDetails { get; set; }
         public ICollection<RepairSparepart>? RepairSpareparts { get; set; }
         public ICollection<TechnicalSymptomReport>? TechnicalSymptomReports { get; set; }
-        public ICollection<TaskAction>? TaskActions { get; set; }
     }
 }

@@ -19,7 +19,8 @@ namespace GRRWS.Infrastructure.DTOs.Sparepart
         public string? Unit { get; set; }
         public decimal? UnitPrice { get; set; }
         public DateTime? ExpectedAvailabilityDate { get; set; }
-        public Guid? SupplierId { get; set; } // Thêm trường SupplierId
+        public Guid? SupplierId { get; set; }
+        public string? Category { get; set; } // Thêm Category
     }
 
     public class UpdateSparepartDTO
@@ -32,10 +33,11 @@ namespace GRRWS.Infrastructure.DTOs.Sparepart
         public string? Unit { get; set; }
         public decimal? UnitPrice { get; set; }
         public DateTime? ExpectedAvailabilityDate { get; set; }
-        public Guid? SupplierId { get; set; } // Thêm trường SupplierId
+        public Guid? SupplierId { get; set; }
+        public string? Category { get; set; } // Thêm Category
     }
 
 
 
-    
+
 }

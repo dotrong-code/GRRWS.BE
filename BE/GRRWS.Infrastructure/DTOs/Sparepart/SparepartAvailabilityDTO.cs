@@ -11,6 +11,7 @@ namespace GRRWS.Infrastructure.DTOs.Sparepart
         public Guid Id { get; set; }
         public string SparepartCode { get; set; }
         public string SparepartName { get; set; }
+        public string SupplierName { get; set; }
         public bool IsAvailable { get; set; }
         public DateTime? ExpectedAvailabilityDate { get; set; } // Ngày dự kiến nếu không có sẵn
     }

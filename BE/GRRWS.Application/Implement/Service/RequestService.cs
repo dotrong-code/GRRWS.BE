@@ -1,6 +1,9 @@
-﻿using GRRWS.Application.Common.Result;
+﻿using GRRWS.Application.Common;
+using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
+using GRRWS.Domain.Enum;
+using GRRWS.Infrastructure.DTOs.Firebase.AddImage;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.Interfaces;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
@@ -132,22 +135,6 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.SuccessWithObject(new { Message = "Test request created successfully!" });
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         public async Task<Result> UpdateAsync(UpdateRequestDTO dto, Guid id)
         {
@@ -286,9 +273,105 @@ namespace GRRWS.Application.Implement.Service
             throw new NotImplementedException();
         }
 
-        public Task<Result> CreateTestAsync(TestCreateRequestDTO dto, Guid userId)
+        public async Task<Result> CreateTestAsync(TestCreateRequestDTO dto, Guid userId)
         {
-            throw new NotImplementedException();
+            if (dto.DeviceId == Guid.Empty || !await _unitOfWork.DeviceRepository.DeviceIdExistsAsync(dto.DeviceId))
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Device not found."));
+            }
+
+            if (!await _unitOfWork.UserRepository.IdExistsAsync(userId))
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Device not found."));
+            }
+            var missingIssues = await _unitOfWork.IssueRepository.GetNotFoundIssueDisplayNamesAsync(dto.IssueIds ?? new List<Guid>());
+            if (missingIssues.Any())
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
+                    "NotFound", "Some issues do not exist: " + string.Join(", ", missingIssues.Select(x => x.Id))));
+            }
+
+            var existingRequests = await _unitOfWork.RequestRepository.GetRequestByDeviceIdAsync(dto.DeviceId);
+            var restrictStatuses = new[] { Status.Pending, Status.InProgress };
+            if (existingRequests.Any(r => !r.IsDeleted && restrictStatuses.Contains(r.Status)))
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict(
+                    "RequestFailed", "Cannot create a new request for this device because it has pending or in-progress requests."));
+            }
+
+            var getDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(dto.DeviceId);
+            var createTitle = "";
+            try
+            {
+                createTitle = TitleHelper.GenerateRequestTitle(
+                    getDevice.Position.Zone.Area.AreaCode,
+                    getDevice.Position.Zone.ZoneCode,
+                    getDevice.Position.Index,
+                    getDevice.DeviceCode);
+            }
+            catch (Exception)
+            {
+                createTitle = "Create title fail";
+            }
+
+            var request = new Request
+            {
+                Id = Guid.NewGuid(),
+                DeviceId = dto.DeviceId,
+                RequestTitle = createTitle,
+                Description = DescriptionHelper.GenerateRequestDescription(getDevice.DeviceName),
+                Status = Status.Pending, // Use enum value
+                RequestedById = userId,
+                CreatedDate = DateTime.UtcNow,
+                DueDate = DateTime.UtcNow.AddDays(7),
+                Priority = Priority.Low, // Use enum value
+                IsDeleted = false,
+                RequestIssues = (dto.IssueIds ?? new List<Guid>()).Select(issueId => new RequestIssue
+                {
+                    Id = Guid.NewGuid(),
+                    IssueId = issueId,
+
+                    Images = new List<Image>()
+                }).ToList()
+            };
+
+            // Handle image uploads
+            if (request.RequestIssues.Any() && dto.ImageFiles != null && dto.ImageFiles.Any() && dto.IssueIdsMatchWithImage != null)
+            {
+                for (int i = 0; i < Math.Min(dto.ImageFiles.Count, dto.IssueIdsMatchWithImage.Count); i++)
+                {
+                    var imageFile = dto.ImageFiles[i];
+                    var issueId = dto.IssueIdsMatchWithImage[i];
+
+                    if (imageFile != null && imageFile.Length > 0)
+                    {
+                        var imageRequest = new AddImageRequest(imageFile, "RequestIssues");
+                        var uploadResult = await _unitOfWork.FirebaseRepository.UploadImageAsync(imageRequest);
+                        if (!uploadResult.Success)
+                        {
+                            return Result.Failure(uploadResult.Error);
+                        }
+
+                        var requestIssue = request.RequestIssues.FirstOrDefault(ri => ri.IssueId == issueId);
+                        if (requestIssue != null)
+                        {
+                            requestIssue.Images.Add(new Image
+                            {
+                                Id = Guid.NewGuid(),
+                                ImageUrl = uploadResult.FilePath,
+                                Type = imageFile.ContentType ?? "image/jpeg",
+                                RequestIssueId = requestIssue.Id,
+                                CreatedDate = DateTime.UtcNow,
+                                IsDeleted = false
+                            });
+                        }
+                    }
+                }
+            }
+
+            await _requestRepository.CreateAsync(request);
+            await _unitOfWork.SaveChangesAsync();
+            return Result.SuccessWithObject(new { Message = "Test request created successfully!" });
         }
 
         public Task<Result> GetRequestByDeviceIdAsync(Guid id)
