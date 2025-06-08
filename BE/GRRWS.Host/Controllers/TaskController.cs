@@ -1,9 +1,8 @@
 ﻿using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.DTOs.Task;
-using Microsoft.AspNetCore.Authorization;
+using GRRWS.Infrastructure.DTOs.Task.Warranty;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace GRRWS.Host.Controllers
 {
@@ -17,6 +16,47 @@ namespace GRRWS.Host.Controllers
         {
             _taskService = taskService;
         }
+
+
+        [HttpPost("warranty-task/submit")]
+        public async Task<IResult> CreateWarrantyTask([FromBody] CreateWarrantyTaskRequest request)
+        {
+            var result = await _taskService.CreateWarrantyTask(request);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Warranty task created successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        //[HttpPost("warranty-task/return")]
+        //public async Task<IResult> CreateWarrantyTask([FromBody] CreateWarrantyTaskRequest request)
+        //{
+        //    var result = await _taskService.CreateWarrantyTask(request);
+        //    return result.IsSuccess
+        //        ? ResultExtensions.ToSuccessDetails(result, "Warranty task created successfully")
+        //        : ResultExtensions.ToProblemDetails(result);
+        //}
+
+
+        [HttpGet("warranty-task/{taskId}")]
+        public async Task<IResult> GetWarrantyTaskDetails(Guid taskId, [FromQuery] string type)
+        {
+            var result = await _taskService.GetGetDetailWarrantyTaskForMechanicByIdAsync(taskId, type);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Warranty task details retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpGet("repair-task/{taskId}")]
+        public async Task<IResult> GetRepairTaskDetails(Guid taskId, [FromQuery] string type)
+        {
+            var result = await _taskService.GetDetailtRepairTaskForMechanicByIdAsync(taskId, type);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Warranty task details retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+
+
+
+
 
         [HttpGet("ByReport/{reportId}")]
         public async Task<IResult> GetTasksByReportId(Guid reportId)
@@ -154,6 +194,7 @@ namespace GRRWS.Host.Controllers
         //         ? ResultExtensions.ToSuccessDetails(result, "Simple task created successfully")
         //         : ResultExtensions.ToProblemDetails(result);
         // }
+
         [HttpPost("create-from-errors")]
         public async Task<IResult> CreateTaskFromErrors([FromBody] CreateTaskFromErrorsRequest request)
         {

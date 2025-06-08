@@ -8,6 +8,7 @@
         public DateTime? WarrantyStartDate { get; set; }
         public DateTime? WarrantyEndDate { get; set; }
         public string? Provider { get; set; }
+        public string? Location { get; set; } // Location of the warranty service
         public string? WarrantyCode { get; set; }
         public string? Notes { get; set; }
         public decimal? Cost { get; set; }
@@ -18,6 +19,6 @@
         public Guid DeviceId { get; set; }
         // Navigation
         public Device Device { get; set; }
-
+        public ICollection<WarrantyClaim>? WarrantyClaims { get; set; }
     }
 }

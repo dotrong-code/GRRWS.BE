@@ -2,6 +2,9 @@
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.Task;
+using GRRWS.Infrastructure.DTOs.Task.Get;
+using GRRWS.Infrastructure.DTOs.Task.Get.SubObject;
+using GRRWS.Infrastructure.DTOs.Task.Warranty;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +14,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
     public class TaskRepository : GenericRepository<Tasks>, ITaskRepository
     {
         public TaskRepository(GRRWSContext context) : base(context) { }
-        
+
         public async Task<List<TaskByReportResponse>> GetTasksByReportIdAsync(Guid reportId)
         {
             return await _context.ErrorDetails
@@ -29,7 +32,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 })
                 .ToListAsync();
         }
-
         public async Task<List<GetTaskResponse>> GetTasksByMechanicIdAsync(Guid mechanicId, int pageNumber, int pageSize)
         {
             var query = _context.Tasks
@@ -69,7 +71,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             return tasks;
         }
-
         public async Task<GetTaskResponse> GetTaskDetailsAsync(Guid taskId)
         {
             return await _context.Tasks
@@ -101,9 +102,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 })
                 .FirstOrDefaultAsync();
         }
-
-
-
         public async Task<List<Tasks>> GetAllTasksAsync()
         {
             return await _context.Tasks
@@ -112,7 +110,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Include(t => t.RepairSpareparts).ThenInclude(rs => rs.Sparepart)
                 .ToListAsync();
         }
-
         public async Task<Tasks> GetTaskByIdAsync(Guid id)
         {
             return await _context.Tasks
@@ -121,7 +118,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Include(t => t.RepairSpareparts).ThenInclude(rs => rs.Sparepart)
                 .FirstOrDefaultAsync(t => t.Id == id);
         }
-
         public async Task CreateTaskAsync(Tasks task, Guid reportId, List<Guid> errorIds, List<Guid> sparepartIds)
         {
             // Add task
@@ -179,7 +175,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             // Save all changes
             await _context.SaveChangesAsync();
         }
-
         public async Task UpdateTaskAsync(Tasks task, List<Guid> errorIds, List<Guid> sparepartIds)
         {
             var existingTask = await _context.Tasks
@@ -255,9 +250,9 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             if (!string.IsNullOrWhiteSpace(status))
 
-            if (priority.HasValue)
+                if (priority.HasValue)
 
-            query = query.OrderByDescending(t => t.CreatedDate);
+                    query = query.OrderByDescending(t => t.CreatedDate);
 
             var totalCount = await query.CountAsync();
             var tasks = await query
@@ -292,7 +287,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             return (tasks, totalCount);
         }
-
         public async Task<Guid> CreateTaskWebAsync(CreateTaskWeb dto)
         {
             var reportId = await _context.Requests
@@ -366,7 +360,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             await _context.SaveChangesAsync();
             return task.Id;
         }
-
         public async Task<Guid> CreateSimpleTaskWebAsync(CreateSimpleTaskWeb dto)
         {
             var reportId = await _context.Requests
@@ -403,7 +396,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             await _context.SaveChangesAsync();
             return task.Id;
         }
-
         public async Task<Guid> CreateTaskFromErrorsAsync(CreateTaskFromErrorsRequest request)
         {
             var reportId = await _context.Requests
@@ -471,7 +463,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             await _context.SaveChangesAsync();
             return task.Id;
         }
-
         public async Task<Guid> CreateTaskFromTechnicalIssueAsync(CreateTaskFromTechnicalIssueRequest request)
         {
             var reportId = await _context.Requests
@@ -528,7 +519,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             await _context.SaveChangesAsync();
             return task.Id;
         }
-
         public async Task<Guid> CreateSimpleTaskAsync(CreateSimpleTaskRequest request)
         {
             var reportId = await _context.Requests
@@ -561,6 +551,233 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             await _context.Tasks.AddAsync(task);
             await _context.SaveChangesAsync();
             return task.Id;
+        }
+
+        public async Task<Guid> CreateWarrantyTask(CreateWarrantyTaskRequest request)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Get report ID from request
+                var reportId = await _context.Requests
+                    .Where(r => r.Id == request.RequestId)
+                    .Select(r => r.ReportId)
+                    .FirstOrDefaultAsync();
+
+                if (reportId == Guid.Empty)
+                    throw new Exception("No report found for this request.");
+
+                // Validate device warranty exists
+                var deviceWarranty = await _context.DeviceWarranties
+                    .FirstOrDefaultAsync(dw => dw.Id == request.DeviceWarrantyId);
+                if (deviceWarranty == null)
+                    throw new Exception("Device warranty not found.");
+
+                // Get technical symptom names to create issue description
+                string issueDescription = "";
+
+                if (request.TechnicalIssueIds != null && request.TechnicalIssueIds.Any())
+                {
+                    var technicalSymptomNames = await _context.TechnicalSymptoms
+                        .Where(ts => request.TechnicalIssueIds.Contains(ts.Id))
+                        .Select(ts => ts.Name)
+                        .ToListAsync();
+
+                    if (technicalSymptomNames.Any())
+                    {
+                        issueDescription = string.Join(", ", technicalSymptomNames.Where(name => !string.IsNullOrEmpty(name)));
+                    }
+                }
+
+                // Generate claim number
+                var claimCount = await _context.WarrantyClaims.CountAsync();
+                var claimNumber = $"WC-{DateTime.UtcNow:yyyyMM}-{(claimCount + 1):D3}";
+
+                // Create warranty claim
+                var warrantyClaim = new WarrantyClaim
+                {
+                    Id = Guid.NewGuid(),
+                    ClaimNumber = claimNumber,
+                    ClaimStatus = Status.Pending,
+                    IssueDescription = issueDescription, // Use the joined symptom names
+                    DeviceWarrantyId = request.DeviceWarrantyId,
+                    CreatedByUserId = request.AssigneeId,
+                    CreatedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                };
+
+                await _context.WarrantyClaims.AddAsync(warrantyClaim);
+
+                // Create the warranty submission task
+                var task = new Tasks
+                {
+                    Id = Guid.NewGuid(),
+                    TaskName = $"Đưa thiết bị đi bảo hành - {claimNumber}",
+                    TaskType = "WarrantySubmission",
+                    TaskDescription = $"Submit device to warranty provider for claim: {claimNumber}. Issues: {issueDescription}",
+                    StartTime = request.StartDate,
+                    ExpectedTime = request.StartDate.AddDays(1),
+                    Status = Status.Pending,
+                    Priority = Priority.High,
+                    AssigneeId = request.AssigneeId,
+                    WarrantyClaimId = warrantyClaim.Id,
+                    CreatedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                };
+                await _context.Tasks.AddAsync(task);
+                // Update warranty claim with submission task ID
+                warrantyClaim.SubmittedByTaskId = task.Id;
+                // Link technical symptoms to the task through TechnicalSymptomReports
+                if (request.TechnicalIssueIds != null && request.TechnicalIssueIds.Any())
+                {
+                    var existingSymptomReports = await _context.TechnicalSymptomReports
+                        .Where(tsr => tsr.ReportId == reportId &&
+                                     request.TechnicalIssueIds.Contains(tsr.TechnicalSymptomId))
+                        .ToListAsync();
+                    var existingSymptomIds = existingSymptomReports.Select(tsr => tsr.TechnicalSymptomId).ToHashSet();
+                    // Update existing reports to link with this task
+                    foreach (var report in existingSymptomReports)
+                    {
+                        report.TaskId = task.Id;
+                    }
+                    if (existingSymptomReports.Any())
+                        _context.TechnicalSymptomReports.UpdateRange(existingSymptomReports);
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return task.Id;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task<List<GetTaskForMechanic>> GetTasksByMechanicIdAsync2(Guid mechanicId, int pageNumber, int pageSize)
+        {
+            var query = _context.Tasks
+                .Where(t => t.AssigneeId == mechanicId && !t.IsDeleted)
+                .OrderByDescending(t => t.CreatedDate);
+
+            var totalCount = await query.CountAsync();
+            var tasks = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(t => new GetTaskForMechanic
+                {
+                    TaskId = t.Id,
+                    TaskName = t.TaskName,
+                    TaskDescription = t.TaskDescription,
+                    TaskType = t.TaskType,
+                    Priority = t.Priority.ToString(), // Convert enum to string
+                    Status = t.Status.ToString(), // Convert enum to string
+
+                })
+                .ToListAsync();
+
+            return tasks;
+        }
+
+        public async Task<GetDetailWarrantyTaskForMechanic> GetGetDetailWarrantyTaskForMechanicByIdAsync(Guid taskId, string type)
+        {
+            var task = await _context.Tasks
+                .Include(t => t.Assignee)
+                .Include(t => t.WarrantyClaim)
+                    .ThenInclude(wc => wc.DeviceWarranty)
+                .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == type)
+                .FirstOrDefaultAsync();
+
+            if (task == null)
+                return null;
+
+            return new GetDetailWarrantyTaskForMechanic
+            {
+                TaskId = task.Id,
+                TaskType = task.TaskType,
+                TaskName = task.TaskName,
+                TaskDescription = task.TaskDescription,
+                Priority = task.Priority.ToString(),
+                Status = task.Status.ToString(),
+                StartTime = task.StartTime,
+                ExpectedTime = task.ExpectedTime,
+                EndTime = task.EndTime,
+                AssigneeName = task.Assignee?.FullName,
+                ClaimNumber = task.WarrantyClaim?.ClaimNumber,
+                ClaimStatus = task.WarrantyClaim?.ClaimStatus.ToString(),
+                StartDate = task.WarrantyClaim?.CreatedDate,
+                ExpectedReturnDate = task.WarrantyClaim?.ExpectedReturnDate,
+                ActualReturnDate = task.WarrantyClaim?.ActualReturnDate,
+                Location = task.WarrantyClaim?.DeviceWarranty?.Location,
+                Resolution = task.WarrantyClaim?.Resolution,
+                IssueDescription = task.WarrantyClaim?.IssueDescription,
+                WarrantyNotes = task.WarrantyClaim?.WarrantyNotes,
+                ClaimAmount = task.WarrantyClaim?.ClaimAmount
+            };
+        }
+
+        public async Task<GetDetailtRepairTaskForMechanic> GetDetailtRepairTaskForMechanicByIdAsync(Guid taskId, string type)
+        {
+            var task = await _context.Tasks
+                .Include(t => t.Assignee)
+                .Include(t => t.ErrorDetails)
+                    .ThenInclude(ed => ed.Error)
+                        .ThenInclude(e => e.ErrorGuidelines)
+                .Include(t => t.ErrorDetails)
+                    .ThenInclude(ed => ed.ProgressRecords)
+                        .ThenInclude(pr => pr.ErrorFixStep)
+                .Include(t => t.ErrorDetails)
+                    .ThenInclude(ed => ed.SparePartUsages)
+                        .ThenInclude(spu => spu.SparePart)
+                .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == type)
+                .FirstOrDefaultAsync();
+
+            if (task == null)
+                return null;
+
+            var errorDetails = task.ErrorDetails.Select(ed => new ErrorDetailOfTask
+            {
+                ErrorId = ed.ErrorId,
+                ErrorDetailId = ed.Id,
+                ErrorName = ed.Error?.Name,
+                ErrorGuildelineTitle = ed.Error?.ErrorGuidelines?.FirstOrDefault()?.Title,
+                ErrorFixProgress = ed.ProgressRecords?.Select(pr => new ErrorFixProgressDTO
+                {
+                    ErrorFixStepId = pr.ErrorFixStepId,
+                    StepDescription = pr.ErrorFixStep?.StepDescription,
+                    IsCompleted = pr.IsCompleted,
+                    CompletedAt = pr.CompletedAt,
+                }).ToList() ?? new List<ErrorFixProgressDTO>(),
+                SparePartUsages = ed.SparePartUsages?.Select(spu => new SparePartUsageDTO
+                {
+                    SparePartId = spu.Id,
+                    SparePartName = spu.SparePart?.SparepartName,
+                    QuantityUsed = spu.QuantityUsed,
+                    IsTakenFromStock = spu.IsTakenFromStock,
+                }).ToList() ?? new List<SparePartUsageDTO>()
+            }).ToList();
+
+            return new GetDetailtRepairTaskForMechanic
+            {
+                TaskId = task.Id,
+                TaskType = task.TaskType,
+                TaskName = task.TaskName,
+                TaskDescription = task.TaskDescription,
+                Priority = task.Priority.ToString(),
+                Status = task.Status.ToString(),
+                StartTime = task.StartTime,
+                ExpectedTime = task.ExpectedTime,
+                EndTime = task.EndTime,
+                AssigneeName = task.Assignee?.FullName,
+                ErrorDetails = errorDetails
+            };
+        }
+
+        public Task<GetDetailReplaceTaskForMechanic> GetDetailReplaceTaskForMechanicByIdAsync(Guid taskId, string type)
+        {
+            throw new NotImplementedException();
         }
     }
 }
