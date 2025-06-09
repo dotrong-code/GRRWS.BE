@@ -20,6 +20,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return await _context.MachineSpareparts
                 .Include(ms => ms.Sparepart)
                 .ThenInclude(sp => sp.Supplier)
+                .Include(ms => ms.Machine) // Thêm include cho Machine
                 .Where(ms => ms.MachineId == machineId && !ms.IsDeleted)
                 .ToListAsync();
         }

@@ -103,4 +103,13 @@ public class SparePartUsageController : ControllerBase
             ? ResultExtensions.ToSuccessDetails(result, "Spare part usage deleted successfully")
             : ResultExtensions.ToProblemDetails(result);
     }
+    [HttpPut("update-status")]
+    public async Task<IResult> UpdateRequestTakeSparePartUsageStatus([FromBody] UpdateRequestStatusRequest request)
+    {
+        var result = await _sparePartUsageService.UpdateRequestTakeSparePartUsageStatusAsync(request);
+        return result.IsSuccess
+            ? ResultExtensions.ToSuccessDetails(result, $"Successfully updated status of request take spare part usage with ID {request.RequestTakeSparePartUsageId}")
+            : ResultExtensions.ToProblemDetails(result);
+    }
+
 }

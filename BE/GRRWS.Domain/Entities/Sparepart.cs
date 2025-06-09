@@ -13,6 +13,7 @@
         public DateTime? ExpectedAvailabilityDate { get; set; } // Ngày dự kiến khả dụng nếu StockQuantity = 0
         public Guid? SupplierId { get; set; }
         public string? Category { get; set; }
+        public string? ImgUrl { get; set; }
         // Quan hệ
         public ICollection<RepairSparepart>? RepairSpareparts { get; set; }
         public ICollection<ErrorSparepart>? ErrorSpareparts { get; set; }

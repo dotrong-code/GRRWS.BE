@@ -23,5 +23,6 @@ namespace GRRWS.Infrastructure.DTOs.Sparepart
         public string? Category { get; set; } // Thêm Category
         public List<Guid>? MachineIds { get; set; }
         public List<string>? MachineNames { get; set; }
+        public string? ImgUrl { get; set; }
     }
 }

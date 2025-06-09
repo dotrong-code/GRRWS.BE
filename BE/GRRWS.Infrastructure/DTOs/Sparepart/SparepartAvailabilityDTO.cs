@@ -14,5 +14,6 @@ namespace GRRWS.Infrastructure.DTOs.Sparepart
         public string SupplierName { get; set; }
         public bool IsAvailable { get; set; }
         public DateTime? ExpectedAvailabilityDate { get; set; } // Ngày dự kiến nếu không có sẵn
+        public string? ImgUrl { get; set; }
     }
 }

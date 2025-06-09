@@ -324,6 +324,64 @@ namespace GRRWS.Application.Implement.Service
                 StockQuantity = sparepart.StockQuantity
             };
         }
+        public async Task<Result> UpdateRequestTakeSparePartUsageStatusAsync(UpdateRequestStatusRequest request)
+        {
+            if (request.RequestTakeSparePartUsageId == Guid.Empty)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", "RequestTakeSparePartUsageId is required"));
+
+            var requestUsage = await _unitOfWork.RequestTakeSparePartUsageRepository.GetByIdAsync(request.RequestTakeSparePartUsageId);
+            if (requestUsage == null)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", $"Request take spare part usage with ID {request.RequestTakeSparePartUsageId} not found"));
+
+            // Chuyển đổi string status sang enum
+            if (!Enum.TryParse<SparePartRequestStatus>(request.Status, true, out var newStatus))
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", "Invalid status value"));
+
+            // Kiểm tra tính hợp lệ của trạng thái chuyển đổi
+            if (!IsValidStatusTransition(requestUsage.Status, newStatus))
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", $"Invalid transition from {requestUsage.Status} to {newStatus}"));
+
+            // Cập nhật trạng thái
+            requestUsage.Status = newStatus;
+
+            // Cập nhật thông tin bổ sung nếu có
+            if (newStatus == SparePartRequestStatus.Confirmed || newStatus == SparePartRequestStatus.Delivered)
+            {
+                requestUsage.ConfirmedDate = DateTime.UtcNow;
+                requestUsage.ConfirmedById = request.ConfirmedById ?? requestUsage.ConfirmedById; // Giữ nguyên nếu không cung cấp
+            }
+
+            requestUsage.Notes = request.Notes ?? requestUsage.Notes; // Cập nhật ghi chú nếu có
+
+            await _unitOfWork.RequestTakeSparePartUsageRepository.UpdateAsync(requestUsage);
+            await _unitOfWork.SaveChangesAsync();
+
+            return Result.SuccessWithObject(new { Message = "Status updated successfully" });
+        }
+
+        private bool IsValidStatusTransition(SparePartRequestStatus currentStatus, SparePartRequestStatus newStatus)
+        {
+            // Định nghĩa các trạng thái hợp lệ
+            switch (currentStatus)
+            {
+                case SparePartRequestStatus.Unconfirmed:
+                    return newStatus == SparePartRequestStatus.Confirmed ||
+                           newStatus == SparePartRequestStatus.Insufficient ||
+                           newStatus == SparePartRequestStatus.Cancelled;
+                case SparePartRequestStatus.Confirmed:
+                    return newStatus == SparePartRequestStatus.Delivered ||
+                           newStatus == SparePartRequestStatus.Insufficient ||
+                           newStatus == SparePartRequestStatus.Cancelled;
+                case SparePartRequestStatus.Insufficient:
+                    return newStatus == SparePartRequestStatus.Confirmed ||
+                           newStatus == SparePartRequestStatus.Cancelled;
+                case SparePartRequestStatus.Delivered:
+                case SparePartRequestStatus.Cancelled:
+                    return false; // Không cho phép thay đổi từ Delivered hoặc Cancelled
+                default:
+                    return false;
+            }
+        }
 
     }
 }

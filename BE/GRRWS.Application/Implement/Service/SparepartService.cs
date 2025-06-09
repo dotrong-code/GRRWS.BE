@@ -1,6 +1,9 @@
 ﻿using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
+using GRRWS.Infrastructure.Common;
+using GRRWS.Infrastructure.DTOs.Firebase.AddImage;
+using GRRWS.Infrastructure.DTOs.Firebase.GetImage;
 using GRRWS.Infrastructure.DTOs.Machine;
 using GRRWS.Infrastructure.DTOs.Sparepart;
 using GRRWS.Infrastructure.DTOs.Supplier;
@@ -16,34 +19,23 @@ namespace GRRWS.Application.Implement.Service
     public class SparepartService : ISparepartService
     {
         private readonly IUnitOfWork _unit;
+        private readonly IFirebaseService _firebaseService;
 
-        public SparepartService(IUnitOfWork unit)
+        public SparepartService(IUnitOfWork unit, IFirebaseService firebaseService)
         {
             _unit = unit;
+            _firebaseService = firebaseService;
         }
 
         public async Task<Result> GetAllAsync()
         {
             var spareparts = await _unit.SparepartRepository.GetAllActiveSparepartsAsync();
-            var dtos = spareparts.Select(sp => new SparepartViewDTO
+            var dtos = new List<SparepartViewDTO>();
+            foreach (var sp in spareparts)
             {
-                Id = sp.Id,
-                SparepartCode = sp.SparepartCode,
-                SparepartName = sp.SparepartName,
-                Description = sp.Description,
-                Specification = sp.Specification,
-                StockQuantity = sp.StockQuantity,
-                IsAvailable = sp.StockQuantity > 0,
-                Unit = sp.Unit,
-                UnitPrice = sp.UnitPrice,
-                ExpectedAvailabilityDate = sp.ExpectedAvailabilityDate,
-                SupplierId = sp.SupplierId,
-                SupplierName = sp.Supplier?.SupplierName,
-                Category = sp.Category,
-                MachineIds = sp.MachineSpareparts?.Select(ms => ms.MachineId).ToList(),
-                MachineNames = sp.MachineSpareparts?.Select(ms => ms.Machine.MachineName).ToList()
-            }).ToList();
-
+                var dto = await MapSparepartToDTOAsync(sp);
+                dtos.Add(dto);
+            }
             return Result.SuccessWithObject(dtos);
         }
 
@@ -52,30 +44,27 @@ namespace GRRWS.Application.Implement.Service
             var sparepart = await _unit.SparepartRepository.GetByIdWithDetailsAsync(id);
             if (sparepart == null) return Result.Failure(new Infrastructure.DTOs.Common.Error("NotFound", "Sparepart not found.", 0));
 
-            var dto = new SparepartViewDTO
-            {
-                Id = sparepart.Id,
-                SparepartCode = sparepart.SparepartCode,
-                SparepartName = sparepart.SparepartName,
-                Description = sparepart.Description,
-                Specification = sparepart.Specification,
-                StockQuantity = sparepart.StockQuantity,
-                IsAvailable = sparepart.StockQuantity > 0,
-                Unit = sparepart.Unit,
-                UnitPrice = sparepart.UnitPrice,
-                ExpectedAvailabilityDate = sparepart.ExpectedAvailabilityDate,
-                SupplierId = sparepart.SupplierId,
-                SupplierName = sparepart.Supplier?.SupplierName,
-                Category = sparepart.Category,
-                MachineIds = sparepart.MachineSpareparts?.Select(ms => ms.MachineId).ToList(),
-                MachineNames = sparepart.MachineSpareparts?.Select(ms => ms.Machine.MachineName).ToList()
-            };
-
+            var dto = await MapSparepartToDTOAsync(sparepart);
             return Result.SuccessWithObject(dto);
         }
 
         public async Task<Result> CreateAsync(CreateSparepartDTO dto)
         {
+            string? imgUrl = null;
+            if (dto.ImageFile != null)
+            {
+                var imageRequest = new AddImageRequest(dto.ImageFile, "Spareparts");
+                var uploadResult = await _unit.FirebaseRepository.UploadImageAsync(imageRequest);
+                if (uploadResult.Success)
+                {
+                    imgUrl = uploadResult.FilePath;
+                }
+                else
+                {
+                    return Result.Failure(uploadResult.Error);
+                }
+            }
+
             var sparepart = new Sparepart
             {
                 SparepartCode = dto.SparepartCode,
@@ -88,31 +77,14 @@ namespace GRRWS.Application.Implement.Service
                 ExpectedAvailabilityDate = dto.StockQuantity >= 0 ? dto.ExpectedAvailabilityDate : null,
                 IsAvailable = dto.StockQuantity > 0,
                 SupplierId = dto.SupplierId,
-                Category = dto.Category
+                Category = dto.Category,
+                ImgUrl = imgUrl // Lưu đường dẫn thư mục trong Firebase
             };
 
             await _unit.SparepartRepository.CreateAsync(sparepart);
             await _unit.SaveChangesAsync();
 
-            var resultDto = new SparepartViewDTO
-            {
-                Id = sparepart.Id,
-                SparepartCode = sparepart.SparepartCode,
-                SparepartName = sparepart.SparepartName,
-                Description = sparepart.Description,
-                Specification = sparepart.Specification,
-                StockQuantity = sparepart.StockQuantity,
-                IsAvailable = sparepart.StockQuantity > 0,
-                Unit = sparepart.Unit,
-                UnitPrice = sparepart.UnitPrice,
-                ExpectedAvailabilityDate = sparepart.ExpectedAvailabilityDate,
-                SupplierId = sparepart.SupplierId,
-                SupplierName = sparepart.Supplier?.SupplierName,
-                Category = sparepart.Category,
-                MachineIds = sparepart.MachineSpareparts?.Select(ms => ms.MachineId).ToList(),
-                MachineNames = sparepart.MachineSpareparts?.Select(ms => ms.Machine.MachineName).ToList()
-            };
-
+            var resultDto = await MapSparepartToDTOAsync(sparepart);
             return Result.SuccessWithObject(resultDto);
         }
 
@@ -132,28 +104,20 @@ namespace GRRWS.Application.Implement.Service
             sparepart.SupplierId = dto.SupplierId;
             sparepart.Category = dto.Category;
 
+            if (dto.ImageFile != null)
+            {
+                var imageRequest = new AddImageRequest(dto.ImageFile, "Spareparts");
+                var uploadResult = await _unit.FirebaseRepository.UploadImageAsync(imageRequest);
+                if (uploadResult.Success)
+                {
+                    sparepart.ImgUrl = uploadResult.FilePath;
+                }
+            }
+
             await _unit.SparepartRepository.UpdateAsync(sparepart);
             await _unit.SaveChangesAsync();
 
-            var resultDto = new SparepartViewDTO
-            {
-                Id = sparepart.Id,
-                SparepartCode = sparepart.SparepartCode,
-                SparepartName = sparepart.SparepartName,
-                Description = sparepart.Description,
-                Specification = sparepart.Specification,
-                StockQuantity = sparepart.StockQuantity,
-                IsAvailable = sparepart.StockQuantity > 0,
-                Unit = sparepart.Unit,
-                UnitPrice = sparepart.UnitPrice,
-                ExpectedAvailabilityDate = sparepart.ExpectedAvailabilityDate,
-                SupplierId = sparepart.SupplierId,
-                SupplierName = sparepart.Supplier?.SupplierName,
-                Category = sparepart.Category,
-                MachineIds = sparepart.MachineSpareparts?.Select(ms => ms.MachineId).ToList(),
-                MachineNames = sparepart.MachineSpareparts?.Select(ms => ms.Machine.MachineName).ToList()
-            };
-
+            var resultDto = await MapSparepartToDTOAsync(sparepart);
             return Result.SuccessWithObject(resultDto);
         }
 
@@ -169,17 +133,13 @@ namespace GRRWS.Application.Implement.Service
         public async Task<Result> GetAvailabilityAsync()
         {
             var spareparts = await _unit.SparepartRepository.GetAllActiveSparepartsAsync();
-            var availability = spareparts.Select(s => new SparepartAvailabilityDTO
+            var dtos = new List<SparepartViewDTO>();
+            foreach (var sp in spareparts)
             {
-                Id = s.Id,
-                SparepartCode = s.SparepartCode,
-                SparepartName = s.SparepartName,
-                IsAvailable = s.StockQuantity > 0,
-                ExpectedAvailabilityDate = s.StockQuantity >= 0 ? s.ExpectedAvailabilityDate : null,
-                SupplierName = s.Supplier?.SupplierName
-            }).ToList();
-
-            return Result.SuccessWithObject(availability);
+                var dto = await MapSparepartToDTOAsync(sp);
+                dtos.Add(dto);
+            }
+            return Result.SuccessWithObject(dtos);
         }
 
         public async Task<Result> GetSparepartsByMachineIdAsync(Guid machineId)
@@ -188,18 +148,12 @@ namespace GRRWS.Application.Implement.Service
             if (machineSpareparts == null || !machineSpareparts.Any())
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("NotFound", "No spareparts found for this machine.", 0));
 
-            var dtos = machineSpareparts.Select(ms => new MachineSparepartDTO
+            var dtos = new List<SparepartViewDTO>();
+            foreach (var ms in machineSpareparts)
             {
-                SparepartId = ms.SparepartId,
-                SparepartName = ms.Sparepart.SparepartName,
-                MachineId = ms.MachineId,
-                StockQuantity = ms.Sparepart.StockQuantity,
-                IsAvailable = ms.Sparepart.StockQuantity > 0,
-                SupplierId = ms.Sparepart.SupplierId,
-                SupplierName = ms.Sparepart.Supplier?.SupplierName,
-                Category = ms.Sparepart.Category
-            }).ToList();
-
+                var dto = await MapSparepartToDTOAsync(ms.Sparepart);
+                dtos.Add(dto);
+            }
             return Result.SuccessWithObject(dtos);
         }
 
@@ -209,75 +163,36 @@ namespace GRRWS.Application.Implement.Service
             if (spareparts == null || !spareparts.Any())
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("NotFound", "No spareparts found for this supplier.", 0));
 
-            var dtos = spareparts.Select(sp => new SparepartViewDTO
+            var dtos = new List<SparepartViewDTO>();
+            foreach (var sp in spareparts)
             {
-                Id = sp.Id,
-                SparepartCode = sp.SparepartCode,
-                SparepartName = sp.SparepartName,
-                Description = sp.Description,
-                Specification = sp.Specification,
-                StockQuantity = sp.StockQuantity,
-                IsAvailable = sp.StockQuantity > 0,
-                Unit = sp.Unit,
-                UnitPrice = sp.UnitPrice,
-                ExpectedAvailabilityDate = sp.ExpectedAvailabilityDate,
-                SupplierId = sp.SupplierId,
-                SupplierName = sp.Supplier?.SupplierName,
-                Category = sp.Category,
-                MachineIds = sp.MachineSpareparts?.Select(ms => ms.MachineId).ToList(),
-                MachineNames = sp.MachineSpareparts?.Select(ms => ms.Machine.MachineName).ToList()
-            }).ToList();
-
+                var dto = await MapSparepartToDTOAsync(sp);
+                dtos.Add(dto);
+            }
             return Result.SuccessWithObject(dtos);
         }
 
         public async Task<Result> GetLowStockSparepartsAsync()
         {
             var spareparts = await _unit.SparepartRepository.GetLowStockSparepartsAsync();
-            var dtos = spareparts.Select(sp => new SparepartViewDTO
+            var dtos = new List<SparepartViewDTO>();
+            foreach (var sp in spareparts)
             {
-                Id = sp.Id,
-                SparepartCode = sp.SparepartCode,
-                SparepartName = sp.SparepartName,
-                Description = sp.Description,
-                Specification = sp.Specification,
-                StockQuantity = sp.StockQuantity,
-                IsAvailable = sp.StockQuantity > 0,
-                Unit = sp.Unit,
-                UnitPrice = sp.UnitPrice,
-                ExpectedAvailabilityDate = sp.ExpectedAvailabilityDate,
-                SupplierId = sp.SupplierId,
-                SupplierName = sp.Supplier?.SupplierName,
-                Category = sp.Category,
-                MachineIds = sp.MachineSpareparts?.Select(ms => ms.MachineId).ToList(),
-                MachineNames = sp.MachineSpareparts?.Select(ms => ms.Machine.MachineName).ToList()
-            }).ToList();
-
+                var dto = await MapSparepartToDTOAsync(sp);
+                dtos.Add(dto);
+            }
             return Result.SuccessWithObject(dtos);
         }
 
         public async Task<Result> GetOutOfStockSparepartsAsync()
         {
             var spareparts = await _unit.SparepartRepository.GetOutOfStockSparepartsAsync();
-            var dtos = spareparts.Select(sp => new SparepartViewDTO
+            var dtos = new List<SparepartViewDTO>();
+            foreach (var sp in spareparts)
             {
-                Id = sp.Id,
-                SparepartCode = sp.SparepartCode,
-                SparepartName = sp.SparepartName,
-                Description = sp.Description,
-                Specification = sp.Specification,
-                StockQuantity = sp.StockQuantity,
-                IsAvailable = sp.StockQuantity > 0,
-                Unit = sp.Unit,
-                UnitPrice = sp.UnitPrice,
-                ExpectedAvailabilityDate = sp.ExpectedAvailabilityDate,
-                SupplierId = sp.SupplierId,
-                SupplierName = sp.Supplier?.SupplierName,
-                Category = sp.Category,
-                MachineIds = sp.MachineSpareparts?.Select(ms => ms.MachineId).ToList(),
-                MachineNames = sp.MachineSpareparts?.Select(ms => ms.Machine.MachineName).ToList()
-            }).ToList();
-
+                var dto = await MapSparepartToDTOAsync(sp);
+                dtos.Add(dto);
+            }
             return Result.SuccessWithObject(dtos);
         }
 
@@ -307,6 +222,40 @@ namespace GRRWS.Application.Implement.Service
             }).ToList();
 
             return Result.SuccessWithObject(dtos);
+        }
+
+        private async Task<SparepartViewDTO> MapSparepartToDTOAsync(Sparepart sp)
+        {
+            string? imgUrl = null;
+            if (!string.IsNullOrEmpty(sp.ImgUrl))
+            {
+                var getImageRequest = new GetImageRequest(sp.ImgUrl);
+                var imageResult = await _unit.FirebaseRepository.GetImageAsync(getImageRequest);
+                if (imageResult.Success && !string.IsNullOrEmpty(imageResult.ImageUrl))
+                {
+                    imgUrl = imageResult.ImageUrl;
+                }
+            }
+
+            return new SparepartViewDTO
+            {
+                Id = sp.Id,
+                SparepartCode = sp.SparepartCode,
+                SparepartName = sp.SparepartName,
+                Description = sp.Description,
+                Specification = sp.Specification,
+                StockQuantity = sp.StockQuantity,
+                IsAvailable = sp.StockQuantity > 0,
+                Unit = sp.Unit,
+                UnitPrice = sp.UnitPrice,
+                ExpectedAvailabilityDate = sp.ExpectedAvailabilityDate,
+                SupplierId = sp.SupplierId,
+                SupplierName = sp.Supplier?.SupplierName,
+                Category = sp.Category,
+                MachineIds = sp.MachineSpareparts?.Select(ms => ms.MachineId).ToList(),
+                MachineNames = sp.MachineSpareparts?.Select(ms => ms.Machine?.MachineName).ToList(),
+                ImgUrl = imgUrl // Lấy URL thực tế từ Firebase
+            };
         }
     }
 }

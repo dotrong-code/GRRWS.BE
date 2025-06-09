@@ -35,7 +35,7 @@ namespace GRRWS.Host.Controllers
         }
 
         [HttpPost]
-        public async Task<IResult> Create([FromBody] CreateSparepartDTO dto)
+        public async Task<IResult> Create([FromForm] CreateSparepartDTO dto)
         {
             var result = await _service.CreateAsync(dto);
             return result.IsSuccess

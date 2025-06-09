@@ -25,7 +25,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 5000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000001"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
                 },
                 new Sparepart
                 {
@@ -39,7 +40,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 12000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000001"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
                 },
                 new Sparepart
                 {
@@ -53,7 +55,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 45000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000001"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
                 },
                 new Sparepart
                 {
@@ -67,7 +70,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 1500,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000001"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
                 },
                 new Sparepart
                 {
@@ -81,7 +85,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 120000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000001"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
                 },
                 new Sparepart
                 {
@@ -95,7 +100,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 8000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
                 },
                 new Sparepart
                 {
@@ -109,7 +115,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 350000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
                 },
                 new Sparepart
                 {
@@ -123,7 +130,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 18000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
                 },
                 new Sparepart
                 {
@@ -137,7 +145,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 22000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
                 },
                 new Sparepart
                 {
@@ -151,7 +160,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 85000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
                 },
                 new Sparepart
                 {
@@ -165,7 +175,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 10000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
                 },
                 new Sparepart
                 {
@@ -179,7 +190,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 30000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
                 },
                 new Sparepart
                 {
@@ -193,7 +205,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 40000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
                 },
                 new Sparepart
                 {
@@ -207,7 +220,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 7000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
                 },
                 new Sparepart
                 {
@@ -221,7 +235,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 65000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
                 },
                 new Sparepart
                 {
@@ -235,7 +250,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 90000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
                 },
                 new Sparepart
                 {
@@ -249,7 +265,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 3000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
                 },
                 new Sparepart
                 {
@@ -263,7 +280,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 18000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
                 },
                 new Sparepart
                 {
@@ -277,7 +295,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 10000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
                 },
                 new Sparepart
                 {
@@ -291,7 +310,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 22000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
                 },
                 new Sparepart
                 {
@@ -305,7 +325,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 6000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
                 },
                 new Sparepart
                 {
@@ -319,7 +340,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 15000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
                 },
                 new Sparepart
                 {
@@ -333,7 +355,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 20000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
                 },
                 new Sparepart
                 {
@@ -347,7 +370,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 95000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
                 },
                 new Sparepart
                 {
@@ -361,7 +385,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 11000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
                 },
                 new Sparepart
                 {
@@ -375,7 +400,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 27000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
                 },
                 new Sparepart
                 {
@@ -389,7 +415,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 18000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
                 },
                 new Sparepart
                 {
@@ -403,7 +430,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 9000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
                 },
                 new Sparepart
                 {
@@ -417,7 +445,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 350000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
                 },
                 new Sparepart
                 {
@@ -431,7 +460,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     UnitPrice = 13000,
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
                 }
             );
         }

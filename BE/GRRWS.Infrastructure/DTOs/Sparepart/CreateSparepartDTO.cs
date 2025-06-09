@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -21,6 +22,7 @@ namespace GRRWS.Infrastructure.DTOs.Sparepart
         public DateTime? ExpectedAvailabilityDate { get; set; }
         public Guid? SupplierId { get; set; }
         public string? Category { get; set; } // Thêm Category
+        public IFormFile? ImageFile { get; set; }
     }
 
     public class UpdateSparepartDTO
@@ -35,6 +37,7 @@ namespace GRRWS.Infrastructure.DTOs.Sparepart
         public DateTime? ExpectedAvailabilityDate { get; set; }
         public Guid? SupplierId { get; set; }
         public string? Category { get; set; } // Thêm Category
+        public IFormFile? ImageFile { get; set; }
     }
 
 

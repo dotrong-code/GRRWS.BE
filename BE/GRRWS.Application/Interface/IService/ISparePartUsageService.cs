@@ -19,5 +19,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetRequestTakeSparePartUsagesByStatusInsufficientAsync();
         Task<Result> GetRequestTakeSparePartUsagesByStatusDeliveredAsync();
         Task<Result> GetRequestTakeSparePartUsagesByStatusCancelledAsync();
+
+        Task<Result> UpdateRequestTakeSparePartUsageStatusAsync(UpdateRequestStatusRequest request);
     }
 }
