@@ -14,11 +14,19 @@ namespace GRRWS.Infrastructure.Implement.Repositories
     public class MachineRepository : GenericRepository<Machine>, IMachineRepository
     {
         public MachineRepository(GRRWSContext context) : base(context) { }
-        public async Task<List<Machine>> GetAllActiveMachinesAsync()
+        public async Task<(List<Machine> Items, int TotalCount)> GetAllActiveMachinesAsync(int pageNumber, int pageSize)
         {
-            return await _context.Machines
-                .Where(m => !m.IsDeleted)
+            var query = _context.Machines
+                .Where(m => !m.IsDeleted);
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .OrderBy(m => m.MachineName)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+            return (items, totalCount);
         }
     }
 }

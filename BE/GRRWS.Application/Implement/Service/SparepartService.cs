@@ -5,6 +5,7 @@ using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.Firebase.AddImage;
 using GRRWS.Infrastructure.DTOs.Firebase.GetImage;
 using GRRWS.Infrastructure.DTOs.Machine;
+using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.Sparepart;
 using GRRWS.Infrastructure.DTOs.Supplier;
 using GRRWS.Infrastructure.Interfaces;
@@ -27,16 +28,23 @@ namespace GRRWS.Application.Implement.Service
             _firebaseService = firebaseService;
         }
 
-        public async Task<Result> GetAllAsync()
+        public async Task<Result> GetAllAsync(int pageNumber, int pageSize)
         {
-            var spareparts = await _unit.SparepartRepository.GetAllActiveSparepartsAsync();
+            var (items, totalCount) = await _unit.SparepartRepository.GetAllActiveSparepartsAsync(pageNumber, pageSize);
             var dtos = new List<SparepartViewDTO>();
-            foreach (var sp in spareparts)
+            foreach (var sp in items)
             {
                 var dto = await MapSparepartToDTOAsync(sp);
                 dtos.Add(dto);
             }
-            return Result.SuccessWithObject(dtos);
+            var response = new PagedResponse<SparepartViewDTO>
+            {
+                Data = dtos,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+            return Result.SuccessWithObject(response);
         }
 
         public async Task<Result> GetByIdAsync(Guid id)
@@ -78,7 +86,7 @@ namespace GRRWS.Application.Implement.Service
                 IsAvailable = dto.StockQuantity > 0,
                 SupplierId = dto.SupplierId,
                 Category = dto.Category,
-                ImgUrl = imgUrl // Lưu đường dẫn thư mục trong Firebase
+                ImgUrl = imgUrl
             };
 
             await _unit.SparepartRepository.CreateAsync(sparepart);
@@ -130,21 +138,28 @@ namespace GRRWS.Application.Implement.Service
             return Result.Success();
         }
 
-        public async Task<Result> GetAvailabilityAsync()
+        public async Task<Result> GetAvailabilityAsync(int pageNumber, int pageSize)
         {
-            var spareparts = await _unit.SparepartRepository.GetAllActiveSparepartsAsync();
+            var (items, totalCount) = await _unit.SparepartRepository.GetAllActiveSparepartsAsync(pageNumber, pageSize);
             var dtos = new List<SparepartViewDTO>();
-            foreach (var sp in spareparts)
+            foreach (var sp in items)
             {
                 var dto = await MapSparepartToDTOAsync(sp);
                 dtos.Add(dto);
             }
-            return Result.SuccessWithObject(dtos);
+            var response = new PagedResponse<SparepartViewDTO>
+            {
+                Data = dtos,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+            return Result.SuccessWithObject(response);
         }
 
-        public async Task<Result> GetSparepartsByMachineIdAsync(Guid machineId)
+        public async Task<Result> GetSparepartsByMachineIdAsync(Guid machineId, int pageNumber, int pageSize)
         {
-            var machineSpareparts = await _unit.MachineSparepartRepository.GetSparepartsByMachineIdAsync(machineId);
+            var (machineSpareparts, totalCount) = await _unit.MachineSparepartRepository.GetSparepartsByMachineIdAsync(machineId, pageNumber, pageSize);
             if (machineSpareparts == null || !machineSpareparts.Any())
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("NotFound", "No spareparts found for this machine.", 0));
 
@@ -154,64 +169,99 @@ namespace GRRWS.Application.Implement.Service
                 var dto = await MapSparepartToDTOAsync(ms.Sparepart);
                 dtos.Add(dto);
             }
-            return Result.SuccessWithObject(dtos);
+            var response = new PagedResponse<SparepartViewDTO>
+            {
+                Data = dtos,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+            return Result.SuccessWithObject(response);
         }
 
-        public async Task<Result> GetSparepartsBySupplierAsync(Guid supplierId)
+        public async Task<Result> GetSparepartsBySupplierAsync(Guid supplierId, int pageNumber, int pageSize)
         {
-            var spareparts = await _unit.SparepartRepository.GetSparepartsBySupplierIdAsync(supplierId);
-            if (spareparts == null || !spareparts.Any())
+            var (items, totalCount) = await _unit.SparepartRepository.GetSparepartsBySupplierIdAsync(supplierId, pageNumber, pageSize);
+            if (items == null || !items.Any())
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("NotFound", "No spareparts found for this supplier.", 0));
 
             var dtos = new List<SparepartViewDTO>();
-            foreach (var sp in spareparts)
+            foreach (var sp in items)
             {
                 var dto = await MapSparepartToDTOAsync(sp);
                 dtos.Add(dto);
             }
-            return Result.SuccessWithObject(dtos);
+            var response = new PagedResponse<SparepartViewDTO>
+            {
+                Data = dtos,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+            return Result.SuccessWithObject(response);
         }
 
-        public async Task<Result> GetLowStockSparepartsAsync()
+        public async Task<Result> GetLowStockSparepartsAsync(int pageNumber, int pageSize)
         {
-            var spareparts = await _unit.SparepartRepository.GetLowStockSparepartsAsync();
+            var (items, totalCount) = await _unit.SparepartRepository.GetLowStockSparepartsAsync(pageNumber, pageSize);
             var dtos = new List<SparepartViewDTO>();
-            foreach (var sp in spareparts)
+            foreach (var sp in items)
             {
                 var dto = await MapSparepartToDTOAsync(sp);
                 dtos.Add(dto);
             }
-            return Result.SuccessWithObject(dtos);
+            var response = new PagedResponse<SparepartViewDTO>
+            {
+                Data = dtos,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+            return Result.SuccessWithObject(response);
         }
 
-        public async Task<Result> GetOutOfStockSparepartsAsync()
+        public async Task<Result> GetOutOfStockSparepartsAsync(int pageNumber, int pageSize)
         {
-            var spareparts = await _unit.SparepartRepository.GetOutOfStockSparepartsAsync();
+            var (items, totalCount) = await _unit.SparepartRepository.GetOutOfStockSparepartsAsync(pageNumber, pageSize);
             var dtos = new List<SparepartViewDTO>();
-            foreach (var sp in spareparts)
+            foreach (var sp in items)
             {
                 var dto = await MapSparepartToDTOAsync(sp);
                 dtos.Add(dto);
             }
-            return Result.SuccessWithObject(dtos);
+            var response = new PagedResponse<SparepartViewDTO>
+            {
+                Data = dtos,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+            return Result.SuccessWithObject(response);
         }
 
-        public async Task<Result> GetAllMachinesAsync()
+        public async Task<Result> GetAllMachinesAsync(int pageNumber, int pageSize)
         {
-            var machines = await _unit.MachineRepository.GetAllActiveMachinesAsync();
-            var dtos = machines.Select(m => new MachineDTO
+            var (items, totalCount) = await _unit.MachineRepository.GetAllActiveMachinesAsync(pageNumber, pageSize);
+            var dtos = items.Select(m => new MachineDTO
             {
                 Id = m.Id,
                 MachineName = m.MachineName
             }).ToList();
 
-            return Result.SuccessWithObject(dtos);
+            var response = new PagedResponse<MachineDTO>
+            {
+                Data = dtos,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+            return Result.SuccessWithObject(response);
         }
 
-        public async Task<Result> GetAllSuppliersAsync()
+        public async Task<Result> GetAllSuppliersAsync(int pageNumber, int pageSize)
         {
-            var suppliers = await _unit.SupplierRepository.GetAllActiveSuppliersAsync();
-            var dtos = suppliers.Select(s => new SupplierDTO
+            var (items, totalCount) = await _unit.SupplierRepository.GetAllActiveSuppliersAsync(pageNumber, pageSize);
+            var dtos = items.Select(s => new SupplierDTO
             {
                 Id = s.Id,
                 SupplierName = s.SupplierName,
@@ -221,9 +271,15 @@ namespace GRRWS.Application.Implement.Service
                 LinkWeb = s.LinkWeb
             }).ToList();
 
-            return Result.SuccessWithObject(dtos);
+            var response = new PagedResponse<SupplierDTO>
+            {
+                Data = dtos,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+            return Result.SuccessWithObject(response);
         }
-
         private async Task<SparepartViewDTO> MapSparepartToDTOAsync(Sparepart sp)
         {
             string? imgUrl = null;
@@ -254,7 +310,7 @@ namespace GRRWS.Application.Implement.Service
                 Category = sp.Category,
                 MachineIds = sp.MachineSpareparts?.Select(ms => ms.MachineId).ToList(),
                 MachineNames = sp.MachineSpareparts?.Select(ms => ms.Machine?.MachineName).ToList(),
-                ImgUrl = imgUrl // Lấy URL thực tế từ Firebase
+                ImgUrl = imgUrl
             };
         }
     }

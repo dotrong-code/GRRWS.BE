@@ -15,14 +15,22 @@ namespace GRRWS.Infrastructure.Implement.Repositories
     {
         public MachineSparepartRepository(GRRWSContext context) : base(context) { }
 
-        public async Task<List<MachineSparepart>> GetSparepartsByMachineIdAsync(Guid machineId)
+        public async Task<(List<MachineSparepart> Items, int TotalCount)> GetSparepartsByMachineIdAsync(Guid machineId, int pageNumber, int pageSize)
         {
-            return await _context.MachineSpareparts
+            var query = _context.MachineSpareparts
                 .Include(ms => ms.Sparepart)
                 .ThenInclude(sp => sp.Supplier)
-                .Include(ms => ms.Machine) // Thêm include cho Machine
-                .Where(ms => ms.MachineId == machineId && !ms.IsDeleted)
+                .Include(ms => ms.Machine)
+                .Where(ms => ms.MachineId == machineId && !ms.IsDeleted);
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .OrderBy(ms => ms.Sparepart.SparepartName)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+            return (items, totalCount);
         }
     }
 }

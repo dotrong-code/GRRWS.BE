@@ -1,10 +1,13 @@
 ﻿using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
+using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.Sparepart;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GRRWS.Host.Controllers
 {
+   
     [ApiController]
     [Route("api/[controller]")]
     public class SparepartController : ControllerBase
@@ -17,9 +20,9 @@ namespace GRRWS.Host.Controllers
         }
 
         [HttpGet]
-        public async Task<IResult> GetAll()
+        public async Task<IResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var result = await _service.GetAllAsync();
+            var result = await _service.GetAllAsync(pageNumber, pageSize);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved spareparts")
                 : ResultExtensions.ToProblemDetails(result);
@@ -62,63 +65,63 @@ namespace GRRWS.Host.Controllers
         }
 
         [HttpGet("availability")]
-        public async Task<IResult> GetAvailability()
+        public async Task<IResult> GetAvailability([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var result = await _service.GetAvailabilityAsync();
+            var result = await _service.GetAvailabilityAsync(pageNumber, pageSize);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved sparepart availability")
                 : ResultExtensions.ToProblemDetails(result);
         }
 
         [HttpGet("by-machine/{machineId}")]
-        public async Task<IResult> GetSparepartsByMachineId(Guid machineId)
+        public async Task<IResult> GetSparepartsByMachineId(Guid machineId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var result = await _service.GetSparepartsByMachineIdAsync(machineId);
+            var result = await _service.GetSparepartsByMachineIdAsync(machineId, pageNumber, pageSize);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved spareparts by machine")
                 : ResultExtensions.ToProblemDetails(result);
         }
 
         [HttpGet("by-supplier/{supplierId}")]
-        public async Task<IResult> GetSparepartsBySupplier(Guid supplierId)
+        public async Task<IResult> GetSparepartsBySupplier(Guid supplierId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var result = await _service.GetSparepartsBySupplierAsync(supplierId);
+            var result = await _service.GetSparepartsBySupplierAsync(supplierId, pageNumber, pageSize);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved spareparts by supplier")
                 : ResultExtensions.ToProblemDetails(result);
         }
 
         [HttpGet("low-stock")]
-        public async Task<IResult> GetLowStockSpareparts()
+        public async Task<IResult> GetLowStockSpareparts([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var result = await _service.GetLowStockSparepartsAsync();
+            var result = await _service.GetLowStockSparepartsAsync(pageNumber, pageSize);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved low stock spareparts")
                 : ResultExtensions.ToProblemDetails(result);
         }
 
         [HttpGet("out-of-stock")]
-        public async Task<IResult> GetOutOfStockSpareparts()
+        public async Task<IResult> GetOutOfStockSpareparts([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var result = await _service.GetOutOfStockSparepartsAsync();
+            var result = await _service.GetOutOfStockSparepartsAsync(pageNumber, pageSize);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved out of stock spareparts")
                 : ResultExtensions.ToProblemDetails(result);
         }
 
         [HttpGet("machines")]
-        public async Task<IResult> GetAllMachines()
+        public async Task<IResult> GetAllMachines([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var result = await _service.GetAllMachinesAsync();
+            var result = await _service.GetAllMachinesAsync(pageNumber, pageSize);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved all machines")
                 : ResultExtensions.ToProblemDetails(result);
         }
 
         [HttpGet("suppliers")]
-        public async Task<IResult> GetAllSuppliers()
+        public async Task<IResult> GetAllSuppliers([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var result = await _service.GetAllSuppliersAsync();
+            var result = await _service.GetAllSuppliersAsync(pageNumber, pageSize);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved all suppliers")
                 : ResultExtensions.ToProblemDetails(result);

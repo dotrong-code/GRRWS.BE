@@ -10,7 +10,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
 {
     public interface IMachineSparepartRepository : IGenericRepository<MachineSparepart>
     {
-        Task<List<MachineSparepart>> GetSparepartsByMachineIdAsync(Guid machineId);
+        Task<(List<MachineSparepart> Items, int TotalCount)> GetSparepartsByMachineIdAsync(Guid machineId, int pageNumber, int pageSize);
     }
 
 }

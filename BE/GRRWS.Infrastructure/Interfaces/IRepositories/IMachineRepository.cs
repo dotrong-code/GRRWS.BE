@@ -10,6 +10,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
 {
     public interface IMachineRepository : IGenericRepository<Machine>
     {
-        Task<List<Machine>> GetAllActiveMachinesAsync();
+        Task<(List<Machine> Items, int TotalCount)> GetAllActiveMachinesAsync(int pageNumber, int pageSize);
     }
 }
+

@@ -17,7 +17,7 @@
         // Quan hệ
         public ICollection<RepairSparepart>? RepairSpareparts { get; set; }
         public ICollection<ErrorSparepart>? ErrorSpareparts { get; set; }
-        public Supplier? Supplier { get; set; }
+        public Supplier?Supplier { get; set; }
         public ICollection<MachineSparepart>? MachineSpareparts { get; set; }
     }
 }

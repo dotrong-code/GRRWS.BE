@@ -9,17 +9,17 @@ namespace GRRWS.Application.Interface.IService
 {
     public interface ISparepartService
     {
-        Task<Result> GetAllAsync();
+        Task<Result> GetAllAsync(int pageNumber, int pageSize);
         Task<Result> GetByIdAsync(Guid id);
         Task<Result> CreateAsync(CreateSparepartDTO dto);
         Task<Result> UpdateAsync(Guid id, UpdateSparepartDTO dto);
         Task<Result> DeleteAsync(Guid id);
-        Task<Result> GetAvailabilityAsync();
-        Task<Result> GetSparepartsByMachineIdAsync(Guid machineId);
-        Task<Result> GetSparepartsBySupplierAsync(Guid supplierId);
-        Task<Result> GetLowStockSparepartsAsync();
-        Task<Result> GetOutOfStockSparepartsAsync();
-        Task<Result> GetAllMachinesAsync();
-        Task<Result> GetAllSuppliersAsync();
+        Task<Result> GetAvailabilityAsync(int pageNumber, int pageSize);
+        Task<Result> GetSparepartsByMachineIdAsync(Guid machineId, int pageNumber, int pageSize);
+        Task<Result> GetSparepartsBySupplierAsync(Guid supplierId, int pageNumber, int pageSize);
+        Task<Result> GetLowStockSparepartsAsync(int pageNumber, int pageSize);
+        Task<Result> GetOutOfStockSparepartsAsync(int pageNumber, int pageSize);
+        Task<Result> GetAllMachinesAsync(int pageNumber, int pageSize);
+        Task<Result> GetAllSuppliersAsync(int pageNumber, int pageSize);
     }
 }

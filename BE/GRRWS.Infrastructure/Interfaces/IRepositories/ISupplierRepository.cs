@@ -10,6 +10,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
 {
     public interface ISupplierRepository : IGenericRepository<Supplier> 
     {
-        Task<List<Supplier>> GetAllActiveSuppliersAsync();
+        Task<(List<Supplier> Items, int TotalCount)> GetAllActiveSuppliersAsync(int pageNumber, int pageSize);
     }
 }
+
