@@ -1,10 +1,12 @@
 ﻿using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.DTOs.SparePartUsage;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [Route("api/[controller]")]
 [ApiController]
+
 public class SparePartUsageController : ControllerBase
 {
     private readonly ISparePartUsageService _sparePartUsageService;
@@ -24,54 +26,54 @@ public class SparePartUsageController : ControllerBase
     }
 
     [HttpGet("requests")]
-    public async Task<IResult> GetAllRequestTakeSparePartUsages()
+    public async Task<IResult> GetAllRequestTakeSparePartUsages([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
-        var result = await _sparePartUsageService.GetAllRequestTakeSparePartUsagesAsync();
+        var result = await _sparePartUsageService.GetAllRequestTakeSparePartUsagesAsync(pageNumber, pageSize);
         return result.IsSuccess
             ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved all request take spare part usages")
             : ResultExtensions.ToProblemDetails(result);
     }
 
     [HttpGet("requests/unconfirmed")]
-    public async Task<IResult> GetRequestTakeSparePartUsagesByStatusUnconfirmed()
+    public async Task<IResult> GetRequestTakeSparePartUsagesByStatusUnconfirmed([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
-        var result = await _sparePartUsageService.GetRequestTakeSparePartUsagesByStatusUnconfirmedAsync();
+        var result = await _sparePartUsageService.GetRequestTakeSparePartUsagesByStatusUnconfirmedAsync(pageNumber, pageSize);
         return result.IsSuccess
             ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved unconfirmed request take spare part usages")
             : ResultExtensions.ToProblemDetails(result);
     }
 
     [HttpGet("requests/confirmed")]
-    public async Task<IResult> GetRequestTakeSparePartUsagesByStatusConfirmed()
+    public async Task<IResult> GetRequestTakeSparePartUsagesByStatusConfirmed([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
-        var result = await _sparePartUsageService.GetRequestTakeSparePartUsagesByStatusConfirmedAsync();
+        var result = await _sparePartUsageService.GetRequestTakeSparePartUsagesByStatusConfirmedAsync(pageNumber, pageSize);
         return result.IsSuccess
             ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved confirmed request take spare part usages")
             : ResultExtensions.ToProblemDetails(result);
     }
 
     [HttpGet("requests/insufficient")]
-    public async Task<IResult> GetRequestTakeSparePartUsagesByStatusInsufficient()
+    public async Task<IResult> GetRequestTakeSparePartUsagesByStatusInsufficient([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
-        var result = await _sparePartUsageService.GetRequestTakeSparePartUsagesByStatusInsufficientAsync();
+        var result = await _sparePartUsageService.GetRequestTakeSparePartUsagesByStatusInsufficientAsync(pageNumber, pageSize);
         return result.IsSuccess
             ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved insufficient request take spare part usages")
             : ResultExtensions.ToProblemDetails(result);
     }
 
     [HttpGet("requests/delivered")]
-    public async Task<IResult> GetRequestTakeSparePartUsagesByStatusDelivered()
+    public async Task<IResult> GetRequestTakeSparePartUsagesByStatusDelivered([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
-        var result = await _sparePartUsageService.GetRequestTakeSparePartUsagesByStatusDeliveredAsync();
+        var result = await _sparePartUsageService.GetRequestTakeSparePartUsagesByStatusDeliveredAsync(pageNumber, pageSize);
         return result.IsSuccess
             ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved delivered request take spare part usages")
             : ResultExtensions.ToProblemDetails(result);
     }
 
     [HttpGet("requests/cancelled")]
-    public async Task<IResult> GetRequestTakeSparePartUsagesByStatusCancelled()
+    public async Task<IResult> GetRequestTakeSparePartUsagesByStatusCancelled([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
-        var result = await _sparePartUsageService.GetRequestTakeSparePartUsagesByStatusCancelledAsync();
+        var result = await _sparePartUsageService.GetRequestTakeSparePartUsagesByStatusCancelledAsync(pageNumber, pageSize);
         return result.IsSuccess
             ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved cancelled request take spare part usages")
             : ResultExtensions.ToProblemDetails(result);
@@ -103,6 +105,7 @@ public class SparePartUsageController : ControllerBase
             ? ResultExtensions.ToSuccessDetails(result, "Spare part usage deleted successfully")
             : ResultExtensions.ToProblemDetails(result);
     }
+
     [HttpPut("update-status")]
     public async Task<IResult> UpdateRequestTakeSparePartUsageStatus([FromBody] UpdateRequestStatusRequest request)
     {
@@ -111,5 +114,4 @@ public class SparePartUsageController : ControllerBase
             ? ResultExtensions.ToSuccessDetails(result, $"Successfully updated status of request take spare part usage with ID {request.RequestTakeSparePartUsageId}")
             : ResultExtensions.ToProblemDetails(result);
     }
-
 }
