@@ -6,7 +6,7 @@ namespace GRRWS.Application.Interface.IService
 {
     public interface IRequestService
     {
-        Task<Result> GetAllAsync();
+        Task<Result> GetAllAsync(int pageNumber, int pageSize, string? searchRequestTitle);
         Task<Result> GetByIdAsync(Guid id);
         Task<Result> CreateAsync(CreateRequestDTO dto, Guid userId);
         Task<Result> CreateTestAsync(TestCreateRequestDTO dto, Guid userId);
@@ -14,7 +14,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> CancelRequestAsync(CancelRequestDTO dto);
         Task<Result> DeleteAsync(Guid id);
         Task<Result> GetRequestByDeviceIdAsync(Guid id);
-        Task<Result> GetRequestByUserIdAsync(Guid userId);
+        Task<Result> GetRequestByUserIdAsync(Guid userId, int pageNumber, int pageSize, string? searchRequestTitle);
         Task<Result> GetIssuesByRequestIdAsync(Guid requestId);
         Task<Result> GetRequestSummary();
         Task<Result> UpdateRequestIssueStatusAsync(Guid requestId, Guid issueId, bool isRejected, string rejectionReason, string rejectionDetails);

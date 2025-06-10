@@ -5,6 +5,7 @@ using GRRWS.Domain.Entities;
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.DTOs.Firebase.AddImage;
 using GRRWS.Infrastructure.DTOs.Firebase.GetImage;
+using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.Interfaces;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
@@ -24,16 +25,41 @@ namespace GRRWS.Application.Implement.Service
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result> GetAllAsync()
+        public async Task<Result> GetAllAsync(int pageNumber, int pageSize, string? searchRequestTitle)
         {
-            var requests = await _requestRepository.GetAllRequestAsync();
-            var dtos = new List<object>();
+            var (requests, totalCount) = await _requestRepository.GetAllRequestAsync(pageNumber, pageSize, searchRequestTitle);
+            var dtos = new List<RequestDTO>();
             foreach (var r in requests.Where(r => !r.IsDeleted).OrderByDescending(r => r.CreatedDate))
             {
                 var dto = await MapRequestToDTOAsync(r);
                 dtos.Add(dto);
             }
-            return Result.SuccessWithObject(dtos);
+            var response = new PagedResponse<RequestDTO>
+            {
+                Data = dtos,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+            return Result.SuccessWithObject(response);
+        }
+        public async Task<Result> GetRequestByUserIdAsync(Guid userId, int pageNumber, int pageSize, string? searchRequestTitle)
+        {
+            var (requests, totalCount) = await _requestRepository.GetRequestByUserIdAsync(userId, pageNumber, pageSize, searchRequestTitle);
+            var dtos = new List<RequestDTO>();
+            foreach (var r in requests.Where(r => !r.IsDeleted).OrderByDescending(r => r.CreatedDate))
+            {
+                var dto = await MapRequestToDTOAsync(r);
+                dtos.Add(dto);
+            }
+            var response = new PagedResponse<RequestDTO>
+            {
+                Data = dtos,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+            return Result.SuccessWithObject(response);
         }
 
         private async Task<RequestDTO> MapRequestToDTOAsync(Request r)
@@ -421,10 +447,7 @@ namespace GRRWS.Application.Implement.Service
             throw new NotImplementedException();
         }
 
-        public Task<Result> GetRequestByUserIdAsync(Guid userId)
-        {
-            throw new NotImplementedException();
-        }
+        
 
         public Task<Result> UpdateRequestIssueStatusAsync(Guid requestId, Guid issueId, bool isRejected, string rejectionReason, string rejectionDetails)
         {

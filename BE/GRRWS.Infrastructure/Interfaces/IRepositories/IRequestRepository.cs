@@ -7,10 +7,10 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
     public interface IRequestRepository : IGenericRepository<Request>
     {
         Task<Request> GetRequestByIdAsync(Guid id);
-        Task<List<Request>> GetAllRequestAsync();
+        Task<(List<Request> Items, int TotalCount)> GetAllRequestAsync(int pageNumber, int pageSize, string? searchRequestTitle);
         Task UpdateRequestAsync(Request request, List<Guid> newIssueIds);
         Task<List<Request>> GetRequestByDeviceIdAsync(Guid deviceId);
-        Task<List<Request>> GetRequestByUserIdAsync(Guid userId);
+        Task<(List<Request> Items, int TotalCount)> GetRequestByUserIdAsync(Guid userId, int pageNumber, int pageSize, string? searchRequestTitle);
         Task<List<RequestIssue>> GetIssuesByRequestIdAsync(Guid requestId);
         Task<List<RequestSummary>> GetRequestSummaryAsync();
         Task<RequestDetailWeb?> GetRequestDetailWebByIdAsync(Guid requestId);
