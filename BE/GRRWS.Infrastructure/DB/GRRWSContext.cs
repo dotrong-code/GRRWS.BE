@@ -311,6 +311,7 @@ namespace GRRWS.Infrastructure.DB
             // Xóa cấu hình liên kết với SparePartUsage trực tiếp
 
             // RequestTakeSparePartUsage
+
             modelBuilder.Entity<RequestTakeSparePartUsage>()
                 .HasKey(rtspu => rtspu.Id);
 
@@ -328,7 +329,23 @@ namespace GRRWS.Infrastructure.DB
                 .WithOne(ed => ed.RequestTakeSparePartUsage)
                 .HasForeignKey<ErrorDetail>(ed => ed.RequestTakeSparePartUsageId)
                 .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<RequestTakeSparePartUsage>()
+    .HasOne(rtspu => rtspu.RequestedBy)
+    .WithMany()
+    .HasForeignKey(rtspu => rtspu.RequestedById)
+    .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<RequestTakeSparePartUsage>()
+                .HasOne(rtspu => rtspu.ConfirmedBy)
+                .WithMany()
+                .HasForeignKey(rtspu => rtspu.ConfirmedById)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<RequestTakeSparePartUsage>()
+                .HasOne(rtspu => rtspu.Assignee)
+                .WithMany()
+                .HasForeignKey(rtspu => rtspu.AssigneeId)
+                .OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<RequestTakeSparePartUsage>()
                 .HasMany(rtspu => rtspu.SparePartUsages)
                 .WithOne(spu => spu.RequestTakeSparePartUsage)
