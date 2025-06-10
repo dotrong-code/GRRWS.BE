@@ -970,6 +970,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                                     RequestCode = requestCode,
                                     RequestDate = DateTime.UtcNow,
                                     RequestedById = userId,
+                                    AssigneeId = request.AssigneeId,                            
                                     Status = SparePartRequestStatus.Unconfirmed,
                                     Notes = $"Auto-generated for repair task: {task.TaskName}",
                                     CreatedDate = DateTime.UtcNow,

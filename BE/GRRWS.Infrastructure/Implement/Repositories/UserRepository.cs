@@ -117,5 +117,17 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         {
             return await _context.Users.AsNoTracking().AnyAsync(d => d.Id == id && !d.IsDeleted);
         }
+        public async Task<List<User>> GetUsersByIdsBySearchNameAsync(List<Guid> ids, string? searchName = null)
+        {
+            var query = _context.Users
+                .Where(u => ids.Contains(u.Id) && !u.IsDeleted);
+
+            if (!string.IsNullOrWhiteSpace(searchName))
+            {
+                query = query.Where(u => u.FullName.Contains(searchName));
+            }
+
+            return await query.ToListAsync();
+        }
     }
 }

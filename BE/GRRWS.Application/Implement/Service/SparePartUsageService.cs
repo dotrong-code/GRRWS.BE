@@ -5,6 +5,11 @@ using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.Sparepart;
 using GRRWS.Infrastructure.DTOs.SparePartUsage;
+using GRRWS.Infrastructure.DTOs.Paging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -30,24 +35,25 @@ namespace GRRWS.Application.Implement.Service
                 SparePartId = sparePartUsage.SparePartId,
                 QuantityUsed = sparePartUsage.QuantityUsed,
                 IsTakenFromStock = sparePartUsage.IsTakenFromStock
-                // Không cần Spareparts ở đây vì chỉ GetRequestTakeSparePartUsageById cần
             };
 
             return Result.SuccessWithObject(dto);
         }
 
-        public async Task<Result> GetAllRequestTakeSparePartUsagesAsync()
+        public async Task<Result> GetAllRequestTakeSparePartUsagesAsync(int pageNumber, int pageSize, string assigneeName = null)
         {
-            var requests = await _unitOfWork.SparePartUsageRepository.GetAllRequestTakeSparePartUsagesAsync();
-            if (requests == null || !requests.Any())
+            var pagedResult = await _unitOfWork.SparePartUsageRepository.GetAllRequestTakeSparePartUsagesAsync(pageNumber, pageSize, assigneeName);
+            if (!pagedResult.Data.Any())
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "No request take spare part usage found"));
 
-            var dtos = requests.Select(r => new RequestTakeSparePartUsageDto
+            var dtos = pagedResult.Data.Select(r => new RequestTakeSparePartUsageDto
             {
                 Id = r.Id,
                 RequestCode = r.RequestCode,
                 RequestDate = r.RequestDate,
                 RequestedById = r.RequestedById,
+                AssigneeId = r.AssigneeId,
+                AssigneeName = r.Assignee?.FullName ?? string.Empty,
                 Status = r.Status.ToString(),
                 ConfirmedDate = r.ConfirmedDate,
                 ConfirmedById = r.ConfirmedById,
@@ -62,80 +68,31 @@ namespace GRRWS.Application.Implement.Service
                 }).ToList()
             }).ToList();
 
-            return Result.SuccessWithObject(dtos);
+            var response = new PagedResponse<RequestTakeSparePartUsageDto>
+            {
+                Data = dtos,
+                TotalCount = pagedResult.TotalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            return Result.SuccessWithObject(response);
         }
 
-
-
-        public async Task<Result> UpdateIsTakenFromStockAsync(UpdateIsTakenFromStockRequest request)
+        public async Task<Result> GetRequestTakeSparePartUsagesByStatusUnconfirmedAsync(int pageNumber, int pageSize, string assigneeName = null)
         {
-            if (request.SparePartUsageIds == null || !request.SparePartUsageIds.Any())
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", "At least one SparePartUsage ID is required"));
-
-            var usageToUpdate = new List<SparePartUsage>();
-            var requestIds = new HashSet<Guid>(); // Lưu các RequestTakeSparePartUsageId liên quan
-
-            foreach (var usageId in request.SparePartUsageIds)
-            {
-                var usage = await _unitOfWork.SparePartUsageRepository.GetByIdAsync(usageId);
-                if (usage == null)
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", $"Spare part usage with ID {usageId} not found"));
-                usage.IsTakenFromStock = request.IsTakenFromStock;
-                usageToUpdate.Add(usage);
-                if (usage.RequestTakeSparePartUsageId.HasValue)
-                    requestIds.Add(usage.RequestTakeSparePartUsageId.Value);
-            }
-
-            foreach (var usage in usageToUpdate)
-            {
-                await _unitOfWork.SparePartUsageRepository.UpdateAsync(usage);
-            }
-
-            // Kiểm tra và cập nhật trạng thái của RequestTakeSparePartUsage
-            foreach (var requestId in requestIds)
-            {
-                var requestUsage = await _unitOfWork.RequestTakeSparePartUsageRepository.GetByIdAsync(requestId);
-                if (requestUsage != null)
-                {
-                    var allUsages = await _unitOfWork.SparePartUsageRepository.GetByRequestTakeSparePartUsageIdAsync(requestId);
-                    bool allTaken = allUsages.All(u => u.IsTakenFromStock);
-                    if (allTaken && requestUsage.Status != SparePartRequestStatus.Cancelled) // Sử dụng enum thay vì chuỗi
-                    {
-                        requestUsage.Status = SparePartRequestStatus.Delivered; // Sử dụng enum
-                        requestUsage.ConfirmedDate = DateTime.UtcNow; // Cập nhật ngày xác nhận
-                        await _unitOfWork.RequestTakeSparePartUsageRepository.UpdateAsync(requestUsage);
-                    }
-                }
-            }
-
-            return Result.SuccessWithObject(new { Message = "Update successfully" }); // Trả về thành công nếu không có lỗi
-        }
-
-        public async Task<Result> DeleteAsync(Guid id)
-        {
-            var sparePartUsage = await _unitOfWork.SparePartUsageRepository.GetByIdAsync(id);
-            if (sparePartUsage == null)
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Spare part usage not found"));
-
-            await _unitOfWork.SparePartUsageRepository.RemoveAsync(sparePartUsage);
-            await _unitOfWork.SaveChangesAsync();
-
-            return Result.SuccessWithObject(new { Message = "Spare part usage deleted successfully!" });
-        }
-
-
-        public async Task<Result> GetRequestTakeSparePartUsagesByStatusUnconfirmedAsync()
-        {
-            var requests = await _unitOfWork.SparePartUsageRepository.GetRequestTakeSparePartUsagesByStatusAsync(SparePartRequestStatus.Unconfirmed);
-            if (requests == null || !requests.Any())
+            var pagedResult = await _unitOfWork.SparePartUsageRepository.GetRequestTakeSparePartUsagesByStatusAsync(SparePartRequestStatus.Unconfirmed, pageNumber, pageSize, assigneeName);
+            if (!pagedResult.Data.Any())
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "No unconfirmed request take spare part usage found"));
 
-            var dtos = requests.Select(r => new RequestTakeSparePartUsageDto
+            var dtos = pagedResult.Data.Select(r => new RequestTakeSparePartUsageDto
             {
                 Id = r.Id,
                 RequestCode = r.RequestCode,
                 RequestDate = r.RequestDate,
                 RequestedById = r.RequestedById,
+                AssigneeId = r.AssigneeId,
+                AssigneeName = r.Assignee?.FullName ?? string.Empty,
                 Status = r.Status.ToString(),
                 ConfirmedDate = r.ConfirmedDate,
                 ConfirmedById = r.ConfirmedById,
@@ -150,21 +107,31 @@ namespace GRRWS.Application.Implement.Service
                 }).ToList()
             }).ToList();
 
-            return Result.SuccessWithObject(dtos);
+            var response = new PagedResponse<RequestTakeSparePartUsageDto>
+            {
+                Data = dtos,
+                TotalCount = pagedResult.TotalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            return Result.SuccessWithObject(response);
         }
 
-        public async Task<Result> GetRequestTakeSparePartUsagesByStatusConfirmedAsync()
+        public async Task<Result> GetRequestTakeSparePartUsagesByStatusConfirmedAsync(int pageNumber, int pageSize, string assigneeName = null)
         {
-            var requests = await _unitOfWork.SparePartUsageRepository.GetRequestTakeSparePartUsagesByStatusAsync(SparePartRequestStatus.Confirmed);
-            if (requests == null || !requests.Any())
+            var pagedResult = await _unitOfWork.SparePartUsageRepository.GetRequestTakeSparePartUsagesByStatusAsync(SparePartRequestStatus.Confirmed, pageNumber, pageSize, assigneeName);
+            if (!pagedResult.Data.Any())
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "No confirmed request take spare part usage found"));
 
-            var dtos = requests.Select(r => new RequestTakeSparePartUsageDto
+            var dtos = pagedResult.Data.Select(r => new RequestTakeSparePartUsageDto
             {
                 Id = r.Id,
                 RequestCode = r.RequestCode,
                 RequestDate = r.RequestDate,
                 RequestedById = r.RequestedById,
+                AssigneeId = r.AssigneeId,
+                AssigneeName = r.Assignee?.FullName ?? string.Empty,
                 Status = r.Status.ToString(),
                 ConfirmedDate = r.ConfirmedDate,
                 ConfirmedById = r.ConfirmedById,
@@ -179,21 +146,31 @@ namespace GRRWS.Application.Implement.Service
                 }).ToList()
             }).ToList();
 
-            return Result.SuccessWithObject(dtos);
+            var response = new PagedResponse<RequestTakeSparePartUsageDto>
+            {
+                Data = dtos,
+                TotalCount = pagedResult.TotalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            return Result.SuccessWithObject(response);
         }
 
-        public async Task<Result> GetRequestTakeSparePartUsagesByStatusInsufficientAsync()
+        public async Task<Result> GetRequestTakeSparePartUsagesByStatusInsufficientAsync(int pageNumber, int pageSize, string assigneeName = null)
         {
-            var requests = await _unitOfWork.SparePartUsageRepository.GetRequestTakeSparePartUsagesByStatusAsync(SparePartRequestStatus.Insufficient);
-            if (requests == null || !requests.Any())
+            var pagedResult = await _unitOfWork.SparePartUsageRepository.GetRequestTakeSparePartUsagesByStatusAsync(SparePartRequestStatus.Insufficient, pageNumber, pageSize, assigneeName);
+            if (!pagedResult.Data.Any())
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "No insufficient request take spare part usage found"));
 
-            var dtos = requests.Select(r => new RequestTakeSparePartUsageDto
+            var dtos = pagedResult.Data.Select(r => new RequestTakeSparePartUsageDto
             {
                 Id = r.Id,
                 RequestCode = r.RequestCode,
                 RequestDate = r.RequestDate,
                 RequestedById = r.RequestedById,
+                AssigneeId = r.AssigneeId,
+                AssigneeName = r.Assignee?.FullName ?? string.Empty,
                 Status = r.Status.ToString(),
                 ConfirmedDate = r.ConfirmedDate,
                 ConfirmedById = r.ConfirmedById,
@@ -208,21 +185,31 @@ namespace GRRWS.Application.Implement.Service
                 }).ToList()
             }).ToList();
 
-            return Result.SuccessWithObject(dtos);
+            var response = new PagedResponse<RequestTakeSparePartUsageDto>
+            {
+                Data = dtos,
+                TotalCount = pagedResult.TotalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            return Result.SuccessWithObject(response);
         }
 
-        public async Task<Result> GetRequestTakeSparePartUsagesByStatusDeliveredAsync()
+        public async Task<Result> GetRequestTakeSparePartUsagesByStatusDeliveredAsync(int pageNumber, int pageSize, string assigneeName = null)
         {
-            var requests = await _unitOfWork.SparePartUsageRepository.GetRequestTakeSparePartUsagesByStatusAsync(SparePartRequestStatus.Delivered);
-            if (requests == null || !requests.Any())
+            var pagedResult = await _unitOfWork.SparePartUsageRepository.GetRequestTakeSparePartUsagesByStatusAsync(SparePartRequestStatus.Delivered, pageNumber, pageSize, assigneeName);
+            if (!pagedResult.Data.Any())
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "No delivered request take spare part usage found"));
 
-            var dtos = requests.Select(r => new RequestTakeSparePartUsageDto
+            var dtos = pagedResult.Data.Select(r => new RequestTakeSparePartUsageDto
             {
                 Id = r.Id,
                 RequestCode = r.RequestCode,
                 RequestDate = r.RequestDate,
                 RequestedById = r.RequestedById,
+                AssigneeId = r.AssigneeId,
+                AssigneeName = r.Assignee?.FullName ?? string.Empty,
                 Status = r.Status.ToString(),
                 ConfirmedDate = r.ConfirmedDate,
                 ConfirmedById = r.ConfirmedById,
@@ -237,21 +224,31 @@ namespace GRRWS.Application.Implement.Service
                 }).ToList()
             }).ToList();
 
-            return Result.SuccessWithObject(dtos);
+            var response = new PagedResponse<RequestTakeSparePartUsageDto>
+            {
+                Data = dtos,
+                TotalCount = pagedResult.TotalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            return Result.SuccessWithObject(response);
         }
 
-        public async Task<Result> GetRequestTakeSparePartUsagesByStatusCancelledAsync()
+        public async Task<Result> GetRequestTakeSparePartUsagesByStatusCancelledAsync(int pageNumber, int pageSize, string assigneeName = null)
         {
-            var requests = await _unitOfWork.SparePartUsageRepository.GetRequestTakeSparePartUsagesByStatusAsync(SparePartRequestStatus.Cancelled);
-            if (requests == null || !requests.Any())
+            var pagedResult = await _unitOfWork.SparePartUsageRepository.GetRequestTakeSparePartUsagesByStatusAsync(SparePartRequestStatus.Cancelled, pageNumber, pageSize, assigneeName);
+            if (!pagedResult.Data.Any())
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "No cancelled request take spare part usage found"));
 
-            var dtos = requests.Select(r => new RequestTakeSparePartUsageDto
+            var dtos = pagedResult.Data.Select(r => new RequestTakeSparePartUsageDto
             {
                 Id = r.Id,
                 RequestCode = r.RequestCode,
                 RequestDate = r.RequestDate,
                 RequestedById = r.RequestedById,
+                AssigneeId = r.AssigneeId,
+                AssigneeName = r.Assignee?.FullName ?? string.Empty,
                 Status = r.Status.ToString(),
                 ConfirmedDate = r.ConfirmedDate,
                 ConfirmedById = r.ConfirmedById,
@@ -263,19 +260,27 @@ namespace GRRWS.Application.Implement.Service
                     SparePartId = s.SparePartId,
                     QuantityUsed = s.QuantityUsed,
                     IsTakenFromStock = s.IsTakenFromStock
-
                 }).ToList()
             }).ToList();
 
-            return Result.SuccessWithObject(dtos);
+
+            var response = new PagedResponse<RequestTakeSparePartUsageDto>
+            {
+                Data = dtos,
+                TotalCount = pagedResult.TotalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            return Result.SuccessWithObject(response);
         }
+
         public async Task<Result> GetRequestTakeSparePartUsageByIdAsync(Guid id)
         {
             var request = await _unitOfWork.SparePartUsageRepository.GetRequestTakeSparePartUsageByIdAsync(id);
             if (request == null)
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", $"Request take spare part usage with ID {id} not found"));
 
-            // Sequential processing instead of parallel to avoid DbContext concurrency issues
             var sparePartUsageDtos = new List<SparePartUsageDto>();
 
             foreach (var s in request.SparePartUsages)
@@ -299,6 +304,8 @@ namespace GRRWS.Application.Implement.Service
                 RequestCode = request.RequestCode,
                 RequestDate = request.RequestDate,
                 RequestedById = request.RequestedById,
+                AssigneeId = request.AssigneeId,
+                AssigneeName = request.Assignee?.FullName ?? string.Empty,
                 Status = request.Status.ToString(),
                 ConfirmedDate = request.ConfirmedDate,
                 ConfirmedById = request.ConfirmedById,
@@ -308,6 +315,7 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.SuccessWithObject(dto);
         }
+
         private async Task<SparepartDto> MapSparepartDto(Guid sparePartId)
         {
             var sparepart = await _unitOfWork.SparepartRepository.GetByIdAsync(sparePartId);
@@ -324,6 +332,62 @@ namespace GRRWS.Application.Implement.Service
                 StockQuantity = sparepart.StockQuantity
             };
         }
+
+        public async Task<Result> UpdateIsTakenFromStockAsync(UpdateIsTakenFromStockRequest request)
+        {
+            if (request.SparePartUsageIds == null || !request.SparePartUsageIds.Any())
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", "At least one SparePartUsage ID is required"));
+
+            var usageToUpdate = new List<SparePartUsage>();
+            var requestIds = new HashSet<Guid>();
+
+            foreach (var usageId in request.SparePartUsageIds)
+            {
+                var usage = await _unitOfWork.SparePartUsageRepository.GetByIdAsync(usageId);
+                if (usage == null)
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", $"Spare part usage with ID {usageId} not found"));
+                usage.IsTakenFromStock = request.IsTakenFromStock;
+                usageToUpdate.Add(usage);
+                if (usage.RequestTakeSparePartUsageId.HasValue)
+                    requestIds.Add(usage.RequestTakeSparePartUsageId.Value);
+            }
+
+            foreach (var usage in usageToUpdate)
+            {
+                await _unitOfWork.SparePartUsageRepository.UpdateAsync(usage);
+            }
+
+            foreach (var requestId in requestIds)
+            {
+                var requestUsage = await _unitOfWork.RequestTakeSparePartUsageRepository.GetByIdAsync(requestId);
+                if (requestUsage != null)
+                {
+                    var allUsages = await _unitOfWork.SparePartUsageRepository.GetByRequestTakeSparePartUsageIdAsync(requestId);
+                    bool allTaken = allUsages.All(u => u.IsTakenFromStock);
+                    if (allTaken && requestUsage.Status != SparePartRequestStatus.Cancelled)
+                    {
+                        requestUsage.Status = SparePartRequestStatus.Delivered;
+                        requestUsage.ConfirmedDate = DateTime.UtcNow;
+                        await _unitOfWork.RequestTakeSparePartUsageRepository.UpdateAsync(requestUsage);
+                    }
+                }
+            }
+
+            return Result.SuccessWithObject(new { Message = "Update successfully" });
+        }
+
+        public async Task<Result> DeleteAsync(Guid id)
+        {
+            var sparePartUsage = await _unitOfWork.SparePartUsageRepository.GetByIdAsync(id);
+            if (sparePartUsage == null)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Spare part usage not found"));
+
+            await _unitOfWork.SparePartUsageRepository.RemoveAsync(sparePartUsage);
+            await _unitOfWork.SaveChangesAsync();
+
+            return Result.SuccessWithObject(new { Message = "Spare part usage deleted successfully!" });
+        }
+
         public async Task<Result> UpdateRequestTakeSparePartUsageStatusAsync(UpdateRequestStatusRequest request)
         {
             if (request.RequestTakeSparePartUsageId == Guid.Empty)
@@ -333,25 +397,21 @@ namespace GRRWS.Application.Implement.Service
             if (requestUsage == null)
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", $"Request take spare part usage with ID {request.RequestTakeSparePartUsageId} not found"));
 
-            // Chuyển đổi string status sang enum
             if (!Enum.TryParse<SparePartRequestStatus>(request.Status, true, out var newStatus))
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", "Invalid status value"));
 
-            // Kiểm tra tính hợp lệ của trạng thái chuyển đổi
             if (!IsValidStatusTransition(requestUsage.Status, newStatus))
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", $"Invalid transition from {requestUsage.Status} to {newStatus}"));
 
-            // Cập nhật trạng thái
             requestUsage.Status = newStatus;
 
-            // Cập nhật thông tin bổ sung nếu có
             if (newStatus == SparePartRequestStatus.Confirmed || newStatus == SparePartRequestStatus.Delivered)
             {
                 requestUsage.ConfirmedDate = DateTime.UtcNow;
-                requestUsage.ConfirmedById = request.ConfirmedById ?? requestUsage.ConfirmedById; // Giữ nguyên nếu không cung cấp
+                requestUsage.ConfirmedById = request.ConfirmedById ?? requestUsage.ConfirmedById;
             }
 
-            requestUsage.Notes = request.Notes ?? requestUsage.Notes; // Cập nhật ghi chú nếu có
+            requestUsage.Notes = request.Notes ?? requestUsage.Notes;
 
             await _unitOfWork.RequestTakeSparePartUsageRepository.UpdateAsync(requestUsage);
             await _unitOfWork.SaveChangesAsync();
@@ -361,7 +421,6 @@ namespace GRRWS.Application.Implement.Service
 
         private bool IsValidStatusTransition(SparePartRequestStatus currentStatus, SparePartRequestStatus newStatus)
         {
-            // Định nghĩa các trạng thái hợp lệ
             switch (currentStatus)
             {
                 case SparePartRequestStatus.Unconfirmed:
@@ -377,11 +436,10 @@ namespace GRRWS.Application.Implement.Service
                            newStatus == SparePartRequestStatus.Cancelled;
                 case SparePartRequestStatus.Delivered:
                 case SparePartRequestStatus.Cancelled:
-                    return false; // Không cho phép thay đổi từ Delivered hoặc Cancelled
+                    return false;
                 default:
                     return false;
             }
         }
-
     }
 }
