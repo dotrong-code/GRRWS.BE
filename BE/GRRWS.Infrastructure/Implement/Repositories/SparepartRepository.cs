@@ -14,7 +14,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
     {
         public SparepartRepository(GRRWSContext context) : base(context) { }
 
-        public async Task<(List<Sparepart> Items, int TotalCount)> GetSparepartsBySupplierIdAsync(Guid supplierId, int pageNumber, int pageSize)
+        public async Task<(List<Sparepart> Items, int TotalCount)> GetSparepartsBySupplierIdAsync(Guid supplierId, int pageNumber, int pageSize, string? searchSparepartName = null)
         {
             var query = _context.Spareparts
                 .Include(sp => sp.Supplier)
@@ -22,6 +22,11 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .ThenInclude(ms => ms.Machine)
                 .Where(sp => sp.SupplierId == supplierId && !sp.IsDeleted);
 
+            if (!string.IsNullOrWhiteSpace(searchSparepartName))
+            {
+                query = query.Where(sp => sp.SparepartName.Contains(searchSparepartName));
+            }
+
             var totalCount = await query.CountAsync();
             var items = await query
                 .OrderBy(sp => sp.SparepartName)
@@ -32,7 +37,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return (items, totalCount);
         }
 
-        public async Task<(List<Sparepart> Items, int TotalCount)> GetAllActiveSparepartsAsync(int pageNumber, int pageSize)
+        public async Task<(List<Sparepart> Items, int TotalCount)> GetAllActiveSparepartsAsync(int pageNumber, int pageSize, string? searchSparepartName = null)
         {
             var query = _context.Spareparts
                 .Include(sp => sp.Supplier)
@@ -40,6 +45,11 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .ThenInclude(ms => ms.Machine)
                 .Where(sp => !sp.IsDeleted);
 
+            if (!string.IsNullOrWhiteSpace(searchSparepartName))
+            {
+                query = query.Where(sp => sp.SparepartName.Contains(searchSparepartName));
+            }
+
             var totalCount = await query.CountAsync();
             var items = await query
                 .OrderBy(sp => sp.SparepartName)
@@ -50,7 +60,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return (items, totalCount);
         }
 
-        public async Task<(List<Sparepart> Items, int TotalCount)> GetLowStockSparepartsAsync(int pageNumber, int pageSize)
+        public async Task<(List<Sparepart> Items, int TotalCount)> GetLowStockSparepartsAsync(int pageNumber, int pageSize, string? searchSparepartName = null)
         {
             var query = _context.Spareparts
                 .Include(sp => sp.Supplier)
@@ -58,9 +68,13 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .ThenInclude(ms => ms.Machine)
                 .Where(sp => sp.StockQuantity < 10 && sp.StockQuantity >= 0 && !sp.IsDeleted);
 
+            if (!string.IsNullOrWhiteSpace(searchSparepartName))
+            {
+                query = query.Where(sp => sp.SparepartName.Contains(searchSparepartName));
+            }
+
             var totalCount = await query.CountAsync();
-            var items = await query
-                .OrderBy(sp => sp.SparepartName)
+            var items = await query.OrderBy(sp => sp.SparepartName)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -68,13 +82,18 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return (items, totalCount);
         }
 
-        public async Task<(List<Sparepart> Items, int TotalCount)> GetOutOfStockSparepartsAsync(int pageNumber, int pageSize)
+        public async Task<(List<Sparepart> Items, int TotalCount)> GetOutOfStockSparepartsAsync(int pageNumber, int pageSize, string? searchSparepartName = null)
         {
             var query = _context.Spareparts
                 .Include(sp => sp.Supplier)
                 .Include(sp => sp.MachineSpareparts)
                 .ThenInclude(ms => ms.Machine)
                 .Where(sp => sp.StockQuantity == 0 && !sp.IsDeleted);
+
+            if (!string.IsNullOrWhiteSpace(searchSparepartName))
+            {
+                query = query.Where(sp => sp.SparepartName.Contains(searchSparepartName));
+            }
 
             var totalCount = await query.CountAsync();
             var items = await query
