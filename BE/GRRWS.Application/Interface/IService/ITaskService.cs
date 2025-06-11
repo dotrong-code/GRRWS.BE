@@ -1,5 +1,6 @@
 ﻿using GRRWS.Application.Common.Result;
 using GRRWS.Infrastructure.DTOs.Task;
+using GRRWS.Infrastructure.DTOs.Task.ActionTask;
 using GRRWS.Infrastructure.DTOs.Task.Repair;
 using GRRWS.Infrastructure.DTOs.Task.Warranty;
 
@@ -34,14 +35,19 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> CreateSimpleTaskAsync(CreateSimpleTaskRequest request);
 
         ///New versions of create task
+
+        #region create task
         Task<Result> CreateWarrantyTask(CreateWarrantyTaskRequest request, Guid userId);
+        Task<Result> CreateUninstallTask(CreateUninstallTaskRequest request, Guid userId);
+        Task<Result> CreateInstallTask(CreateInstallTaskRequest request, Guid userId);
+        Task<Result> CreateRepairTask(CreateRepairTaskRequest request, Guid userId);
+        #endregion
+        Task<Result> UpdateTaskStatusAsync(Guid taskId, Guid userId);
+
         Task<Result> FillInWarrantyTask(FillInWarrantyTask request);
         Task<Result> GetGetDetailWarrantyTaskForMechanicByIdAsync(Guid taskId);
         Task<Result> GetDetailtRepairTaskForMechanicByIdAsync(Guid taskId);
         Task<Result> GetDetailReplaceTaskForMechanicByIdAsync(Guid taskId, string type);
-
-        Task<Result> CreateRepairTask(CreateRepairTaskRequest request, Guid userId);
-
         Task<Result> UpdateTaskStatusToCompleted(Guid taskId, Guid userId);
     }
 }

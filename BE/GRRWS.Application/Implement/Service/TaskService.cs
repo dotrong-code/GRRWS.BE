@@ -7,6 +7,7 @@ using GRRWS.Infrastructure.DTOs.Common.Message;
 using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.DTOs.Task;
+using GRRWS.Infrastructure.DTOs.Task.ActionTask;
 using GRRWS.Infrastructure.DTOs.Task.Get;
 using GRRWS.Infrastructure.DTOs.Task.Repair;
 using GRRWS.Infrastructure.DTOs.Task.Warranty;
@@ -45,7 +46,6 @@ namespace GRRWS.Application.Implement.Service
                 TaskId = taskId
             });
         }
-
         public async Task<Result> FillInWarrantyTask(FillInWarrantyTask request)
         {
             try
@@ -62,8 +62,6 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(TaskErrorMessage.TaskUpdateFailed(ex.Message));
             }
         }
-
-
         public async Task<Result> GetGetDetailWarrantyTaskForMechanicByIdAsync(Guid taskId)
         {
             var task = await _unitOfWork.TaskRepository.GetGetDetailWarrantyTaskForMechanicByIdAsync(taskId, "WarrantySubmission");
@@ -73,7 +71,6 @@ namespace GRRWS.Application.Implement.Service
             }
             return Result.SuccessWithObject(task);
         }
-
         public async Task<Result> GetDetailtRepairTaskForMechanicByIdAsync(Guid taskId)
         {
             var task = await _unitOfWork.TaskRepository.GetDetailtRepairTaskForMechanicByIdAsync(taskId, "Repair");
@@ -83,7 +80,6 @@ namespace GRRWS.Application.Implement.Service
             }
             return Result.SuccessWithObject(task);
         }
-
         public async Task<Result> GetDetailReplaceTaskForMechanicByIdAsync(Guid taskId, string type)
         {
             var task = await _unitOfWork.TaskRepository.GetGetDetailWarrantyTaskForMechanicByIdAsync(taskId, type);
@@ -93,7 +89,6 @@ namespace GRRWS.Application.Implement.Service
             }
             return Result.SuccessWithObject(task);
         }
-
         public async Task<Result> CreateRepairTask(CreateRepairTaskRequest request, Guid userId)
         {
             try
@@ -111,7 +106,6 @@ namespace GRRWS.Application.Implement.Service
                 throw new Exception($"Failed to create repair task: {ex.Message}", ex);
             }
         }
-
         public async Task<Result> UpdateTaskStatusToCompleted(Guid taskId, Guid userId)
         {
             try
@@ -134,6 +128,23 @@ namespace GRRWS.Application.Implement.Service
                 throw new Exception($"Failed to update task status: {ex.Message}", ex);
             }
         }
+        public Task<Result> CreateUninstallTask(CreateUninstallTaskRequest request, Guid userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result> CreateInstallTask(CreateInstallTaskRequest request, Guid userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result> UpdateTaskStatusAsync(Guid taskId, Guid userId)
+        {
+            throw new NotImplementedException();
+        }
+
+
+
 
         #endregion
         #region old methods
@@ -160,7 +171,7 @@ namespace GRRWS.Application.Implement.Service
                 Id = Guid.NewGuid(),
                 TaskName = request.TaskName,
                 TaskDescription = request.TaskDescription,
-                TaskType = request.TaskType,
+                //TaskType = request.TaskType,
                 ExpectedTime = request.ExpectedTime,
                 AssigneeId = request.AssigneeId,
                 CreatedDate = DateTime.UtcNow,
@@ -200,7 +211,7 @@ namespace GRRWS.Application.Implement.Service
 
             task.TaskName = request.TaskName;
             task.TaskDescription = request.TaskDescription;
-            task.TaskType = request.TaskType;
+            //task.TaskType = request.TaskType;
             task.ExpectedTime = request.ExpectedTime;
             task.AssigneeId = request.AssigneeId;
             task.ModifiedDate = DateTime.UtcNow;
@@ -308,7 +319,7 @@ namespace GRRWS.Application.Implement.Service
                     Id = t.Id,
                     TaskName = t.TaskName,
                     TaskDescription = t.TaskDescription,
-                    TaskType = t.TaskType,
+                    TaskType = t.TaskType.ToString(),
                     StartTime = t.StartTime,
                     ExpectedTime = t.ExpectedTime,
                     EndTime = t.EndTime,
@@ -345,7 +356,7 @@ namespace GRRWS.Application.Implement.Service
                 Id = task.Id,
                 TaskName = task.TaskName,
                 TaskDescription = task.TaskDescription,
-                TaskType = task.TaskType,
+                TaskType = task.TaskType.ToString(),
                 StartTime = task.StartTime,
                 ExpectedTime = task.ExpectedTime,
                 EndTime = task.EndTime,
@@ -385,7 +396,7 @@ namespace GRRWS.Application.Implement.Service
                 Id = Guid.NewGuid(),
                 TaskName = dto.TaskName,
                 TaskDescription = dto.TaskDescription,
-                TaskType = dto.TaskType,
+                // TaskType = dto.TaskType.,
                 StartTime = dto.StartTime,
                 ExpectedTime = dto.ExpectedTime,
                 AssigneeId = dto.AssigneeId,
@@ -410,7 +421,7 @@ namespace GRRWS.Application.Implement.Service
 
             task.TaskName = dto.TaskName;
             task.TaskDescription = dto.TaskDescription;
-            task.TaskType = dto.TaskType;
+            //task.TaskType = dto.TaskType;
             task.StartTime = dto.StartTime;
             task.ExpectedTime = dto.ExpectedTime;
             task.EndTime = dto.EndTime;
@@ -605,8 +616,6 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(new { Message = "Task assigned successfully!" });
         }
         #endregion
-
-
         #region private methods
         // You can add any private methods here if needed for internal logic
         private async Task<Result> ValidateRequestAsync(CreateWarrantyTaskRequest request)
@@ -645,7 +654,6 @@ namespace GRRWS.Application.Implement.Service
             return Result.Success();
         }
 
-
         // Error constants for reuse
         public static class ErrorConstants
         {
@@ -665,6 +673,36 @@ namespace GRRWS.Application.Implement.Service
             public string Message { get; set; }
             public Guid TaskId { get; set; }
         }
+
+        private async Task<Result> CheckRequestExist(Guid requestId)
+        {
+            var request = await _unitOfWork.RequestRepository.IsExistAsync(requestId);
+            if (!request)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Request does not exist."));
+            }
+            return Result.Success();
+        }
+        private async Task<Result> CheckUserExist(Guid userId)
+        {
+            var userExists = await _unitOfWork.UserRepository.IdExistsAsync(userId);
+            if (!userExists)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "User does not exist."));
+            }
+            return Result.Success();
+        }
+        private async Task<Result> CheckTaskGroupExist(Guid taskGroupId)
+        {
+            var taskGroupExists = await _unitOfWork.TaskGroupRepository.GetByIdAsync(taskGroupId) != null;
+            if (!taskGroupExists)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Task group does not exist."));
+            }
+            return Result.Success();
+        }
+
+
 
         #endregion
 

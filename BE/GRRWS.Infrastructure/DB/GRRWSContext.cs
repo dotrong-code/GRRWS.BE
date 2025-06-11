@@ -52,7 +52,8 @@ namespace GRRWS.Infrastructure.DB
         public DbSet<MachineSparepart> MachineSpareparts { get; set; }
 
         public DbSet<WarrantyClaim> WarrantyClaims { get; set; }
-        public DbSet<WarrantyClaimDocument> WarrantyClaimDocuments { get; set; }        
+        public DbSet<WarrantyClaimDocument> WarrantyClaimDocuments { get; set; }
+        public DbSet<TaskGroup> TaskGroups { get; set; }
 
         #endregion
 
@@ -798,8 +799,16 @@ namespace GRRWS.Infrastructure.DB
                 .Property(b => b.IsDeleted)
                 .HasDefaultValue(false);
 
-            #endregion
+            //TaskGroup
+            modelBuilder.Entity<TaskGroup>(entity =>
+            {
+                entity.HasMany(tg => tg.Tasks)
+                    .WithOne(t => t.TaskGroup)
+                    .HasForeignKey(t => t.TaskGroupId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
 
+            #endregion
             #region Table Mappings
             modelBuilder.Entity<Area>().ToTable("Areas");
             modelBuilder.Entity<Zone>().ToTable("Zones");
@@ -835,7 +844,7 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<RequestTakeSparePartUsage>().ToTable("RequestTakeSparePartUsages");
             modelBuilder.Entity<MachineSparepart>().ToTable("MachineSpareparts");
             modelBuilder.Entity<Supplier>().ToTable("Suppliers");
-
+            modelBuilder.Entity<TaskGroup>().ToTable("TaskGroups");
             #endregion
         }
     }
