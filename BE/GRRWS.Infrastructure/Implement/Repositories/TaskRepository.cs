@@ -1222,5 +1222,104 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             return true;
         }
+        public async Task<GetDetailUninstallTaskForMechanic> GetDetailUninstallTaskForMechanicByIdAsync(Guid taskId)
+        {
+            var task = await _context.Tasks
+                .Include(t => t.Assignee)
+                .Include(t => t.TaskGroup)
+                .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == TaskType.Uninstallation)
+                .FirstOrDefaultAsync();
+
+            if (task == null)
+                return null;
+
+            // Get device and location information from the related request
+            var deviceInfo = await _context.Requests
+                .Include(r => r.Device)
+                    .ThenInclude(d => d.Position)
+                        .ThenInclude(p => p.Zone)
+                            .ThenInclude(z => z.Area)
+                .Include(r => r.Report)
+                .Where(r => r.ReportId != null && _context.Tasks.Any(t => t.Id == taskId))
+                .Select(r => new
+                {
+                    DeviceId = r.Device.Id,
+                    DeviceName = r.Device.DeviceName,
+                    DeviceCode = r.Device.DeviceCode,
+                    Location = r.Device.Position != null && r.Device.Position.Zone != null && r.Device.Position.Zone.Area != null
+                        ? $"{r.Device.Position.Zone.Area.AreaName} - {r.Device.Position.Zone.ZoneName} - {r.Device.Position.Index}"
+                        : r.Report.Location ?? "Location not available"
+                })
+                .FirstOrDefaultAsync();
+
+            return new GetDetailUninstallTaskForMechanic
+            {
+                TaskId = task.Id,
+                DeviceId = deviceInfo?.DeviceId ?? Guid.Empty,
+                TaskType = task.TaskType.ToString(),
+                TaskName = task.TaskName,
+                TaskDescription = task.TaskDescription,
+                Priority = task.Priority.ToString(),
+                Status = task.Status.ToString(),
+                StartTime = task.StartTime,
+                ExpectedTime = task.ExpectedTime,
+                EndTime = task.EndTime,
+                AssigneeName = task.Assignee?.FullName,
+                DeviceName = deviceInfo?.DeviceName ?? "Unknown Device",
+                DeviceCode = deviceInfo?.DeviceCode ?? "N/A",
+                Location = deviceInfo?.Location ?? "Location not available",
+                TaskGroupName = task.TaskGroup?.GroupName
+            };
+        }
+
+        public async Task<GetDetailInstallTaskForMechanic> GetDetailInstallTaskForMechanicByIdAsync(Guid taskId)
+        {
+            var task = await _context.Tasks
+                .Include(t => t.Assignee)
+                .Include(t => t.TaskGroup)
+                .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == TaskType.Installation)
+                .FirstOrDefaultAsync();
+
+            if (task == null)
+                return null;
+
+            // Get device and location information from the related request
+            var deviceInfo = await _context.Requests
+                .Include(r => r.Device)
+                    .ThenInclude(d => d.Position)
+                        .ThenInclude(p => p.Zone)
+                            .ThenInclude(z => z.Area)
+                .Include(r => r.Report)
+                .Where(r => r.ReportId != null && _context.Tasks.Any(t => t.Id == taskId))
+                .Select(r => new
+                {
+                    DeviceId = r.Device.Id,
+                    DeviceName = r.Device.DeviceName,
+                    DeviceCode = r.Device.DeviceCode,
+                    Location = r.Device.Position != null && r.Device.Position.Zone != null && r.Device.Position.Zone.Area != null
+                        ? $"{r.Device.Position.Zone.Area.AreaName} - {r.Device.Position.Zone.ZoneName} - {r.Device.Position.Index}"
+                        : r.Report.Location ?? "Location not available"
+                })
+                .FirstOrDefaultAsync();
+
+            return new GetDetailInstallTaskForMechanic
+            {
+                TaskId = task.Id,
+                DeviceId = deviceInfo?.DeviceId ?? Guid.Empty,
+                TaskType = task.TaskType.ToString(),
+                TaskName = task.TaskName,
+                TaskDescription = task.TaskDescription,
+                Priority = task.Priority.ToString(),
+                Status = task.Status.ToString(),
+                StartTime = task.StartTime,
+                ExpectedTime = task.ExpectedTime,
+                EndTime = task.EndTime,
+                AssigneeName = task.Assignee?.FullName,
+                DeviceName = deviceInfo?.DeviceName ?? "Unknown Device",
+                DeviceCode = deviceInfo?.DeviceCode ?? "N/A",
+                Location = deviceInfo?.Location ?? "Location not available",
+                TaskGroupName = task.TaskGroup?.GroupName
+            };
+        }
     }
 }

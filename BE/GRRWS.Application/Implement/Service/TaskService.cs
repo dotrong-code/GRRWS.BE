@@ -202,6 +202,25 @@ namespace GRRWS.Application.Implement.Service
                 UpdatedAt = DateTime.UtcNow
             });
         }
+        public async Task<Result> GetDetailUninstallTaskForMechanicByIdAsync(Guid taskId)
+        {
+            var task = await _unitOfWork.TaskRepository.GetDetailUninstallTaskForMechanicByIdAsync(taskId);
+            if (task == null)
+            {
+                return Result.Failure(TaskErrorMessage.TaskNotExist());
+            }
+            return Result.SuccessWithObject(task);
+        }
+
+        public async Task<Result> GetDetailInstallTaskForMechanicByIdAsync(Guid taskId)
+        {
+            var task = await _unitOfWork.TaskRepository.GetDetailInstallTaskForMechanicByIdAsync(taskId);
+            if (task == null)
+            {
+                return Result.Failure(TaskErrorMessage.TaskNotExist());
+            }
+            return Result.SuccessWithObject(task);
+        }
 
         #endregion
         #region old methods

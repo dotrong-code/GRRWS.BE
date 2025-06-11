@@ -38,6 +38,10 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetGetDetailWarrantyReturnTaskForMechanicByIdAsync(Guid taskId);
         Task<Result> GetDetailtRepairTaskForMechanicByIdAsync(Guid taskId);
         Task<Result> GetDetailReplaceTaskForMechanicByIdAsync(Guid taskId, string type);
+        // ...existing code...
+        Task<Result> GetDetailUninstallTaskForMechanicByIdAsync(Guid taskId);
+        Task<Result> GetDetailInstallTaskForMechanicByIdAsync(Guid taskId);
+        // ...existing code...
 
 
     }

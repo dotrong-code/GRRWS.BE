@@ -39,6 +39,10 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<GetDetailWarrantyTaskForMechanic> GetGetDetailWarrantyTaskForMechanicByIdAsync(Guid taskId, TaskType type);
         Task<GetDetailtRepairTaskForMechanic> GetDetailtRepairTaskForMechanicByIdAsync(Guid taskId, string type);
         Task<GetDetailReplaceTaskForMechanic> GetDetailReplaceTaskForMechanicByIdAsync(Guid taskId, string type);
+        // ...existing code...
+        Task<GetDetailUninstallTaskForMechanic> GetDetailUninstallTaskForMechanicByIdAsync(Guid taskId);
+        Task<GetDetailInstallTaskForMechanic> GetDetailInstallTaskForMechanicByIdAsync(Guid taskId);
+        // ...existing code...
 
         Task<Guid> FillInWarrantyTask(FillInWarrantyTask request);
 

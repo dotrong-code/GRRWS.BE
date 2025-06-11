@@ -24,7 +24,7 @@ namespace GRRWS.Host.Controllers
             _contextAccessor = contextAccessor;
         }
         [Authorize]
-        [HttpPost("uninstall)")]
+        [HttpPost("uninstall")]
         public async Task<IResult> CreateUninstallTask([FromBody] CreateUninstallTaskRequest request)
         {
             CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
@@ -53,14 +53,25 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Warranty task created successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-        //[HttpPost("warranty-task/return")]
-        //public async Task<IResult> CreateWarrantyTask([FromBody] CreateWarrantyTaskRequest request)
-        //{
-        //    var result = await _taskService.CreateWarrantyTask(request);
-        //    return result.IsSuccess
-        //        ? ResultExtensions.ToSuccessDetails(result, "Warranty task created successfully")
-        //        : ResultExtensions.ToProblemDetails(result);
-        //}
+
+
+        [HttpGet("uninstall-task/{taskId}")]
+        public async Task<IResult> GetUninstallTaskDetails(Guid taskId)
+        {
+            var result = await _taskService.GetDetailUninstallTaskForMechanicByIdAsync(taskId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Uninstall task details retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+        [HttpGet("install-task/{taskId}")]
+        public async Task<IResult> GetInstallTaskDetails(Guid taskId)
+        {
+            var result = await _taskService.GetDetailInstallTaskForMechanicByIdAsync(taskId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Install task details retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
         [Authorize]
         [HttpPost("repair-task")]
         public async Task<IResult> CreateRepairTask([FromBody] CreateRepairTaskRequest request)
