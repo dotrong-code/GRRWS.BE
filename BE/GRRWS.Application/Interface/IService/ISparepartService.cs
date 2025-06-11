@@ -20,5 +20,6 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetOutOfStockSparepartsAsync(int pageNumber, int pageSize, string? searchSparepartName = null);
         Task<Result> GetAllMachinesAsync(int pageNumber, int pageSize);
         Task<Result> GetAllSuppliersAsync(int pageNumber, int pageSize);
+        Task<Result> UpdateStockQuantityAsync(UpdateSparepartStockQuantityRequest dto);
     }
 }

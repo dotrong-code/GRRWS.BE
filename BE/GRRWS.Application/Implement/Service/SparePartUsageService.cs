@@ -411,7 +411,49 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.SuccessWithObject(new { Message = "Status updated successfully" });
         }
+        public async Task<Result> UpdateRequestTakeSparePartUsageInsufficientStatusAsync(UpdateRequestInsufficientStatusRequest request)
+        {
+            if (request.RequestTakeSparePartUsageId == Guid.Empty)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", "RequestTakeSparePartUsageId is required"));
 
+            if (request.SparePartIds == null || !request.SparePartIds.Any())
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", "At least one SparePart ID is required"));
+
+            if (request.ExpectedAvailabilityDate <= DateTime.UtcNow)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", "ExpectedAvailabilityDate must be in the future"));
+
+            var requestUsage = await _unitOfWork.RequestTakeSparePartUsageRepository.GetByIdAsync(request.RequestTakeSparePartUsageId);
+            if (requestUsage == null)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", $"Request take spare part usage with ID {request.RequestTakeSparePartUsageId} not found"));
+
+            if (!IsValidStatusTransition(requestUsage.Status, SparePartRequestStatus.Insufficient))
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", $"Invalid transition from {requestUsage.Status} to Insufficient"));
+
+            // Update status to Insufficient
+            requestUsage.Status = SparePartRequestStatus.Insufficient;
+            requestUsage.Notes = request.Notes ?? requestUsage.Notes;
+
+            // Update ExpectedAvailabilityDate for specified spare parts
+            foreach (var sparePartId in request.SparePartIds)
+            {
+                var sparePart = await _unitOfWork.SparepartRepository.GetByIdAsync(sparePartId);
+                if (sparePart == null)
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", $"Spare part with ID {sparePartId} not found"));
+
+                // Verify the spare part is part of the request
+                var usage = requestUsage.SparePartUsages.FirstOrDefault(u => u.SparePartId == sparePartId);
+                if (usage == null)
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", $"Spare part with ID {sparePartId} is not associated with this request"));
+
+                sparePart.ExpectedAvailabilityDate = request.ExpectedAvailabilityDate;
+                await _unitOfWork.SparepartRepository.UpdateAsync(sparePart);
+            }
+
+            await _unitOfWork.RequestTakeSparePartUsageRepository.UpdateAsync(requestUsage);
+            await _unitOfWork.SaveChangesAsync();
+
+            return Result.SuccessWithObject(new { Message = "Insufficient status updated successfully with expected availability date for specified spare parts" });
+        }
         private bool IsValidStatusTransition(SparePartRequestStatus currentStatus, SparePartRequestStatus newStatus)
         {
             switch (currentStatus)
