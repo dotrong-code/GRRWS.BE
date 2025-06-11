@@ -725,6 +725,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             {
                 TaskId = task.Id,
                 TaskType = task.TaskType,
+                DeviceId = task.WarrantyClaim?.DeviceWarranty?.Id ?? Guid.Empty,
                 TaskName = task.TaskName,
                 WarrantyProvider = task.WarrantyClaim?.DeviceWarranty?.Provider,
                 WarrantyCode = task.WarrantyClaim?.DeviceWarranty?.WarrantyCode,
@@ -765,7 +766,19 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     .ThenInclude(ed => ed.RequestTakeSparePartUsage)
                         .ThenInclude(rtspu => rtspu.SparePartUsages) // Fixed: Access the collection
                             .ThenInclude(spu => spu.SparePart) // Then access SparePart from SparePartUsage
+
                 .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == type)
+                .FirstOrDefaultAsync();
+            var reportId = task.ErrorDetails.FirstOrDefault()?.ReportId;
+
+            if (reportId == null)
+            {
+                throw new Exception("ReportId not found in ErrorDetails.");
+            }
+
+            var deviceId = await _context.Requests
+                .Where(r => r.ReportId == reportId)
+                .Select(r => r.DeviceId)
                 .FirstOrDefaultAsync();
 
             if (task == null)
@@ -799,6 +812,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             {
                 TaskId = task.Id,
                 TaskType = task.TaskType,
+                DeviceId = deviceId,
                 TaskName = task.TaskName,
                 TaskDescription = task.TaskDescription,
                 Priority = task.Priority.ToString(),
@@ -970,7 +984,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                                     RequestCode = requestCode,
                                     RequestDate = DateTime.UtcNow,
                                     RequestedById = userId,
-                                    AssigneeId = request.AssigneeId,                            
+                                    AssigneeId = request.AssigneeId,
                                     Status = SparePartRequestStatus.Unconfirmed,
                                     Notes = $"Auto-generated for repair task: {task.TaskName}",
                                     CreatedDate = DateTime.UtcNow,
