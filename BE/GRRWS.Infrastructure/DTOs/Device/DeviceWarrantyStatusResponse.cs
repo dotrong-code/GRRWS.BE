@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GRRWS.Infrastructure.DTOs.Device
+﻿namespace GRRWS.Infrastructure.DTOs.Device
 {
     public class DeviceWarrantyStatusResponse
     {
+        public Guid Id { get; set; } // Unique identifier for the warranty status
         public bool IsUnderWarranty { get; set; }
         public string WarrantyStatus { get; set; }
         public string WarrantyCode { get; set; }

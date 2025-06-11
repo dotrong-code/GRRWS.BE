@@ -53,7 +53,6 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Warranty task created successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
         //[HttpPost("warranty-task/return")]
         //public async Task<IResult> CreateWarrantyTask([FromBody] CreateWarrantyTaskRequest request)
         //{
@@ -72,7 +71,6 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Warranty task created successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
         [HttpPut("warranty-task/submit/fill-infor")]
         public async Task<IResult> FillInWarrantyTask([FromBody] FillInWarrantyTask request)
         {
@@ -81,7 +79,6 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Warranty task created successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
 
         [HttpGet("warranty-task-submit/{taskId}")]
         public async Task<IResult> GetWarrantySubmitTaskDetails(Guid taskId)
