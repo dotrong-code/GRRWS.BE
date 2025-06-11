@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
@@ -19,14 +20,17 @@ namespace GRRWS.Application.Implement.Service
         private readonly UnitOfWork _unitOfWork;
         private readonly IValidator<StartTaskRequest> _startTaskValidator;
         private readonly IValidator<CreateTaskReportRequest> _createReportValidator;
+        private readonly CheckIsExist _checkIsExist;
 
         public TaskService(UnitOfWork unitOfWork,
             IValidator<StartTaskRequest> startTaskValidator,
-            IValidator<CreateTaskReportRequest> createReportValidator)
+            IValidator<CreateTaskReportRequest> createReportValidator,
+            CheckIsExist checkIsExist)
         {
             _unitOfWork = unitOfWork;
             _startTaskValidator = startTaskValidator;
             _createReportValidator = createReportValidator;
+            _checkIsExist = checkIsExist;
         }
 
         #region
@@ -128,23 +132,66 @@ namespace GRRWS.Application.Implement.Service
                 throw new Exception($"Failed to update task status: {ex.Message}", ex);
             }
         }
-        public Task<Result> CreateUninstallTask(CreateUninstallTaskRequest request, Guid userId)
+        public async Task<Result> CreateUninstallTask(CreateUninstallTaskRequest request, Guid userId)
         {
-            throw new NotImplementedException();
+            var requestCheck = await _checkIsExist.Request(request.RequestId);
+            if (!requestCheck.IsSuccess) return requestCheck;
+
+            var userCheck = await _checkIsExist.User(userId);
+            if (!userCheck.IsSuccess) return userCheck;
+            var assigneeCheck = await _checkIsExist.User(request.AssigneeId, allowNull: true);
+            if (!assigneeCheck.IsSuccess) return assigneeCheck;
+            var taskGroupCheck = await _checkIsExist.TaskGroup(request.TaskGroupId, allowNull: true);
+            if (!taskGroupCheck.IsSuccess) return taskGroupCheck;
+            var taskId = await _unitOfWork.TaskRepository.CreateUninstallTask(request, userId);
+            return Result.SuccessWithObject(new
+            {
+                Message = "Uninstall task created successfully!",
+                TaskId = taskId
+            });
+
         }
 
-        public Task<Result> CreateInstallTask(CreateInstallTaskRequest request, Guid userId)
+        public async Task<Result> CreateInstallTask(CreateInstallTaskRequest request, Guid userId)
         {
-            throw new NotImplementedException();
+            var requestCheck = await _checkIsExist.Request(request.RequestId);
+            if (!requestCheck.IsSuccess) return requestCheck;
+            var userCheck = await _checkIsExist.User(userId);
+            if (!userCheck.IsSuccess) return userCheck;
+            var assigneeCheck = await _checkIsExist.User(request.AssigneeId, allowNull: true);
+            if (!assigneeCheck.IsSuccess) return assigneeCheck;
+            var taskGroupCheck = await _checkIsExist.TaskGroup(request.TaskGroupId, allowNull: true);
+            if (!taskGroupCheck.IsSuccess) return taskGroupCheck;
+            var newDeviceCheck = await _checkIsExist.Device(request.NewDeviceId, allowNull: true);
+            if (!newDeviceCheck.IsSuccess) return newDeviceCheck;
+            var taskId = await _unitOfWork.TaskRepository.CreateInstallTask(request, userId);
+            if (request.StartDate is null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", "Start date is required."));
+            }
+            return Result.SuccessWithObject(new
+            {
+                Message = "Install task created successfully!",
+                TaskId = taskId
+            });
         }
 
-        public Task<Result> UpdateTaskStatusAsync(Guid taskId, Guid userId)
+        public async Task<Result> UpdateTaskStatusAsync(Guid taskId, Guid userId)
         {
-            throw new NotImplementedException();
+            var taskCheck = await _checkIsExist.Task(taskId);
+            if (!taskCheck.IsSuccess) return taskCheck;
+            var userCheck = await _checkIsExist.User(userId);
+            if (!userCheck.IsSuccess) return userCheck;
+            var isUpdated = await _unitOfWork.TaskRepository.UpdateTaskStatusAsync(taskId, userId);
+            if (!isUpdated)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Fail", "Task status could not be updated."));
+            return Result.SuccessWithObject(new
+            {
+                Message = "Task status updated successfully!",
+                TaskId = taskId,
+                UpdatedAt = DateTime.UtcNow
+            });
         }
-
-
-
 
         #endregion
         #region old methods
