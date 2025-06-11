@@ -128,7 +128,28 @@ namespace GRRWS.Application.Implement.Service
             var resultDto = await MapSparepartToDTOAsync(sparepart);
             return Result.SuccessWithObject(resultDto);
         }
+        public async Task<Result> UpdateStockQuantityAsync(UpdateSparepartStockQuantityRequest dto)
+        {
+            if (dto.SparepartId == Guid.Empty)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", "SparepartId is required"));
 
+            if (dto.StockQuantity < 0)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", "StockQuantity cannot be negative"));
+
+            var sparepart = await _unit.SparepartRepository.GetByIdAsync(dto.SparepartId);
+            if (sparepart == null)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", $"Sparepart with ID {dto.SparepartId} not found"));
+
+            sparepart.StockQuantity = dto.StockQuantity;
+            sparepart.IsAvailable = dto.StockQuantity > 0;
+            sparepart.ExpectedAvailabilityDate = dto.StockQuantity > 0 ? null : sparepart.ExpectedAvailabilityDate;
+            sparepart.ModifiedDate = DateTime.UtcNow;
+
+            await _unit.SparepartRepository.UpdateAsync(sparepart);
+            await _unit.SaveChangesAsync();
+
+            return Result.SuccessWithObject(new { Message = "Sparepart stock quantity updated successfully" });
+        }
         public async Task<Result> DeleteAsync(Guid id)
         {
             var sparepart = await _unit.SparepartRepository.GetByIdAsync(id);

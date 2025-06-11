@@ -125,5 +125,13 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved all suppliers")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [HttpPut("update-stock-quantity")]
+        public async Task<IResult> UpdateStockQuantity([FromBody] UpdateSparepartStockQuantityRequest dto)
+        {
+            var result = await _service.UpdateStockQuantityAsync(dto);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, $"Successfully updated stock quantity for sparepart with ID {dto.SparepartId}")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }
