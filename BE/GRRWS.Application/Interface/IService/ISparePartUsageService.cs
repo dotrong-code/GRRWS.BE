@@ -18,5 +18,6 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> UpdateIsTakenFromStockAsync(UpdateIsTakenFromStockRequest request);
         Task<Result> DeleteAsync(Guid id);
         Task<Result> UpdateRequestTakeSparePartUsageStatusAsync(UpdateRequestStatusRequest request);
+        Task<Result> UpdateRequestTakeSparePartUsageInsufficientStatusAsync(UpdateRequestInsufficientStatusRequest request);
     }
 }
