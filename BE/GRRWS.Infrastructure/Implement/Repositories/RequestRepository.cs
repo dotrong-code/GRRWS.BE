@@ -247,7 +247,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Select(t => new TaskForRequestDetailWeb
                 {
                     TaskId = t.Id,
-                    TaskType = t.TaskType,
+                    TaskType = t.TaskType.ToString(),
                     Status = t.Status.ToString(), // Convert enum to string
                     StartTime = t.StartTime,
                     AssigneeName = t.Assignee.UserName,

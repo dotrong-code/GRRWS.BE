@@ -2,6 +2,7 @@
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.Task;
+using GRRWS.Infrastructure.DTOs.Task.ActionTask;
 using GRRWS.Infrastructure.DTOs.Task.Get;
 using GRRWS.Infrastructure.DTOs.Task.Get.SubObject;
 using GRRWS.Infrastructure.DTOs.Task.Repair;
@@ -26,7 +27,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Select(ed => new TaskByReportResponse
                 {
                     TaskId = ed.TaskId.Value,
-                    TaskType = ed.Task.TaskType,
+                    TaskType = ed.Task.TaskType.ToString(),
                     Priority = (int)ed.Task.Priority, // Convert enum to int
                     Status = ed.Task.Status.ToString(), // Convert enum to string
                     AssigneeName = ed.Task.Assignee.FullName,
@@ -49,7 +50,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     Id = t.Id,
                     TaskName = t.TaskName,
                     TaskDescription = t.TaskDescription,
-                    TaskType = t.TaskType,
+                    TaskType = t.TaskType.ToString(),
                     StartTime = t.StartTime,
                     ExpectedTime = t.ExpectedTime,
                     EndTime = t.EndTime,
@@ -82,7 +83,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     Id = t.Id,
                     TaskName = t.TaskName,
                     TaskDescription = t.TaskDescription,
-                    TaskType = t.TaskType,
+                    TaskType = t.TaskType.ToString(),
                     StartTime = t.StartTime,
                     ExpectedTime = t.ExpectedTime,
                     EndTime = t.EndTime,
@@ -247,8 +248,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             var query = _context.Tasks
                 .Where(t => !t.IsDeleted);
 
-            if (!string.IsNullOrWhiteSpace(taskType))
-                query = query.Where(t => t.TaskType == taskType);
+            //if (!string.IsNullOrWhiteSpace(taskType))
+            //    query = query.Where(t => t.TaskType == taskType);
 
             if (!string.IsNullOrWhiteSpace(status))
 
@@ -265,7 +266,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     Id = t.Id,
                     TaskName = t.TaskName,
                     TaskDescription = t.TaskDescription,
-                    TaskType = t.TaskType,
+                    TaskType = t.TaskType.ToString(),
                     StartTime = t.StartTime,
                     ExpectedTime = t.ExpectedTime,
                     EndTime = t.EndTime,
@@ -299,7 +300,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             var task = new Tasks
             {
                 Id = Guid.NewGuid(),
-                TaskType = dto.TaskType,
+                // TaskType = dto.TaskType.,
                 TaskName = "Task for " + dto.TaskType,
                 StartTime = dto.StartDate,
                 Priority = Priority.Low, // Use enum value
@@ -372,7 +373,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             var task = new Tasks
             {
                 Id = Guid.NewGuid(),
-                TaskType = dto.TaskType,
+                // TaskType = dto.TaskType,
                 StartTime = dto.StartDate,
                 Status = Status.Pending, // Use enum value
                 Priority = Priority.Medium, // Use enum value
@@ -408,7 +409,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             var task = new Tasks
             {
                 Id = Guid.NewGuid(),
-                TaskType = request.TaskType,
+                //TaskType = request.TaskType,
                 StartTime = request.StartDate,
                 Status = Status.Pending, // Use enum value
                 Priority = Priority.Medium, // Use enum value
@@ -475,7 +476,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             var task = new Tasks
             {
                 Id = Guid.NewGuid(),
-                TaskType = request.TaskType,
+                //TaskType = request.TaskType,
                 StartTime = request.StartDate,
                 Status = Status.Pending, // Use enum value
                 Priority = Priority.High, // Use enum value for warranty tasks
@@ -540,7 +541,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             var task = new Tasks
             {
                 Id = Guid.NewGuid(),
-                TaskType = request.TaskType,
+                // TaskType = request.TaskType,
                 StartTime = request.StartDate,
                 Status = Status.Pending, // Use enum value
                 Priority = Priority.Medium, // Use enum value
@@ -629,7 +630,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     {
                         Id = Guid.NewGuid(),
                         TaskName = $"Đưa thiết bị đi bảo hành - {claimNumber}",
-                        TaskType = "WarrantySubmission",
+                        TaskType = TaskType.WarrantySubmission,
                         TaskDescription = $"Mang thiết bị đi bảo hành với cái triệu chứng:{issueDescription}",
                         StartTime = request.StartDate,
                         ExpectedTime = request.StartDate.AddHours(5),
@@ -695,7 +696,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     TaskId = t.Id,
                     TaskName = t.TaskName,
                     TaskDescription = t.TaskDescription,
-                    TaskType = t.TaskType,
+                    TaskType = t.TaskType.ToString(),
                     Priority = t.Priority.ToString(), // Convert enum to string
                     Status = t.Status.ToString(),
                     CreateDate = t.CreatedDate// Convert enum to string
@@ -715,7 +716,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     .ThenInclude(wc => wc.DeviceWarranty)
                 .Include(t => t.WarrantyClaim)
                     .ThenInclude(u => u.CreatedByUser)
-                .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == type)
+                .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == TaskType.WarrantySubmission)
                 .FirstOrDefaultAsync();
 
             if (task == null)
@@ -724,9 +725,9 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return new GetDetailWarrantyTaskForMechanic
             {
                 TaskId = task.Id,
-                TaskType = task.TaskType,
                 DeviceId = task.WarrantyClaim?.DeviceWarranty?.Id ?? Guid.Empty,
                 TaskName = task.TaskName,
+                TaskType = task.TaskType.ToString(),
                 WarrantyProvider = task.WarrantyClaim?.DeviceWarranty?.Provider,
                 WarrantyCode = task.WarrantyClaim?.DeviceWarranty?.WarrantyCode,
                 TaskDescription = task.TaskDescription,
@@ -767,7 +768,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         .ThenInclude(rtspu => rtspu.SparePartUsages) // Fixed: Access the collection
                             .ThenInclude(spu => spu.SparePart) // Then access SparePart from SparePartUsage
 
-                .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == type)
+                .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == TaskType.Repair)
                 .FirstOrDefaultAsync();
             var reportId = task.ErrorDetails.FirstOrDefault()?.ReportId;
 
@@ -811,8 +812,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return new GetDetailtRepairTaskForMechanic
             {
                 TaskId = task.Id,
-                TaskType = task.TaskType,
                 DeviceId = deviceId,
+                TaskType = task.TaskType.ToString(),
                 TaskName = task.TaskName,
                 TaskDescription = task.TaskDescription,
                 Priority = task.Priority.ToString(),
@@ -845,9 +846,9 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 throw new Exception("Warranty claim not found for this task.");
 
             // Update task completion details
-            task.EndTime = DateTime.UtcNow;
-            task.Status = Status.Completed;
-            task.ModifiedDate = DateTime.UtcNow;
+            //task.EndTime = DateTime.UtcNow;
+            //task.Status = Status.Completed;
+            //task.ModifiedDate = DateTime.UtcNow;
 
             // Update warranty claim details
             var warrantyClaim = task.WarrantyClaim;
@@ -862,7 +863,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             {
                 Id = Guid.NewGuid(),
                 TaskName = $"Nhận thiết bị từ bảo hành - {warrantyClaim.ClaimNumber}",
-                TaskType = "WarrantyReturn",
+                TaskType = TaskType.WarrantyReturn,
                 TaskDescription = $"Collect device from warranty provider for claim: {warrantyClaim.ClaimNumber}. Expected return date: {warrantyClaim.ExpectedReturnDate:dd/MM/yyyy}",
                 StartTime = warrantyClaim.ExpectedReturnDate,
                 ExpectedTime = warrantyClaim.ExpectedReturnDate?.AddHours(2),
@@ -881,14 +882,11 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             warrantyClaim.ReturnTaskId = returnTask.Id;
 
             // Update entities
-            _context.Tasks.Update(task);
+            //_context.Tasks.Update(task);
             _context.WarrantyClaims.Update(warrantyClaim);
-
             await _context.SaveChangesAsync();
-
             return task.Id;
         }
-
         public async Task<Guid> CreateRepairTask(CreateRepairTaskRequest request, Guid userId)
         {
             var executionStrategy = _context.Database.CreateExecutionStrategy();
@@ -939,7 +937,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     {
                         Id = Guid.NewGuid(),
                         TaskName = $"Sửa máy - {requestInfo.DeviceName}",
-                        TaskType = "Repair",
+                        TaskType = TaskType.Repair,
                         TaskDescription = $"Repair task for errors: {string.Join(", ", errorGuidelines.Select(eg => eg.Error?.Name ?? "Unknown"))}",
                         StartTime = request.StartDate,
                         ExpectedTime = request.StartDate.Add(totalExpectedTime),
@@ -1043,7 +1041,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 }
             });
         }
-
         public async Task<bool> UpdateTaskStatusToCompleted(Guid taskId, Guid userId)
         {
             var task = await _context.Tasks
@@ -1055,6 +1052,168 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             // Update task status
             task.Status = Status.Completed;
             task.EndTime = DateTime.UtcNow;
+            task.ModifiedDate = DateTime.UtcNow;
+            task.ModifiedBy = userId;
+
+            _context.Tasks.Update(task);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+        public async Task<Guid> CreateUninstallTask(CreateUninstallTaskRequest request, Guid userId)
+        {
+            var executionStrategy = _context.Database.CreateExecutionStrategy();
+
+            return await executionStrategy.ExecuteAsync(async () =>
+            {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    // Get request and device information
+                    var requestInfo = await _context.Requests
+                        .Include(r => r.Device)
+                        .Include(r => r.Report)
+                        .Where(r => r.Id == request.RequestId)
+                        .Select(r => new
+                        {
+                            r.ReportId,
+                            DeviceId = r.Device.Id,
+                            DeviceName = r.Device.DeviceName,
+                            DeviceCode = r.Device.DeviceCode,
+                            r.Report.Location
+                        })
+                        .FirstOrDefaultAsync();
+
+                    if (requestInfo == null)
+                        throw new Exception("No request found.");
+
+                    // Create the uninstall task
+                    var task = new Tasks
+                    {
+                        Id = Guid.NewGuid(),
+                        TaskName = $"Tháo máy - {requestInfo.DeviceName}",
+                        TaskType = TaskType.Uninstallation,
+                        TaskDescription = $"Tháo thiết bị {requestInfo.DeviceName} ({requestInfo.DeviceCode}) tại vị trí: {requestInfo.Location}",
+                        StartTime = request.StartDate ?? DateTime.UtcNow,
+                        ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(2), // Default 2 hours for uninstallation
+                        Status = Status.Pending,
+                        Priority = Priority.Medium,
+                        AssigneeId = request.AssigneeId,
+                        TaskGroupId = request.TaskGroupId,
+                        CreatedDate = DateTime.UtcNow,
+                        CreatedBy = userId,
+                        IsDeleted = false
+                    };
+
+                    await _context.Tasks.AddAsync(task);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return task.Id;
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            });
+        }
+        public async Task<Guid> CreateInstallTask(CreateInstallTaskRequest request, Guid userId)
+        {
+            var executionStrategy = _context.Database.CreateExecutionStrategy();
+
+            return await executionStrategy.ExecuteAsync(async () =>
+            {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    // Get request and device information
+                    var requestInfo = await _context.Requests
+                        .Include(r => r.Device)
+                        .Include(r => r.Report)
+                        .Where(r => r.Id == request.RequestId)
+                        .Select(r => new
+                        {
+                            r.ReportId,
+                            DeviceId = r.Device.Id,
+                            DeviceName = r.Device.DeviceName,
+                            DeviceCode = r.Device.DeviceCode,
+                            r.Report.Location
+                        })
+                        .FirstOrDefaultAsync();
+
+                    if (requestInfo == null)
+                        throw new Exception("No request found.");
+
+                    // Get replacement device information if provided
+                    string deviceInfo = "Máy không xác định";
+                    if (request.NewDeviceId.HasValue)
+                    {
+                        var replacementDevice = await _context.Devices
+                            .Where(d => d.Id == request.NewDeviceId.Value)
+                            .Select(d => new { d.Id, d.DeviceName, d.DeviceCode })
+                            .FirstOrDefaultAsync();
+
+                        if (replacementDevice != null)
+                        {
+                            deviceInfo = $"{replacementDevice.DeviceName} ({replacementDevice.DeviceCode})";
+                        }
+                    }
+
+                    // Create the install task
+                    var task = new Tasks
+                    {
+                        Id = Guid.NewGuid(),
+                        TaskName = $"Lắp đặt máy - {deviceInfo}",
+                        TaskType = TaskType.Installation,
+                        TaskDescription = $"Lặp đặt máy {deviceInfo} tại vị trí: {requestInfo.Location}",
+                        StartTime = request.StartDate ?? DateTime.UtcNow,
+                        ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(3), // Default 3 hours for installation
+                        Status = Status.Pending,
+                        Priority = Priority.Medium,
+                        AssigneeId = request.AssigneeId,
+                        TaskGroupId = request.TaskGroupId,
+                        CreatedDate = DateTime.UtcNow,
+                        CreatedBy = userId,
+                        IsDeleted = false
+                    };
+                    await _context.Tasks.AddAsync(task);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return task.Id;
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            });
+        }
+        public async Task<bool> UpdateTaskStatusAsync(Guid taskId, Guid userId)
+        {
+            var task = await _context.Tasks
+                .FirstOrDefaultAsync(t => t.Id == taskId && !t.IsDeleted);
+
+            if (task == null)
+                return false;
+
+            // Update status based on current status
+            switch (task.Status)
+            {
+                case Status.Pending:
+                    task.Status = Status.InProgress;
+                    task.StartTime = DateTime.UtcNow; // Set actual start time
+                    break;
+                case Status.InProgress:
+                    task.Status = Status.Completed;
+                    task.EndTime = DateTime.UtcNow; // Set actual end time
+                    break;
+                default:
+                    // Task is already completed or in another state
+                    return false;
+            }
+
+            // Update modification details
             task.ModifiedDate = DateTime.UtcNow;
             task.ModifiedBy = userId;
 

@@ -2,6 +2,7 @@
 using FluentValidation;
 using Google.Apis.Auth.OAuth2;
 using Google.Cloud.Storage.V1;
+using GRRWS.Application.Common;
 using GRRWS.Application.Common.Validator.AreaVali;
 using GRRWS.Application.Common.Validator.DeviceVali;
 using GRRWS.Application.Common.Validator.DeviceWarranty;
@@ -81,6 +82,7 @@ namespace GRRWS.Host.Starup
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddTransient<IUnitOfWork, UnitOfWork>();
             services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddTransient<CheckIsExist>();
             #endregion
 
             #region Service
@@ -109,7 +111,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IErrorGuidelineService, ErrorGuidelineService>();
             services.AddTransient<ISparePartUsageService, SparePartUsageService>();
             services.AddTransient<ISparepartService, SparepartService>();
-            
+
             #endregion
 
             #region Repositories
@@ -146,7 +148,8 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IMachineRepository, MachineRepository>();
             services.AddTransient<ISupplierRepository, SupplierRepository>();
             services.AddTransient<IRequestTakeSparePartUsageRepository, RequestTakeSparePartUsageRepository>();
-            
+            services.AddTransient<ITaskGroupRepository, TaskGroupRepository>();
+
             #endregion
 
             #region GenericRepositories

@@ -14,4 +14,7 @@
 	  <ProjectReference Include="..\GRRWS.Domain\GRRWS.Domain.csproj" />
 	  <ProjectReference Include="..\GRRWS.Infrastructure\GRRWS.Infrastructure.csproj" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Common\Validator\Common\" />
+	</ItemGroup>
 </Project>

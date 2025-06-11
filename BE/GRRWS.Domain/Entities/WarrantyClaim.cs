@@ -18,7 +18,6 @@ namespace GRRWS.Domain.Entities
         public Guid? SubmittedByTaskId { get; set; } // Task that submitted the claim
         public Guid? ReturnTaskId { get; set; } // Task for picking up the device
         public Guid CreatedByUserId { get; set; }
-
         // Navigation
         public DeviceWarranty DeviceWarranty { get; set; }
         public Tasks? SubmittedByTask { get; set; }
