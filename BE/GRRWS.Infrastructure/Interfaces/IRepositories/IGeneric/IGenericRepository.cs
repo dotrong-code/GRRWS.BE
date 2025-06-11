@@ -12,7 +12,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories.IGeneric
         Task<int> UpdateAsync(T entity);
         bool Remove(T entity);
         Task<bool> RemoveAsync(T entity);
-        Task<bool> IsExistAsync(Guid id);
+        Task<bool> IsExistAsync(Guid? id);
         T GetById(int id);
         Task<T> GetByIdAsync(int id);
         T GetById(string code);

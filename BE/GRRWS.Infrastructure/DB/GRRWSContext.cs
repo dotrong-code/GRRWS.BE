@@ -805,7 +805,7 @@ namespace GRRWS.Infrastructure.DB
                 entity.HasMany(tg => tg.Tasks)
                     .WithOne(t => t.TaskGroup)
                     .HasForeignKey(t => t.TaskGroupId)
-                    .OnDelete(DeleteBehavior.SetNull);
+                    .OnDelete(DeleteBehavior.NoAction);
             });
 
             #endregion

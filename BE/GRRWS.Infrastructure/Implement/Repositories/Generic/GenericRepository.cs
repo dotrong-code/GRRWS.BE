@@ -118,9 +118,12 @@ namespace GRRWS.Infrastructure.Implement.Repositories.Generic
                 .FirstOrDefaultAsync(x => EF.Property<string>(x, type) == value);
         }
 
-        public async Task<bool> IsExistAsync(Guid id)
+        public async Task<bool> IsExistAsync(Guid? id)
         {
-            return await _context.Set<T>().AnyAsync(e => EF.Property<Guid>(e, "Id") == id);
+            if (!id.HasValue)
+                return false;
+
+            return await _context.Set<T>().AnyAsync(e => EF.Property<Guid>(e, "Id") == id.Value);
         }
     }
 }

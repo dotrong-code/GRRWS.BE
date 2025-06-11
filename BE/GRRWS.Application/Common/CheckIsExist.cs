@@ -69,7 +69,7 @@ namespace GRRWS.Application.Common
                     ? Common.Result.Result.Success()
                     : Common.Result.Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Invalid", "Task ID is required."));
 
-            var exists = await _unitOfWork.TaskRepository.IsExistAsync(taskId.Value);
+            var exists = await _unitOfWork.TaskRepository.IsExistAsync(taskId);
             return exists
                 ? Common.Result.Result.Success()
                 : Common.Result.Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Task does not exist."));

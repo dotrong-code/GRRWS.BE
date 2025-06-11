@@ -716,7 +716,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     .ThenInclude(wc => wc.DeviceWarranty)
                 .Include(t => t.WarrantyClaim)
                     .ThenInclude(u => u.CreatedByUser)
-                .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType.ToString() == type)
+                .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == TaskType.WarrantySubmission)
                 .FirstOrDefaultAsync();
 
             if (task == null)
@@ -766,7 +766,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     .ThenInclude(ed => ed.RequestTakeSparePartUsage)
                         .ThenInclude(rtspu => rtspu.SparePartUsages) // Fixed: Access the collection
                             .ThenInclude(spu => spu.SparePart) // Then access SparePart from SparePartUsage
-                .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType.ToString() == type)
+                .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == TaskType.Repair)
                 .FirstOrDefaultAsync();
 
             if (task == null)
@@ -832,9 +832,9 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 throw new Exception("Warranty claim not found for this task.");
 
             // Update task completion details
-            task.EndTime = DateTime.UtcNow;
-            task.Status = Status.Completed;
-            task.ModifiedDate = DateTime.UtcNow;
+            //task.EndTime = DateTime.UtcNow;
+            //task.Status = Status.Completed;
+            //task.ModifiedDate = DateTime.UtcNow;
 
             // Update warranty claim details
             var warrantyClaim = task.WarrantyClaim;
@@ -868,14 +868,11 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             warrantyClaim.ReturnTaskId = returnTask.Id;
 
             // Update entities
-            _context.Tasks.Update(task);
+            //_context.Tasks.Update(task);
             _context.WarrantyClaims.Update(warrantyClaim);
-
             await _context.SaveChangesAsync();
-
             return task.Id;
         }
-
         public async Task<Guid> CreateRepairTask(CreateRepairTaskRequest request, Guid userId)
         {
             var executionStrategy = _context.Database.CreateExecutionStrategy();
@@ -971,7 +968,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                                     RequestCode = requestCode,
                                     RequestDate = DateTime.UtcNow,
                                     RequestedById = userId,
-                                    AssigneeId = request.AssigneeId,                            
+                                    AssigneeId = request.AssigneeId,
                                     Status = SparePartRequestStatus.Unconfirmed,
                                     Notes = $"Auto-generated for repair task: {task.TaskName}",
                                     CreatedDate = DateTime.UtcNow,
@@ -1030,7 +1027,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 }
             });
         }
-
         public async Task<bool> UpdateTaskStatusToCompleted(Guid taskId, Guid userId)
         {
             var task = await _context.Tasks
@@ -1050,7 +1046,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             return true;
         }
-
         public async Task<Guid> CreateUninstallTask(CreateUninstallTaskRequest request, Guid userId)
         {
             var executionStrategy = _context.Database.CreateExecutionStrategy();
@@ -1109,7 +1104,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 }
             });
         }
-
         public async Task<Guid> CreateInstallTask(CreateInstallTaskRequest request, Guid userId)
         {
             var executionStrategy = _context.Database.CreateExecutionStrategy();
