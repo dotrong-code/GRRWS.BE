@@ -3,6 +3,7 @@ using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
+using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
 using GRRWS.Infrastructure.DTOs.Paging;
@@ -68,7 +69,16 @@ namespace GRRWS.Application.Implement.Service
         }
         public async Task<Result> GetGetDetailWarrantyTaskForMechanicByIdAsync(Guid taskId)
         {
-            var task = await _unitOfWork.TaskRepository.GetGetDetailWarrantyTaskForMechanicByIdAsync(taskId, "WarrantySubmission");
+            var task = await _unitOfWork.TaskRepository.GetGetDetailWarrantyTaskForMechanicByIdAsync(taskId, TaskType.WarrantySubmission);
+            if (task == null)
+            {
+                return Result.Failure(TaskErrorMessage.TaskNotExist());
+            }
+            return Result.SuccessWithObject(task);
+        }
+        public async Task<Result> GetGetDetailWarrantyReturnTaskForMechanicByIdAsync(Guid taskId)
+        {
+            var task = await _unitOfWork.TaskRepository.GetGetDetailWarrantyTaskForMechanicByIdAsync(taskId, TaskType.WarrantyReturn);
             if (task == null)
             {
                 return Result.Failure(TaskErrorMessage.TaskNotExist());
@@ -84,15 +94,15 @@ namespace GRRWS.Application.Implement.Service
             }
             return Result.SuccessWithObject(task);
         }
-        public async Task<Result> GetDetailReplaceTaskForMechanicByIdAsync(Guid taskId, string type)
-        {
-            var task = await _unitOfWork.TaskRepository.GetGetDetailWarrantyTaskForMechanicByIdAsync(taskId, type);
-            if (task == null)
-            {
-                return Result.Failure(TaskErrorMessage.TaskNotExist());
-            }
-            return Result.SuccessWithObject(task);
-        }
+        //public  Task<Result> GetDetailReplaceTaskForMechanicByIdAsync(Guid taskId, string type)
+        //{
+        //    //var task = await _unitOfWork.TaskRepository.GetGetDetailWarrantyTaskForMechanicByIdAsync(taskId, type);
+        //    //if (task == null)
+        //    //{
+        //    //    return Result.Failure(TaskErrorMessage.TaskNotExist());
+        //    //}
+        //    return Result.Success();
+        //}
         public async Task<Result> CreateRepairTask(CreateRepairTaskRequest request, Guid userId)
         {
             try
@@ -744,6 +754,11 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Task group does not exist."));
             }
             return Result.Success();
+        }
+
+        public Task<Result> GetDetailReplaceTaskForMechanicByIdAsync(Guid taskId, string type)
+        {
+            throw new NotImplementedException();
         }
 
 

@@ -147,12 +147,13 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Select(r => new RequestSummary
                 {
                     RequestId = r.Id,
-                    RequestTitle = r.Description ?? "Untitled Request",
+                    RequestTitle = r.RequestTitle ?? "Untitled Request",
                     Priority = r.Priority.ToString(),
                     Status = r.Status.ToString(),
                     RequestDate = r.CreatedDate
                 })
                 .AsNoTracking()
+                .OrderBy(r => r.RequestDate)
                 .ToListAsync();
         }
 

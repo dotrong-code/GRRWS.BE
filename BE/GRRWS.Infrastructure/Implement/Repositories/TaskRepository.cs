@@ -707,7 +707,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return tasks;
         }
 
-        public async Task<GetDetailWarrantyTaskForMechanic> GetGetDetailWarrantyTaskForMechanicByIdAsync(Guid taskId, string type)
+        public async Task<GetDetailWarrantyTaskForMechanic> GetGetDetailWarrantyTaskForMechanicByIdAsync(Guid taskId, TaskType type)
         {
             var task = await _context.Tasks
                 .Include(t => t.Assignee)

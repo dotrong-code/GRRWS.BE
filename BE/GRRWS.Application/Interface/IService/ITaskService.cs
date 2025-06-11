@@ -35,6 +35,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> UpdateTaskStatusAsync(Guid taskId, Guid userId);
         Task<Result> FillInWarrantyTask(FillInWarrantyTask request);
         Task<Result> GetGetDetailWarrantyTaskForMechanicByIdAsync(Guid taskId);
+        Task<Result> GetGetDetailWarrantyReturnTaskForMechanicByIdAsync(Guid taskId);
         Task<Result> GetDetailtRepairTaskForMechanicByIdAsync(Guid taskId);
         Task<Result> GetDetailReplaceTaskForMechanicByIdAsync(Guid taskId, string type);
 
