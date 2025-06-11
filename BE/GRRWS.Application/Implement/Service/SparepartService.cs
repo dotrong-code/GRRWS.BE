@@ -160,8 +160,7 @@ namespace GRRWS.Application.Implement.Service
         public async Task<Result> GetSparepartsByMachineIdAsync(Guid machineId, int pageNumber, int pageSize, string? searchSparepartName = null)
         {
             var (machineSpareparts, totalCount) = await _unit.MachineSparepartRepository.GetSparepartsByMachineIdAsync(machineId, pageNumber, pageSize, searchSparepartName);
-            if (machineSpareparts == null || !machineSpareparts.Any())
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("NotFound", "No spareparts found for this machine.", 0));
+           
 
             var dtos = new List<SparepartViewDTO>();
             foreach (var ms in machineSpareparts)
@@ -182,8 +181,7 @@ namespace GRRWS.Application.Implement.Service
         public async Task<Result> GetSparepartsBySupplierAsync(Guid supplierId, int pageNumber, int pageSize, string? searchSparepartName = null)
         {
             var (items, totalCount) = await _unit.SparepartRepository.GetSparepartsBySupplierIdAsync(supplierId, pageNumber, pageSize, searchSparepartName);
-            if (items == null || !items.Any())
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("NotFound", "No spareparts found for this supplier.", 0));
+            
 
             var dtos = new List<SparepartViewDTO>();
             foreach (var sp in items)

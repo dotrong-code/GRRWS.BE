@@ -43,8 +43,7 @@ namespace GRRWS.Application.Implement.Service
         public async Task<Result> GetAllRequestTakeSparePartUsagesAsync(int pageNumber, int pageSize, string assigneeName = null)
         {
             var pagedResult = await _unitOfWork.SparePartUsageRepository.GetAllRequestTakeSparePartUsagesAsync(pageNumber, pageSize, assigneeName);
-            if (!pagedResult.Data.Any())
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "No request take spare part usage found"));
+            
 
             var dtos = pagedResult.Data.Select(r => new RequestTakeSparePartUsageDto
             {
@@ -82,8 +81,7 @@ namespace GRRWS.Application.Implement.Service
         public async Task<Result> GetRequestTakeSparePartUsagesByStatusUnconfirmedAsync(int pageNumber, int pageSize, string assigneeName = null)
         {
             var pagedResult = await _unitOfWork.SparePartUsageRepository.GetRequestTakeSparePartUsagesByStatusAsync(SparePartRequestStatus.Unconfirmed, pageNumber, pageSize, assigneeName);
-            if (!pagedResult.Data.Any())
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "No unconfirmed request take spare part usage found"));
+            
 
             var dtos = pagedResult.Data.Select(r => new RequestTakeSparePartUsageDto
             {
@@ -121,8 +119,7 @@ namespace GRRWS.Application.Implement.Service
         public async Task<Result> GetRequestTakeSparePartUsagesByStatusConfirmedAsync(int pageNumber, int pageSize, string assigneeName = null)
         {
             var pagedResult = await _unitOfWork.SparePartUsageRepository.GetRequestTakeSparePartUsagesByStatusAsync(SparePartRequestStatus.Confirmed, pageNumber, pageSize, assigneeName);
-            if (!pagedResult.Data.Any())
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "No confirmed request take spare part usage found"));
+            
 
             var dtos = pagedResult.Data.Select(r => new RequestTakeSparePartUsageDto
             {
@@ -160,9 +157,7 @@ namespace GRRWS.Application.Implement.Service
         public async Task<Result> GetRequestTakeSparePartUsagesByStatusInsufficientAsync(int pageNumber, int pageSize, string assigneeName = null)
         {
             var pagedResult = await _unitOfWork.SparePartUsageRepository.GetRequestTakeSparePartUsagesByStatusAsync(SparePartRequestStatus.Insufficient, pageNumber, pageSize, assigneeName);
-            if (!pagedResult.Data.Any())
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "No insufficient request take spare part usage found"));
-
+            
             var dtos = pagedResult.Data.Select(r => new RequestTakeSparePartUsageDto
             {
                 Id = r.Id,
@@ -199,8 +194,7 @@ namespace GRRWS.Application.Implement.Service
         public async Task<Result> GetRequestTakeSparePartUsagesByStatusDeliveredAsync(int pageNumber, int pageSize, string assigneeName = null)
         {
             var pagedResult = await _unitOfWork.SparePartUsageRepository.GetRequestTakeSparePartUsagesByStatusAsync(SparePartRequestStatus.Delivered, pageNumber, pageSize, assigneeName);
-            if (!pagedResult.Data.Any())
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "No delivered request take spare part usage found"));
+            
 
             var dtos = pagedResult.Data.Select(r => new RequestTakeSparePartUsageDto
             {
@@ -238,8 +232,7 @@ namespace GRRWS.Application.Implement.Service
         public async Task<Result> GetRequestTakeSparePartUsagesByStatusCancelledAsync(int pageNumber, int pageSize, string assigneeName = null)
         {
             var pagedResult = await _unitOfWork.SparePartUsageRepository.GetRequestTakeSparePartUsagesByStatusAsync(SparePartRequestStatus.Cancelled, pageNumber, pageSize, assigneeName);
-            if (!pagedResult.Data.Any())
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "No cancelled request take spare part usage found"));
+            
 
             var dtos = pagedResult.Data.Select(r => new RequestTakeSparePartUsageDto
             {
