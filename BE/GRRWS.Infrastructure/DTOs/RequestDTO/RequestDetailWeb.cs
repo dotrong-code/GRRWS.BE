@@ -36,7 +36,7 @@
         public DateTime? StartTime { get; set; }
         public string AssigneeName { get; set; }
         public DateTime? ExpectedTime { get; set; }
-        public int? NumberOfErrors { get; set; } // Number of errors associated with the task
+        //public int? NumberOfErrors { get; set; } // Number of errors associated with the task
 
     }
     public class TechnicalIssueForRequestDetailWeb
