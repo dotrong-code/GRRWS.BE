@@ -1,10 +1,4 @@
-﻿using GRRWS.Domain.Entities;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Http;
 
 namespace GRRWS.Infrastructure.DTOs.RequestDTO
 {
@@ -22,13 +16,12 @@ namespace GRRWS.Infrastructure.DTOs.RequestDTO
         public string RequestTitle { get; set; }
         public string Description { get; set; }
         public string Status { get; set; }
+        public string Priority { get; set; }
         public DateTime CreatedDate { get; set; }
         public Guid? CreatedBy { get; set; }
         public DateTime? ModifiedDate { get; set; }
         public Guid? ModifiedBy { get; set; }
-        public bool IsRejected { get; set; } // Thêm trường này
-        public string? RejectionReason { get; set; } // Thêm trường này
-        public string? RejectionDetails { get; set; } // Thêm trường này
+
         public List<IssueDTO> Issues { get; set; } = new();
     }
     public class CreateRequestDTO

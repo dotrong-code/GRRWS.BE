@@ -230,9 +230,6 @@ namespace GRRWS.Application.Implement.Service
 
             //var tasks = await _unitOfWork.TaskRepository.GetTasksByMechanicIdAsync(mechanicId, pageNumber, pageSize);
             var tasks = await _unitOfWork.TaskRepository.GetTasksByMechanicIdAsync2(mechanicId, pageNumber, pageSize);
-            if (!tasks.Any())
-                return Result.Failure(TaskErrorMessage.TaskNotExist());
-
             var response = new PagedResponse<GetTaskForMechanic>
             {
                 Data = tasks,
