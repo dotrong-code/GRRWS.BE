@@ -78,6 +78,7 @@ namespace GRRWS.Application.Implement.Service
                 RequestTitle = r.RequestTitle,
                 Description = r.Description,
                 Status = r.Status.ToString(),
+                Priority = r.Priority.ToString(),
                 CreatedDate = r.CreatedDate,
                 CreatedBy = r.RequestedById,
                 ModifiedDate = r.ModifiedDate,
@@ -122,61 +123,9 @@ namespace GRRWS.Application.Implement.Service
         {
             var r = await _requestRepository.GetRequestByIdAsync(id);
             if (r == null || r.IsDeleted)
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Request not found.", 0));
-
-            var dto = new RequestDTO
-            {
-                Id = r.Id,
-                RequestTitle = r.RequestTitle,
-                Description = r.Description,
-                //Status = r.Status,
-                CreatedDate = r.CreatedDate,
-                CreatedBy = r.CreatedBy,
-                ModifiedDate = r.ModifiedDate,
-                ModifiedBy = r.ModifiedBy,
-                //DueDate = r.DueDate,
-                //Priority = r.Priority,
-                Issues = r.RequestIssues.Select(ri => new IssueDTO
-                {
-                    Id = ri.Issue.Id,
-                    //IssueTitle = ri.Issue.IssueKey
-                }).ToList()
-            };
-
-            //var issueImageMap = dto.IssueImages.ToDictionary(x => x.IssueId, x => x.Images);
-            //foreach (var requestIssue in request.RequestIssues)
-            //{
-            //    if (issueImageMap.TryGetValue(requestIssue.IssueId, out var imageFiles) && imageFiles != null)
-            //    {
-            //        foreach (var imageFile in imageFiles)
-            //        {
-            //            if (imageFile != null && imageFile.Length > 0)
-            //            {
-            //                var imageRequest = new AddImageRequest(imageFile, "RequestIssues");
-            //                var uploadResult = await _unitOfWork.FirebaseRepository.UploadImageAsync(imageRequest);
-            //                if (!uploadResult.Success)
-            //                {
-            //                    return Result.Failure(uploadResult.Error);
-            //                }
-
-            //                requestIssue.Images.Add(new Image
-            //                {
-            //                    Id = Guid.NewGuid(),
-            //                    ImageUrl = uploadResult.FilePath,
-            //                    Type = imageFile.ContentType ?? "image/jpeg",
-            //                    RequestIssueId = requestIssue.Id,
-            //                    CreatedDate = DateTime.UtcNow,
-            //                    IsDeleted = false
-            //                });
-            //            }
-            //        }
-            //    }
-            //}
-
-            //await _requestRepository.CreateAsync(request);
-            await _unitOfWork.SaveChangesAsync();
-
-            return Result.SuccessWithObject(new { Message = "Request created successfully!" });
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found."));
+            var dto = await MapRequestToDTOAsync(r);
+            return Result.SuccessWithObject(dto);
         }
 
         public async Task<Result> CreateAsync(CreateRequestDTO dto)
@@ -447,7 +396,7 @@ namespace GRRWS.Application.Implement.Service
             throw new NotImplementedException();
         }
 
-        
+
 
         public Task<Result> UpdateRequestIssueStatusAsync(Guid requestId, Guid issueId, bool isRejected, string rejectionReason, string rejectionDetails)
         {
