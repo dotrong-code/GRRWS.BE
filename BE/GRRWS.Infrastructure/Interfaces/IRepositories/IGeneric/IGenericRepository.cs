@@ -24,6 +24,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories.IGeneric
 
         Task<T> GetByIdAsync(Guid id, params Expression<Func<T, object>>[] includes);
         int Save();
+        Task UpdateRangeAsync(IEnumerable<T> e);
         Task<int> SaveAsync();
     }
 }
