@@ -22,13 +22,6 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task UpdateErrorDetailsAsync(List<Guid> errorDetailIds, Guid taskId);
         Task<(List<GetTaskResponse> Tasks, int TotalCount)> GetAllTasksAsync(string? taskType, string? status, int? priority, int pageNumber, int pageSize);
         Task<List<TaskByReportResponse>> GetTasksByReportIdAsync(Guid reportId);
-        Task<Guid> CreateTaskWebAsync(CreateTaskWeb dto);
-        Task<Guid> CreateSimpleTaskWebAsync(CreateSimpleTaskWeb dto);
-
-        // New task creation methods
-        Task<Guid> CreateTaskFromErrorsAsync(CreateTaskFromErrorsRequest request);
-        Task<Guid> CreateTaskFromTechnicalIssueAsync(CreateTaskFromTechnicalIssueRequest request);
-        Task<Guid> CreateSimpleTaskAsync(CreateSimpleTaskRequest request);
 
         //New versions of create task
         Task<Guid> CreateWarrantyTask(CreateWarrantyTaskRequest request, Guid userId);
@@ -39,14 +32,9 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<GetDetailWarrantyTaskForMechanic> GetGetDetailWarrantyTaskForMechanicByIdAsync(Guid taskId, TaskType type);
         Task<GetDetailtRepairTaskForMechanic> GetDetailtRepairTaskForMechanicByIdAsync(Guid taskId, string type);
         Task<GetDetailReplaceTaskForMechanic> GetDetailReplaceTaskForMechanicByIdAsync(Guid taskId, string type);
-        // ...existing code...
         Task<GetDetailUninstallTaskForMechanic> GetDetailUninstallTaskForMechanicByIdAsync(Guid taskId);
         Task<GetDetailInstallTaskForMechanic> GetDetailInstallTaskForMechanicByIdAsync(Guid taskId);
-        // ...existing code...
-
         Task<Guid> FillInWarrantyTask(FillInWarrantyTask request);
-
-        Task<bool> UpdateTaskStatusToCompleted(Guid taskId, Guid userId);
         Task<bool> UpdateTaskStatusAsync(Guid taskId, Guid userId);
     }
 }

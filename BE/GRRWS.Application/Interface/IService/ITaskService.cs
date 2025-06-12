@@ -20,10 +20,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetTasksByReportIdAsync(Guid reportId);
 
 
-        // New task creation methods
-        Task<Result> CreateTaskFromErrorsAsync(CreateTaskFromErrorsRequest request);
-        Task<Result> CreateTaskFromTechnicalIssueAsync(CreateTaskFromTechnicalIssueRequest request);
-        Task<Result> CreateSimpleTaskAsync(CreateSimpleTaskRequest request);
+
 
         ///New versions of create task
         #region create task
