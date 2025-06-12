@@ -262,10 +262,7 @@ namespace GRRWS.Application.Implement.Service
         public async Task<Result> GetIssuesByRequestIdAsync(Guid requestId)
         {
             var requestIssues = await _requestRepository.GetIssuesByRequestIdAsync(requestId);
-            if (requestIssues == null || !requestIssues.Any())
-            {
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "No issues found for the request.", 0));
-            }
+            
 
             //var issues = await MapIssuesWithImagesAsync(requestIssues);
             return Result.SuccessWithObject(requestIssues);
