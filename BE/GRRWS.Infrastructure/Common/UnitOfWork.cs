@@ -47,6 +47,7 @@ namespace GRRWS.Infrastructure.Common
 
         public IMachineRepository MachineRepository { get; private set; }
         public ISupplierRepository SupplierRepository { get; private set; }
+        public ITaskGroupRepository TaskGroupRepository { get; private set; }
         public async Task<int> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync();
@@ -88,6 +89,7 @@ namespace GRRWS.Infrastructure.Common
             MachineSparepartRepository = new MachineSparepartRepository(_context);
             MachineRepository = new MachineRepository(_context);
             SupplierRepository = new SupplierRepository(_context);
+            TaskGroupRepository = new TaskGroupRepository(_context);
 
         }
         public int Complete()
