@@ -442,12 +442,22 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(new { Message = "Test request created successfully!" });
         }
 
-        public Task<Result> GetRequestByDeviceIdAsync(Guid id)
+        public async Task<Result> GetRequestByDeviceIdAsync(Guid id)
         {
-            throw new NotImplementedException();
+            var requests = await _requestRepository.GetRequestByDeviceIdAsync(id);
+            if (requests == null || !requests.Any())
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("NotFound", "No requests found for the device.", 0));
+
+            var dtos = new List<RequestDTO>();
+            foreach (var r in requests.Where(r => !r.IsDeleted).OrderByDescending(r => r.CreatedDate))
+            {
+                var dto = await MapRequestToDTOAsync(r);
+                dtos.Add(dto);
+            }
+
+            return Result.SuccessWithObject(dtos);
         }
 
-        
 
         public Task<Result> UpdateRequestIssueStatusAsync(Guid requestId, Guid issueId, bool isRejected, string rejectionReason, string rejectionDetails)
         {
