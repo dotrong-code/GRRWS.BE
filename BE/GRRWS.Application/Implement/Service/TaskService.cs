@@ -10,6 +10,9 @@ using GRRWS.Infrastructure.DTOs.Task;
 using GRRWS.Infrastructure.DTOs.Task.Get;
 using GRRWS.Infrastructure.DTOs.Task.Repair;
 using GRRWS.Infrastructure.DTOs.Task.Warranty;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -18,14 +21,15 @@ namespace GRRWS.Application.Implement.Service
         private readonly UnitOfWork _unitOfWork;
         private readonly IValidator<StartTaskRequest> _startTaskValidator;
         private readonly IValidator<CreateTaskReportRequest> _createReportValidator;
-
+        private readonly ILogger<TaskService> _logger;
         public TaskService(UnitOfWork unitOfWork,
             IValidator<StartTaskRequest> startTaskValidator,
-            IValidator<CreateTaskReportRequest> createReportValidator)
+            IValidator<CreateTaskReportRequest> createReportValidator, ILogger<TaskService> logger)
         {
             _unitOfWork = unitOfWork;
             _startTaskValidator = startTaskValidator;
             _createReportValidator = createReportValidator;
+            _logger = logger;
         }
 
         #region
@@ -39,6 +43,18 @@ namespace GRRWS.Application.Implement.Service
             }
             // Create task
             var taskId = await _unitOfWork.TaskRepository.CreateWarrantyTask(request, userId);
+
+            var now = DateTime.Now;
+            var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(now);
+
+            var createdMechanicShift = await _unitOfWork.MechanicShiftRepository.CreateMechanicShift(userId, taskId, currentShift.Id);
+
+            if (!createdMechanicShift)
+            {
+                _logger.LogError("Failed to create mechanic shift for task {TaskId} at {Time}", taskId, now);
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Failed to create mechanic shift for the task.", 0));
+            }
+
             return Result.SuccessWithObject(new CreateWarrantyTaskResponse
             {
                 Message = "Warranty task created successfully!",
@@ -100,6 +116,19 @@ namespace GRRWS.Application.Implement.Service
             {
                 // Create the repair task
                 var taskId = await _unitOfWork.TaskRepository.CreateRepairTask(request, userId);
+
+                var now = DateTime.Now;
+                var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(now);
+
+                //Create mechanic shift for the task
+                var createdMechanicShift = await _unitOfWork.MechanicShiftRepository.CreateMechanicShift(userId, taskId, currentShift.Id);
+
+                if (!createdMechanicShift)
+                {
+                    _logger.LogError("Failed to create mechanic shift for task {TaskId} at {Time}", taskId, now);
+                    return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Failed to create mechanic shift for the task.", 0));
+                }
+
                 return Result.SuccessWithObject(new
                 {
                     Message = "Repair task created successfully!",
@@ -122,6 +151,8 @@ namespace GRRWS.Application.Implement.Service
                 if (!isUpdated)
                     return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Fail", "Task not found or could not be updated."));
 
+                // Update mechanic shift availability
+                await _unitOfWork.MechanicShiftRepository.UpdateMechanicShiftAvailableAsync(taskId, userId);
                 return Result.SuccessWithObject(new
                 {
                     Message = "Task status updated to completed successfully!",
@@ -170,6 +201,17 @@ namespace GRRWS.Application.Implement.Service
 
             await _unitOfWork.TaskRepository.CreateAsync(task);
             await _unitOfWork.TaskRepository.UpdateErrorDetailsAsync(request.ErrorDetailIds, task.Id);
+
+            var now = DateTime.Now;
+            var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(now);
+
+            var createdMechanicShift = await _unitOfWork.MechanicShiftRepository.CreateMechanicShift(request.AssigneeId, task.Id, currentShift.Id);
+
+            if (!createdMechanicShift)
+            {
+                _logger.LogError("Failed to create mechanic shift for task {TaskId} at {Time}", task.Id, now);
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Failed to create mechanic shift for the task.", 0));
+            }
             await _unitOfWork.SaveChangesAsync();
             return Result.SuccessWithObject(task);
         }
@@ -400,6 +442,17 @@ namespace GRRWS.Application.Implement.Service
             // Link Errors and Spareparts
             await _unitOfWork.TaskRepository.CreateTaskAsync(task, dto.ReportId, dto.ErrorIds, dto.SparepartIds);
 
+            var now = DateTime.Now;
+            var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(now);
+
+            var createdMechanicShift = await _unitOfWork.MechanicShiftRepository.CreateMechanicShift(dto.AssigneeId, task.Id, currentShift.Id);
+
+            if (!createdMechanicShift)
+            {
+                _logger.LogError("Failed to create mechanic shift for task {TaskId} at {Time}", task.Id, now);
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Failed to create mechanic shift for the task.", 0));
+            }
+
             return Result.SuccessWithObject(new { Message = "Task created successfully!", TaskId = task.Id });
         }
         public async Task<Result> UpdateAsync(Guid id, UpdateTaskDTO dto)
@@ -470,6 +523,17 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Error not found"));
             }
             var task = await _unitOfWork.TaskRepository.CreateTaskWebAsync(dto);
+
+            var now = DateTime.Now;
+            var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(now);
+
+            var createdMechanicShift = await _unitOfWork.MechanicShiftRepository.CreateMechanicShift(dto.AssigneeId, task, currentShift.Id);
+
+            if (!createdMechanicShift)
+            {
+                _logger.LogError("Failed to create mechanic shift for task {TaskId} at {Time}", task, now);
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Failed to create mechanic shift for the task.", 0));
+            }
             return Result.SuccessWithObject(new { Message = "Task assigned successfully!" });
         }
         public async Task<Result> CreateSimpleTaskWebAsync(CreateSimpleTaskWeb dto)
@@ -487,6 +551,18 @@ namespace GRRWS.Application.Implement.Service
             }
 
             var taskId = await _unitOfWork.TaskRepository.CreateSimpleTaskWebAsync(dto);
+
+            var now = DateTime.Now;
+            var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(now);
+
+            var createdMechanicShift = await _unitOfWork.MechanicShiftRepository.CreateMechanicShift(dto.AssigneeId, taskId, currentShift.Id);
+
+            if (!createdMechanicShift)
+            {
+                _logger.LogError("Failed to create mechanic shift for task {TaskId} at {Time}", taskId, now);
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Failed to create mechanic shift for the task.", 0));
+            }
+
             return Result.SuccessWithObject(new { Message = "Simple task created successfully!", TaskId = taskId });
         }
         public async Task<Result> CreateTaskFromTechnicalIssueAsync(CreateTaskFromTechnicalIssueRequest request)
@@ -519,6 +595,18 @@ namespace GRRWS.Application.Implement.Service
             }
 
             var taskId = await _unitOfWork.TaskRepository.CreateTaskFromTechnicalIssueAsync(request);
+
+            var now = DateTime.Now;
+            var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(now);
+
+            var createdMechanicShift = await _unitOfWork.MechanicShiftRepository.CreateMechanicShift(request.AssigneeId, taskId, currentShift.Id);
+
+            if (!createdMechanicShift)
+            {
+                _logger.LogError("Failed to create mechanic shift for task {TaskId} at {Time}", taskId, now);
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Failed to create mechanic shift for the task.", 0));
+            }
+
             return Result.SuccessWithObject(new { Message = "Warranty task created from technical issue successfully!", TaskId = taskId });
         }
         public async Task<Result> CreateSimpleTaskAsync(CreateSimpleTaskRequest request)
@@ -572,6 +660,18 @@ namespace GRRWS.Application.Implement.Service
             }
 
             var taskId = await _unitOfWork.TaskRepository.CreateSimpleTaskAsync(request);
+
+            var now = DateTime.Now;
+            var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(now);
+
+            var createdMechanicShift = await _unitOfWork.MechanicShiftRepository.CreateMechanicShift(request.AssigneeId, taskId, currentShift.Id);
+
+            if (!createdMechanicShift)
+            {
+                _logger.LogError("Failed to create mechanic shift for task {TaskId} at {Time}", taskId, now);
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Failed to create mechanic shift for the task.", 0));
+            }
+
             return Result.SuccessWithObject(new
             {
                 Message = "Device replacement task created successfully!",
@@ -602,6 +702,18 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Error not found"));
             }
             var task = await _unitOfWork.TaskRepository.CreateTaskFromErrorsAsync(dto);
+
+            var now = DateTime.Now;
+            var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(now);
+
+            var createdMechanicShift = await _unitOfWork.MechanicShiftRepository.CreateMechanicShift(dto.AssigneeId, task, currentShift.Id);
+
+            if (!createdMechanicShift)
+            {
+                _logger.LogError("Failed to create mechanic shift for task {TaskId} at {Time}", task, now);
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Failed to create mechanic shift for the task.", 0));
+            }
+
             return Result.SuccessWithObject(new { Message = "Task assigned successfully!" });
         }
         #endregion
@@ -668,5 +780,37 @@ namespace GRRWS.Application.Implement.Service
 
         #endregion
 
+        public async Task<Result> GetMechanicRecommendationAsync()
+        {
+            try
+            {
+                _logger.LogInformation("Fetching recommended mechanics for current time");
+
+                var now = DateTime.Now;
+
+                var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(now);
+
+                if (currentShift == null)
+                {
+                    _logger.LogWarning("No shift found for current time");
+                    return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "No shift is active at the current time.", 0));
+                }
+
+                var recommendations = await _unitOfWork.UserRepository.GetRecommendedMechanicsAsync(now, currentShift.Id);
+
+                if (!recommendations.Any())
+                {
+                    _logger.LogWarning("No available mechanics found for shift {ShiftId} on {Date}", currentShift.Id, now.Date);
+                    return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "No available mechanics found for the current shift.", 0));
+                }
+
+                return Result.SuccessWithObject(recommendations);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching recommended mechanics for current time");
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "An error occurred while fetching mechanic recommendations.", 0));
+            }
+        }
     }
 }

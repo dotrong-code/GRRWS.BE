@@ -22,6 +22,7 @@
         public ICollection<Request>? Requests { get; set; }
         public ICollection<Tasks>? Tasks { get; set; }
         public Area? Area { get; set; }
+        public ICollection<MechanicShift>? MechanicShift { get; set; }
 
     }
 }

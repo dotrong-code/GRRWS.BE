@@ -43,5 +43,6 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> CreateRepairTask(CreateRepairTaskRequest request, Guid userId);
 
         Task<Result> UpdateTaskStatusToCompleted(Guid taskId, Guid userId);
+        Task<Result> GetMechanicRecommendationAsync();
     }
 }

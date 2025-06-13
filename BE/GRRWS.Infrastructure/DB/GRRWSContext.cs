@@ -46,7 +46,8 @@ namespace GRRWS.Infrastructure.DB
         public DbSet<ErrorFixStep> ErrorFixSteps { get; set; }
         public DbSet<ErrorFixProgress> ErrorFixProgresses { get; set; }
         public DbSet<SparePartUsage> SparePartUsages { get; set; }
-
+        public DbSet<Shift> Shifts { get; set; }
+        public DbSet<MechanicShift> MechanicShifts { get; set; }
         public DbSet<RequestTakeSparePartUsage> RequestTakeSparePartUsages { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<MachineSparepart> MachineSpareparts { get; set; }
@@ -91,7 +92,7 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.ApplyConfiguration(new ErrorSparepartConfiguration());
             modelBuilder.ApplyConfiguration(new SupplierConfiguration());
             modelBuilder.ApplyConfiguration(new MachineSparepartConfiguration());
-
+            modelBuilder.ApplyConfiguration(new ShiftConfiguration());
             #endregion
             #region Entity Configurations
 
@@ -835,7 +836,8 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<RequestTakeSparePartUsage>().ToTable("RequestTakeSparePartUsages");
             modelBuilder.Entity<MachineSparepart>().ToTable("MachineSpareparts");
             modelBuilder.Entity<Supplier>().ToTable("Suppliers");
-
+            modelBuilder.Entity<Shift>().ToTable("Shifts");
+            modelBuilder.Entity<MechanicShift>().ToTable("MechanicShifts");
             #endregion
         }
     }

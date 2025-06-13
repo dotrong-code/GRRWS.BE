@@ -106,6 +106,14 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
+        [HttpGet("mechanicshift/suggest")]
+        public async Task<IResult> GetTasksForMechanic()
+        {
+            var result = await _taskService.GetMechanicRecommendationAsync();
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Get suggest Mechanic successfully!")
+                : ResultExtensions.ToProblemDetails(result);
+        }
 
         [HttpPost("start")]
         public async Task<IResult> StartTask([FromBody] StartTaskRequest request)

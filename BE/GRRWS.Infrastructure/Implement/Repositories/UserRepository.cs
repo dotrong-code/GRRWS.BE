@@ -1,5 +1,6 @@
 ﻿using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DB;
+using GRRWS.Infrastructure.DTOs.Task.Get;
 using GRRWS.Infrastructure.DTOs.User.Get;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
@@ -34,6 +35,54 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return await _context.Users
                 .Where(u => u.Id == id && !u.IsDeleted)
                 .FirstOrDefaultAsync();
+        }
+        public async Task<List<GetMechanicRecommendation>> GetRecommendedMechanicsAsync(DateTime currentTime, Guid shiftId)
+        {
+            var availableMechanics = await _context.Users
+                            .Where(u => u.Role == 3)
+                            .GroupJoin(_context.MechanicShifts
+                                .Where(ms => ms.Date.Date == currentTime.Date && ms.ShiftId == shiftId),
+                                u => u.Id,
+                                ms => ms.MechanicId,
+                                (u, ms) => new { User = u, MechanicShifts = ms })
+                            .SelectMany(
+                                x => x.MechanicShifts.DefaultIfEmpty(),
+                                (x, ms) => new { x.User, MechanicShift = ms })
+                            .Where(x => x.MechanicShift == null || x.MechanicShift.IsAvailable == true)
+                            .GroupBy(x => x.User.Id) 
+                            .Select(g => g.First().User)
+                            .ToListAsync();
+
+            var recommendations = new List<GetMechanicRecommendation>();
+
+            foreach (var user in availableMechanics)
+            {
+                var completedTasks = await _context.Tasks
+                    .Where(t => t.AssigneeId == user.Id &&
+                                t.Status == GRRWS.Domain.Enum.Status.Completed &&
+                                t.EndTime != null &&
+                                t.StartTime != null)
+                    .ToListAsync();
+
+                double avgCompletionTime = completedTasks.Any()
+                    ? completedTasks.Average(t => (t.EndTime.Value - t.StartTime.Value).TotalMinutes)
+                    : -1.00;
+
+                var shift = await _context.Shifts.FindAsync(shiftId);
+
+                recommendations.Add(new GetMechanicRecommendation
+                {
+                    MechanicId = user.Id,
+                    FullName = user.FullName ?? "Unknown",
+                    AverageCompletionTime = Math.Round(avgCompletionTime, 2),
+                    ShiftName = shift?.ShiftName ?? "Unknown",
+                    Date = currentTime
+                });
+            }
+
+            return recommendations.OrderBy(r => r.AverageCompletionTime < 0 ? 1 : 0)
+                .ThenBy(r => r.AverageCompletionTime)
+                .ToList();
         }
         public async Task<(List<GetUserResponse> Users, int TotalCount)> GetAllUsersAsync(
         string? fullName = null,
