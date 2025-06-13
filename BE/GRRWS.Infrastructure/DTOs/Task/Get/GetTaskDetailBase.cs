@@ -3,6 +3,7 @@
     public class GetTaskDetailBase
     {
         public Guid TaskId { get; set; }
+        public Guid DeviceId { get; set; } // Device ID
         public string TaskType { get; set; }
         public string TaskName { get; set; }
         public string TaskDescription { get; set; }

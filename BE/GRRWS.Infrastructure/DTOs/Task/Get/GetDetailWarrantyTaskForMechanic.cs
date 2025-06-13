@@ -2,6 +2,7 @@
 {
     public class GetDetailWarrantyTaskForMechanic : GetTaskDetailBase
     {
+
         public string? ClaimNumber { get; set; } // Warranty claim number
         public string? WarrantyProvider { get; set; } // Name of the warranty provider
         public string? WarrantyCode { get; set; } // Name of the device under warranty

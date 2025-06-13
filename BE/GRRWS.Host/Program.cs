@@ -145,8 +145,7 @@ app.UseExceptionHandler(errorApp =>
     });
 });
 
-
-//app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MigrateDatabases();

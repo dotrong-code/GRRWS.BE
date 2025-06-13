@@ -147,12 +147,13 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Select(r => new RequestSummary
                 {
                     RequestId = r.Id,
-                    RequestTitle = r.Description ?? "Untitled Request",
+                    RequestTitle = r.RequestTitle ?? "Untitled Request",
                     Priority = r.Priority.ToString(),
                     Status = r.Status.ToString(),
                     RequestDate = r.CreatedDate
                 })
                 .AsNoTracking()
+                .OrderBy(r => r.RequestDate)
                 .ToListAsync();
         }
 
@@ -232,27 +233,35 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             if (reportId == null)
                 return new List<TaskForRequestDetailWeb>();
 
-            var taskIds = await _context.ErrorDetails
+            // Get task IDs from both ErrorDetails and TechnicalSymptomReports
+            var errorTaskIds = await _context.ErrorDetails
                 .Where(ed => ed.ReportId == reportId && ed.TaskId != null)
                 .Select(ed => ed.TaskId.Value)
-                .Distinct()
                 .ToListAsync();
 
-            if (!taskIds.Any())
+            var technicalTaskIds = await _context.TechnicalSymptomReports
+                .Where(tsr => tsr.ReportId == reportId && tsr.TaskId != null)
+                .Select(tsr => tsr.TaskId.Value)
+                .ToListAsync();
+
+            // Combine and get distinct task IDs
+            var allTaskIds = errorTaskIds.Concat(technicalTaskIds).Distinct().ToList();
+
+            if (!allTaskIds.Any())
                 return new List<TaskForRequestDetailWeb>();
 
             return await _context.Tasks
                 .AsNoTracking()
-                .Where(t => taskIds.Contains(t.Id) && !t.IsDeleted)
+                .Where(t => allTaskIds.Contains(t.Id) && !t.IsDeleted)
+                .Include(t => t.Assignee)
                 .Select(t => new TaskForRequestDetailWeb
                 {
                     TaskId = t.Id,
-                    TaskType = t.TaskType,
-                    Status = t.Status.ToString(), // Convert enum to string
+                    TaskType = t.TaskType.ToString(),
+                    Status = t.Status.ToString(),
                     StartTime = t.StartTime,
-                    AssigneeName = t.Assignee.UserName,
+                    AssigneeName = t.Assignee != null ? t.Assignee.UserName : "Unassigned",
                     ExpectedTime = t.ExpectedTime,
-                    NumberOfErrors = t.ErrorDetails.Count
                 })
                 .ToListAsync();
         }
