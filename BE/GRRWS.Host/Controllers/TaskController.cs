@@ -24,7 +24,7 @@ namespace GRRWS.Host.Controllers
             _contextAccessor = contextAccessor;
         }
         [Authorize]
-        [HttpPost("uninstall)")]
+        [HttpPost("uninstall")]
         public async Task<IResult> CreateUninstallTask([FromBody] CreateUninstallTaskRequest request)
         {
             CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
@@ -53,14 +53,25 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Warranty task created successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-        //[HttpPost("warranty-task/return")]
-        //public async Task<IResult> CreateWarrantyTask([FromBody] CreateWarrantyTaskRequest request)
-        //{
-        //    var result = await _taskService.CreateWarrantyTask(request);
-        //    return result.IsSuccess
-        //        ? ResultExtensions.ToSuccessDetails(result, "Warranty task created successfully")
-        //        : ResultExtensions.ToProblemDetails(result);
-        //}
+
+
+        [HttpGet("uninstall-task/{taskId}")]
+        public async Task<IResult> GetUninstallTaskDetails(Guid taskId)
+        {
+            var result = await _taskService.GetDetailUninstallTaskForMechanicByIdAsync(taskId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Uninstall task details retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+        [HttpGet("install-task/{taskId}")]
+        public async Task<IResult> GetInstallTaskDetails(Guid taskId)
+        {
+            var result = await _taskService.GetDetailInstallTaskForMechanicByIdAsync(taskId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Install task details retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
         [Authorize]
         [HttpPost("repair-task")]
         public async Task<IResult> CreateRepairTask([FromBody] CreateRepairTaskRequest request)
@@ -71,7 +82,6 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Warranty task created successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
         [HttpPut("warranty-task/submit/fill-infor")]
         public async Task<IResult> FillInWarrantyTask([FromBody] FillInWarrantyTask request)
         {
@@ -81,11 +91,18 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
-
         [HttpGet("warranty-task-submit/{taskId}")]
         public async Task<IResult> GetWarrantySubmitTaskDetails(Guid taskId)
         {
             var result = await _taskService.GetGetDetailWarrantyTaskForMechanicByIdAsync(taskId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Warranty task details retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpGet("warranty-task-return/{taskId}")]
+        public async Task<IResult> GetWarrantyReturnTaskDetails(Guid taskId)
+        {
+            var result = await _taskService.GetGetDetailWarrantyReturnTaskForMechanicByIdAsync(taskId);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Warranty task details retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);

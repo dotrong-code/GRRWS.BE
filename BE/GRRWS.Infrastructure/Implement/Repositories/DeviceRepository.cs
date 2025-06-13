@@ -182,6 +182,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .OrderByDescending(dw => dw.WarrantyEndDate ?? DateTime.MinValue)
                 .Select(dw => new DeviceWarrantyStatusResponse
                 {
+                    Id = dw.Id,
                     IsUnderWarranty = !(dw.WarrantyEndDate < DateTime.UtcNow
     || dw.Status == "Rejected"
     || dw.Status == "Completed"),

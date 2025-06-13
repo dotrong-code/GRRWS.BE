@@ -20,10 +20,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetTasksByReportIdAsync(Guid reportId);
 
 
-        // New task creation methods
-        Task<Result> CreateTaskFromErrorsAsync(CreateTaskFromErrorsRequest request);
-        Task<Result> CreateTaskFromTechnicalIssueAsync(CreateTaskFromTechnicalIssueRequest request);
-        Task<Result> CreateSimpleTaskAsync(CreateSimpleTaskRequest request);
+
 
         ///New versions of create task
         #region create task
@@ -35,8 +32,13 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> UpdateTaskStatusAsync(Guid taskId, Guid userId);
         Task<Result> FillInWarrantyTask(FillInWarrantyTask request);
         Task<Result> GetGetDetailWarrantyTaskForMechanicByIdAsync(Guid taskId);
+        Task<Result> GetGetDetailWarrantyReturnTaskForMechanicByIdAsync(Guid taskId);
         Task<Result> GetDetailtRepairTaskForMechanicByIdAsync(Guid taskId);
         Task<Result> GetDetailReplaceTaskForMechanicByIdAsync(Guid taskId, string type);
+        // ...existing code...
+        Task<Result> GetDetailUninstallTaskForMechanicByIdAsync(Guid taskId);
+        Task<Result> GetDetailInstallTaskForMechanicByIdAsync(Guid taskId);
+        // ...existing code...
 
 
     }
