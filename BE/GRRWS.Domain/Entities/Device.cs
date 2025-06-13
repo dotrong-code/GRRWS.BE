@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.PortableExecutable;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GRRWS.Domain.Entities
+﻿namespace GRRWS.Domain.Entities
 {
     public class Device : BaseEntity
     {
@@ -23,6 +16,7 @@ namespace GRRWS.Domain.Entities
         // Trạng thái thiết bị
         public string Status { get; set; } // Trạng thái: Active, Inactive, InRepair, Retired, etc.
         public bool IsUnderWarranty { get; set; } // Thiết bị có đang trong thời gian bảo hành không
+        public bool? InUsed { get; set; } // Thiết bị có đang được sử dụng không
 
         // Thông tin kỹ thuật
         public string? Specifications { get; set; } // Thông số kỹ thuật (JSON string hoặc text)
@@ -30,12 +24,12 @@ namespace GRRWS.Domain.Entities
         public string? Supplier { get; set; } // Nhà cung cấp thiết bị
 
         // Foreign keys
-        
+
         public Guid? MachineId { get; set; }
         public Guid? PositionId { get; set; }
 
         // Navigation properties
-        
+
         public Position? Position { get; set; }
         public Machine? Machine { get; set; }
         public ICollection<DeviceWarranty> Warranties { get; set; } = new List<DeviceWarranty>();

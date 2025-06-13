@@ -69,6 +69,54 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     ConfirmedDate = DateTime.UtcNow,
                     ConfirmedById = Guid.Parse("23333333-3333-3333-3333-333333333343"),
                     Notes = "Lấy phụ tùng cho ErrorDetail 5"
+                },
+
+                new RequestTakeSparePartUsage
+                {
+                    Id = Guid.Parse("60000000-0000-0000-0000-000000000006"),
+                    RequestCode = "REQ-006",
+                    RequestDate = DateTime.UtcNow,
+                    RequestedById = Guid.Parse("32222222-2222-2222-2222-222222222222"),
+                    Status = SparePartRequestStatus.Unconfirmed,
+                    ConfirmedDate = DateTime.UtcNow,
+                    ConfirmedById = null,
+                    Notes = "Lấy phụ tùng cho ErrorDetail 6"
+                },
+
+                new RequestTakeSparePartUsage
+                {
+                    Id = Guid.Parse("60000000-0000-0000-0000-000000000007"),
+                    RequestCode = "REQ-007",
+                    RequestDate = DateTime.UtcNow,
+                    RequestedById = Guid.Parse("32222222-2222-2222-2222-222222222222"),
+                    Status = SparePartRequestStatus.Unconfirmed,
+                    ConfirmedDate = DateTime.UtcNow,
+                    ConfirmedById = null,
+                    Notes = "Lấy phụ tùng cho ErrorDetail 7"
+                },
+
+                new RequestTakeSparePartUsage
+                {
+                    Id = Guid.Parse("60000000-0000-0000-0000-000000000008"),
+                    RequestCode = "REQ-008",
+                    RequestDate = DateTime.UtcNow,
+                    RequestedById = Guid.Parse("32222222-2222-2222-2222-222222222222"),
+                    Status = SparePartRequestStatus.Unconfirmed,
+                    ConfirmedDate = DateTime.UtcNow,
+                    ConfirmedById = null,
+                    Notes = "Lấy phụ tùng cho ErrorDetail 8"
+                },
+
+                new RequestTakeSparePartUsage
+                {
+                    Id = Guid.Parse("60000000-0000-0000-0000-000000000009"),
+                    RequestCode = "REQ-009",
+                    RequestDate = DateTime.UtcNow,
+                    RequestedById = Guid.Parse("32222222-2222-2222-2222-222222222222"),
+                    Status = SparePartRequestStatus.Unconfirmed,
+                    ConfirmedDate = DateTime.UtcNow,
+                    ConfirmedById = null,
+                    Notes = "Lấy phụ tùng cho ErrorDetail 9"
                 }
             );
         }

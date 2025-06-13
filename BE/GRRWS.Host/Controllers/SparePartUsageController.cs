@@ -112,4 +112,12 @@ public class SparePartUsageController : ControllerBase
             ? ResultExtensions.ToSuccessDetails(result, $"Successfully updated status of request take spare part usage with ID {request.RequestTakeSparePartUsageId}")
             : ResultExtensions.ToProblemDetails(result);
     }
+    [HttpPut("update-insufficient-status")]
+    public async Task<IResult> UpdateRequestTakeSparePartUsageInsufficientStatus([FromBody] UpdateRequestInsufficientStatusRequest request)
+    {
+        var result = await _sparePartUsageService.UpdateRequestTakeSparePartUsageInsufficientStatusAsync(request);
+        return result.IsSuccess
+            ? ResultExtensions.ToSuccessDetails(result, $"Successfully updated request take spare part usage with ID {request.RequestTakeSparePartUsageId} to Insufficient status")
+            : ResultExtensions.ToProblemDetails(result);
+    }
 }

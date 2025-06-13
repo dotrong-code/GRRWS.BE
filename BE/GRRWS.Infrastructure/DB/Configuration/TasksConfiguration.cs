@@ -12,29 +12,29 @@ namespace GRRWS.Infrastructure.DB.Configuration
         {
              builder.HasData(
                  // Original 10 tasks (unchanged)
-                 //new Tasks
-                 //{
-                 //    Id = Guid.Parse("b1c2d3e4-0001-0001-0001-100000000001"),
-                 //    TaskName = "Repair Juki DDL-8700 Unit 1",
-                 //    TaskDescription = "Sửa lỗi đứt chỉ do mỏ trói chỉ lỏng trên máy Juki DDL-8700 Unit 1 (DEV001-JUKI-DDL8700-01).",
-                 //    TaskType = "Warranty",
-                 //    Priority = Priority.Medium, // Medium
-                 //    Status = Status.InProgress,
-                 //    StartTime = new DateTime(2025, 4, 15, 10, 30, 0, DateTimeKind.Utc),
-                 //    ExpectedTime = new DateTime(2025, 4, 16, 10, 30, 0, DateTimeKind.Utc),
-                 //    EndTime = null,
-                 //    DeviceReturnTime = null,
-                 //    DeviceCondition = null,
-                 //    ReportNotes = null,
-                 //    AssigneeId = Guid.Parse("43333333-3333-3333-3333-333333333333") // Staff Member
-                 //    // Additional mechanics: Staff Member 2 (43333333-3333-3333-3333-333333333334)
-                 //},
+                 new Tasks
+                 {
+                     Id = Guid.Parse("b1c2d3e4-0001-0001-0001-100000000001"),
+                     TaskName = "Repair Juki DDL-8700 Unit 1",
+                     TaskDescription = "Sửa lỗi đứt chỉ do mỏ trói chỉ lỏng trên máy Juki DDL-8700 Unit 1 (DEV001-JUKI-DDL8700-01).",
+                     TaskType = TaskType.Repair,
+                     Priority = Priority.Medium, // Medium
+                     Status = Status.InProgress,
+                     StartTime = new DateTime(2025, 4, 15, 10, 30, 0, DateTimeKind.Utc),
+                     ExpectedTime = new DateTime(2025, 4, 16, 10, 30, 0, DateTimeKind.Utc),
+                     EndTime = null,
+                     DeviceReturnTime = null,
+                     DeviceCondition = null,
+                     ReportNotes = null,
+                     AssigneeId = Guid.Parse("43333333-3333-3333-3333-333333333334") // Staff Member
+                     // Additional mechanics: Staff Member 2 (43333333-3333-3333-3333-333333333334)
+                 },
                  new Tasks
                  {
                      Id = Guid.Parse("b1c2d3e4-0002-0002-0002-100000000002"),
                      TaskName = "Fix Motor Issue on Juki DDL-8700 Unit 3",
                      TaskDescription = "Sửa lỗi máy không chạy do động cơ cháy trên máy Juki DDL-8700 Unit 3 (DEV003-JUKI-DDL8700-03).",
-                     TaskType = "Repair",
+                     TaskType = TaskType.Repair,
                      Priority = Priority.High, // High
                      Status = Status.InProgress,
                      StartTime = new DateTime(2025, 5, 1, 14, 00, 0, DateTimeKind.Utc),
@@ -51,7 +51,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                      Id = Guid.Parse("b1c2d3e4-0003-0003-0003-100000000003"),
                      TaskName = "Repair Juki DDL-8700 Unit 4",
                      TaskDescription = "Sửa lỗi máy ngừng hoạt động do chập điện trên máy Juki DDL-8700 Unit 4 (DEV004-JUKI-DDL8700-04).",
-                     TaskType = "Repair",
+                     TaskType = TaskType.Repair,
                      Priority = Priority.High, // High
                      Status = Status.InProgress,
                      StartTime = new DateTime(2025, 5, 10, 9, 00, 0, DateTimeKind.Utc),
@@ -60,7 +60,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                      DeviceReturnTime = null,
                      DeviceCondition = null,
                      ReportNotes = null,
-                     AssigneeId = Guid.Parse("43333333-3333-3333-3333-333333333335") // Staff Member 3
+                     AssigneeId = Guid.Parse("43333333-3333-3333-3333-333333333337") // Staff Member 3
                      // Additional mechanics: Staff Member 4 (43333333-3333-3333-3333-333333333336)
                  },
                  new Tasks
@@ -68,7 +68,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                      Id = Guid.Parse("b1c2d3e4-0004-0004-0004-100000000004"),
                      TaskName = "Replace Needle on Juki DDL-8700 Unit 7",
                      TaskDescription = "Thay kim gãy do lệch tâm trên máy Juki DDL-8700 Unit 7 (DEV007-JUKI-DDL8700-07).",
-                     TaskType = "Replace",
+                     TaskType = TaskType.Repair,
                      Priority = Priority.Medium, // Medium
                      Status = Status.InProgress,
                      StartTime = new DateTime(2025, 3, 20, 11, 15, 0, DateTimeKind.Utc),
@@ -77,7 +77,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                      DeviceReturnTime = null,
                      DeviceCondition = null,
                      ReportNotes = null,
-                     AssigneeId = Guid.Parse("43333333-3333-3333-3333-333333333336") // Staff Member 4
+                     AssigneeId = Guid.Parse("43333333-3333-3333-3333-333333333337") // Staff Member 4
                      // Additional mechanics: Staff Member 5 (43333333-3333-3333-3333-333333333337)
                  }
              //     new Tasks

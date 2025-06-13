@@ -22,12 +22,12 @@ namespace GRRWS.Host.Controllers
         }
 
         [HttpGet]
-        public async Task<IResult> GetAll()
+        public async Task<IResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? searchRequestTitle = null)
         {
-            var result = await _requestService.GetAllAsync();
+            var result = await _requestService.GetAllAsync(pageNumber, pageSize, searchRequestTitle);
             return result.IsSuccess
-    ? ResultExtensions.ToSuccessDetails(result, "Successfully")
-    : ResultExtensions.ToProblemDetails(result);
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved requests")
+                : ResultExtensions.ToProblemDetails(result);
         }
         [HttpGet("deviceId")]
         public async Task<IResult> GetRequestByDeviceIdAsync(Guid id)
@@ -37,13 +37,15 @@ namespace GRRWS.Host.Controllers
     ? ResultExtensions.ToSuccessDetails(result, "Successfully")
     : ResultExtensions.ToProblemDetails(result);
         }
-        [HttpGet("userId")]
-        public async Task<IResult> GetRequestByUserIdAsync(Guid userId)
+        [Authorize]
+        [HttpGet("by-user")]
+        public async Task<IResult> GetRequestByUserIdAsync([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? searchRequestTitle = null)
         {
-            var result = await _requestService.GetRequestByUserIdAsync(userId);
+            CurrentUserObject currentUser = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _requestService.GetRequestByUserIdAsync(currentUser.UserId, pageNumber, pageSize, searchRequestTitle);
             return result.IsSuccess
-    ? ResultExtensions.ToSuccessDetails(result, "Successfully")
-    : ResultExtensions.ToProblemDetails(result);
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved user requests")
+                : ResultExtensions.ToProblemDetails(result);
         }
 
         [HttpGet("{id}")]

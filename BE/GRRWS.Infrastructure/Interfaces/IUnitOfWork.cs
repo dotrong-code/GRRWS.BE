@@ -35,6 +35,7 @@ namespace GRRWS.Infrastructure.Interfaces
         IMachineSparepartRepository MachineSparepartRepository { get; }
         IMachineRepository MachineRepository { get; }
         ISupplierRepository SupplierRepository { get; }
+        ITaskGroupRepository TaskGroupRepository { get; }
         int Complete();
         Task<int> SaveChangesAsync();
     }

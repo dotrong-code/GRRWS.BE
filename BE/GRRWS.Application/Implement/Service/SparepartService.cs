@@ -28,9 +28,9 @@ namespace GRRWS.Application.Implement.Service
             _firebaseService = firebaseService;
         }
 
-        public async Task<Result> GetAllAsync(int pageNumber, int pageSize)
+        public async Task<Result> GetAllAsync(int pageNumber, int pageSize, string? searchSparepartName = null)
         {
-            var (items, totalCount) = await _unit.SparepartRepository.GetAllActiveSparepartsAsync(pageNumber, pageSize);
+            var (items, totalCount) = await _unit.SparepartRepository.GetAllActiveSparepartsAsync(pageNumber, pageSize, searchSparepartName);
             var dtos = new List<SparepartViewDTO>();
             foreach (var sp in items)
             {
@@ -128,7 +128,28 @@ namespace GRRWS.Application.Implement.Service
             var resultDto = await MapSparepartToDTOAsync(sparepart);
             return Result.SuccessWithObject(resultDto);
         }
+        public async Task<Result> UpdateStockQuantityAsync(UpdateSparepartStockQuantityRequest dto)
+        {
+            if (dto.SparepartId == Guid.Empty)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", "SparepartId is required"));
 
+            if (dto.StockQuantity < 0)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", "StockQuantity cannot be negative"));
+
+            var sparepart = await _unit.SparepartRepository.GetByIdAsync(dto.SparepartId);
+            if (sparepart == null)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", $"Sparepart with ID {dto.SparepartId} not found"));
+
+            sparepart.StockQuantity = dto.StockQuantity;
+            sparepart.IsAvailable = dto.StockQuantity > 0;
+            sparepart.ExpectedAvailabilityDate = dto.StockQuantity > 0 ? null : sparepart.ExpectedAvailabilityDate;
+            sparepart.ModifiedDate = DateTime.UtcNow;
+
+            await _unit.SparepartRepository.UpdateAsync(sparepart);
+            await _unit.SaveChangesAsync();
+
+            return Result.SuccessWithObject(new { Message = "Sparepart stock quantity updated successfully" });
+        }
         public async Task<Result> DeleteAsync(Guid id)
         {
             var sparepart = await _unit.SparepartRepository.GetByIdAsync(id);
@@ -157,11 +178,10 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(response);
         }
 
-        public async Task<Result> GetSparepartsByMachineIdAsync(Guid machineId, int pageNumber, int pageSize)
+        public async Task<Result> GetSparepartsByMachineIdAsync(Guid machineId, int pageNumber, int pageSize, string? searchSparepartName = null)
         {
-            var (machineSpareparts, totalCount) = await _unit.MachineSparepartRepository.GetSparepartsByMachineIdAsync(machineId, pageNumber, pageSize);
-            if (machineSpareparts == null || !machineSpareparts.Any())
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("NotFound", "No spareparts found for this machine.", 0));
+            var (machineSpareparts, totalCount) = await _unit.MachineSparepartRepository.GetSparepartsByMachineIdAsync(machineId, pageNumber, pageSize, searchSparepartName);
+           
 
             var dtos = new List<SparepartViewDTO>();
             foreach (var ms in machineSpareparts)
@@ -179,11 +199,10 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(response);
         }
 
-        public async Task<Result> GetSparepartsBySupplierAsync(Guid supplierId, int pageNumber, int pageSize)
+        public async Task<Result> GetSparepartsBySupplierAsync(Guid supplierId, int pageNumber, int pageSize, string? searchSparepartName = null)
         {
-            var (items, totalCount) = await _unit.SparepartRepository.GetSparepartsBySupplierIdAsync(supplierId, pageNumber, pageSize);
-            if (items == null || !items.Any())
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("NotFound", "No spareparts found for this supplier.", 0));
+            var (items, totalCount) = await _unit.SparepartRepository.GetSparepartsBySupplierIdAsync(supplierId, pageNumber, pageSize, searchSparepartName);
+            
 
             var dtos = new List<SparepartViewDTO>();
             foreach (var sp in items)
@@ -201,9 +220,9 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(response);
         }
 
-        public async Task<Result> GetLowStockSparepartsAsync(int pageNumber, int pageSize)
+        public async Task<Result> GetLowStockSparepartsAsync(int pageNumber, int pageSize, string? searchSparepartName = null)
         {
-            var (items, totalCount) = await _unit.SparepartRepository.GetLowStockSparepartsAsync(pageNumber, pageSize);
+            var (items, totalCount) = await _unit.SparepartRepository.GetLowStockSparepartsAsync(pageNumber, pageSize, searchSparepartName);
             var dtos = new List<SparepartViewDTO>();
             foreach (var sp in items)
             {
@@ -220,9 +239,9 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(response);
         }
 
-        public async Task<Result> GetOutOfStockSparepartsAsync(int pageNumber, int pageSize)
+        public async Task<Result> GetOutOfStockSparepartsAsync(int pageNumber, int pageSize, string? searchSparepartName = null)
         {
-            var (items, totalCount) = await _unit.SparepartRepository.GetOutOfStockSparepartsAsync(pageNumber, pageSize);
+            var (items, totalCount) = await _unit.SparepartRepository.GetOutOfStockSparepartsAsync(pageNumber, pageSize, searchSparepartName);
             var dtos = new List<SparepartViewDTO>();
             foreach (var sp in items)
             {
@@ -280,12 +299,15 @@ namespace GRRWS.Application.Implement.Service
             };
             return Result.SuccessWithObject(response);
         }
+
         private async Task<SparepartViewDTO> MapSparepartToDTOAsync(Sparepart sp)
         {
             string? imgUrl = null;
             if (!string.IsNullOrEmpty(sp.ImgUrl))
             {
-                var getImageRequest = new GetImageRequest(sp.ImgUrl);
+                var getImageRequest = new GetImageRequest(sp
+
+.ImgUrl);
                 var imageResult = await _unit.FirebaseRepository.GetImageAsync(getImageRequest);
                 if (imageResult.Success && !string.IsNullOrEmpty(imageResult.ImageUrl))
                 {

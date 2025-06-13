@@ -7,7 +7,6 @@
         public int QuantityUsed { get; set; }
         public bool IsTakenFromStock { get; set; } // Indicates if the spare part was taken from stock or not       
         // Navigation properties
-        
         public Sparepart SparePart { get; set; }
         public RequestTakeSparePartUsage? RequestTakeSparePartUsage { get; set; }
     }

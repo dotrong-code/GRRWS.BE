@@ -10,9 +10,9 @@ namespace GRRWS.Infrastructure.Implement.Repositories
     public class RequestRepository : GenericRepository<Request>, IRequestRepository
     {
         public RequestRepository(GRRWSContext context) : base(context) { }
-        public async Task<List<Request>> GetAllRequestAsync()
+        public async Task<(List<Request> Items, int TotalCount)> GetAllRequestAsync(int pageNumber, int pageSize, string? searchRequestTitle)
         {
-            return await _context.Set<Request>()
+            var query = _context.Set<Request>()
                 .Include(r => r.Device)
                 .ThenInclude(d => d.Position)
                 .ThenInclude(p => p.Zone)
@@ -20,7 +20,22 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Include(r => r.RequestIssues)
                 .ThenInclude(ri => ri.Issue)
                 .Include(r => r.RequestIssues)
-                .ThenInclude(ri => ri.Images).ToListAsync();
+                .ThenInclude(ri => ri.Images)
+                .Where(r => !r.IsDeleted);
+
+            if (!string.IsNullOrWhiteSpace(searchRequestTitle))
+            {
+                query = query.Where(r => r.RequestTitle != null && r.RequestTitle.Contains(searchRequestTitle));
+            }
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .OrderByDescending(r => r.CreatedDate)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
         }
         public async Task<Request> GetRequestByIdAsync(Guid id)
         {
@@ -48,9 +63,9 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .ThenInclude(ri => ri.Images)
                 .Where(r => r.DeviceId == id).ToListAsync();
         }
-        public async Task<List<Request>> GetRequestByUserIdAsync(Guid userId)
+        public async Task<(List<Request> Items, int TotalCount)> GetRequestByUserIdAsync(Guid userId, int pageNumber, int pageSize, string? searchRequestTitle)
         {
-            return await _context.Requests
+            var query = _context.Requests
                 .Include(r => r.Device)
                 .ThenInclude(d => d.Position)
                 .ThenInclude(p => p.Zone)
@@ -59,7 +74,21 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .ThenInclude(ri => ri.Issue)
                 .Include(r => r.RequestIssues)
                 .ThenInclude(ri => ri.Images)
-                .Where(r => r.RequestedById == userId).ToListAsync();
+                .Where(r => r.RequestedById == userId && !r.IsDeleted);
+
+            if (!string.IsNullOrWhiteSpace(searchRequestTitle))
+            {
+                query = query.Where(r => r.RequestTitle != null && r.RequestTitle.Contains(searchRequestTitle));
+            }
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .OrderByDescending(r => r.CreatedDate)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
         }
         public async Task UpdateRequestAsync(Request request, List<Guid> newIssueIds)
         {
@@ -218,7 +247,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Select(t => new TaskForRequestDetailWeb
                 {
                     TaskId = t.Id,
-                    TaskType = t.TaskType,
+                    TaskType = t.TaskType.ToString(),
                     Status = t.Status.ToString(), // Convert enum to string
                     StartTime = t.StartTime,
                     AssigneeName = t.Assignee.UserName,

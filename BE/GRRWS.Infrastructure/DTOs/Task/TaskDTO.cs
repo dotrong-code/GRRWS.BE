@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using GRRWS.Infrastructure.DTOs.RequestDTO;
+﻿using GRRWS.Infrastructure.DTOs.RequestDTO;
 
 namespace GRRWS.Infrastructure.DTOs.Task
 {
@@ -18,7 +13,7 @@ namespace GRRWS.Infrastructure.DTOs.Task
         public DateTime? StartTime { get; set; }
         public DateTime? ExpectedTime { get; set; }
         public DateTime? EndTime { get; set; }
-        public Guid AssigneeId { get; set; }
+        public Guid? AssigneeId { get; set; }
         public string AssigneeName { get; set; }
         public DateTime? DeviceReturnTime { get; set; }
         public string DeviceCondition { get; set; }
