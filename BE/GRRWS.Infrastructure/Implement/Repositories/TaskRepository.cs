@@ -334,7 +334,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return new GetDetailWarrantyTaskForMechanic
             {
                 TaskId = task.Id,
-                DeviceId = task.WarrantyClaim?.DeviceWarranty?.Id ?? Guid.Empty,
+                DeviceId = task.WarrantyClaim?.DeviceWarranty?.Device.Id ?? Guid.Empty,
                 TaskName = task.TaskName,
                 TaskType = task.TaskType.ToString(),
                 WarrantyProvider = task.WarrantyClaim?.DeviceWarranty?.Provider,
