@@ -36,14 +36,14 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<GetDetailInstallTaskForMechanic> GetDetailInstallTaskForMechanicByIdAsync(Guid taskId);
         Task<Guid> FillInWarrantyTask(FillInWarrantyTask request);
         Task<bool> UpdateTaskStatusAsync(Guid taskId, Guid userId);
-
         Task<List<Tasks>> GetTasksByGroupIdAsync(Guid taskGroupId);
-        Task UpdateRangeAsync(IEnumerable<Tasks> tasks);
         Task<RequestInfoDto> GetRequestInfoAsync(Guid requestId);
         Task<string> GetDeviceInfoAsync(Guid deviceId);
         Task<Guid> CreateWarrantyTaskWithGroup(CreateWarrantyTaskRequest request, Guid userId, Guid taskGroupId, int orderIndex);
         Task<Guid> CreateUninstallTaskWithGroup(CreateUninstallTaskRequest request, Guid userId, Guid taskGroupId, int orderIndex);
         Task<Guid> CreateInstallTaskWithGroup(CreateInstallTaskRequest request, Guid userId, Guid taskGroupId, int orderIndex);
         Task<Guid> CreateRepairTaskWithGroup(CreateRepairTaskRequest request, Guid userId, Guid? taskGroupId, int orderIndex);
+        Task<bool> IsTaskProcessingInReqestAsync(Guid requestId, TaskType taskType);
+
     }
 }

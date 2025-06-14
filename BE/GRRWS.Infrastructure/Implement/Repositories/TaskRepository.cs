@@ -1479,6 +1479,20 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             return true;
         }
+        public async Task<bool> IsTaskProcessingInReqestAsync(Guid requestId, TaskType taskType)
+        {
+            var report = await _context.Reports
+                .Include(r => r.TaskGroups)
+                    .ThenInclude(tg => tg.Tasks)
+                        .FirstOrDefaultAsync(r => r.RequestId == requestId);
 
+            if (report == null)
+                return false;
+
+            // Check if any task of the given type is not completed
+            return report.TaskGroups
+                .SelectMany(tg => tg.Tasks)
+                .Any(t => t.TaskType == taskType && t.Status != Status.Completed);
+        }
     }
 }

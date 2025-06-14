@@ -42,30 +42,34 @@ namespace GRRWS.Application.Implement.Service
             if (taskGroup == null)
                 throw new Exception("Task group not found.");
 
+            // Get the current highest order index in the group
+            var existingTasks = await _unitOfWork.TaskRepository.GetTasksByGroupIdAsync(taskGroupId);
+            var maxOrderIndex = existingTasks.Any() ? existingTasks.Max(t => t.OrderIndex) : 0;
+
             return taskGroup.GroupType switch
             {
                 TaskType.Warranty => taskType switch
                 {
-                    TaskType.Uninstallation => 1,
+                    TaskType.Uninstallation => 1, // Always first
                     TaskType.WarrantySubmission => 2,
                     TaskType.Installation => 3,
                     TaskType.WarrantyReturn => 4,
-                    _ => 1
+                    _ => (maxOrderIndex ?? 0) + 1
                 },
                 TaskType.Repair => taskType switch
                 {
-                    TaskType.Uninstallation => 1,
+                    TaskType.Uninstallation => 1, // Always first
                     TaskType.Repair => 2,
                     TaskType.Installation => 3,
-                    _ => 1
+                    _ => (maxOrderIndex ?? 0) + 1
                 },
                 TaskType.Replacement => taskType switch
                 {
-                    TaskType.Uninstallation => 1,
-                    TaskType.Installation => 2,
-                    _ => 1
+                    TaskType.Uninstallation => (maxOrderIndex ?? 0) + 1, // Next available for replacement
+                    TaskType.Installation => (maxOrderIndex ?? 0) + 1,   // Next available for replacement
+                    _ => (maxOrderIndex ?? 0) + 1
                 },
-                _ => 1
+                _ => (maxOrderIndex ?? 0) + 1
             };
         }
 

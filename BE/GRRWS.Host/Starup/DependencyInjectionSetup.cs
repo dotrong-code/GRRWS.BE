@@ -111,6 +111,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IErrorGuidelineService, ErrorGuidelineService>();
             services.AddTransient<ISparePartUsageService, SparePartUsageService>();
             services.AddTransient<ISparepartService, SparepartService>();
+            services.AddTransient<ITaskGroupService, TaskGroupService>();
 
             #endregion
 
