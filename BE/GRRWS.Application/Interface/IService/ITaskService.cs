@@ -1,6 +1,7 @@
 ﻿using GRRWS.Application.Common.Result;
 using GRRWS.Infrastructure.DTOs.Task;
 using GRRWS.Infrastructure.DTOs.Task.ActionTask;
+using GRRWS.Infrastructure.DTOs.Task.Get;
 using GRRWS.Infrastructure.DTOs.Task.Repair;
 using GRRWS.Infrastructure.DTOs.Task.Warranty;
 
@@ -39,7 +40,10 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetDetailUninstallTaskForMechanicByIdAsync(Guid taskId);
         Task<Result> GetDetailInstallTaskForMechanicByIdAsync(Guid taskId);
         // ...existing code...
-
+        // Add to ITaskService interface
+Task<Result> GetAllSingleTasksAsync(GetAllSingleTasksRequest request);
+Task<Result> GetAllGroupTasksAsync(int pageNumber, int pageSize);
+Task<Result> GetGroupTasksByRequestIdAsync(GetTasksByRequestIdRequest request);
 
     }
 }

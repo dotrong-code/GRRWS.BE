@@ -2,7 +2,7 @@
 {
     public class Report : BaseEntity
     {
-        
+
         public Guid? RequestId { get; set; }
         public string? Location { get; set; }
         // Navigation
@@ -10,6 +10,7 @@
         public ICollection<ErrorDetail>? ErrorDetails { get; set; }
         public ICollection<WarrantyDetail>? WarrantyDetails { get; set; }
         public ICollection<TechnicalSymptomReport>? TechnicalSymptomReports { get; set; }
+        public ICollection<TaskGroup>? TaskGroups { get; set; }
     }
 
 }
