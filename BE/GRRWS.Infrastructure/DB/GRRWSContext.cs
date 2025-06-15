@@ -811,7 +811,7 @@ namespace GRRWS.Infrastructure.DB
                 .HasOne(r => r.Report)
                 .WithMany(tg => tg.TaskGroups)
                 .HasForeignKey(r => r.ReportId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.NoAction);
 
             #endregion
             #region Table Mappings

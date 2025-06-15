@@ -358,7 +358,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     .ThenInclude(wc => wc.DeviceWarranty)
                 .Include(t => t.WarrantyClaim)
                     .ThenInclude(u => u.CreatedByUser)
-                .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == TaskType.WarrantySubmission)
+                .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == type)
                 .FirstOrDefaultAsync();
 
             if (task == null)
@@ -367,7 +367,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return new GetDetailWarrantyTaskForMechanic
             {
                 TaskId = task.Id,
-                DeviceId = task.WarrantyClaim?.DeviceWarranty?.Id ?? Guid.Empty,
+                DeviceId = task.WarrantyClaim?.DeviceWarranty?.DeviceId ?? Guid.Empty,
                 TaskName = task.TaskName,
                 TaskType = task.TaskType.ToString(),
                 WarrantyProvider = task.WarrantyClaim?.DeviceWarranty?.Provider,
@@ -1080,7 +1080,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         Id = Guid.NewGuid(),
                         TaskName = $"Sửa máy - {requestInfo.DeviceName}",
                         TaskType = TaskType.Repair,
-                        TaskDescription = $"Repair task for errors: {string.Join(", ", errorGuidelines.Select(eg => eg.Error?.Name ?? "Unknown"))}",
+                        TaskDescription = $"Sửa lỗi: {string.Join(", ", errorGuidelines.Select(eg => eg.Error?.Name ?? "Unknown"))}",
                         StartTime = request.StartDate,
                         ExpectedTime = request.StartDate.Add(totalExpectedTime),
                         Status = Status.Pending,
@@ -1494,5 +1494,156 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .SelectMany(tg => tg.Tasks)
                 .Any(t => t.TaskType == taskType && t.Status != Status.Completed);
         }
+
+        public async Task<(List<GetSingleTaskResponse> Tasks, int TotalCount)> GetAllSingleTasksAsync(string? taskType, string? status, string? priority, int pageNumber, int pageSize)
+        {
+            var query = _context.Tasks
+                .Include(t => t.Assignee)
+                .Where(t => !t.IsDeleted && t.TaskGroupId == null); // Single tasks (not in groups)
+
+            // Apply filters
+            if (!string.IsNullOrEmpty(taskType) && Enum.TryParse<TaskType>(taskType, true, out var parsedTaskType))
+            {
+                query = query.Where(t => t.TaskType == parsedTaskType);
+            }
+
+            if (!string.IsNullOrEmpty(status) && Enum.TryParse<Status>(status, true, out var parsedStatus))
+            {
+                query = query.Where(t => t.Status == parsedStatus);
+            }
+
+            if (!string.IsNullOrEmpty(priority) && Enum.TryParse<Priority>(priority, true, out var parsedPriority))
+            {
+                query = query.Where(t => t.Priority == parsedPriority);
+            }
+
+            query = query.OrderByDescending(t => t.CreatedDate);
+
+            var totalCount = await query.CountAsync();
+
+            var tasks = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(t => new GetSingleTaskResponse
+                {
+                    TaskId = t.Id,
+                    TaskName = t.TaskName,
+                    TaskDescription = t.TaskDescription,
+                    TaskType = t.TaskType.ToString(),
+                    Priority = t.Priority.ToString(),
+                    Status = t.Status.ToString(),
+                    StartTime = t.StartTime,
+                    ExpectedTime = t.ExpectedTime,
+                    EndTime = t.EndTime,
+                    AssigneeName = t.Assignee.FullName,
+                    AssigneeId = t.AssigneeId,
+                    CreatedDate = t.CreatedDate,
+                    ModifiedDate = t.ModifiedDate,
+                    RequestId = _context.Requests
+                        .Where(r => r.ReportId != null &&
+                                   _context.Reports.Any(rep => rep.Id == r.ReportId &&
+                                                              rep.TaskGroups.Any(tg => tg.Tasks.Any(task => task.Id == t.Id))))
+                        .Select(r => r.Id)
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
+
+            return (tasks, totalCount);
+        }
+
+        public async Task<(List<GetGroupTaskResponse> Groups, int TotalCount)> GetAllGroupTasksAsync(int pageNumber, int pageSize)
+        {
+            var query = _context.TaskGroups
+                .Include(tg => tg.Tasks.Where(t => !t.IsDeleted))
+                    .ThenInclude(t => t.Assignee)
+                .Include(tg => tg.Report)
+                    .ThenInclude(r => r.Request)
+                .Where(tg => !tg.IsDeleted)
+                .OrderByDescending(tg => tg.CreatedDate);
+
+            var totalCount = await query.CountAsync();
+
+            var groups = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(tg => new GetGroupTaskResponse
+                {
+                    TaskGroupId = tg.Id,
+                    GroupName = tg.GroupName,
+                    GroupType = tg.GroupType.ToString(),
+                    CreatedDate = tg.CreatedDate,
+                    RequestId = tg.Report.Request.Id,
+                    Tasks = tg.Tasks
+                        .OrderBy(t => t.OrderIndex)
+                        .Select(t => new TaskInGroupResponse
+                        {
+                            TaskId = t.Id,
+                            TaskName = t.TaskName,
+                            TaskDescription = t.TaskDescription,
+                            TaskType = t.TaskType.ToString(),
+                            Priority = t.Priority.ToString(),
+                            Status = t.Status.ToString(),
+                            OrderIndex = t.OrderIndex ?? 0,
+                            StartTime = t.StartTime,
+                            ExpectedTime = t.ExpectedTime,
+                            EndTime = t.EndTime,
+                            AssigneeName = t.Assignee.FullName,
+                            AssigneeId = t.AssigneeId,
+                            CreatedDate = t.CreatedDate
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+
+            return (groups, totalCount);
+        }
+
+        public async Task<(List<GetGroupTaskResponse> Groups, int TotalCount)> GetGroupTasksByRequestIdAsync(Guid requestId, int pageNumber, int pageSize)
+        {
+            var query = _context.TaskGroups
+                .Include(tg => tg.Tasks.Where(t => !t.IsDeleted))
+                    .ThenInclude(t => t.Assignee)
+                .Include(tg => tg.Report)
+                    .ThenInclude(r => r.Request)
+                .Where(tg => !tg.IsDeleted && tg.Report.Request.Id == requestId)
+                .OrderByDescending(tg => tg.CreatedDate);
+
+            var totalCount = await query.CountAsync();
+
+            var groups = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(tg => new GetGroupTaskResponse
+                {
+                    TaskGroupId = tg.Id,
+                    GroupName = tg.GroupName,
+                    GroupType = tg.GroupType.ToString(),
+                    CreatedDate = tg.CreatedDate,
+                    RequestId = requestId,
+                    Tasks = tg.Tasks
+                        .OrderBy(t => t.OrderIndex)
+                        .Select(t => new TaskInGroupResponse
+                        {
+                            TaskId = t.Id,
+                            TaskName = t.TaskName,
+                            TaskDescription = t.TaskDescription,
+                            TaskType = t.TaskType.ToString(),
+                            Priority = t.Priority.ToString(),
+                            Status = t.Status.ToString(),
+                            OrderIndex = t.OrderIndex ?? 0,
+                            StartTime = t.StartTime,
+                            ExpectedTime = t.ExpectedTime,
+                            EndTime = t.EndTime,
+                            AssigneeName = t.Assignee.FullName,
+                            AssigneeId = t.AssigneeId,
+                            CreatedDate = t.CreatedDate
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+
+            return (groups, totalCount);
+        }
+
     }
 }
