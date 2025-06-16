@@ -9,6 +9,7 @@ using GRRWS.Infrastructure.DTOs.Task.Repair;
 using GRRWS.Infrastructure.DTOs.Task.Warranty;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace GRRWS.Host.Controllers
 {
@@ -25,7 +26,7 @@ namespace GRRWS.Host.Controllers
             _contextAccessor = contextAccessor;
         }
         [HttpGet("mechanicshift/suggest")]
-        public async Task<IResult> GetMechanicRecommendation(int pageSize, int pageIndex)
+        public async Task<IResult> GetMechanicRecommendation([FromQuery, BindRequired] int pageSize = 5, [FromQuery, BindRequired] int pageIndex = 0)
         {
             var result = await _taskService.GetMechanicRecommendationAsync(pageSize, pageIndex);
             return result.IsSuccess
