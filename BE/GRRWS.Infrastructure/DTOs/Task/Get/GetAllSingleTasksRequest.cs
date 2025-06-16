@@ -7,5 +7,6 @@ namespace GRRWS.Infrastructure.DTOs.Task.Get
         public string? TaskType { get; set; }
         public string? Status { get; set; }
         public string? Priority { get; set; }
+        public string? Order { get; set; }
     }
 }

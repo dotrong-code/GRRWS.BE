@@ -1,8 +1,9 @@
 ﻿using FluentValidation;
 using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
+using GRRWS.Application.Common.Validator.Task;
 using GRRWS.Application.Interface.IService;
-using GRRWS.Application.Validators.Task;
+
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
@@ -48,8 +49,8 @@ namespace GRRWS.Application.Implement.Service
 
             var assigneeCheck = await _checkIsExist.User(request.AssigneeId, allowNull: true);
             if (!assigneeCheck.IsSuccess) return assigneeCheck;
-            var isTaskProcessing = await IsTaskProcessingInRequestAsync(request.RequestId, TaskType.WarrantySubmission);
-            if (isTaskProcessing)
+            var isTaskProcessing = await IsTaskCompletedInRequestAsync(request.RequestId, TaskType.WarrantySubmission);
+            if (!isTaskProcessing)
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Conflict", "A warranty task is already being processed for this request."));
 
             try
@@ -63,6 +64,7 @@ namespace GRRWS.Application.Implement.Service
                     null, // Always null to force creation
                     TaskType.Warranty,
                     requestInfo.DeviceName,
+                    requestInfo.ReportId, // Use ReportId from RequestInfo
                     userId);
 
                 var orderIndex = 1; // First task in new warranty group (WarrantySubmission)
@@ -91,8 +93,8 @@ namespace GRRWS.Application.Implement.Service
 
             var assigneeCheck = await _checkIsExist.User(request.AssigneeId, allowNull: true);
             if (!assigneeCheck.IsSuccess) return assigneeCheck;
-            var isTaskProcessing = await IsTaskProcessingInRequestAsync(request.RequestId, TaskType.Repair);
-            if (isTaskProcessing)
+            var isTaskProcessing = await IsTaskCompletedInRequestAsync(request.RequestId, TaskType.Repair);
+            if (!isTaskProcessing)
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Conflict", "A repair task is already being processed for this request."));
 
             try
@@ -106,6 +108,7 @@ namespace GRRWS.Application.Implement.Service
                     null, // Always null to force creation
                     TaskType.Repair,
                     requestInfo.DeviceName,
+                    requestInfo.ReportId, // Use ReportId from RequestInfo
                     userId);
 
                 var orderIndex = 1; // First task in new repair group
@@ -137,8 +140,8 @@ namespace GRRWS.Application.Implement.Service
 
             var taskGroupCheck = await _checkIsExist.TaskGroup(request.TaskGroupId, allowNull: true);
             if (!taskGroupCheck.IsSuccess) return taskGroupCheck;
-            var isTaskProcessing = await IsTaskProcessingInRequestAsync(request.RequestId, TaskType.Uninstallation);
-            if (isTaskProcessing)
+            var isTaskProcessing = await IsTaskCompletedInRequestAsync(request.RequestId, TaskType.Uninstallation);
+            if (!isTaskProcessing)
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Conflict", "An uninstallation task is already being processed for this request."));
             try
             {
@@ -174,6 +177,7 @@ namespace GRRWS.Application.Implement.Service
                         null,
                         TaskType.Replacement,
                         requestInfo.DeviceName,
+                        requestInfo.ReportId, // Use ReportId from RequestInfo
                         userId);
                     orderIndex = 1; // First task in new replacement group
                 }
@@ -208,8 +212,8 @@ namespace GRRWS.Application.Implement.Service
 
             var newDeviceCheck = await _checkIsExist.Device(request.NewDeviceId, allowNull: true);
             if (!newDeviceCheck.IsSuccess) return newDeviceCheck;
-            var isTaskProcessing = await IsTaskProcessingInRequestAsync(request.RequestId, TaskType.Installation);
-            if (isTaskProcessing)
+            var isTaskProcessing = await IsTaskCompletedInRequestAsync(request.RequestId, TaskType.Installation);
+            if (!isTaskProcessing)
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Conflict", "An installation task is already being processed for this request."));
             try
             {
@@ -237,6 +241,7 @@ namespace GRRWS.Application.Implement.Service
                         null,
                         TaskType.Replacement,
                         deviceInfo,
+                        requestInfo.ReportId, // Use ReportId from RequestInfo
                         userId);
                     orderIndex = 1; // First task in new replacement group
                 }
@@ -334,7 +339,6 @@ namespace GRRWS.Application.Implement.Service
             });
         }
 
-
         // Add to TaskService implementation
         public async Task<Result> GetAllSingleTasksAsync(GetAllSingleTasksRequest request)
         {
@@ -354,6 +358,7 @@ namespace GRRWS.Application.Implement.Service
                     request.TaskType,
                     request.Status,
                     request.Priority,
+                    request.Order,
                     request.PageNumber,
                     request.PageSize);
 
@@ -669,9 +674,9 @@ namespace GRRWS.Application.Implement.Service
             throw new NotImplementedException();
         }
 
-        private async Task<bool> IsTaskProcessingInRequestAsync(Guid requestId, TaskType taskType)
+        private async Task<bool> IsTaskCompletedInRequestAsync(Guid requestId, TaskType taskType)
         {
-            return await _unitOfWork.TaskRepository.IsTaskProcessingInReqestAsync(requestId, taskType);
+            return await _unitOfWork.TaskRepository.IsTaskCompletedInReqestAsync(requestId, taskType);
         }
 
         #endregion
