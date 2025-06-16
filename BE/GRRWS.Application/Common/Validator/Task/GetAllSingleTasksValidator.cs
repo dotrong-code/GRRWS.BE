@@ -1,8 +1,8 @@
 using FluentValidation;
-using GRRWS.Infrastructure.DTOs.Task.Get;
 using GRRWS.Domain.Enum;
+using GRRWS.Infrastructure.DTOs.Task.Get;
 
-namespace GRRWS.Application.Validators.Task
+namespace GRRWS.Application.Common.Validator.Task
 {
     public class GetAllSingleTasksValidator : AbstractValidator<GetAllSingleTasksRequest>
     {
@@ -32,6 +32,11 @@ namespace GRRWS.Application.Validators.Task
                 .Must(BeValidPriority)
                 .WithMessage("Invalid priority")
                 .When(x => !string.IsNullOrEmpty(x.Priority));
+            RuleFor(x => x.Order)
+                .Must(order => Enum.TryParse<SearchOrder>(order, true, out _))
+                .WithMessage("Invalid order")
+                .When(x => !string.IsNullOrEmpty(x.Order));
+
         }
 
         private bool BeValidTaskType(string taskType)

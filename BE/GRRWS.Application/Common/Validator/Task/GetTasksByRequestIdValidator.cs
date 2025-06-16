@@ -1,7 +1,7 @@
 using FluentValidation;
 using GRRWS.Infrastructure.DTOs.Task.Get;
 
-namespace GRRWS.Application.Validators.Task
+namespace GRRWS.Application.Common.Validator.Task
 {
     public class GetTasksByRequestIdValidator : AbstractValidator<GetTasksByRequestIdRequest>
     {

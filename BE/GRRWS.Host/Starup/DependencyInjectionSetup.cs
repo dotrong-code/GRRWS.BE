@@ -12,7 +12,6 @@ using GRRWS.Application.Common.Validator.UserVali;
 using GRRWS.Application.Common.Validator.Zone;
 using GRRWS.Application.Implement.Service;
 using GRRWS.Application.Interface.IService;
-using GRRWS.Application.Validators.Task;
 using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.Area;
@@ -72,8 +71,8 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IValidator<UpdateDeviceWarrantyRequest>, UpdateDeviceWarrantyRequestValidator>();
 
             // In Program.cs or Startup.cs
-services.AddTransient<IValidator<GetAllSingleTasksRequest>, GetAllSingleTasksValidator>();
-services.AddTransient<IValidator<GetTasksByRequestIdRequest>, GetTasksByRequestIdValidator>();
+            services.AddTransient<IValidator<GetAllSingleTasksRequest>, GetAllSingleTasksValidator>();
+            services.AddTransient<IValidator<GetTasksByRequestIdRequest>, GetTasksByRequestIdValidator>();
             services.AddTransient<IValidator<StartTaskRequest>, StartTaskRequestValidator>();
             services.AddTransient<IValidator<CreateTaskReportRequest>, CreateTaskReportRequestValidator>();
 
