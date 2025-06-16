@@ -14,7 +14,7 @@ namespace GRRWS.Application.Implement.Service
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Guid> CreateOrGetTaskGroupAsync(Guid? taskGroupId, TaskType groupType, string deviceName, Guid userId)
+        public async Task<Guid> CreateOrGetTaskGroupAsync(Guid? taskGroupId, TaskType groupType, string deviceName, Guid userId, Guid reportId)
         {
             if (taskGroupId.HasValue)
             {
@@ -28,6 +28,7 @@ namespace GRRWS.Application.Implement.Service
                 GroupType = groupType,
                 GroupName = $"{groupType} Group - {deviceName} - {DateTime.UtcNow:yyyy-MM-dd HH:mm}",
                 CreatedDate = DateTime.UtcNow,
+                ReportId = reportId,
                 CreatedBy = userId,
                 IsDeleted = false
             };

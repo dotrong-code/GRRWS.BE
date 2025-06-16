@@ -833,11 +833,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             if (task.WarrantyClaim == null)
                 throw new Exception("Warranty claim not found for this task.");
 
-            // Update task completion details
-            //task.EndTime = DateTime.UtcNow;
-            //task.Status = Status.Completed;
-            //task.ModifiedDate = DateTime.UtcNow;
-
             // Update warranty claim details
             var warrantyClaim = task.WarrantyClaim;
             warrantyClaim.ExpectedReturnDate = DateTime.UtcNow.Add(request.WarrantyTime);
@@ -857,6 +852,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 ExpectedTime = warrantyClaim.ExpectedReturnDate?.AddHours(2),
                 Status = Status.Pending,
                 Priority = Priority.Medium,
+                OrderIndex = 4,
                 AssigneeId = task.AssigneeId, // Assign to same technician
                 WarrantyClaimId = warrantyClaim.Id,
                 CreatedDate = DateTime.UtcNow,
@@ -1479,7 +1475,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             return true;
         }
-        public async Task<bool> IsTaskProcessingInReqestAsync(Guid requestId, TaskType taskType)
+        public async Task<bool> IsTaskCompletedInReqestAsync(Guid requestId, TaskType taskType)
         {
             var report = await _context.Reports
                 .Include(r => r.TaskGroups)
@@ -1492,14 +1488,14 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             // Check if any task of the given type is not completed
             return report.TaskGroups
                 .SelectMany(tg => tg.Tasks)
-                .Any(t => t.TaskType == taskType && t.Status != Status.Completed);
+                .Any(t => t.TaskType == taskType && t.Status == Status.Completed);
         }
 
         public async Task<(List<GetSingleTaskResponse> Tasks, int TotalCount)> GetAllSingleTasksAsync(string? taskType, string? status, string? priority, int pageNumber, int pageSize)
         {
             var query = _context.Tasks
                 .Include(t => t.Assignee)
-                .Where(t => !t.IsDeleted && t.TaskGroupId == null); // Single tasks (not in groups)
+                .Where(t => !t.IsDeleted); // Single tasks (not in groups)
 
             // Apply filters
             if (!string.IsNullOrEmpty(taskType) && Enum.TryParse<TaskType>(taskType, true, out var parsedTaskType))
@@ -1605,7 +1601,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     .ThenInclude(t => t.Assignee)
                 .Include(tg => tg.Report)
                     .ThenInclude(r => r.Request)
-                .Where(tg => !tg.IsDeleted && tg.Report.Request.Id == requestId)
+                .Where(tg => !tg.IsDeleted && tg.Report.RequestId == requestId)
                 .OrderByDescending(tg => tg.CreatedDate);
 
             var totalCount = await query.CountAsync();

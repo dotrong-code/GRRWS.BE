@@ -185,14 +185,6 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
-        [HttpGet("groups/by-request")]
-        public async Task<IResult> GetGroupTasksByRequestId([FromQuery] GetTasksByRequestIdRequest request)
-        {
-            var result = await _taskService.GetGroupTasksByRequestIdAsync(request);
-            return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, "Task groups retrieved successfully")
-                : ResultExtensions.ToProblemDetails(result);
-        }
 
         [HttpGet("groups/request/{requestId:guid}")]
         public async Task<IResult> GetGroupTasksByRequestId(Guid requestId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
