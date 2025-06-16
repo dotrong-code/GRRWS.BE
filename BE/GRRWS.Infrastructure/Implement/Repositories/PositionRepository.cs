@@ -55,7 +55,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         InstallationDate = p.Device.InstallationDate,
                         Description = p.Device.Description,
                         PhotoUrl = p.Device.PhotoUrl,
-                        Status = p.Device.Status,
+                        Status = p.Device.Status.ToString(),
                         IsUnderWarranty = p.Device.IsUnderWarranty,
                         Specifications = p.Device.Specifications,
                         PurchasePrice = p.Device.PurchasePrice,
