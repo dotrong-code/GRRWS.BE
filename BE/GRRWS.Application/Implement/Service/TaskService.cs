@@ -730,6 +730,15 @@ namespace GRRWS.Application.Implement.Service
         }
         public async Task<Result> GetMechanicRecommendationAsync(int pageSize, int pageIndex)
         {
+            if (pageSize <= 0 || pageSize > 100)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("ValidationError", "Page size must be between 1 and 100"));
+            }
+            if (pageIndex < 0)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("ValidationError", "Page index must be 0 or greater"));
+            }
+
             try
             {
                 _logger.LogInformation("Fetching recommended mechanics for current time");
@@ -741,7 +750,7 @@ namespace GRRWS.Application.Implement.Service
                 if (currentShift == null)
                 {
                     _logger.LogWarning("No shift found for current time");
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Fail", "No shift is active at the current time."));
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "No shift is active at the current time."));
                 }
 
                 var recommendations = await _unitOfWork.UserRepository.GetRecommendedMechanicsAsync(now, currentShift.Id, pageIndex, pageSize);
@@ -749,7 +758,7 @@ namespace GRRWS.Application.Implement.Service
                 if (!recommendations.Any())
                 {
                     _logger.LogWarning("No available mechanics found for shift {ShiftId} on {Date}", currentShift.Id, now.Date);
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Fail", "No available mechanics found for the current shift."));
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "No available mechanics found for the current shift."));
                 }
 
                 return Result.SuccessWithObject(recommendations);
