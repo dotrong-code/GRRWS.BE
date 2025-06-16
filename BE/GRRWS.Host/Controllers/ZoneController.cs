@@ -64,5 +64,17 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Zone deleted successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+
+        [HttpGet("{zoneId}/positions-and-devices")]
+        public async Task<IResult> GetPositionsAndDevicesByZone(
+            Guid zoneId,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var result = await _zoneService.GetPositionsAndDevicesByZoneAsync(zoneId, pageNumber, pageSize);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Positions and devices retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }
