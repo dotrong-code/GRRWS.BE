@@ -9,7 +9,7 @@ namespace GRRWS.Application.Interface.IService
 {
     public interface ITaskService
     {
-        Task<Result> GetTasksByMechanicIdAsync(Guid mechanicId, int pageNumber, int pageSize);
+        Task<Result> GetTasksByMechanicIdAsync(Guid mechanicId, GetAllSingleTasksRequest request);
 
         Task<Result> GetTaskDetailsAsync(Guid taskId);
         Task<Result> CreateTaskReportAsync(CreateTaskReportRequest request);
@@ -41,9 +41,13 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetDetailInstallTaskForMechanicByIdAsync(Guid taskId);
         // ...existing code...
         // Add to ITaskService interface
-Task<Result> GetAllSingleTasksAsync(GetAllSingleTasksRequest request);
-Task<Result> GetAllGroupTasksAsync(int pageNumber, int pageSize);
-Task<Result> GetGroupTasksByRequestIdAsync(GetTasksByRequestIdRequest request);
+
+        Task<Result> GetAllSingleTasksAsync(GetAllSingleTasksRequest request);
+        Task<Result> GetAllGroupTasksAsync(int pageNumber, int pageSize);
+        Task<Result> GetGroupTasksByRequestIdAsync(GetTasksByRequestIdRequest request);
+        Task<Result> GetMechanicRecommendationAsync(int pageSize, int pageIndex);
+
+
 
     }
 }

@@ -13,7 +13,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
     public interface ITaskRepository : IGenericRepository<Tasks>
     {
         Task<List<GetTaskResponse>> GetTasksByMechanicIdAsync(Guid mechanicId, int pageNumber, int pageSize);
-        Task<List<GetTaskForMechanic>> GetTasksByMechanicIdAsync2(Guid mechanicId, int pageNumber, int pageSize);
+        Task<List<GetTaskForMechanic>> GetTasksByMechanicIdAsync2(Guid mechanicId, GetAllSingleTasksRequest request);
         Task<GetTaskResponse> GetTaskDetailsAsync(Guid taskId);
         Task<Tasks> GetTaskByIdAsync(Guid taskId);
         Task<List<Tasks>> GetAllTasksAsync();
@@ -45,7 +45,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<Guid> CreateRepairTaskWithGroup(CreateRepairTaskRequest request, Guid userId, Guid? taskGroupId, int orderIndex);
         Task<bool> IsTaskCompletedInReqestAsync(Guid requestId, TaskType taskType);
         // Add to ITaskRepository interface
-        Task<(List<GetSingleTaskResponse> Tasks, int TotalCount)> GetAllSingleTasksAsync(string? taskType, string? status, string? priority, int pageNumber, int pageSize);
+        Task<(List<GetSingleTaskResponse> Tasks, int TotalCount)> GetAllSingleTasksAsync(string? taskType, string? status, string? priority, string? order, int pageNumber, int pageSize);
         Task<(List<GetGroupTaskResponse> Groups, int TotalCount)> GetAllGroupTasksAsync(int pageNumber, int pageSize);
         Task<(List<GetGroupTaskResponse> Groups, int TotalCount)> GetGroupTasksByRequestIdAsync(Guid requestId, int pageNumber, int pageSize);
 
