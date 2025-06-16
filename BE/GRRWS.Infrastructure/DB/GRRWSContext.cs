@@ -808,6 +808,11 @@ namespace GRRWS.Infrastructure.DB
                     .HasForeignKey(t => t.TaskGroupId)
                     .OnDelete(DeleteBehavior.NoAction);
             });
+            modelBuilder.Entity<TaskGroup>()
+                .HasOne(r => r.Report)
+                .WithMany(tg => tg.TaskGroups)
+                .HasForeignKey(r => r.ReportId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             #endregion
             #region Table Mappings

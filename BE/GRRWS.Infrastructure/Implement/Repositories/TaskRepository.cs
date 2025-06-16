@@ -1,6 +1,7 @@
 ﻿using GRRWS.Domain.Entities;
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.DB;
+using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.DTOs.Task;
 using GRRWS.Infrastructure.DTOs.Task.ActionTask;
 using GRRWS.Infrastructure.DTOs.Task.Get;
@@ -290,7 +291,39 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             return (tasks, totalCount);
         }
+        public async Task<List<Tasks>> GetTasksByGroupIdAsync(Guid taskGroupId)
+        {
+            return await _context.Tasks
+                .Where(t => t.TaskGroupId == taskGroupId && !t.IsDeleted)
+                .OrderBy(t => t.OrderIndex)
+                .ToListAsync();
+        }
+        public async Task<RequestInfoDto> GetRequestInfoAsync(Guid requestId)
+        {
+            return await _context.Requests
+                .Include(r => r.Device)
+                .Include(r => r.Report)
+                .Where(r => r.Id == requestId)
+                .Select(r => new RequestInfoDto
+                {
+                    ReportId = r.ReportId ?? Guid.Empty,
+                    DeviceId = r.Device.Id,
+                    DeviceName = r.Device.DeviceName,
+                    DeviceCode = r.Device.DeviceCode,
+                    Location = r.Report.Location ?? "Location not available"
+                })
+                .FirstOrDefaultAsync();
+        }
 
+        public async Task<string> GetDeviceInfoAsync(Guid deviceId)
+        {
+            var device = await _context.Devices
+                .Where(d => d.Id == deviceId)
+                .Select(d => new { d.DeviceName, d.DeviceCode })
+                .FirstOrDefaultAsync();
+
+            return device != null ? $"{device.DeviceName} ({device.DeviceCode})" : "Unknown Device";
+        }
         public async Task<List<GetTaskForMechanic>> GetTasksByMechanicIdAsync2(Guid mechanicId, int pageNumber, int pageSize)
         {
             var query = _context.Tasks
@@ -325,7 +358,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     .ThenInclude(wc => wc.DeviceWarranty)
                 .Include(t => t.WarrantyClaim)
                     .ThenInclude(u => u.CreatedByUser)
-                .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == TaskType.WarrantySubmission)
+                .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == type)
                 .FirstOrDefaultAsync();
 
             if (task == null)
@@ -334,7 +367,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return new GetDetailWarrantyTaskForMechanic
             {
                 TaskId = task.Id,
-                DeviceId = task.WarrantyClaim?.DeviceWarranty?.Id ?? Guid.Empty,
+                DeviceId = task.WarrantyClaim?.DeviceWarranty?.DeviceId ?? Guid.Empty,
                 TaskName = task.TaskName,
                 TaskType = task.TaskType.ToString(),
                 WarrantyProvider = task.WarrantyClaim?.DeviceWarranty?.Provider,
@@ -659,6 +692,133 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 }
             });
         }
+        public async Task<Guid> CreateWarrantyTaskWithGroup(CreateWarrantyTaskRequest request, Guid userId, Guid taskGroupId, int orderIndex)
+        {
+            var executionStrategy = _context.Database.CreateExecutionStrategy();
+
+            return await executionStrategy.ExecuteAsync(async () =>
+            {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    // Get report ID from request
+                    var reportId = await _context.Requests
+                        .Where(r => r.Id == request.RequestId)
+                        .Select(r => r.ReportId)
+                        .FirstOrDefaultAsync();
+
+                    if (reportId == Guid.Empty)
+                        throw new Exception("No report found for this request.");
+
+                    // Validate device warranty exists
+                    var deviceWarranty = await _context.DeviceWarranties
+                        .FirstOrDefaultAsync(dw => dw.Id == request.DeviceWarrantyId);
+                    if (deviceWarranty == null)
+                        throw new Exception("Device warranty not found.");
+
+                    // Get technical symptom names to create issue description
+                    string issueDescription = "";
+                    if (request.TechnicalIssueIds != null && request.TechnicalIssueIds.Any())
+                    {
+                        var technicalSymptomNames = await _context.TechnicalSymptoms
+                            .Where(ts => request.TechnicalIssueIds.Contains(ts.Id))
+                            .Select(ts => ts.Name)
+                            .ToListAsync();
+
+                        if (technicalSymptomNames.Any())
+                        {
+                            issueDescription = string.Join(", ", technicalSymptomNames.Where(name => !string.IsNullOrEmpty(name)));
+                        }
+                    }
+
+                    // Generate claim number with concurrency handling
+                    string claimNumber;
+                    int claimCount;
+                    // Lock the WarrantyClaims table to prevent concurrent claim number generation
+                    await using (var command = _context.Database.GetDbConnection().CreateCommand())
+                    {
+                        command.CommandText = "SELECT COUNT(*) FROM WarrantyClaims WITH (UPDLOCK, HOLDLOCK)";
+                        command.Transaction = transaction.GetDbTransaction();
+                        await _context.Database.OpenConnectionAsync();
+                        claimCount = (int)await command.ExecuteScalarAsync();
+                    }
+                    claimNumber = $"WC-{DateTime.UtcNow:yyyyMM}-{(claimCount + 1):D3}";
+
+                    // Create warranty claim (without SubmittedByTaskId)
+                    var warrantyClaim = new WarrantyClaim
+                    {
+                        Id = Guid.NewGuid(),
+                        ClaimNumber = claimNumber,
+                        ClaimStatus = Status.Pending,
+                        IssueDescription = issueDescription,
+                        DeviceWarrantyId = request.DeviceWarrantyId,
+                        CreatedByUserId = request.AssigneeId,
+                        CreatedDate = DateTime.UtcNow,
+                        IsDeleted = false,
+                        SubmittedByTaskId = null // Explicitly null to avoid circular dependency
+                    };
+
+                    await _context.WarrantyClaims.AddAsync(warrantyClaim);
+                    await _context.SaveChangesAsync(); // Save WarrantyClaim first
+
+                    // Create the warranty submission task
+                    var task = new Tasks
+                    {
+                        Id = Guid.NewGuid(),
+                        TaskName = $"Đưa thiết bị đi bảo hành - {claimNumber}",
+                        TaskType = TaskType.WarrantySubmission,
+                        TaskDescription = $"Mang thiết bị đi bảo hành với cái triệu chứng:{issueDescription}",
+                        StartTime = request.StartDate,
+                        ExpectedTime = request.StartDate.AddHours(5),
+                        Status = Status.Pending,
+                        Priority = Priority.High,
+                        AssigneeId = request.AssigneeId,
+                        WarrantyClaimId = warrantyClaim.Id,
+                        TaskGroupId = taskGroupId,
+                        OrderIndex = orderIndex,
+                        CreatedDate = DateTime.UtcNow,
+                        CreatedBy = userId,
+                        IsDeleted = false
+                    };
+                    await _context.Tasks.AddAsync(task);
+
+                    // Update warranty claim with submission task ID
+                    warrantyClaim.SubmittedByTaskId = task.Id;
+                    _context.WarrantyClaims.Update(warrantyClaim);
+
+                    // Link technical symptoms to the task through TechnicalSymptomReports
+                    if (request.TechnicalIssueIds != null && request.TechnicalIssueIds.Any())
+                    {
+                        var existingSymptomReports = await _context.TechnicalSymptomReports
+                            .Where(tsr => tsr.ReportId == reportId &&
+                                          request.TechnicalIssueIds.Contains(tsr.TechnicalSymptomId))
+                            .ToListAsync();
+
+                        foreach (var report in existingSymptomReports)
+                        {
+                            report.TaskId = task.Id;
+                        }
+
+                        if (existingSymptomReports.Any())
+                            _context.TechnicalSymptomReports.UpdateRange(existingSymptomReports);
+                    }
+
+                    await _context.SaveChangesAsync(); // Save Tasks and updated WarrantyClaim
+                    await transaction.CommitAsync();
+
+                    return task.Id;
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+                finally
+                {
+                    await _context.Database.CloseConnectionAsync();
+                }
+            });
+        }
         public async Task<Guid> FillInWarrantyTask(FillInWarrantyTask request)
         {
             // Get the task with its warranty claim
@@ -672,11 +832,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             if (task.WarrantyClaim == null)
                 throw new Exception("Warranty claim not found for this task.");
-
-            // Update task completion details
-            //task.EndTime = DateTime.UtcNow;
-            //task.Status = Status.Completed;
-            //task.ModifiedDate = DateTime.UtcNow;
 
             // Update warranty claim details
             var warrantyClaim = task.WarrantyClaim;
@@ -697,6 +852,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 ExpectedTime = warrantyClaim.ExpectedReturnDate?.AddHours(2),
                 Status = Status.Pending,
                 Priority = Priority.Medium,
+                OrderIndex = 4,
                 AssigneeId = task.AssigneeId, // Assign to same technician
                 WarrantyClaimId = warrantyClaim.Id,
                 CreatedDate = DateTime.UtcNow,
@@ -869,6 +1025,163 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 }
             });
         }
+        public async Task<Guid> CreateRepairTaskWithGroup(CreateRepairTaskRequest request, Guid userId, Guid? taskGroupId, int orderIndex)
+        {
+            var executionStrategy = _context.Database.CreateExecutionStrategy();
+
+            return await executionStrategy.ExecuteAsync(async () =>
+            {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    // Get report and device information from request
+                    var requestInfo = await _context.Requests
+                        .Include(r => r.Device)
+                        .Where(r => r.Id == request.RequestId)
+                        .Select(r => new { r.ReportId, DeviceName = r.Device.DeviceName })
+                        .FirstOrDefaultAsync();
+
+                    if (requestInfo == null)
+                        throw new Exception("No request found.");
+
+                    // Validate error guidelines exist
+                    var errorGuidelines = await _context.ErrorGuidelines
+                        .Include(eg => eg.ErrorFixSteps)
+                        .Include(eg => eg.Error)
+                        .Where(eg => request.ErrorGuidelineIds.Contains(eg.Id))
+                        .ToListAsync();
+
+                    if (!errorGuidelines.Any())
+                        throw new Exception("No error guidelines found.");
+
+                    // Calculate total expected time from all error guidelines
+                    var totalExpectedTime = TimeSpan.Zero;
+                    foreach (var guideline in errorGuidelines)
+                    {
+                        if (guideline.EstimatedRepairTime.HasValue)
+                        {
+                            totalExpectedTime = totalExpectedTime.Add(guideline.EstimatedRepairTime.Value);
+                        }
+                    }
+
+                    // If no estimated time found, default to 8 hours
+                    if (totalExpectedTime == TimeSpan.Zero)
+                    {
+                        totalExpectedTime = TimeSpan.FromHours(8);
+                    }
+
+                    // Create the repair task
+                    var task = new Tasks
+                    {
+                        Id = Guid.NewGuid(),
+                        TaskName = $"Sửa máy - {requestInfo.DeviceName}",
+                        TaskType = TaskType.Repair,
+                        TaskDescription = $"Sửa lỗi: {string.Join(", ", errorGuidelines.Select(eg => eg.Error?.Name ?? "Unknown"))}",
+                        StartTime = request.StartDate,
+                        ExpectedTime = request.StartDate.Add(totalExpectedTime),
+                        Status = Status.Pending,
+                        Priority = Priority.Medium,
+                        AssigneeId = request.AssigneeId,
+                        TaskGroupId = taskGroupId,
+                        OrderIndex = orderIndex,
+                        CreatedDate = DateTime.UtcNow,
+                        CreatedBy = userId,
+                        IsDeleted = false
+                    };
+
+                    await _context.Tasks.AddAsync(task);
+
+                    // Update ErrorDetails and create RequestTakeSparePartUsage for each error guideline
+                    foreach (var errorGuideline in errorGuidelines)
+                    {
+                        // Find existing ErrorDetail for this error and report
+                        var errorDetail = await _context.ErrorDetails
+                            .FirstOrDefaultAsync(ed => ed.ReportId == requestInfo.ReportId && ed.ErrorId == errorGuideline.ErrorId);
+
+                        if (errorDetail != null)
+                        {
+                            // Update ErrorDetail with task and guideline
+                            errorDetail.TaskId = task.Id;
+                            errorDetail.ErrorGuideLineId = errorGuideline.Id;
+
+                            // Create RequestTakeSparePartUsage if guideline has spareparts
+                            var errorGuidelineSpareparts = await _context.ErrorSpareparts
+                                .Include(egsp => egsp.Sparepart)
+                                .Where(egsp => egsp.ErrorGuidelineId == errorGuideline.Id)
+                                .ToListAsync();
+
+                            if (errorGuidelineSpareparts.Any())
+                            {
+                                // Generate request code
+                                var requestCount = await _context.RequestTakeSparePartUsages.CountAsync();
+                                var requestCode = $"REQ-{DateTime.UtcNow:yyyyMM}-{(requestCount + 1):D3}";
+
+                                // Create RequestTakeSparePartUsage
+                                var requestTakeSparePartUsage = new RequestTakeSparePartUsage
+                                {
+                                    Id = Guid.NewGuid(),
+                                    RequestCode = requestCode,
+                                    RequestDate = DateTime.UtcNow,
+                                    RequestedById = userId,
+                                    AssigneeId = request.AssigneeId,
+                                    Status = SparePartRequestStatus.Unconfirmed,
+                                    Notes = $"Auto-generated for repair task: {task.TaskName}",
+                                    CreatedDate = DateTime.UtcNow,
+                                    IsDeleted = false
+                                };
+
+                                await _context.RequestTakeSparePartUsages.AddAsync(requestTakeSparePartUsage);
+
+                                // Create SparePartUsages
+                                var sparePartUsages = errorGuidelineSpareparts.Select(egsp => new SparePartUsage
+                                {
+                                    Id = Guid.NewGuid(),
+                                    SparePartId = egsp.SparepartId,
+                                    QuantityUsed = egsp.QuantityNeeded ?? 1, // Default to 1 if not specified
+                                    IsTakenFromStock = false,
+                                    RequestTakeSparePartUsageId = requestTakeSparePartUsage.Id,
+                                    CreatedDate = DateTime.UtcNow,
+                                    IsDeleted = false
+                                }).ToList();
+
+                                await _context.SparePartUsages.AddRangeAsync(sparePartUsages);
+
+                                // Link ErrorDetail to RequestTakeSparePartUsage
+                                errorDetail.RequestTakeSparePartUsageId = requestTakeSparePartUsage.Id;
+                            }
+
+                            _context.ErrorDetails.Update(errorDetail);
+
+                            // Create ErrorFixProgress for each step in the guideline
+                            if (errorGuideline.ErrorFixSteps != null && errorGuideline.ErrorFixSteps.Any())
+                            {
+                                var errorFixProgresses = errorGuideline.ErrorFixSteps.Select(step => new ErrorFixProgress
+                                {
+                                    Id = Guid.NewGuid(),
+                                    ErrorDetailId = errorDetail.Id,
+                                    ErrorFixStepId = step.Id,
+                                    IsCompleted = false,
+                                    CreatedDate = DateTime.UtcNow,
+                                    IsDeleted = false
+                                }).ToList();
+
+                                await _context.ErrorFixProgresses.AddRangeAsync(errorFixProgresses);
+                            }
+                        }
+                    }
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return task.Id;
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            });
+        }
         public async Task<Guid> CreateUninstallTask(CreateUninstallTaskRequest request, Guid userId)
         {
             var executionStrategy = _context.Database.CreateExecutionStrategy();
@@ -909,6 +1222,65 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         Priority = Priority.Medium,
                         AssigneeId = request.AssigneeId,
                         TaskGroupId = request.TaskGroupId,
+                        CreatedDate = DateTime.UtcNow,
+                        CreatedBy = userId,
+                        IsDeleted = false
+                    };
+
+                    await _context.Tasks.AddAsync(task);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return task.Id;
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            });
+        }
+        public async Task<Guid> CreateUninstallTaskWithGroup(CreateUninstallTaskRequest request, Guid userId, Guid taskGroupId, int orderIndex)
+        {
+            var executionStrategy = _context.Database.CreateExecutionStrategy();
+
+            return await executionStrategy.ExecuteAsync(async () =>
+            {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    // Get request and device information
+                    var requestInfo = await _context.Requests
+                        .Include(r => r.Device)
+                        .Include(r => r.Report)
+                        .Where(r => r.Id == request.RequestId)
+                        .Select(r => new
+                        {
+                            r.ReportId,
+                            DeviceId = r.Device.Id,
+                            DeviceName = r.Device.DeviceName,
+                            DeviceCode = r.Device.DeviceCode,
+                            r.Report.Location
+                        })
+                        .FirstOrDefaultAsync();
+
+                    if (requestInfo == null)
+                        throw new Exception("No request found.");
+
+                    // Create the uninstall task
+                    var task = new Tasks
+                    {
+                        Id = Guid.NewGuid(),
+                        TaskName = $"Tháo máy - {requestInfo.DeviceName}",
+                        TaskType = TaskType.Uninstallation,
+                        TaskDescription = $"Tháo thiết bị {requestInfo.DeviceName} ({requestInfo.DeviceCode}) tại vị trí: {requestInfo.Location}",
+                        StartTime = request.StartDate ?? DateTime.UtcNow,
+                        ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(2), // Default 2 hours for uninstallation
+                        Status = Status.Pending,
+                        Priority = Priority.Medium,
+                        AssigneeId = request.AssigneeId,
+                        TaskGroupId = taskGroupId,
+                        OrderIndex = orderIndex,
                         CreatedDate = DateTime.UtcNow,
                         CreatedBy = userId,
                         IsDeleted = false
@@ -998,6 +1370,78 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 }
             });
         }
+        public async Task<Guid> CreateInstallTaskWithGroup(CreateInstallTaskRequest request, Guid userId, Guid taskGroupId, int orderIndex)
+        {
+            var executionStrategy = _context.Database.CreateExecutionStrategy();
+
+            return await executionStrategy.ExecuteAsync(async () =>
+            {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    // Get request and device information
+                    var requestInfo = await _context.Requests
+                        .Include(r => r.Device)
+                        .Include(r => r.Report)
+                        .Where(r => r.Id == request.RequestId)
+                        .Select(r => new
+                        {
+                            r.ReportId,
+                            DeviceId = r.Device.Id,
+                            DeviceName = r.Device.DeviceName,
+                            DeviceCode = r.Device.DeviceCode,
+                            r.Report.Location
+                        })
+                        .FirstOrDefaultAsync();
+
+                    if (requestInfo == null)
+                        throw new Exception("No request found.");
+
+                    // Get replacement device information if provided
+                    string deviceInfo = "Máy không xác định";
+                    if (request.NewDeviceId.HasValue)
+                    {
+                        var replacementDevice = await _context.Devices
+                            .Where(d => d.Id == request.NewDeviceId.Value)
+                            .Select(d => new { d.Id, d.DeviceName, d.DeviceCode })
+                            .FirstOrDefaultAsync();
+
+                        if (replacementDevice != null)
+                        {
+                            deviceInfo = $"{replacementDevice.DeviceName} ({replacementDevice.DeviceCode})";
+                        }
+                    }
+
+                    // Create the install task
+                    var task = new Tasks
+                    {
+                        Id = Guid.NewGuid(),
+                        TaskName = $"Lắp đặt máy - {deviceInfo}",
+                        TaskType = TaskType.Installation,
+                        TaskDescription = $"Lặp đặt máy {deviceInfo} tại vị trí: {requestInfo.Location}",
+                        StartTime = request.StartDate ?? DateTime.UtcNow,
+                        ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(3), // Default 3 hours for installation
+                        Status = Status.Pending,
+                        Priority = Priority.Medium,
+                        AssigneeId = request.AssigneeId,
+                        TaskGroupId = taskGroupId,
+                        OrderIndex = orderIndex,
+                        CreatedDate = DateTime.UtcNow,
+                        CreatedBy = userId,
+                        IsDeleted = false
+                    };
+                    await _context.Tasks.AddAsync(task);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return task.Id;
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            });
+        }
         public async Task<bool> UpdateTaskStatusAsync(Guid taskId, Guid userId)
         {
             var task = await _context.Tasks
@@ -1040,6 +1484,182 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             await _context.SaveChangesAsync();
 
             return true;
+        }
+        public async Task<bool> IsTaskCompletedInReqestAsync(Guid requestId, TaskType taskType)
+        {
+            var report = await _context.Reports
+                .Include(r => r.TaskGroups)
+                    .ThenInclude(tg => tg.Tasks)
+                        .FirstOrDefaultAsync(r => r.RequestId == requestId);
+
+            if (report == null)
+                return false;
+
+            // Check if any task of the given type is not completed
+            return report.TaskGroups
+                .SelectMany(tg => tg.Tasks)
+                .Any(t => t.TaskType == taskType && t.Status == Status.Completed);
+        }
+
+        public async Task<(List<GetSingleTaskResponse> Tasks, int TotalCount)> GetAllSingleTasksAsync(string? taskType, string? status, string? priority, string? order, int pageNumber, int pageSize)
+        {
+            var query = _context.Tasks
+                .Include(t => t.Assignee)
+                .Where(t => !t.IsDeleted); // Single tasks (not in groups)
+
+            // Apply filters
+            if (!string.IsNullOrEmpty(taskType) && Enum.TryParse<TaskType>(taskType, true, out var parsedTaskType))
+            {
+                query = query.Where(t => t.TaskType == parsedTaskType);
+            }
+
+            if (!string.IsNullOrEmpty(status) && Enum.TryParse<Status>(status, true, out var parsedStatus))
+            {
+                query = query.Where(t => t.Status == parsedStatus);
+            }
+
+            if (!string.IsNullOrEmpty(priority) && Enum.TryParse<Priority>(priority, true, out var parsedPriority))
+            {
+                query = query.Where(t => t.Priority == parsedPriority);
+            }
+            if (!string.IsNullOrEmpty(order) && Enum.TryParse<SearchOrder>(order, true, out var parsedOrder))
+            {
+                query = parsedOrder switch
+                {
+                    //SearchOrder.Ascending => query.OrderBy(t => t.),      // A-Z
+                    //SearchOrder.Descending => query.OrderByDescending(t => t.SomeTextField), // Z-A
+                    SearchOrder.Latest => query.OrderByDescending(t => t.CreatedDate), // newest first
+                    SearchOrder.Oldest => query.OrderBy(t => t.CreatedDate),           // oldest first
+                    _ => query.OrderByDescending(t => t.CreatedDate)                   // default
+                };
+            }
+
+
+
+            var totalCount = await query.CountAsync();
+
+            var tasks = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(t => new GetSingleTaskResponse
+                {
+                    TaskId = t.Id,
+                    TaskName = t.TaskName,
+                    TaskDescription = t.TaskDescription,
+                    TaskType = t.TaskType.ToString(),
+                    Priority = t.Priority.ToString(),
+                    Status = t.Status.ToString(),
+                    StartTime = t.StartTime,
+                    ExpectedTime = t.ExpectedTime,
+                    EndTime = t.EndTime,
+                    AssigneeName = t.Assignee.FullName,
+                    AssigneeId = t.AssigneeId,
+                    CreatedDate = t.CreatedDate,
+                    ModifiedDate = t.ModifiedDate,
+                    RequestId = _context.Requests
+                        .Where(r => r.ReportId != null &&
+                                   _context.Reports.Any(rep => rep.Id == r.ReportId &&
+                                                              rep.TaskGroups.Any(tg => tg.Tasks.Any(task => task.Id == t.Id))))
+                        .Select(r => r.Id)
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
+
+            return (tasks, totalCount);
+        }
+
+        public async Task<(List<GetGroupTaskResponse> Groups, int TotalCount)> GetAllGroupTasksAsync(int pageNumber, int pageSize)
+        {
+            var query = _context.TaskGroups
+                .Include(tg => tg.Tasks.Where(t => !t.IsDeleted))
+                    .ThenInclude(t => t.Assignee)
+                .Include(tg => tg.Report)
+                    .ThenInclude(r => r.Request)
+                .Where(tg => !tg.IsDeleted)
+                .OrderByDescending(tg => tg.CreatedDate);
+
+            var totalCount = await query.CountAsync();
+
+            var groups = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(tg => new GetGroupTaskResponse
+                {
+                    TaskGroupId = tg.Id,
+                    GroupName = tg.GroupName,
+                    GroupType = tg.GroupType.ToString(),
+                    CreatedDate = tg.CreatedDate,
+                    RequestId = tg.Report.Request.Id,
+                    Tasks = tg.Tasks
+                        .OrderBy(t => t.OrderIndex)
+                        .Select(t => new TaskInGroupResponse
+                        {
+                            TaskId = t.Id,
+                            TaskName = t.TaskName,
+                            TaskDescription = t.TaskDescription,
+                            TaskType = t.TaskType.ToString(),
+                            Priority = t.Priority.ToString(),
+                            Status = t.Status.ToString(),
+                            OrderIndex = t.OrderIndex ?? 0,
+                            StartTime = t.StartTime,
+                            ExpectedTime = t.ExpectedTime,
+                            EndTime = t.EndTime,
+                            AssigneeName = t.Assignee.FullName,
+                            AssigneeId = t.AssigneeId,
+                            CreatedDate = t.CreatedDate
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+
+            return (groups, totalCount);
+        }
+
+        public async Task<(List<GetGroupTaskResponse> Groups, int TotalCount)> GetGroupTasksByRequestIdAsync(Guid requestId, int pageNumber, int pageSize)
+        {
+            var query = _context.TaskGroups
+                .Include(tg => tg.Tasks.Where(t => !t.IsDeleted))
+                    .ThenInclude(t => t.Assignee)
+                .Include(tg => tg.Report)
+                    .ThenInclude(r => r.Request)
+                .Where(tg => !tg.IsDeleted && tg.Report.RequestId == requestId)
+                .OrderByDescending(tg => tg.CreatedDate);
+
+            var totalCount = await query.CountAsync();
+
+            var groups = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(tg => new GetGroupTaskResponse
+                {
+                    TaskGroupId = tg.Id,
+                    GroupName = tg.GroupName,
+                    GroupType = tg.GroupType.ToString(),
+                    CreatedDate = tg.CreatedDate,
+                    RequestId = requestId,
+                    Tasks = tg.Tasks
+                        .OrderBy(t => t.OrderIndex)
+                        .Select(t => new TaskInGroupResponse
+                        {
+                            TaskId = t.Id,
+                            TaskName = t.TaskName,
+                            TaskDescription = t.TaskDescription,
+                            TaskType = t.TaskType.ToString(),
+                            Priority = t.Priority.ToString(),
+                            Status = t.Status.ToString(),
+                            OrderIndex = t.OrderIndex ?? 0,
+                            StartTime = t.StartTime,
+                            ExpectedTime = t.ExpectedTime,
+                            EndTime = t.EndTime,
+                            AssigneeName = t.Assignee.FullName,
+                            AssigneeId = t.AssigneeId,
+                            CreatedDate = t.CreatedDate
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+
+            return (groups, totalCount);
         }
 
     }

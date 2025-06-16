@@ -1,18 +1,19 @@
-﻿using System;
+﻿using FluentValidation;
+using GRRWS.Application.Common.Result;
+using GRRWS.Application.Interface.IService;
+using GRRWS.Domain.Entities;
+using GRRWS.Domain.Enum;
+using GRRWS.Infrastructure.Common;
+using GRRWS.Infrastructure.DTOs.Common;
+using GRRWS.Infrastructure.DTOs.Common.Message;
+using GRRWS.Infrastructure.DTOs.Device;
+using GRRWS.Infrastructure.DTOs.History;
+using GRRWS.Infrastructure.DTOs.Paging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using FluentValidation;
-using GRRWS.Application.Common.Result;
-using GRRWS.Application.Interface.IService;
-using GRRWS.Domain.Entities;
-using GRRWS.Infrastructure.Common;
-using GRRWS.Infrastructure.DTOs.Device;
-using GRRWS.Infrastructure.DTOs.Paging;
-using GRRWS.Infrastructure.DTOs.Common;
-using GRRWS.Infrastructure.DTOs.Common.Message;
-using GRRWS.Infrastructure.DTOs.History;
 
 public class DeviceService : IDeviceService
 {
@@ -62,7 +63,7 @@ public class DeviceService : IDeviceService
             InstallationDate = request.InstallationDate,
             Description = request.Description,
             PhotoUrl = request.PhotoUrl,
-            Status = request.Status,
+            Status = Enum.TryParse<DeviceStatus>(request.Status, out var status) ? status : DeviceStatus.Active,
             IsUnderWarranty = request.IsUnderWarranty,
             Specifications = request.Specifications,
             PurchasePrice = request.PurchasePrice,
@@ -96,7 +97,7 @@ public class DeviceService : IDeviceService
             InstallationDate = device.InstallationDate,
             Description = device.Description,
             PhotoUrl = device.PhotoUrl,
-            Status = device.Status,
+            Status = device.Status.ToString(),
             PositionIndex = device.Position?.Index,
             ZoneName = device.Position?.Zone?.ZoneName,
             AreaName = device.Position?.Zone?.Area?.AreaName,
@@ -128,7 +129,7 @@ public class DeviceService : IDeviceService
             InstallationDate = d.InstallationDate,
             Description = d.Description,
             PhotoUrl = d.PhotoUrl,
-            Status = d.Status,
+            Status = d.Status.ToString(),
             IsUnderWarranty = d.IsUnderWarranty,
             Specifications = d.Specifications,
             PurchasePrice = d.PurchasePrice,
@@ -188,7 +189,7 @@ public class DeviceService : IDeviceService
         device.InstallationDate = request.InstallationDate;
         device.Description = request.Description;
         device.PhotoUrl = null;
-        device.Status = request.Status;
+        device.Status = Enum.TryParse<DeviceStatus>(request.Status, out var status) ? status : device.Status;
         device.IsUnderWarranty = request.IsUnderWarranty;
         device.Specifications = request.Specifications;
         device.PurchasePrice = request.PurchasePrice;

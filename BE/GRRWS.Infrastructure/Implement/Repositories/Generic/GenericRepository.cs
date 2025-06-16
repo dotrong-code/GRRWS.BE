@@ -125,5 +125,10 @@ namespace GRRWS.Infrastructure.Implement.Repositories.Generic
 
             return await _context.Set<T>().AnyAsync(e => EF.Property<Guid>(e, "Id") == id.Value);
         }
+        public async Task UpdateRangeAsync(IEnumerable<T> e)
+        {
+            _context.Set<T>().UpdateRange(e);
+            await _context.SaveChangesAsync();
+        }
     }
 }

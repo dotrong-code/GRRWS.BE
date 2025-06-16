@@ -19,6 +19,7 @@ using GRRWS.Infrastructure.DTOs.Device;
 using GRRWS.Infrastructure.DTOs.DeviceWarranty;
 using GRRWS.Infrastructure.DTOs.Position;
 using GRRWS.Infrastructure.DTOs.Task;
+using GRRWS.Infrastructure.DTOs.Task.Get;
 using GRRWS.Infrastructure.DTOs.User.Login;
 using GRRWS.Infrastructure.DTOs.User.Register;
 using GRRWS.Infrastructure.DTOs.User.Update;
@@ -69,7 +70,9 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IValidator<CreateDeviceWarrantyRequest>, CreateDeviceWarrantyRequestValidator>();
             services.AddTransient<IValidator<UpdateDeviceWarrantyRequest>, UpdateDeviceWarrantyRequestValidator>();
 
-
+            // In Program.cs or Startup.cs
+            services.AddTransient<IValidator<GetAllSingleTasksRequest>, GetAllSingleTasksValidator>();
+            services.AddTransient<IValidator<GetTasksByRequestIdRequest>, GetTasksByRequestIdValidator>();
             services.AddTransient<IValidator<StartTaskRequest>, StartTaskRequestValidator>();
             services.AddTransient<IValidator<CreateTaskReportRequest>, CreateTaskReportRequestValidator>();
 
@@ -111,6 +114,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IErrorGuidelineService, ErrorGuidelineService>();
             services.AddTransient<ISparePartUsageService, SparePartUsageService>();
             services.AddTransient<ISparepartService, SparepartService>();
+            services.AddTransient<ITaskGroupService, TaskGroupService>();
 
             #endregion
 

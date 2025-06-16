@@ -4,6 +4,7 @@ using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.Task;
 using GRRWS.Infrastructure.DTOs.Task.ActionTask;
+using GRRWS.Infrastructure.DTOs.Task.Get;
 using GRRWS.Infrastructure.DTOs.Task.Repair;
 using GRRWS.Infrastructure.DTOs.Task.Warranty;
 using Microsoft.AspNetCore.Authorization;
@@ -61,25 +62,6 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Warranty task created successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
-
-        [HttpGet("uninstall-task/{taskId}")]
-        public async Task<IResult> GetUninstallTaskDetails(Guid taskId)
-        {
-            var result = await _taskService.GetDetailUninstallTaskForMechanicByIdAsync(taskId);
-            return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, "Uninstall task details retrieved successfully")
-                : ResultExtensions.ToProblemDetails(result);
-        }
-
-        [HttpGet("install-task/{taskId}")]
-        public async Task<IResult> GetInstallTaskDetails(Guid taskId)
-        {
-            var result = await _taskService.GetDetailInstallTaskForMechanicByIdAsync(taskId);
-            return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, "Install task details retrieved successfully")
-                : ResultExtensions.ToProblemDetails(result);
-        }
         [Authorize]
         [HttpPost("repair-task")]
         public async Task<IResult> CreateRepairTask([FromBody] CreateRepairTaskRequest request)
@@ -98,7 +80,6 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Warranty task created successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
         [HttpGet("warranty-task-submit/{taskId}")]
         public async Task<IResult> GetWarrantySubmitTaskDetails(Guid taskId)
         {
@@ -121,6 +102,22 @@ namespace GRRWS.Host.Controllers
             var result = await _taskService.GetDetailtRepairTaskForMechanicByIdAsync(taskId);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Warranty task details retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpGet("uninstall-task/{taskId}")]
+        public async Task<IResult> GetUninstallTaskDetails(Guid taskId)
+        {
+            var result = await _taskService.GetDetailUninstallTaskForMechanicByIdAsync(taskId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Uninstall task details retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpGet("install-task/{taskId}")]
+        public async Task<IResult> GetInstallTaskDetails(Guid taskId)
+        {
+            var result = await _taskService.GetDetailInstallTaskForMechanicByIdAsync(taskId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Install task details retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
         [HttpPut("status/{taskId}")]
@@ -161,16 +158,6 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
-
-        [HttpGet("details/{taskId}")]
-        public async Task<IResult> GetTaskDetails(Guid taskId)
-        {
-            var result = await _taskService.GetTaskDetailsAsync(taskId);
-            return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, "Task details retrieved successfully")
-                : ResultExtensions.ToProblemDetails(result);
-        }
-
         [HttpPost("report")]
         public async Task<IResult> CreateTaskReport([FromBody] CreateTaskReportRequest request)
         {
@@ -188,15 +175,39 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IResult> GetById(Guid id)
+        [HttpGet("single-tasks")]
+        public async Task<IResult> GetAllSingleTasks([FromQuery] GetAllSingleTasksRequest request)
         {
-            var result = await _taskService.GetByIdAsync(id);
+            var result = await _taskService.GetAllSingleTasksAsync(request);
             return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved task")
+                ? ResultExtensions.ToSuccessDetails(result, "Single tasks retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+        [HttpGet("groups")]
+        public async Task<IResult> GetAllGroupTasks([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            var result = await _taskService.GetAllGroupTasksAsync(pageNumber, pageSize);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Task groups retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
 
 
+        [HttpGet("groups/request/{requestId:guid}")]
+        public async Task<IResult> GetGroupTasksByRequestId(Guid requestId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            var request = new GetTasksByRequestIdRequest
+            {
+                RequestId = requestId,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            var result = await _taskService.GetGroupTasksByRequestIdAsync(request);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Task groups retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }

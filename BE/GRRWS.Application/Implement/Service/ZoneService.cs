@@ -1,17 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentValidation;
+﻿using FluentValidation;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
+using GRRWS.Infrastructure.DTOs.Device;
 using GRRWS.Infrastructure.DTOs.Paging;
+using GRRWS.Infrastructure.DTOs.Position;
 using GRRWS.Infrastructure.DTOs.Zone;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -127,6 +129,57 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(ZoneErrorMessage.ZoneDeleteFailed());
             }
             return Result.SuccessWithObject(result);
+        }
+        public async Task<Result> GetPositionsAndDevicesByZoneAsync(Guid zoneId, int pageNumber, int pageSize)
+        {
+            var zone = await _unitOfWork.ZoneRepository.GetByIdAsync(zoneId);
+            if (zone == null)
+            {
+                return Result.Failure(ZoneErrorMessage.ZoneNotExist());
+            }
+
+            var (positions, totalCount) = await _unitOfWork.PositionRepository.GetAllPositionsAsync(zoneId, pageNumber, pageSize);
+            var positionResponses = positions.Select(p => new GetPositionResponse
+            {
+                Id = p.Id,
+                Index = p.Index,
+                ZoneId = p.ZoneId,
+                DeviceId = p.DeviceId,
+                CreatedDate = p.CreatedDate,
+                ModifiedDate = p.ModifiedDate,
+                Device = p.Device != null ? new GetDeviceResponse
+                {
+                    Id = p.Device.Id,
+                    DeviceName = p.Device.DeviceName,
+                    DeviceCode = p.Device.DeviceCode,
+                    SerialNumber = p.Device.SerialNumber,
+                    Model = p.Device.Model,
+                    Manufacturer = p.Device.Manufacturer,
+                    ManufactureDate = p.Device.ManufactureDate,
+                    InstallationDate = p.Device.InstallationDate,
+                    Description = p.Device.Description,
+                    PhotoUrl = p.Device.PhotoUrl,
+                    Status = p.Device.Status,
+                    IsUnderWarranty = p.Device.IsUnderWarranty,
+                    Specifications = p.Device.Specifications,
+                    PurchasePrice = p.Device.PurchasePrice,
+                    Supplier = p.Device.Supplier,
+                    MachineId = p.Device.MachineId,
+                    PositionId = p.Device.PositionId,
+                    CreatedDate = p.Device.CreatedDate,
+                    ModifiedDate = p.Device.ModifiedDate
+                } : null
+            }).ToList();
+
+            var response = new PagedResponse<GetPositionResponse>
+            {
+                Data = positionResponses,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            return Result.SuccessWithObject(response);
         }
     }
 }

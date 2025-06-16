@@ -43,7 +43,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 new Zone
                 {
                     Id = Guid.Parse("c1d2e3f4-0004-0004-0004-000000000004"),
-                    ZoneName = "Khu Cắt May",
+                    ZoneName = "Phân xưởng Cắt May",
                     ZoneCode = "A04",
                     AreaId = Guid.Parse("b1c2d3e4-0001-0001-0001-000000000001"),
                     CreatedDate = DateTime.UtcNow,
@@ -52,7 +52,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 new Zone
                 {
                     Id = Guid.Parse("c1d2e3f4-0005-0005-0005-000000000005"),
-                    ZoneName = "Khu Chuẩn Bị Vải",
+                    ZoneName = "Tổ Chuẩn Bị Vải",
                     ZoneCode = "A05",
                     AreaId = Guid.Parse("b1c2d3e4-0001-0001-0001-000000000001"),
                     CreatedDate = DateTime.UtcNow,
@@ -71,7 +71,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 new Zone
                 {
                     Id = Guid.Parse("c1d2e3f4-0006-0006-0006-000000000006"),
-                    ZoneName = "Khu May Nặng A",
+                    ZoneName = "Dây Chuyền May Nặng A",
                     ZoneCode = "B01",
                     AreaId = Guid.Parse("b1c2d3e4-0002-0002-0002-000000000002"),
                     CreatedDate = DateTime.UtcNow,
@@ -80,7 +80,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 new Zone
                 {
                     Id = Guid.Parse("c1d2e3f4-0007-0007-0007-000000000007"),
-                    ZoneName = "Khu May Nặng B",
+                    ZoneName = "Dây Chuyền May Nặng B",
                     ZoneCode = "B02",
                     AreaId = Guid.Parse("b1c2d3e4-0002-0002-0002-000000000002"),
                     CreatedDate = DateTime.UtcNow,
@@ -89,7 +89,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 new Zone
                 {
                     Id = Guid.Parse("c1d2e3f4-0008-0008-0008-000000000008"),
-                    ZoneName = "Khu Cắt Gọt và Đóng Gói",
+                    ZoneName = "Tổ Cắt Gọt và Đóng Gói",
                     ZoneCode = "B03",
                     AreaId = Guid.Parse("b1c2d3e4-0002-0002-0002-000000000002"),
                     CreatedDate = DateTime.UtcNow,
@@ -100,7 +100,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 new Zone
                 {
                     Id = Guid.Parse("c1d2e3f4-0009-0009-0009-000000000009"),
-                    ZoneName = "Khu Kiểm Tra 1",
+                    ZoneName = "Bộ phận Kiểm Tra 1",
                     ZoneCode = "KT1",
                     AreaId = Guid.Parse("b1c2d3e4-0003-0003-0003-000000000003"),
                     CreatedDate = DateTime.UtcNow,
@@ -109,7 +109,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 new Zone
                 {
                     Id = Guid.Parse("c1d2e3f4-0010-0010-0010-000000000010"),
-                    ZoneName = "Khu Kiểm Tra 2",
+                    ZoneName = "Bộ phận Kiểm Tra 2",
                     ZoneCode = "KT2",
                     AreaId = Guid.Parse("b1c2d3e4-0003-0003-0003-000000000003"),
                     CreatedDate = DateTime.UtcNow,
@@ -120,7 +120,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 new Zone
                 {
                     Id = Guid.Parse("c1d2e3f4-0012-0012-0012-000000000012"),
-                    ZoneName = "Khu Cắt Vải Tự Động",
+                    ZoneName = "Dây Chuyền Cắt Vải Tự Động",
                     ZoneCode = "CV1",
                     AreaId = Guid.Parse("b1c2d3e4-0004-0004-0004-000000000004"),
                     CreatedDate = DateTime.UtcNow,
@@ -129,7 +129,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 new Zone
                 {
                     Id = Guid.Parse("c1d2e3f4-0013-0013-0013-000000000013"),
-                    ZoneName = "Khu May Nặng C",
+                    ZoneName = "Dây Chuyền May Nặng C",
                     ZoneCode = "CV2",
                     AreaId = Guid.Parse("b1c2d3e4-0004-0004-0004-000000000004"),
                     CreatedDate = DateTime.UtcNow,
@@ -140,9 +140,19 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 new Zone
                 {
                     Id = Guid.Parse("c1d2e3f4-0014-0014-0014-000000000014"),
-                    ZoneName = "Khu May Nặng D",
+                    ZoneName = "Dây Chuyền May Nặng D",
                     ZoneCode = "TV1",
                     AreaId = Guid.Parse("b1c2d3e4-0005-0005-0005-000000000005"),
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                },
+
+                new Zone
+                {
+                    Id = Guid.Parse("c1d2e3f4-0015-0015-0015-000000000015"),
+                    ZoneName = "Dây Chuyền Sản Xuất Nhỏ", 
+                    ZoneCode = "SX1",
+                    AreaId = Guid.Parse("b1c2d3e4-0006-0006-0006-000000000006"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 },
@@ -150,8 +160,8 @@ namespace GRRWS.Infrastructure.DB.Configuration
                 // KLK
                 new Zone
                 {
-                    Id = Guid.Parse("c1d2e3f4-0015-0015-0015-000000000015"),
-                    ZoneName = "Khu Lưu Trữ Máy May",
+                    Id = Guid.Parse("c1d2e3f4-0015-0015-0015-000000000016"),
+                    ZoneName = "Kho Lưu Trữ Máy May", 
                     ZoneCode = "LK1",
                     AreaId = Guid.Parse("b1c2d3e4-0006-0006-0006-000000000006"),
                     CreatedDate = DateTime.UtcNow,

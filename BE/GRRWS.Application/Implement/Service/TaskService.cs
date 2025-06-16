@@ -1,7 +1,9 @@
 ﻿using FluentValidation;
 using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
+using GRRWS.Application.Common.Validator.Task;
 using GRRWS.Application.Interface.IService;
+
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
@@ -12,58 +14,251 @@ using GRRWS.Infrastructure.DTOs.Task.ActionTask;
 using GRRWS.Infrastructure.DTOs.Task.Get;
 using GRRWS.Infrastructure.DTOs.Task.Repair;
 using GRRWS.Infrastructure.DTOs.Task.Warranty;
-using Microsoft.Extensions.Logging;
 
 namespace GRRWS.Application.Implement.Service
 {
     public class TaskService : ITaskService
     {
         private readonly UnitOfWork _unitOfWork;
+        private readonly ITaskGroupService _taskGroupService;
         private readonly IValidator<StartTaskRequest> _startTaskValidator;
         private readonly IValidator<CreateTaskReportRequest> _createReportValidator;
         private readonly CheckIsExist _checkIsExist;
-        private readonly ILogger<TaskService> _logger;
+
         public TaskService(UnitOfWork unitOfWork,
+            ITaskGroupService taskGroupService,
             IValidator<StartTaskRequest> startTaskValidator,
             IValidator<CreateTaskReportRequest> createReportValidator,
-            CheckIsExist checkIsExist, ILogger<TaskService> logger)
+            CheckIsExist checkIsExist)
         {
             _unitOfWork = unitOfWork;
+            _taskGroupService = taskGroupService;
             _startTaskValidator = startTaskValidator;
             _createReportValidator = createReportValidator;
             _checkIsExist = checkIsExist;
-            _logger = logger;
         }
 
         #region
         public async Task<Result> CreateWarrantyTask(CreateWarrantyTaskRequest request, Guid userId)
         {
-            // Validate inputs
-            var validationResult = await ValidateRequestAsync(request);
-            if (!validationResult.IsSuccess)
+            var requestCheck = await _checkIsExist.Request(request.RequestId);
+            if (!requestCheck.IsSuccess) return requestCheck;
+
+            var userCheck = await _checkIsExist.User(userId);
+            if (!userCheck.IsSuccess) return userCheck;
+
+            var assigneeCheck = await _checkIsExist.User(request.AssigneeId, allowNull: true);
+            if (!assigneeCheck.IsSuccess) return assigneeCheck;
+            var isTaskProcessing = await IsTaskCompletedInRequestAsync(request.RequestId, TaskType.WarrantySubmission);
+            if (!isTaskProcessing)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Conflict", "A warranty task is already being processed for this request."));
+
+            try
             {
-                return validationResult;
+                var requestInfo = await _unitOfWork.TaskRepository.GetRequestInfoAsync(request.RequestId);
+                if (requestInfo == null)
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found."));
+
+                // Always create new warranty task group
+                var taskGroupId = await _taskGroupService.CreateOrGetTaskGroupAsync(
+                    null, // Always null to force creation
+                    TaskType.Warranty,
+                    requestInfo.DeviceName,
+                    requestInfo.ReportId, // Use ReportId from RequestInfo
+                    userId);
+
+                var orderIndex = 1; // First task in new warranty group (WarrantySubmission)
+
+                var taskId = await _unitOfWork.TaskRepository.CreateWarrantyTaskWithGroup(request, userId, taskGroupId, orderIndex);
+
+                return Result.SuccessWithObject(new
+                {
+                    Message = "Warranty task created successfully!",
+                    TaskId = taskId,
+                    TaskGroupId = taskGroupId
+                });
             }
-            // Create task
-            var taskId = await _unitOfWork.TaskRepository.CreateWarrantyTask(request, userId);
-
-            //Create mechanic shift
-            var now = DateTime.Now;
-            var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(now);
-
-            var createdMechanicShift = await _unitOfWork.MechanicShiftRepository.CreateMechanicShift(userId, taskId, currentShift.Id);
-
-            if (!createdMechanicShift)
+            catch (Exception ex)
             {
-                _logger.LogError("Failed to create mechanic shift for task {TaskId} at {Time}", taskId, now);
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Failed to create mechanic shift for the task.", 0));
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Error", ex.Message));
             }
+        }
+        public async Task<Result> CreateRepairTask(CreateRepairTaskRequest request, Guid userId)
+        {
+            var requestCheck = await _checkIsExist.Request(request.RequestId);
+            if (!requestCheck.IsSuccess) return requestCheck;
 
-            return Result.SuccessWithObject(new CreateWarrantyTaskResponse
+            var userCheck = await _checkIsExist.User(userId);
+            if (!userCheck.IsSuccess) return userCheck;
+
+            var assigneeCheck = await _checkIsExist.User(request.AssigneeId, allowNull: true);
+            if (!assigneeCheck.IsSuccess) return assigneeCheck;
+            var isTaskProcessing = await IsTaskCompletedInRequestAsync(request.RequestId, TaskType.Repair);
+            if (!isTaskProcessing)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Conflict", "A repair task is already being processed for this request."));
+
+            try
             {
-                Message = "Warranty task created successfully!",
-                TaskId = taskId
-            });
+                var requestInfo = await _unitOfWork.TaskRepository.GetRequestInfoAsync(request.RequestId);
+                if (requestInfo == null)
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found."));
+
+                // Always create new repair task group
+                var taskGroupId = await _taskGroupService.CreateOrGetTaskGroupAsync(
+                    null, // Always null to force creation
+                    TaskType.Repair,
+                    requestInfo.DeviceName,
+                    requestInfo.ReportId, // Use ReportId from RequestInfo
+                    userId);
+
+                var orderIndex = 1; // First task in new repair group
+
+                var taskId = await _unitOfWork.TaskRepository.CreateRepairTaskWithGroup(request, userId, taskGroupId, orderIndex);
+
+                return Result.SuccessWithObject(new
+                {
+                    Message = "Repair task created successfully!",
+                    TaskId = taskId,
+                    TaskGroupId = taskGroupId
+                });
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Error", ex.Message));
+            }
+        }
+        public async Task<Result> CreateUninstallTask(CreateUninstallTaskRequest request, Guid userId)
+        {
+            var requestCheck = await _checkIsExist.Request(request.RequestId);
+            if (!requestCheck.IsSuccess) return requestCheck;
+
+            var userCheck = await _checkIsExist.User(userId);
+            if (!userCheck.IsSuccess) return userCheck;
+
+            var assigneeCheck = await _checkIsExist.User(request.AssigneeId, allowNull: true);
+            if (!assigneeCheck.IsSuccess) return assigneeCheck;
+
+            var taskGroupCheck = await _checkIsExist.TaskGroup(request.TaskGroupId, allowNull: true);
+            if (!taskGroupCheck.IsSuccess) return taskGroupCheck;
+            var isTaskProcessing = await IsTaskCompletedInRequestAsync(request.RequestId, TaskType.Uninstallation);
+            if (!isTaskProcessing)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Conflict", "An uninstallation task is already being processed for this request."));
+            try
+            {
+                var requestInfo = await _unitOfWork.TaskRepository.GetRequestInfoAsync(request.RequestId);
+                if (requestInfo == null)
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found."));
+
+                Guid taskGroupId;
+                int orderIndex;
+
+                if (request.TaskGroupId.HasValue)
+                {
+                    // Use existing task group
+                    taskGroupId = request.TaskGroupId.Value;
+                    var groupType = await GetExistingGroupTypeAsync(request.TaskGroupId.Value);
+
+                    // For Warranty and Repair groups, Uninstall should always be OrderIndex 1
+                    if (groupType == TaskType.Warranty || groupType == TaskType.Repair)
+                    {
+                        orderIndex = 1;
+                        // Push all existing tasks down by 1
+                        await _taskGroupService.UpdateExistingTasksOrderAsync(taskGroupId, 1, userId);
+                    }
+                    else // Replacement group
+                    {
+                        orderIndex = await _taskGroupService.GetNextOrderIndexAsync(taskGroupId, TaskType.Uninstallation);
+                    }
+                }
+                else
+                {
+                    // Create new replacement task group
+                    taskGroupId = await _taskGroupService.CreateOrGetTaskGroupAsync(
+                        null,
+                        TaskType.Replacement,
+                        requestInfo.DeviceName,
+                        requestInfo.ReportId, // Use ReportId from RequestInfo
+                        userId);
+                    orderIndex = 1; // First task in new replacement group
+                }
+
+                var taskId = await _unitOfWork.TaskRepository.CreateUninstallTaskWithGroup(request, userId, taskGroupId, orderIndex);
+
+                return Result.SuccessWithObject(new
+                {
+                    Message = "Uninstall task created successfully!",
+                    TaskId = taskId,
+                    TaskGroupId = taskGroupId
+                });
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Error", ex.Message));
+            }
+        }
+        public async Task<Result> CreateInstallTask(CreateInstallTaskRequest request, Guid userId)
+        {
+            var requestCheck = await _checkIsExist.Request(request.RequestId);
+            if (!requestCheck.IsSuccess) return requestCheck;
+
+            var userCheck = await _checkIsExist.User(userId);
+            if (!userCheck.IsSuccess) return userCheck;
+
+            var assigneeCheck = await _checkIsExist.User(request.AssigneeId, allowNull: true);
+            if (!assigneeCheck.IsSuccess) return assigneeCheck;
+
+            var taskGroupCheck = await _checkIsExist.TaskGroup(request.TaskGroupId, allowNull: true);
+            if (!taskGroupCheck.IsSuccess) return taskGroupCheck;
+
+            var newDeviceCheck = await _checkIsExist.Device(request.NewDeviceId, allowNull: true);
+            if (!newDeviceCheck.IsSuccess) return newDeviceCheck;
+            var isTaskProcessing = await IsTaskCompletedInRequestAsync(request.RequestId, TaskType.Installation);
+            if (!isTaskProcessing)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Conflict", "An installation task is already being processed for this request."));
+            try
+            {
+                var requestInfo = await _unitOfWork.TaskRepository.GetRequestInfoAsync(request.RequestId);
+                if (requestInfo == null)
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found."));
+
+                var deviceInfo = request.NewDeviceId.HasValue
+                    ? await _unitOfWork.TaskRepository.GetDeviceInfoAsync(request.NewDeviceId.Value)
+                    : "Unknown Device";
+
+                Guid taskGroupId;
+                int orderIndex;
+
+                if (request.TaskGroupId.HasValue)
+                {
+                    // Use existing task group
+                    taskGroupId = request.TaskGroupId.Value;
+                    orderIndex = await _taskGroupService.GetNextOrderIndexAsync(taskGroupId, TaskType.Installation);
+                }
+                else
+                {
+                    // Create new replacement task group
+                    taskGroupId = await _taskGroupService.CreateOrGetTaskGroupAsync(
+                        null,
+                        TaskType.Replacement,
+                        deviceInfo,
+                        requestInfo.ReportId, // Use ReportId from RequestInfo
+                        userId);
+                    orderIndex = 1; // First task in new replacement group
+                }
+
+                var taskId = await _unitOfWork.TaskRepository.CreateInstallTaskWithGroup(request, userId, taskGroupId, orderIndex);
+
+                return Result.SuccessWithObject(new
+                {
+                    Message = "Install task created successfully!",
+                    TaskId = taskId,
+                    TaskGroupId = taskGroupId
+                });
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Error", ex.Message));
+            }
         }
         public async Task<Result> FillInWarrantyTask(FillInWarrantyTask request)
         {
@@ -108,117 +303,26 @@ namespace GRRWS.Application.Implement.Service
             }
             return Result.SuccessWithObject(task);
         }
-        //public  Task<Result> GetDetailReplaceTaskForMechanicByIdAsync(Guid taskId, string type)
-        //{
-        //    //var task = await _unitOfWork.TaskRepository.GetGetDetailWarrantyTaskForMechanicByIdAsync(taskId, type);
-        //    //if (task == null)
-        //    //{
-        //    //    return Result.Failure(TaskErrorMessage.TaskNotExist());
-        //    //}
-        //    return Result.Success();
-        //}
-        public async Task<Result> CreateRepairTask(CreateRepairTaskRequest request, Guid userId)
+        public async Task<Result> GetDetailUninstallTaskForMechanicByIdAsync(Guid taskId)
         {
-            try
+            var task = await _unitOfWork.TaskRepository.GetDetailUninstallTaskForMechanicByIdAsync(taskId);
+            if (task == null)
             {
-                // Create the repair task
-                var taskId = await _unitOfWork.TaskRepository.CreateRepairTask(request, userId);
-
-                //Create mechanic shift
-                var now = DateTime.Now;
-                var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(now);
-
-                var createdMechanicShift = await _unitOfWork.MechanicShiftRepository.CreateMechanicShift(userId, taskId, currentShift.Id);
-
-                if (!createdMechanicShift)
-                {
-                    _logger.LogError("Failed to create mechanic shift for task {TaskId} at {Time}", taskId, now);
-                    return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Failed to create mechanic shift for the task.", 0));
-                }
-
-                return Result.SuccessWithObject(new
-                {
-                    Message = "Repair task created successfully!",
-                    TaskId = taskId
-                });
+                return Result.Failure(TaskErrorMessage.TaskNotExist());
             }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to create repair task: {ex.Message}", ex);
-            }
+            return Result.SuccessWithObject(task);
         }
-
-        public async Task<Result> CreateUninstallTask(CreateUninstallTaskRequest request, Guid userId)
+        public async Task<Result> GetDetailInstallTaskForMechanicByIdAsync(Guid taskId)
         {
-            var requestCheck = await _checkIsExist.Request(request.RequestId);
-            if (!requestCheck.IsSuccess) return requestCheck;
-
-            var userCheck = await _checkIsExist.User(userId);
-            if (!userCheck.IsSuccess) return userCheck;
-            var assigneeCheck = await _checkIsExist.User(request.AssigneeId, allowNull: true);
-            if (!assigneeCheck.IsSuccess) return assigneeCheck;
-            var taskGroupCheck = await _checkIsExist.TaskGroup(request.TaskGroupId, allowNull: true);
-            if (!taskGroupCheck.IsSuccess) return taskGroupCheck;
-            var taskId = await _unitOfWork.TaskRepository.CreateUninstallTask(request, userId);
-
-            //Create mechanic shift
-            var now = DateTime.Now;
-            var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(now);
-
-            var createdMechanicShift = await _unitOfWork.MechanicShiftRepository.CreateMechanicShift(userId, taskId, currentShift.Id);
-
-            if (!createdMechanicShift)
+            var task = await _unitOfWork.TaskRepository.GetDetailInstallTaskForMechanicByIdAsync(taskId);
+            if (task == null)
             {
-                _logger.LogError("Failed to create mechanic shift for task {TaskId} at {Time}", taskId, now);
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Failed to create mechanic shift for the task.", 0));
+                return Result.Failure(TaskErrorMessage.TaskNotExist());
             }
-
-            return Result.SuccessWithObject(new
-            {
-                Message = "Uninstall task created successfully!",
-                TaskId = taskId
-            });
-
+            return Result.SuccessWithObject(task);
         }
-
-        public async Task<Result> CreateInstallTask(CreateInstallTaskRequest request, Guid userId)
-        {
-            var requestCheck = await _checkIsExist.Request(request.RequestId);
-            if (!requestCheck.IsSuccess) return requestCheck;
-            var userCheck = await _checkIsExist.User(userId);
-            if (!userCheck.IsSuccess) return userCheck;
-            var assigneeCheck = await _checkIsExist.User(request.AssigneeId, allowNull: true);
-            if (!assigneeCheck.IsSuccess) return assigneeCheck;
-            var taskGroupCheck = await _checkIsExist.TaskGroup(request.TaskGroupId, allowNull: true);
-            if (!taskGroupCheck.IsSuccess) return taskGroupCheck;
-            var newDeviceCheck = await _checkIsExist.Device(request.NewDeviceId, allowNull: true);
-            if (!newDeviceCheck.IsSuccess) return newDeviceCheck;
-            var taskId = await _unitOfWork.TaskRepository.CreateInstallTask(request, userId);
-            if (request.StartDate is null)
-            {
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", "Start date is required."));
-            }
-
-            //Create mechanic shift
-            var now = DateTime.Now;
-            var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(now);
-
-            var createdMechanicShift = await _unitOfWork.MechanicShiftRepository.CreateMechanicShift(userId, taskId, currentShift.Id);
-
-            if (!createdMechanicShift)
-            {
-                _logger.LogError("Failed to create mechanic shift for task {TaskId} at {Time}", taskId, now);
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Failed to create mechanic shift for the task.", 0));
-            }
-
-            return Result.SuccessWithObject(new
-            {
-                Message = "Install task created successfully!",
-                TaskId = taskId
-            });
-        }
-
         public async Task<Result> UpdateTaskStatusAsync(Guid taskId, Guid userId)
+
         {
             var taskCheck = await _checkIsExist.Task(taskId);
             if (!taskCheck.IsSuccess) return taskCheck;
@@ -234,24 +338,130 @@ namespace GRRWS.Application.Implement.Service
                 UpdatedAt = DateTime.UtcNow
             });
         }
-        public async Task<Result> GetDetailUninstallTaskForMechanicByIdAsync(Guid taskId)
+
+        // Add to TaskService implementation
+        public async Task<Result> GetAllSingleTasksAsync(GetAllSingleTasksRequest request)
         {
-            var task = await _unitOfWork.TaskRepository.GetDetailUninstallTaskForMechanicByIdAsync(taskId);
-            if (task == null)
+            var validator = new GetAllSingleTasksValidator();
+            var validationResult = await validator.ValidateAsync(request);
+
+            if (!validationResult.IsValid)
             {
-                return Result.Failure(TaskErrorMessage.TaskNotExist());
+                var errors = validationResult.Errors.Select(e =>
+                    Infrastructure.DTOs.Common.Error.Validation("ValidationError", e.ErrorMessage)).ToList();
+                return Result.Failures(errors);
             }
-            return Result.SuccessWithObject(task);
+
+            try
+            {
+                var (tasks, totalCount) = await _unitOfWork.TaskRepository.GetAllSingleTasksAsync(
+                    request.TaskType,
+                    request.Status,
+                    request.Priority,
+                    request.Order,
+                    request.PageNumber,
+                    request.PageSize);
+
+                if (!tasks.Any())
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "No single tasks found."));
+                }
+
+                var response = new PagedResponse<GetSingleTaskResponse>
+                {
+                    Data = tasks,
+                    TotalCount = totalCount,
+                    PageNumber = request.PageNumber,
+                    PageSize = request.PageSize
+                };
+
+                return Result.SuccessWithObject(response);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", ex.Message));
+            }
         }
 
-        public async Task<Result> GetDetailInstallTaskForMechanicByIdAsync(Guid taskId)
+        public async Task<Result> GetAllGroupTasksAsync(int pageNumber, int pageSize)
         {
-            var task = await _unitOfWork.TaskRepository.GetDetailInstallTaskForMechanicByIdAsync(taskId);
-            if (task == null)
+            if (pageNumber <= 0)
             {
-                return Result.Failure(TaskErrorMessage.TaskNotExist());
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("ValidationError", "Page number must be greater than 0"));
             }
-            return Result.SuccessWithObject(task);
+
+            if (pageSize <= 0 || pageSize > 100)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("ValidationError", "Page size must be between 1 and 100"));
+            }
+
+            try
+            {
+                var (groups, totalCount) = await _unitOfWork.TaskRepository.GetAllGroupTasksAsync(pageNumber, pageSize);
+
+                if (!groups.Any())
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "No task groups found."));
+                }
+
+                var response = new PagedResponse<GetGroupTaskResponse>
+                {
+                    Data = groups,
+                    TotalCount = totalCount,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                };
+
+                return Result.SuccessWithObject(response);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", ex.Message));
+            }
+        }
+
+        public async Task<Result> GetGroupTasksByRequestIdAsync(GetTasksByRequestIdRequest request)
+        {
+            var validator = new GetTasksByRequestIdValidator();
+            var validationResult = await validator.ValidateAsync(request);
+
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors.Select(e =>
+                    Infrastructure.DTOs.Common.Error.Validation("ValidationError", e.ErrorMessage)).ToList();
+                return Result.Failures(errors);
+            }
+
+            // Check if request exists
+            var requestCheck = await _checkIsExist.Request(request.RequestId);
+            if (!requestCheck.IsSuccess) return requestCheck;
+
+            try
+            {
+                var (groups, totalCount) = await _unitOfWork.TaskRepository.GetGroupTasksByRequestIdAsync(
+                    request.RequestId,
+                    request.PageNumber,
+                    request.PageSize);
+
+                if (!groups.Any())
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "No task groups found for this request."));
+                }
+
+                var response = new PagedResponse<GetGroupTaskResponse>
+                {
+                    Data = groups,
+                    TotalCount = totalCount,
+                    PageNumber = request.PageNumber,
+                    PageSize = request.PageSize
+                };
+
+                return Result.SuccessWithObject(response);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", ex.Message));
+            }
         }
 
         #endregion
@@ -446,126 +656,27 @@ namespace GRRWS.Application.Implement.Service
         #endregion
         #region private methods
         // You can add any private methods here if needed for internal logic
-        private async Task<Result> ValidateRequestAsync(CreateWarrantyTaskRequest request)
+
+        private async Task<TaskType> GetExistingGroupTypeAsync(Guid taskGroupId)
         {
-            if (request == null)
-            {
-                return Result.Failure(ErrorConstants.RequestNotFound());
-            }
-
-            // Check if request exists
-            var requestExists = await _unitOfWork.RequestRepository.GetByIdAsync(request.RequestId);
-            if (requestExists == null)
-            {
-                return Result.Failure(ErrorConstants.RequestNotFound());
-            }
-
-            // Check if user exists
-            if (!await _unitOfWork.UserRepository.IdExistsAsync(request.AssigneeId))
-            {
-                return Result.Failure(ErrorConstants.UserNotFound());
-            }
-
-            // Check if technical issues are provided
-            if (request.TechnicalIssueIds == null || !request.TechnicalIssueIds.Any())
-            {
-                return Result.Failure(ErrorConstants.TechnicalIssueRequired());
-            }
-
-            // Check if report exists
-            var reportId = await _unitOfWork.ErrorDetailRepository.GetReportIdByRequestIdAsync(request.RequestId);
-            if (reportId == Guid.Empty)
-            {
-                return Result.Failure(ErrorConstants.ReportNotFound());
-            }
-
-            return Result.Success();
+            var taskGroup = await _unitOfWork.TaskGroupRepository.GetByIdAsync(taskGroupId);
+            return taskGroup?.GroupType ?? TaskType.Replacement;
         }
-
-        // Error constants for reuse
-        public static class ErrorConstants
+        private static bool ShouldUpdateExistingTasks(TaskType groupType, TaskType taskType)
         {
-            public static Infrastructure.DTOs.Common.Error RequestNotFound() =>
-                Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found");
-            public static Infrastructure.DTOs.Common.Error UserNotFound() =>
-                Infrastructure.DTOs.Common.Error.NotFound("NotFound", "User not found");
-            public static Infrastructure.DTOs.Common.Error TechnicalIssueRequired() =>
-                Infrastructure.DTOs.Common.Error.NotFound("NotFound", "At least one technical issue must be specified");
-            public static Infrastructure.DTOs.Common.Error ReportNotFound() =>
-                Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Report not found for this request");
+            // This method is no longer needed since we handle the logic directly in CreateUninstallTask
+            // But keeping it for backward compatibility if used elsewhere
+            return (groupType == TaskType.Warranty && taskType == TaskType.Uninstallation) ||
+                   (groupType == TaskType.Repair && taskType == TaskType.Uninstallation);
         }
-
-        // DTO for response
-        public class CreateWarrantyTaskResponse
-        {
-            public string Message { get; set; }
-            public Guid TaskId { get; set; }
-        }
-
-        private async Task<Result> CheckRequestExist(Guid requestId)
-        {
-            var request = await _unitOfWork.RequestRepository.IsExistAsync(requestId);
-            if (!request)
-            {
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Request does not exist."));
-            }
-            return Result.Success();
-        }
-        private async Task<Result> CheckUserExist(Guid userId)
-        {
-            var userExists = await _unitOfWork.UserRepository.IdExistsAsync(userId);
-            if (!userExists)
-            {
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "User does not exist."));
-            }
-            return Result.Success();
-        }
-        private async Task<Result> CheckTaskGroupExist(Guid taskGroupId)
-        {
-            var taskGroupExists = await _unitOfWork.TaskGroupRepository.GetByIdAsync(taskGroupId) != null;
-            if (!taskGroupExists)
-            {
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Task group does not exist."));
-            }
-            return Result.Success();
-        }
-
         public Task<Result> GetDetailReplaceTaskForMechanicByIdAsync(Guid taskId, string type)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<Result> GetMechanicRecommendationAsync(int pageSize, int pageIndex)
+        private async Task<bool> IsTaskCompletedInRequestAsync(Guid requestId, TaskType taskType)
         {
-            try
-            {
-                _logger.LogInformation("Fetching recommended mechanics for current time");
-
-                var now = DateTime.Now;
-
-                var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(now);
-
-                if (currentShift == null)
-                {
-                    _logger.LogWarning("No shift found for current time");
-                    return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "No shift is active at the current time.", 0));
-                }
-
-                var recommendations = await _unitOfWork.UserRepository.GetRecommendedMechanicsAsync(now, currentShift.Id, pageIndex, pageSize);
-
-                if (!recommendations.Any())
-                {
-                    _logger.LogWarning("No available mechanics found for shift {ShiftId} on {Date}", currentShift.Id, now.Date);
-                    return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "No available mechanics found for the current shift.", 0));
-                }
-
-                return Result.SuccessWithObject(recommendations);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching recommended mechanics for current time");
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "An error occurred while fetching mechanic recommendations.", 0));
-            }
+            return await _unitOfWork.TaskRepository.IsTaskCompletedInReqestAsync(requestId, taskType);
         }
 
         #endregion

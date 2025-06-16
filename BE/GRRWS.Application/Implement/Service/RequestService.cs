@@ -25,9 +25,9 @@ namespace GRRWS.Application.Implement.Service
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result> GetAllAsync(int pageNumber, int pageSize, string? searchRequestTitle)
+        public async Task<Result> GetAllAsync(int pageNumber, int pageSize, string? search, string? searchType)
         {
-            var (requests, totalCount) = await _requestRepository.GetAllRequestAsync(pageNumber, pageSize, searchRequestTitle);
+            var (requests, totalCount) = await _requestRepository.GetAllRequestAsync(pageNumber, pageSize, search, searchType);
             var dtos = new List<RequestDTO>();
             foreach (var r in requests.Where(r => !r.IsDeleted).OrderByDescending(r => r.CreatedDate))
             {
@@ -43,9 +43,9 @@ namespace GRRWS.Application.Implement.Service
             };
             return Result.SuccessWithObject(response);
         }
-        public async Task<Result> GetRequestByUserIdAsync(Guid userId, int pageNumber, int pageSize, string? searchRequestTitle)
+        public async Task<Result> GetRequestByUserIdAsync(Guid userId, int pageNumber, int pageSize, string? search, string? searchType)
         {
-            var (requests, totalCount) = await _requestRepository.GetRequestByUserIdAsync(userId, pageNumber, pageSize, searchRequestTitle);
+            var (requests, totalCount) = await _requestRepository.GetRequestByUserIdAsync(userId, pageNumber, pageSize, search, searchType);
             var dtos = new List<RequestDTO>();
             foreach (var r in requests.Where(r => !r.IsDeleted).OrderByDescending(r => r.CreatedDate))
             {
@@ -264,8 +264,8 @@ namespace GRRWS.Application.Implement.Service
             var requestIssues = await _requestRepository.GetIssuesByRequestIdAsync(requestId);
             
 
-            //var issues = await MapIssuesWithImagesAsync(requestIssues);
-            return Result.SuccessWithObject(requestIssues);
+            var issues = await MapIssuesWithImagesAsync(requestIssues);
+            return Result.SuccessWithObject(issues);
         }
 
         public async Task<Result> CancelRequestAsync(Infrastructure.DTOs.RequestDTO.CreateRequestFormDTO.CancelRequestDTO dto)

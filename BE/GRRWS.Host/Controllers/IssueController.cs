@@ -21,5 +21,14 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [HttpGet("critical-issue")]
+        public async Task<IResult> GetCriticalMachineIssue()
+        {
+            var criticalIssueId = Guid.Parse("deadbeef-dead-beef-dead-beefdeadbeef");
+            var result = await _issueService.GetIssueByIdAsync(criticalIssueId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }
