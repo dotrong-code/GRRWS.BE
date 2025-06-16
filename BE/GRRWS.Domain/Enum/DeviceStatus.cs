@@ -5,6 +5,9 @@
         Active = 0,
         Inactive = 1,
         InRepair = 2,
-        Retired = 3
+        InUse = 3,
+        InWarranty = 4,
+        Decommissioned = 5,
+
     }
 }
