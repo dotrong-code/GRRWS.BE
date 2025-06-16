@@ -37,7 +37,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Id = Guid.Parse("c1d2e3f4-0033-0033-0033-000000000003"),
                     ShiftName = "Ca Tối",
                     StartTime = TimeSpan.FromHours(17.5),
-                    EndTime = TimeSpan.FromHours(24),
+                    EndTime = TimeSpan.FromHours(23.9),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
                 }
