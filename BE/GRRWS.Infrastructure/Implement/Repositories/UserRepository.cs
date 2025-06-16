@@ -190,7 +190,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .SelectMany(
                     x => x.MechanicShifts.DefaultIfEmpty(),
                     (x, ms) => new { x.User, MechanicShift = ms })
-                .Where(x => x.MechanicShift == null || x.MechanicShift.IsAvailable == true)
                 .GroupBy(x => x.User.Id)
                 .Select(g => g.First().User)
                 .ToListAsync();
