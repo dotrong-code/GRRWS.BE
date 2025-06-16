@@ -24,6 +24,14 @@ namespace GRRWS.Host.Controllers
             _taskService = taskService;
             _contextAccessor = contextAccessor;
         }
+        [HttpGet("mechanicshift/suggest")]
+        public async Task<IResult> GetMechanicRecommendation(int pageSize, int pageIndex)
+        {
+            var result = await _taskService.GetMechanicRecommendationAsync(pageSize, pageIndex);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Get suggest Mechanic successfully!")
+                : ResultExtensions.ToProblemDetails(result);
+        }
         [Authorize]
         [HttpPost("uninstall")]
         public async Task<IResult> CreateUninstallTask([FromBody] CreateUninstallTaskRequest request)

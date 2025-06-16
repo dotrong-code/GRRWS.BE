@@ -54,7 +54,8 @@ namespace GRRWS.Infrastructure.DB
         public DbSet<WarrantyClaim> WarrantyClaims { get; set; }
         public DbSet<WarrantyClaimDocument> WarrantyClaimDocuments { get; set; }
         public DbSet<TaskGroup> TaskGroups { get; set; }
-
+        public DbSet<Shift> Shifts { get; set; }
+        public DbSet<MechanicShift> MechanicShifts { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -92,7 +93,7 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.ApplyConfiguration(new ErrorSparepartConfiguration());
             modelBuilder.ApplyConfiguration(new SupplierConfiguration());
             modelBuilder.ApplyConfiguration(new MachineSparepartConfiguration());
-
+            modelBuilder.ApplyConfiguration(new ShiftConfiguration());
             #endregion
             #region Entity Configurations
 
@@ -850,6 +851,8 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<MachineSparepart>().ToTable("MachineSpareparts");
             modelBuilder.Entity<Supplier>().ToTable("Suppliers");
             modelBuilder.Entity<TaskGroup>().ToTable("TaskGroups");
+            modelBuilder.Entity<Shift>().ToTable("Shifts");
+            modelBuilder.Entity<MechanicShift>().ToTable("MechanicShifts");
             #endregion
         }
     }

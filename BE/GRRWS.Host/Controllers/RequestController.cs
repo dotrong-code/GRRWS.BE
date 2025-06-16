@@ -22,9 +22,9 @@ namespace GRRWS.Host.Controllers
         }
 
         [HttpGet]
-        public async Task<IResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? searchRequestTitle = null)
+        public async Task<IResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? search = null, [FromQuery] string? searchType = null)
         {
-            var result = await _requestService.GetAllAsync(pageNumber, pageSize, searchRequestTitle);
+            var result = await _requestService.GetAllAsync(pageNumber, pageSize, search, searchType);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved requests")
                 : ResultExtensions.ToProblemDetails(result);
@@ -39,10 +39,10 @@ namespace GRRWS.Host.Controllers
         }
         [Authorize]
         [HttpGet("by-user")]
-        public async Task<IResult> GetRequestByUserIdAsync([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? searchRequestTitle = null)
+        public async Task<IResult> GetRequestByUserIdAsync([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? search = null, [FromQuery] string? searchType = null)
         {
             CurrentUserObject currentUser = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
-            var result = await _requestService.GetRequestByUserIdAsync(currentUser.UserId, pageNumber, pageSize, searchRequestTitle);
+            var result = await _requestService.GetRequestByUserIdAsync(currentUser.UserId, pageNumber, pageSize, search, searchType);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved user requests")
                 : ResultExtensions.ToProblemDetails(result);

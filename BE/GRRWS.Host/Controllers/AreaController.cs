@@ -67,5 +67,16 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Area deleted successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [HttpGet("{areaId}/zones")]
+        public async Task<IResult> GetZonesByArea(
+            Guid areaId,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var result = await _areaService.GetZonesByAreaAsync(areaId, pageNumber, pageSize);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Zones retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }
