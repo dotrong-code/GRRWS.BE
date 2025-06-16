@@ -577,20 +577,20 @@ namespace GRRWS.Application.Implement.Service
             await _unitOfWork.SaveChangesAsync();
             return Result.SuccessWithObject(true);
         }
-        public async Task<Result> GetTasksByMechanicIdAsync(Guid mechanicId, int pageNumber, int pageSize)
+        public async Task<Result> GetTasksByMechanicIdAsync(Guid mechanicId, GetAllSingleTasksRequest request)
         {
             var userExists = await _unitOfWork.UserRepository.GetByIdAsync(mechanicId) != null;
             if (!userExists)
                 return Result.Failure(TaskErrorMessage.UserNotExist());
 
             //var tasks = await _unitOfWork.TaskRepository.GetTasksByMechanicIdAsync(mechanicId, pageNumber, pageSize);
-            var tasks = await _unitOfWork.TaskRepository.GetTasksByMechanicIdAsync2(mechanicId, pageNumber, pageSize);
+            var tasks = await _unitOfWork.TaskRepository.GetTasksByMechanicIdAsync2(mechanicId, request);
             var response = new PagedResponse<GetTaskForMechanic>
             {
                 Data = tasks,
                 TotalCount = tasks.Count,
-                PageNumber = pageNumber,
-                PageSize = pageSize
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize
             };
             return Result.SuccessWithObject(response);
         }

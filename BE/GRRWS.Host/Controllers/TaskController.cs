@@ -140,19 +140,19 @@ namespace GRRWS.Host.Controllers
         }
 
         [HttpGet("mechanic/{mechanicId}")]
-        public async Task<IResult> GetTasksByMechanicId(Guid mechanicId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IResult> GetTasksByMechanicId(Guid mechanicId, [FromQuery] GetAllSingleTasksRequest request)
         {
-            var result = await _taskService.GetTasksByMechanicIdAsync(mechanicId, pageNumber, pageSize);
+            var result = await _taskService.GetTasksByMechanicIdAsync(mechanicId, request);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Tasks retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
         [Authorize]
         [HttpGet("mechanic")]
-        public async Task<IResult> GetTasksForMechanic([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IResult> GetTasksForMechanic([FromQuery] GetAllSingleTasksRequest request)
         {
             CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
-            var result = await _taskService.GetTasksByMechanicIdAsync(c.UserId, pageNumber, pageSize);
+            var result = await _taskService.GetTasksByMechanicIdAsync(c.UserId, request);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Tasks retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
