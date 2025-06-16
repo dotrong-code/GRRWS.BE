@@ -1491,7 +1491,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Any(t => t.TaskType == taskType && t.Status == Status.Completed);
         }
 
-        public async Task<(List<GetSingleTaskResponse> Tasks, int TotalCount)> GetAllSingleTasksAsync(string? taskType, string? status, string? priority, int pageNumber, int pageSize)
+        public async Task<(List<GetSingleTaskResponse> Tasks, int TotalCount)> GetAllSingleTasksAsync(string? taskType, string? status, string? priority, string? order, int pageNumber, int pageSize)
         {
             var query = _context.Tasks
                 .Include(t => t.Assignee)
@@ -1512,8 +1512,19 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             {
                 query = query.Where(t => t.Priority == parsedPriority);
             }
+            if (!string.IsNullOrEmpty(order) && Enum.TryParse<SearchOrder>(order, true, out var parsedOrder))
+            {
+                query = parsedOrder switch
+                {
+                    //SearchOrder.Ascending => query.OrderBy(t => t.),      // A-Z
+                    //SearchOrder.Descending => query.OrderByDescending(t => t.SomeTextField), // Z-A
+                    SearchOrder.Latest => query.OrderByDescending(t => t.CreatedDate), // newest first
+                    SearchOrder.Oldest => query.OrderBy(t => t.CreatedDate),           // oldest first
+                    _ => query.OrderByDescending(t => t.CreatedDate)                   // default
+                };
+            }
 
-            query = query.OrderByDescending(t => t.CreatedDate);
+
 
             var totalCount = await query.CountAsync();
 

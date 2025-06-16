@@ -1,8 +1,9 @@
 ﻿using FluentValidation;
 using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
+using GRRWS.Application.Common.Validator.Task;
 using GRRWS.Application.Interface.IService;
-using GRRWS.Application.Validators.Task;
+
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
@@ -357,6 +358,7 @@ namespace GRRWS.Application.Implement.Service
                     request.TaskType,
                     request.Status,
                     request.Priority,
+                    request.Order,
                     request.PageNumber,
                     request.PageSize);
 
