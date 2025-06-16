@@ -53,16 +53,31 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
                 if (existingShift != null)
                 {
-                    for (int i = startIndex; i < shifts.Count; i++)
+                    bool foundNextShift = false;
+                    for (int i = startIndex + 1; i < shifts.Count; i++)
                     {
                         var shift = shifts[i];
                         var shiftStart = currentDate.Add(shift.StartTime);
-                        if (shiftStart < DateTime.Now) shiftStart = shiftStart.AddDays(1);
-
-                        if (shiftStart.Date <= currentDate.AddDays(3))
+                        if (shiftStart > DateTime.Now)
                         {
                             dateToUse = shiftStart;
+                            foundNextShift = true;
                             break;
+                        }
+                    }
+
+                    if (!foundNextShift)
+                    {
+                        var nextDay = currentDate.AddDays(1);
+                        for (int i = 0; i < shifts.Count; i++)
+                        {
+                            var shift = shifts[i];
+                            var shiftStart = nextDay.Add(shift.StartTime);
+                            if (shiftStart.Date <= currentDate.AddDays(3))
+                            {
+                                dateToUse = shiftStart;
+                                break;
+                            }
                         }
                     }
                 }
