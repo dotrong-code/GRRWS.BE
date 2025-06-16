@@ -1,4 +1,5 @@
 ﻿using GRRWS.Domain.Entities;
+using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
@@ -10,7 +11,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
     public class RequestRepository : GenericRepository<Request>, IRequestRepository
     {
         public RequestRepository(GRRWSContext context) : base(context) { }
-        public async Task<(List<Request> Items, int TotalCount)> GetAllRequestAsync(int pageNumber, int pageSize, string? searchRequestTitle)
+        public async Task<(List<Request> Items, int TotalCount)> GetAllRequestAsync(int pageNumber, int pageSize, string? search, string? searchType)
         {
             var query = _context.Set<Request>()
                 .Include(r => r.Device)
@@ -23,9 +24,24 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .ThenInclude(ri => ri.Images)
                 .Where(r => !r.IsDeleted);
 
-            if (!string.IsNullOrWhiteSpace(searchRequestTitle))
+            if (!string.IsNullOrWhiteSpace(search))
             {
-                query = query.Where(r => r.RequestTitle != null && r.RequestTitle.Contains(searchRequestTitle));
+                search = search.Trim();
+                if (string.Equals(searchType, "status", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (Enum.TryParse<Status>(search, true, out var status))
+                    {
+                        query = query.Where(r => r.Status == status);
+                    }
+                    else
+                    {
+                        query = query.Where(r => false); // Return empty if status is invalid
+                    }
+                }
+                else if (string.Equals(searchType, "title", StringComparison.OrdinalIgnoreCase))
+                {
+                    query = query.Where(r => r.RequestTitle != null && r.RequestTitle.ToLower().Contains(search.ToLower()));
+                }
             }
 
             var totalCount = await query.CountAsync();
@@ -63,7 +79,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .ThenInclude(ri => ri.Images)
                 .Where(r => r.DeviceId == id).ToListAsync();
         }
-        public async Task<(List<Request> Items, int TotalCount)> GetRequestByUserIdAsync(Guid userId, int pageNumber, int pageSize, string? searchRequestTitle)
+        public async Task<(List<Request> Items, int TotalCount)> GetRequestByUserIdAsync(Guid userId, int pageNumber, int pageSize, string? search, string? searchType)
         {
             var query = _context.Requests
                 .Include(r => r.Device)
@@ -76,9 +92,24 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .ThenInclude(ri => ri.Images)
                 .Where(r => r.RequestedById == userId && !r.IsDeleted);
 
-            if (!string.IsNullOrWhiteSpace(searchRequestTitle))
+            if (!string.IsNullOrWhiteSpace(search))
             {
-                query = query.Where(r => r.RequestTitle != null && r.RequestTitle.Contains(searchRequestTitle));
+                search = search.Trim();
+                if (string.Equals(searchType, "status", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (Enum.TryParse<Status>(search, true, out var status))
+                    {
+                        query = query.Where(r => r.Status == status);
+                    }
+                    else
+                    {
+                        query = query.Where(r => false); // Return empty if status is invalid
+                    }
+                }
+                else // Default to title search (for searchType == "title" or invalid/unspecified)
+                {
+                    query = query.Where(r => r.RequestTitle != null && r.RequestTitle.ToLower().Contains(search.ToLower()));
+                }
             }
 
             var totalCount = await query.CountAsync();
