@@ -741,7 +741,7 @@ namespace GRRWS.Application.Implement.Service
                 if (currentShift == null)
                 {
                     _logger.LogWarning("No shift found for current time");
-                    return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "No shift is active at the current time.", 0));
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Fail", "No shift is active at the current time."));
                 }
 
                 var recommendations = await _unitOfWork.UserRepository.GetRecommendedMechanicsAsync(now, currentShift.Id, pageIndex, pageSize);
@@ -749,7 +749,7 @@ namespace GRRWS.Application.Implement.Service
                 if (!recommendations.Any())
                 {
                     _logger.LogWarning("No available mechanics found for shift {ShiftId} on {Date}", currentShift.Id, now.Date);
-                    return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "No available mechanics found for the current shift.", 0));
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Fail", "No available mechanics found for the current shift."));
                 }
 
                 return Result.SuccessWithObject(recommendations);
@@ -761,6 +761,5 @@ namespace GRRWS.Application.Implement.Service
             }
         }
         #endregion
-
     }
 }
