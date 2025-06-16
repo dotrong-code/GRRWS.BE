@@ -14,7 +14,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
     {
         public SparepartRepository(GRRWSContext context) : base(context) { }
 
-        public async Task<(List<Sparepart> Items, int TotalCount)> GetSparepartsBySupplierIdAsync(Guid supplierId, int pageNumber, int pageSize, string? searchSparepartName = null)
+        public async Task<(List<Sparepart> Items, int TotalCount)> GetSparepartsBySupplierIdAsync(Guid supplierId, int pageNumber, int pageSize, string? searchSparepartName = null, string? searchCategory = null)
         {
             var query = _context.Spareparts
                 .Include(sp => sp.Supplier)
@@ -27,6 +27,11 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 query = query.Where(sp => sp.SparepartName.Contains(searchSparepartName));
             }
 
+            if (!string.IsNullOrWhiteSpace(searchCategory))
+            {
+                query = query.Where(sp => sp.Category.Contains(searchCategory));
+            }
+
             var totalCount = await query.CountAsync();
             var items = await query
                 .OrderBy(sp => sp.SparepartName)
@@ -37,7 +42,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return (items, totalCount);
         }
 
-        public async Task<(List<Sparepart> Items, int TotalCount)> GetAllActiveSparepartsAsync(int pageNumber, int pageSize, string? searchSparepartName = null)
+        public async Task<(List<Sparepart> Items, int TotalCount)> GetAllActiveSparepartsAsync(int pageNumber, int pageSize, string? searchSparepartName = null, string? searchCategory = null)
         {
             var query = _context.Spareparts
                 .Include(sp => sp.Supplier)
@@ -50,6 +55,11 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 query = query.Where(sp => sp.SparepartName.Contains(searchSparepartName));
             }
 
+            if (!string.IsNullOrWhiteSpace(searchCategory))
+            {
+                query = query.Where(sp => sp.Category.Contains(searchCategory));
+            }
+
             var totalCount = await query.CountAsync();
             var items = await query
                 .OrderBy(sp => sp.SparepartName)
@@ -60,7 +70,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return (items, totalCount);
         }
 
-        public async Task<(List<Sparepart> Items, int TotalCount)> GetLowStockSparepartsAsync(int pageNumber, int pageSize, string? searchSparepartName = null)
+        public async Task<(List<Sparepart> Items, int TotalCount)> GetLowStockSparepartsAsync(int pageNumber, int pageSize, string? searchSparepartName = null, string? searchCategory = null)
         {
             var query = _context.Spareparts
                 .Include(sp => sp.Supplier)
@@ -73,8 +83,14 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 query = query.Where(sp => sp.SparepartName.Contains(searchSparepartName));
             }
 
+            if (!string.IsNullOrWhiteSpace(searchCategory))
+            {
+                query = query.Where(sp => sp.Category.Contains(searchCategory));
+            }
+
             var totalCount = await query.CountAsync();
-            var items = await query.OrderBy(sp => sp.SparepartName)
+            var items = await query
+                .OrderBy(sp => sp.SparepartName)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -82,7 +98,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return (items, totalCount);
         }
 
-        public async Task<(List<Sparepart> Items, int TotalCount)> GetOutOfStockSparepartsAsync(int pageNumber, int pageSize, string? searchSparepartName = null)
+        public async Task<(List<Sparepart> Items, int TotalCount)> GetOutOfStockSparepartsAsync(int pageNumber, int pageSize, string? searchSparepartName = null, string? searchCategory = null)
         {
             var query = _context.Spareparts
                 .Include(sp => sp.Supplier)
@@ -93,6 +109,11 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             if (!string.IsNullOrWhiteSpace(searchSparepartName))
             {
                 query = query.Where(sp => sp.SparepartName.Contains(searchSparepartName));
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchCategory))
+            {
+                query = query.Where(sp => sp.Category.Contains(searchCategory));
             }
 
             var totalCount = await query.CountAsync();
