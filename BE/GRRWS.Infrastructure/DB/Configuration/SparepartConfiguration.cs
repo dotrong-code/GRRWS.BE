@@ -26,7 +26,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000001"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8Sleok5OY4ZTmvJG7OrUc6ebEjfZB8CQKlLAaSX4V3"
                 },
                 new Sparepart
                 {
@@ -41,7 +41,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000001"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8Sleok47pZYdRNn1WUMEDRXtQ3hwBbL8ZTdfuysgY9"
                 },
                 new Sparepart
                 {
@@ -56,7 +56,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000001"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8Sleok40B3DXRNn1WUMEDRXtQ3hwBbL8ZTdfuysgY9"
                 },
                 new Sparepart
                 {
@@ -71,7 +71,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000001"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8Sleok8MAAbA6DMg0CBJSufH3VGYAdQXT4veytWObn"
                 },
                 new Sparepart
                 {
@@ -86,7 +86,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000001"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8Sleokuaa3aZzYbcXZ6NgPmv8HVYCf2thDe5URMzTs"
                 },
                 new Sparepart
                 {
@@ -101,7 +101,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8Sleok1ZUH4UnBWQpUJEtfVu75lHMbsvB4GOwxiKDk"
                 },
                 new Sparepart
                 {
@@ -116,7 +116,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokeqDlF4pj8efN4DvxdO0pAP7mnZbz6XUIRgwa"
                 },
                 new Sparepart
                 {
@@ -131,7 +131,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokzuuuB3bx8F5UQJBbDOeTYL6tNiKv4yauRxhk"
                 },
                 new Sparepart
                 {
@@ -146,7 +146,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokFF4JkRqd19RfB5KsipWzlAC47ITP6tyx3g0m"
                 },
                 new Sparepart
                 {
@@ -161,7 +161,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokPVirpXkv6AE1mniDBjaJC5Qt2L4RUgOSZkcH"
                 },
                 new Sparepart
                 {
@@ -176,7 +176,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokN2UCgOV4IDMyJx9NTBS753iYqonuLGlU2EXp"
                 },
                 new Sparepart
                 {
@@ -191,7 +191,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokEGdrHxLwuh61HpY7JbcDqB3kIfTiZ0vdxXg4"
                 },
                 new Sparepart
                 {
@@ -206,7 +206,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/07548799-5d1c-499b-9606-7ffc63bec5f6_istockphoto-1440907353-612x612.jpg"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokFF4JkRqd19RfB5KsipWzlAC47ITP6tyx3g0m"
                 },
                 new Sparepart
                 {
@@ -221,7 +221,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokczjqQGP5pEV4CwLG3qfhzZHB09l8knOUtgTr"
                 },
                 new Sparepart
                 {
@@ -236,7 +236,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokxUrNglWTtWSeJEm1lCPnvQyXqhb4H5K9MkpO"
                 },
                 new Sparepart
                 {
@@ -251,7 +251,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokfIhaD9r2Nts7xR3Hrv8ubn5UTDICXF1gKaEQ"
                 },
                 new Sparepart
                 {
@@ -266,7 +266,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokuS1lRXYbcXZ6NgPmv8HVYCf2thDe5URMzTsi"
                 },
                 new Sparepart
                 {
@@ -281,7 +281,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokeyYMR6jpj8efN4DvxdO0pAP7mnZbz6XUIRgw"
                 },
                 new Sparepart
                 {
@@ -296,7 +296,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokYx1Y4UT30pxDwNWytVRmKdarChlAXI6MY49B"
                 },
                 new Sparepart
                 {
@@ -311,7 +311,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8Sleokr4BhmyHS3eOV2oBnXyD590ZfGNxjsJY1zcEH"
                 },
                 new Sparepart
                 {
@@ -326,7 +326,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokiSRQTGhrd8OhVlGAT5vS2mogsLYBKfZzcQyu"
                 },
                 new Sparepart
                 {
@@ -341,7 +341,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokWK0xmpu5bvnVOme7tCHsXpqkYNa2M8f3SJFi"
                 },
                 new Sparepart
                 {
@@ -356,7 +356,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokzuuuB3bx8F5UQJBbDOeTYL6tNiKv4yauRxhk"
                 },
                 new Sparepart
                 {
@@ -371,7 +371,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokMwrB7ZXnz8RCJBOWGHmQ7wUYgveiDjVkdp05"
                 },
                 new Sparepart
                 {
@@ -386,7 +386,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8Sleokjzc7L9S4DlaOHVwc81qsjy274NAroQvebTWE"
                 },
                 new Sparepart
                 {
@@ -401,7 +401,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleoktimWrGY05WdZjs9kFeJ2NylOV1vg7ariGfqI"
                 },
                 new Sparepart
                 {
@@ -416,7 +416,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokuS1lRXYbcXZ6NgPmv8HVYCf2thDe5URMzTsi"
                 },
                 new Sparepart
                 {
@@ -431,7 +431,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8Sleoki1yzLmhrd8OhVlGAT5vS2mogsLYBKfZzcQyu"
                 },
                 new Sparepart
                 {
@@ -446,7 +446,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokcvXl0rqP5pEV4CwLG3qfhzZHB09l8knOUtgT"
                 },
                 new Sparepart
                 {
@@ -461,7 +461,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow,
-                    ImgUrl = "Spareparts/54784acc-a4e3-404d-8528-8f8f4d0498f2_Screenshot 2025-06-07 090112.png"
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokczjqQGP5pEV4CwLG3qfhzZHB09l8knOUtgTr"
                 }
             );
         }

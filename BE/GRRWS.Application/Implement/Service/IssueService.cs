@@ -50,5 +50,18 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.SuccessWithObject(suggestions);
         }
+
+        public async Task<Result> GetIssueByIdAsync(Guid id)
+        {
+            var issue = await _unitOfWork.IssueRepository.GetByIdAsync(id);
+            if (issue == null)
+                return Result.Failure(Error.NotFound("IssueNotFound", "Issue not found."));
+            var issueDto = new SuggestObject
+            {
+                Id = issue.Id,
+                Name = issue.DisplayName
+            };
+            return Result.SuccessWithObject(issueDto);
+        }
     }
 }

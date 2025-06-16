@@ -90,6 +90,70 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     SparePartId = Guid.Parse("10000000-0000-0000-0000-000000000009"),
                     QuantityUsed = 1,
                     IsTakenFromStock = true
+                },
+
+                // ---------------- RequestTakeSparePartUsageId 6 (Guideline 6) -----------------
+                new SparePartUsage
+                {
+                    Id = Guid.Parse("70000000-0000-0000-0000-000000000010"),
+                    RequestTakeSparePartUsageId = Guid.Parse("60000000-0000-0000-0000-000000000006"),
+                    SparePartId = Guid.Parse("10000000-0000-0000-0000-000000000006"),
+                    QuantityUsed = 1,
+                    IsTakenFromStock = false
+                },
+                new SparePartUsage
+                {
+                    Id = Guid.Parse("70000000-0000-0000-0000-000000000011"),
+                    RequestTakeSparePartUsageId = Guid.Parse("60000000-0000-0000-0000-000000000006"),
+                    SparePartId = Guid.Parse("10000000-0000-0000-0000-000000000011"),
+                    QuantityUsed = 1,
+                    IsTakenFromStock = false
+                },
+
+                // ---------------- RequestTakeSparePartUsageId 7 (Guideline 7) -----------------
+                new SparePartUsage
+                {
+                    Id = Guid.Parse("70000000-0000-0000-0000-000000000012"),
+                    RequestTakeSparePartUsageId = Guid.Parse("60000000-0000-0000-0000-000000000007"),
+                    SparePartId = Guid.Parse("10000000-0000-0000-0000-000000000008"),
+                    QuantityUsed = 2,
+                    IsTakenFromStock = false
+                },
+
+                // ---------------- RequestTakeSparePartUsageId 8 (Guideline 8) -----------------
+                new SparePartUsage
+                {
+                    Id = Guid.Parse("70000000-0000-0000-0000-000000000013"),
+                    RequestTakeSparePartUsageId = Guid.Parse("60000000-0000-0000-0000-000000000008"),
+                    SparePartId = Guid.Parse("10000000-0000-0000-0000-000000000015"),
+                    QuantityUsed = 1,
+                    IsTakenFromStock = false
+                },
+                new SparePartUsage
+                {
+                    Id = Guid.Parse("70000000-0000-0000-0000-000000000014"),
+                    RequestTakeSparePartUsageId = Guid.Parse("60000000-0000-0000-0000-000000000008"),
+                    SparePartId = Guid.Parse("10000000-0000-0000-0000-000000000017"),
+                    QuantityUsed = 4,
+                    IsTakenFromStock = false
+                },
+
+                // ---------------- RequestTakeSparePartUsageId 9 (Guideline 9) -----------------
+                new SparePartUsage
+                {
+                    Id = Guid.Parse("70000000-0000-0000-0000-000000000015"),
+                    RequestTakeSparePartUsageId = Guid.Parse("60000000-0000-0000-0000-000000000009"),
+                    SparePartId = Guid.Parse("10000000-0000-0000-0000-000000000010"),
+                    QuantityUsed = 1,
+                    IsTakenFromStock = false
+                },
+                new SparePartUsage
+                {
+                    Id = Guid.Parse("70000000-0000-0000-0000-000000000016"),
+                    RequestTakeSparePartUsageId = Guid.Parse("60000000-0000-0000-0000-000000000009"),
+                    SparePartId = Guid.Parse("10000000-0000-0000-0000-000000000012"),
+                    QuantityUsed = 1,
+                    IsTakenFromStock = false
                 }
             );
         }

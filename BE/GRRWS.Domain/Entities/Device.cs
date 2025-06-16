@@ -1,4 +1,6 @@
-﻿namespace GRRWS.Domain.Entities
+﻿using GRRWS.Domain.Enum;
+
+namespace GRRWS.Domain.Entities
 {
     public class Device : BaseEntity
     {
@@ -14,7 +16,7 @@
         public string? PhotoUrl { get; set; } // Ảnh
 
         // Trạng thái thiết bị
-        public string Status { get; set; } // Trạng thái: Active, Inactive, InRepair, Retired, etc.
+        public DeviceStatus Status { get; set; } 
         public bool IsUnderWarranty { get; set; } // Thiết bị có đang trong thời gian bảo hành không
         public bool? InUsed { get; set; } // Thiết bị có đang được sử dụng không
 
