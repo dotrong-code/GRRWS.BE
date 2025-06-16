@@ -4,10 +4,9 @@
     {
         Active = 0,
         Inactive = 1,
-        InRepair = 2,
-        InUse = 3,
+        InUse = 2,
+        InRepair = 3,
         InWarranty = 4,
         Decommissioned = 5,
-
     }
 }

@@ -19,7 +19,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 2, 1, 8, 0, 0, DateTimeKind.Utc),
-                    WarrantyEndDate = new DateTime(2025, 6, 1, 14, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 7, 1, 14, 0, 0, DateTimeKind.Utc),
                     Provider = "Juki Vietnam",
                     WarrantyCode = "WAR-JUKI-001",
                     Notes = "Bảo hành định kỳ cho máy mới, bao gồm kiểm tra cơ chế căng chỉ",
@@ -71,12 +71,12 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     ModifiedDate = DateTime.UtcNow,
                     IsDeleted = false
                 },
-                // Device 2: Juki DDL-8700 Unit 2 (4 warranties, IsUnderWarranty = true)
+                // Device 2: Juki DDL-8700 Unit 2 (4 warranties, IsUnderWarranty = false)
                 new DeviceWarranty
                 {
                     Id = Guid.Parse("d1e2f3a4-0011-4011-8011-000000000011"),
                     DeviceId = Guid.Parse("d1e2f3a4-0002-0002-0002-000000000002"),
-                    Status = "InProgress",
+                    Status = "Completed",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 2, 2, 8, 0, 0, DateTimeKind.Utc),
@@ -254,12 +254,12 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     ModifiedDate = DateTime.UtcNow,
                     IsDeleted = false
                 },
-                // Device 5: Juki DDL-8700 Unit 5 (1 warranty, IsUnderWarranty = true)
+                // Device 5: Juki DDL-8700 Unit 5 (1 warranty, IsUnderWarranty = false)
                 new DeviceWarranty
                 {
                     Id = Guid.Parse("d1e2f3a4-0013-4013-8013-000000000013"),
                     DeviceId = Guid.Parse("d1e2f3a4-0005-0005-0005-000000000005"),
-                    Status = "InProgress",
+                    Status = "Completed",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 2, 10, 8, 0, 0, DateTimeKind.Utc),
@@ -296,12 +296,12 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     ModifiedDate = DateTime.UtcNow,
                     IsDeleted = false
                 },
-                // Device 7: Juki DDL-8700 Unit 7 (1 warranty, IsUnderWarranty = true)
+                // Device 7: Juki DDL-8700 Unit 7 (1 warranty, IsUnderWarranty = false)
                 new DeviceWarranty
                 {
                     Id = Guid.Parse("d1e2f3a4-0004-4004-8004-000000000004"),
                     DeviceId = Guid.Parse("d1e2f3a4-0007-0007-0007-000000000007"),
-                    Status = "InProgress",
+                    Status = "Completed",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 2, 15, 8, 0, 0, DateTimeKind.Utc),
@@ -422,16 +422,16 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     ModifiedDate = DateTime.UtcNow,
                     IsDeleted = false
                 },
-                // Device 13: Juki DDL-9000C Unit 3 (2 warranties, IsUnderWarranty = true)
+                // Device 13: Juki DDL-9000C Unit 3 (2 warranties, IsUnderWarranty = false)
                 new DeviceWarranty
                 {
                     Id = Guid.Parse("d1e2f3a4-0019-4019-8019-000000000019"),
                     DeviceId = Guid.Parse("d1e2f3a4-0013-0013-0013-000000000013"),
-                    Status = "InProgress",
+                    Status = "Completed",
                     WarrantyType = "Manufacturer",
                     WarrantyReason = "Máy mới",
                     WarrantyStartDate = new DateTime(2023, 3, 5, 8, 0, 0, DateTimeKind.Utc),
-                    WarrantyEndDate = new DateTime(2025, 8, 5, 14, 0, 0, DateTimeKind.Utc),
+                    WarrantyEndDate = new DateTime(2025, 5, 5, 14, 0, 0, DateTimeKind.Utc),
                     Provider = "Juki Vietnam",
                     WarrantyCode = "WAR-JUKI-019",
                     Notes = "Bảo hành máy mới, hiệu chỉnh bộ cắt chỉ tự động",
