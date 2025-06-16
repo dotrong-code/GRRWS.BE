@@ -28,9 +28,9 @@ namespace GRRWS.Application.Implement.Service
             _firebaseService = firebaseService;
         }
 
-        public async Task<Result> GetAllAsync(int pageNumber, int pageSize, string? searchSparepartName = null)
+        public async Task<Result> GetAllAsync(int pageNumber, int pageSize, string? searchSparepartName = null, string? searchCategory = null)
         {
-            var (items, totalCount) = await _unit.SparepartRepository.GetAllActiveSparepartsAsync(pageNumber, pageSize, searchSparepartName);
+            var (items, totalCount) = await _unit.SparepartRepository.GetAllActiveSparepartsAsync(pageNumber, pageSize, searchSparepartName, searchCategory);
             var dtos = new List<SparepartViewDTO>();
             foreach (var sp in items)
             {
@@ -178,10 +178,9 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(response);
         }
 
-        public async Task<Result> GetSparepartsByMachineIdAsync(Guid machineId, int pageNumber, int pageSize, string? searchSparepartName = null)
+        public async Task<Result> GetSparepartsByMachineIdAsync(Guid machineId, int pageNumber, int pageSize, string? searchSparepartName = null, string? searchCategory = null)
         {
-            var (machineSpareparts, totalCount) = await _unit.MachineSparepartRepository.GetSparepartsByMachineIdAsync(machineId, pageNumber, pageSize, searchSparepartName);
-           
+            var (machineSpareparts, totalCount) = await _unit.MachineSparepartRepository.GetSparepartsByMachineIdAsync(machineId, pageNumber, pageSize, searchSparepartName, searchCategory);
 
             var dtos = new List<SparepartViewDTO>();
             foreach (var ms in machineSpareparts)
@@ -199,10 +198,9 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(response);
         }
 
-        public async Task<Result> GetSparepartsBySupplierAsync(Guid supplierId, int pageNumber, int pageSize, string? searchSparepartName = null)
+        public async Task<Result> GetSparepartsBySupplierAsync(Guid supplierId, int pageNumber, int pageSize, string? searchSparepartName = null, string? searchCategory = null)
         {
-            var (items, totalCount) = await _unit.SparepartRepository.GetSparepartsBySupplierIdAsync(supplierId, pageNumber, pageSize, searchSparepartName);
-            
+            var (items, totalCount) = await _unit.SparepartRepository.GetSparepartsBySupplierIdAsync(supplierId, pageNumber, pageSize, searchSparepartName, searchCategory);
 
             var dtos = new List<SparepartViewDTO>();
             foreach (var sp in items)
@@ -220,9 +218,9 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(response);
         }
 
-        public async Task<Result> GetLowStockSparepartsAsync(int pageNumber, int pageSize, string? searchSparepartName = null)
+        public async Task<Result> GetLowStockSparepartsAsync(int pageNumber, int pageSize, string? searchSparepartName = null, string? searchCategory = null)
         {
-            var (items, totalCount) = await _unit.SparepartRepository.GetLowStockSparepartsAsync(pageNumber, pageSize, searchSparepartName);
+            var (items, totalCount) = await _unit.SparepartRepository.GetLowStockSparepartsAsync(pageNumber, pageSize, searchSparepartName, searchCategory);
             var dtos = new List<SparepartViewDTO>();
             foreach (var sp in items)
             {
@@ -239,9 +237,9 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(response);
         }
 
-        public async Task<Result> GetOutOfStockSparepartsAsync(int pageNumber, int pageSize, string? searchSparepartName = null)
+        public async Task<Result> GetOutOfStockSparepartsAsync(int pageNumber, int pageSize, string? searchSparepartName = null, string? searchCategory = null)
         {
-            var (items, totalCount) = await _unit.SparepartRepository.GetOutOfStockSparepartsAsync(pageNumber, pageSize, searchSparepartName);
+            var (items, totalCount) = await _unit.SparepartRepository.GetOutOfStockSparepartsAsync(pageNumber, pageSize, searchSparepartName, searchCategory);
             var dtos = new List<SparepartViewDTO>();
             foreach (var sp in items)
             {

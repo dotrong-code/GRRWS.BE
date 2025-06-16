@@ -390,11 +390,14 @@ namespace GRRWS.Application.Implement.Service
 
         public async Task<Result> GetRequestByDeviceIdAsync(Guid id)
         {
-            var requests = await _requestRepository.GetRequestByDeviceIdAsync(id);
-            if (requests == null || !requests.Any())
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("NotFound", "No requests found for the device.", 0));
-
             var dtos = new List<RequestDTO>();
+            var requests = await _requestRepository.GetRequestByDeviceIdAsync(id);
+            if (requests == null || !requests.Any()) 
+            {
+                
+                return Result.SuccessWithObject(dtos);
+            }
+                 
             foreach (var r in requests.Where(r => !r.IsDeleted).OrderByDescending(r => r.CreatedDate))
             {
                 var dto = await MapRequestToDTOAsync(r);
