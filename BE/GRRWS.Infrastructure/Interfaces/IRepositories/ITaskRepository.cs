@@ -13,7 +13,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
     public interface ITaskRepository : IGenericRepository<Tasks>
     {
         Task<List<GetTaskResponse>> GetTasksByMechanicIdAsync(Guid mechanicId, int pageNumber, int pageSize);
-        Task<List<GetTaskForMechanic>> GetTasksByMechanicIdAsync2(Guid mechanicId, int pageNumber, int pageSize);
+        Task<List<GetTaskForMechanic>> GetTasksByMechanicIdAsync2(Guid mechanicId, GetAllSingleTasksRequest request);
         Task<GetTaskResponse> GetTaskDetailsAsync(Guid taskId);
         Task<Tasks> GetTaskByIdAsync(Guid taskId);
         Task<List<Tasks>> GetAllTasksAsync();

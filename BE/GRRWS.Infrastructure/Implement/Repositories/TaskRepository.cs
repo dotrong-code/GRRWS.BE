@@ -324,16 +324,42 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             return device != null ? $"{device.DeviceName} ({device.DeviceCode})" : "Unknown Device";
         }
-        public async Task<List<GetTaskForMechanic>> GetTasksByMechanicIdAsync2(Guid mechanicId, int pageNumber, int pageSize)
+        public async Task<List<GetTaskForMechanic>> GetTasksByMechanicIdAsync2(Guid mechanicId, GetAllSingleTasksRequest request)
         {
             var query = _context.Tasks
-                .Where(t => t.AssigneeId == mechanicId && !t.IsDeleted)
-                .OrderByDescending(t => t.CreatedDate);
+                .Where(t => t.AssigneeId == mechanicId && !t.IsDeleted);
+
+            // Apply filters
+            if (!string.IsNullOrEmpty(request.TaskType) && Enum.TryParse<TaskType>(request.TaskType, true, out var parsedTaskType))
+            {
+                query = query.Where(t => t.TaskType == parsedTaskType);
+            }
+
+            if (!string.IsNullOrEmpty(request.Status) && Enum.TryParse<Status>(request.Status, true, out var parsedStatus))
+            {
+                query = query.Where(t => t.Status == parsedStatus);
+            }
+
+            if (!string.IsNullOrEmpty(request.Priority) && Enum.TryParse<Domain.Enum.Priority>(request.Priority, true, out var parsedPriority))
+            {
+                query = query.Where(t => t.Priority == parsedPriority);
+            }
+            if (!string.IsNullOrEmpty(request.Order) && Enum.TryParse<SearchOrder>(request.Order, true, out var parsedOrder))
+            {
+                query = parsedOrder switch
+                {
+                    //SearchOrder.Ascending => query.OrderBy(t => t.),      // A-Z
+                    //SearchOrder.Descending => query.OrderByDescending(t => t.SomeTextField), // Z-A
+                    SearchOrder.Latest => query.OrderByDescending(t => t.CreatedDate), // newest first
+                    SearchOrder.Oldest => query.OrderBy(t => t.CreatedDate),           // oldest first
+                    _ => query.OrderByDescending(t => t.CreatedDate)                   // default
+                };
+            }
 
             var totalCount = await query.CountAsync();
             var tasks = await query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
                 .Select(t => new GetTaskForMechanic
                 {
                     TaskId = t.Id,
@@ -647,7 +673,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         StartTime = request.StartDate,
                         ExpectedTime = request.StartDate.AddHours(5),
                         Status = Status.Pending,
-                        Priority = Priority.High,
+                        Priority = Domain.Enum.Priority.High,
                         AssigneeId = request.AssigneeId,
                         WarrantyClaimId = warrantyClaim.Id,
                         CreatedDate = DateTime.UtcNow,
@@ -771,7 +797,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         StartTime = request.StartDate,
                         ExpectedTime = request.StartDate.AddHours(5),
                         Status = Status.Pending,
-                        Priority = Priority.High,
+                        Priority = Domain.Enum.Priority.High,
                         AssigneeId = request.AssigneeId,
                         WarrantyClaimId = warrantyClaim.Id,
                         TaskGroupId = taskGroupId,
@@ -851,7 +877,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 StartTime = warrantyClaim.ExpectedReturnDate,
                 ExpectedTime = warrantyClaim.ExpectedReturnDate?.AddHours(2),
                 Status = Status.Pending,
-                Priority = Priority.Medium,
+                Priority = Domain.Enum.Priority.Medium,
                 OrderIndex = 4,
                 AssigneeId = task.AssigneeId, // Assign to same technician
                 WarrantyClaimId = warrantyClaim.Id,
@@ -926,7 +952,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         StartTime = request.StartDate,
                         ExpectedTime = request.StartDate.Add(totalExpectedTime),
                         Status = Status.Pending,
-                        Priority = Priority.Medium,
+                        Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,
                         CreatedDate = DateTime.UtcNow,
                         IsDeleted = false
@@ -1080,7 +1106,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         StartTime = request.StartDate,
                         ExpectedTime = request.StartDate.Add(totalExpectedTime),
                         Status = Status.Pending,
-                        Priority = Priority.Medium,
+                        Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,
                         TaskGroupId = taskGroupId,
                         OrderIndex = orderIndex,
@@ -1219,7 +1245,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         StartTime = request.StartDate ?? DateTime.UtcNow,
                         ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(2), // Default 2 hours for uninstallation
                         Status = Status.Pending,
-                        Priority = Priority.Medium,
+                        Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,
                         TaskGroupId = request.TaskGroupId,
                         CreatedDate = DateTime.UtcNow,
@@ -1277,7 +1303,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         StartTime = request.StartDate ?? DateTime.UtcNow,
                         ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(2), // Default 2 hours for uninstallation
                         Status = Status.Pending,
-                        Priority = Priority.Medium,
+                        Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,
                         TaskGroupId = taskGroupId,
                         OrderIndex = orderIndex,
@@ -1351,7 +1377,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         StartTime = request.StartDate ?? DateTime.UtcNow,
                         ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(3), // Default 3 hours for installation
                         Status = Status.Pending,
-                        Priority = Priority.Medium,
+                        Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,
                         TaskGroupId = request.TaskGroupId,
                         CreatedDate = DateTime.UtcNow,
@@ -1422,7 +1448,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         StartTime = request.StartDate ?? DateTime.UtcNow,
                         ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(3), // Default 3 hours for installation
                         Status = Status.Pending,
-                        Priority = Priority.Medium,
+                        Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,
                         TaskGroupId = taskGroupId,
                         OrderIndex = orderIndex,
@@ -1518,7 +1544,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 query = query.Where(t => t.Status == parsedStatus);
             }
 
-            if (!string.IsNullOrEmpty(priority) && Enum.TryParse<Priority>(priority, true, out var parsedPriority))
+            if (!string.IsNullOrEmpty(priority) && Enum.TryParse<Domain.Enum.Priority>(priority, true, out var parsedPriority))
             {
                 query = query.Where(t => t.Priority == parsedPriority);
             }
