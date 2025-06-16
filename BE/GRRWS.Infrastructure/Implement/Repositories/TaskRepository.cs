@@ -1002,9 +1002,18 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         {
             var task = await _context.Tasks
                 .FirstOrDefaultAsync(t => t.Id == taskId && !t.IsDeleted);
-
             if (task == null)
                 return false;
+            if (task.Status.Equals(Status.InProgress))
+            {
+                var getMechanicShift = await _context.MechanicShifts
+                    .FirstOrDefaultAsync(ms => ms.MechanicId == userId && ms.TaskId == taskId);
+                if (getMechanicShift == null)
+                    return false; // Mechanic shift not found or already available
+                getMechanicShift.IsAvailable = true;
+                _context.MechanicShifts.Update(getMechanicShift);
+            }
+                
 
             // Update status based on current status
             switch (task.Status)
@@ -1015,7 +1024,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     break;
                 case Status.InProgress:
                     task.Status = Status.Completed;
-                    task.EndTime = DateTime.UtcNow; // Set actual end time
+                    task.EndTime = DateTime.UtcNow;
+                    // Set actual end time
                     break;
                 default:
                     // Task is already completed or in another state

@@ -39,7 +39,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetDetailUninstallTaskForMechanicByIdAsync(Guid taskId);
         Task<Result> GetDetailInstallTaskForMechanicByIdAsync(Guid taskId);
         // ...existing code...
-
+        Task<Result> GetMechanicRecommendationAsync(int pageSize, int pageIndex);
 
     }
 }
