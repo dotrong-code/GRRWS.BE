@@ -1483,7 +1483,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 getMechanicShift.IsAvailable = true;
                 _context.MechanicShifts.Update(getMechanicShift);
             }
-                
+
 
             // Update status based on current status
             switch (task.Status)
@@ -1514,17 +1514,20 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         public async Task<bool> IsTaskCompletedInReqestAsync(Guid requestId, TaskType taskType)
         {
             var report = await _context.Reports
-                .Include(r => r.TaskGroups)
-                    .ThenInclude(tg => tg.Tasks)
-                        .FirstOrDefaultAsync(r => r.RequestId == requestId);
+        .Include(r => r.TaskGroups)
+            .ThenInclude(tg => tg.Tasks)
+        .FirstOrDefaultAsync(r => r.RequestId == requestId);
 
             if (report == null)
                 return false;
 
-            // Check if any task of the given type is not completed
-            return report.TaskGroups
+            var tasksOfType = report.TaskGroups
                 .SelectMany(tg => tg.Tasks)
-                .Any(t => t.TaskType == taskType && t.Status == Status.Completed);
+                .Where(t => t.TaskType == taskType)
+                .ToList();
+
+            // Return true if no such task exists OR all are completed
+            return !tasksOfType.Any() || tasksOfType.All(t => t.Status == Status.Completed);
         }
 
         public async Task<(List<GetSingleTaskResponse> Tasks, int TotalCount)> GetAllSingleTasksAsync(string? taskType, string? status, string? priority, string? order, int pageNumber, int pageSize)

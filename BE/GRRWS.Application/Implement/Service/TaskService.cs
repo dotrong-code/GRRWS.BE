@@ -469,7 +469,6 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", ex.Message));
             }
         }
-
         public async Task<Result> GetGroupTasksByRequestIdAsync(GetTasksByRequestIdRequest request)
         {
             var validator = new GetTasksByRequestIdValidator();
@@ -594,7 +593,6 @@ namespace GRRWS.Application.Implement.Service
             };
             return Result.SuccessWithObject(response);
         }
-
         public async Task<Result> GetTaskDetailsAsync(Guid taskId)
         {
             var task = await _unitOfWork.TaskRepository.GetTaskDetailsAsync(taskId);
