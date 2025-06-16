@@ -14,6 +14,7 @@ using GRRWS.Infrastructure.DTOs.Task.ActionTask;
 using GRRWS.Infrastructure.DTOs.Task.Get;
 using GRRWS.Infrastructure.DTOs.Task.Repair;
 using GRRWS.Infrastructure.DTOs.Task.Warranty;
+using Microsoft.Extensions.Logging;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -24,18 +25,19 @@ namespace GRRWS.Application.Implement.Service
         private readonly IValidator<StartTaskRequest> _startTaskValidator;
         private readonly IValidator<CreateTaskReportRequest> _createReportValidator;
         private readonly CheckIsExist _checkIsExist;
-
+        private readonly ILogger<TaskService> _logger;
         public TaskService(UnitOfWork unitOfWork,
             ITaskGroupService taskGroupService,
             IValidator<StartTaskRequest> startTaskValidator,
             IValidator<CreateTaskReportRequest> createReportValidator,
-            CheckIsExist checkIsExist)
+            CheckIsExist checkIsExist, ILogger<TaskService> logger)
         {
             _unitOfWork = unitOfWork;
             _taskGroupService = taskGroupService;
             _startTaskValidator = startTaskValidator;
             _createReportValidator = createReportValidator;
             _checkIsExist = checkIsExist;
+            _logger = logger;
         }
 
         #region
@@ -70,6 +72,18 @@ namespace GRRWS.Application.Implement.Service
                 var orderIndex = 1; // First task in new warranty group (WarrantySubmission)
 
                 var taskId = await _unitOfWork.TaskRepository.CreateWarrantyTaskWithGroup(request, userId, taskGroupId, orderIndex);
+
+                //Create mechanic shift
+                var now = DateTime.Now;
+                var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(now);
+
+                var createdMechanicShift = await _unitOfWork.MechanicShiftRepository.CreateMechanicShift(userId, taskId, currentShift.Id);
+
+                if (!createdMechanicShift)
+                {
+                    _logger.LogError("Failed to create mechanic shift for task {TaskId} at {Time}", taskId, now);
+                    return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Failed to create mechanic shift for the task.", 0));
+                }
 
                 return Result.SuccessWithObject(new
                 {
@@ -114,6 +128,18 @@ namespace GRRWS.Application.Implement.Service
                 var orderIndex = 1; // First task in new repair group
 
                 var taskId = await _unitOfWork.TaskRepository.CreateRepairTaskWithGroup(request, userId, taskGroupId, orderIndex);
+
+                //Create mechanic shift
+                var now = DateTime.Now;
+                var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(now);
+
+                var createdMechanicShift = await _unitOfWork.MechanicShiftRepository.CreateMechanicShift(userId, taskId, currentShift.Id);
+
+                if (!createdMechanicShift)
+                {
+                    _logger.LogError("Failed to create mechanic shift for task {TaskId} at {Time}", taskId, now);
+                    return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Failed to create mechanic shift for the task.", 0));
+                }
 
                 return Result.SuccessWithObject(new
                 {
@@ -184,6 +210,18 @@ namespace GRRWS.Application.Implement.Service
 
                 var taskId = await _unitOfWork.TaskRepository.CreateUninstallTaskWithGroup(request, userId, taskGroupId, orderIndex);
 
+                //Create mechanic shift
+                var now = DateTime.Now;
+                var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(now);
+
+                var createdMechanicShift = await _unitOfWork.MechanicShiftRepository.CreateMechanicShift(userId, taskId, currentShift.Id);
+
+                if (!createdMechanicShift)
+                {
+                    _logger.LogError("Failed to create mechanic shift for task {TaskId} at {Time}", taskId, now);
+                    return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Failed to create mechanic shift for the task.", 0));
+                }
+
                 return Result.SuccessWithObject(new
                 {
                     Message = "Uninstall task created successfully!",
@@ -247,6 +285,18 @@ namespace GRRWS.Application.Implement.Service
                 }
 
                 var taskId = await _unitOfWork.TaskRepository.CreateInstallTaskWithGroup(request, userId, taskGroupId, orderIndex);
+
+                //Create mechanic shift
+                var now = DateTime.Now;
+                var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(now);
+
+                var createdMechanicShift = await _unitOfWork.MechanicShiftRepository.CreateMechanicShift(userId, taskId, currentShift.Id);
+
+                if (!createdMechanicShift)
+                {
+                    _logger.LogError("Failed to create mechanic shift for task {TaskId} at {Time}", taskId, now);
+                    return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Failed to create mechanic shift for the task.", 0));
+                }
 
                 return Result.SuccessWithObject(new
                 {
@@ -678,7 +728,38 @@ namespace GRRWS.Application.Implement.Service
         {
             return await _unitOfWork.TaskRepository.IsTaskCompletedInReqestAsync(requestId, taskType);
         }
+        public async Task<Result> GetMechanicRecommendationAsync(int pageSize, int pageIndex)
+        {
+            try
+            {
+                _logger.LogInformation("Fetching recommended mechanics for current time");
 
+                var now = DateTime.Now;
+
+                var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(now);
+
+                if (currentShift == null)
+                {
+                    _logger.LogWarning("No shift found for current time");
+                    return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "No shift is active at the current time.", 0));
+                }
+
+                var recommendations = await _unitOfWork.UserRepository.GetRecommendedMechanicsAsync(now, currentShift.Id, pageIndex, pageSize);
+
+                if (!recommendations.Any())
+                {
+                    _logger.LogWarning("No available mechanics found for shift {ShiftId} on {Date}", currentShift.Id, now.Date);
+                    return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "No available mechanics found for the current shift.", 0));
+                }
+
+                return Result.SuccessWithObject(recommendations);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching recommended mechanics for current time");
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "An error occurred while fetching mechanic recommendations.", 0));
+            }
+        }
         #endregion
 
     }
