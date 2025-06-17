@@ -22,6 +22,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         {
             return await _context.RequestTakeSparePartUsages
                 .Where(rtspu => rtspu.Id == id)
+                .Include(rtspu => rtspu.SparePartUsages)
                 .FirstOrDefaultAsync();
         }
     }
