@@ -1,5 +1,8 @@
 ﻿using GRRWS.Application.Common.Result;
+using GRRWS.Application.Common.Validator.Abstract;
+using GRRWS.Application.Implement.Service;
 using GRRWS.Application.Interface.IService;
+using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DTOs.Device;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +14,12 @@ namespace GRRWS.Host.Controllers
     public class DeviceController : ControllerBase
     {
         private readonly IDeviceService _deviceService;
+        private readonly IImportService _importService;
 
-        public DeviceController(IDeviceService deviceService)
+        public DeviceController(IDeviceService deviceService, IImportService importService)
         {
             _deviceService = deviceService;
+            _importService = importService;
         }
 
         
@@ -123,5 +128,14 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Error history retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [HttpPost("import")]
+        public async Task<IResult> ImportDevice(IFormFile file)
+        {
+            var result = await _deviceService.ImportDevicesAsync(file);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Devices imported successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
     }
 }

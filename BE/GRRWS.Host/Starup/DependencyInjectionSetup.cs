@@ -115,6 +115,9 @@ namespace GRRWS.Host.Starup
             services.AddTransient<ISparePartUsageService, SparePartUsageService>();
             services.AddTransient<ISparepartService, SparepartService>();
             services.AddTransient<ITaskGroupService, TaskGroupService>();
+            services.AddTransient<IImportService, ImportService>();
+            services.AddTransient<IMachineService, MachineService>();
+
 
             #endregion
 
