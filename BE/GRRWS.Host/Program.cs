@@ -27,9 +27,15 @@ builder.Services.AddLogging(logging =>
 });
 builder.Services.AddDbContext<GRRWSContext>(opt =>
 {
-    // Set up your database connection string
-    opt.UseSqlServer(builder.Configuration.GetConnectionString("MyDb")).EnableSensitiveDataLogging();
-});
+    opt.UseSqlServer(
+        builder.Configuration.GetConnectionString("MyDb"),
+        sqlOptions => sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null))
+       .EnableSensitiveDataLogging()
+       .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking); // Aligns with AsNoTracking in repository
+}, ServiceLifetime.Scoped);
 builder.Services.AddMemoryCache();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -76,6 +82,8 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
 {
+    option.UseInlineDefinitionsForEnums();
+
     option.SwaggerDoc("v1", new OpenApiInfo { Title = "GRRWS API", Version = "v1" });
     option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {

@@ -23,8 +23,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 150,
                     Unit = "Cái",
                     UnitPrice = 5000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000001"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8Sleok5OY4ZTmvJG7OrUc6ebEjfZB8CQKlLAaSX4V3"
                 },
                 new Sparepart
                 {
@@ -36,8 +38,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 60,
                     Unit = "Cái",
                     UnitPrice = 12000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000001"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8Sleok47pZYdRNn1WUMEDRXtQ3hwBbL8ZTdfuysgY9"
                 },
                 new Sparepart
                 {
@@ -49,8 +53,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 20,
                     Unit = "Cái",
                     UnitPrice = 45000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000001"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8Sleok40B3DXRNn1WUMEDRXtQ3hwBbL8ZTdfuysgY9"
                 },
                 new Sparepart
                 {
@@ -62,8 +68,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 500,
                     Unit = "Cái",
                     UnitPrice = 1500,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000001"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8Sleok8MAAbA6DMg0CBJSufH3VGYAdQXT4veytWObn"
                 },
                 new Sparepart
                 {
@@ -75,8 +83,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 10,
                     Unit = "Bộ",
                     UnitPrice = 120000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000001"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8Sleokuaa3aZzYbcXZ6NgPmv8HVYCf2thDe5URMzTs"
                 },
                 new Sparepart
                 {
@@ -88,8 +98,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 35,
                     Unit = "Cái",
                     UnitPrice = 8000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8Sleok1ZUH4UnBWQpUJEtfVu75lHMbsvB4GOwxiKDk"
                 },
                 new Sparepart
                 {
@@ -101,8 +113,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 8,
                     Unit = "Cái",
                     UnitPrice = 350000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokeqDlF4pj8efN4DvxdO0pAP7mnZbz6XUIRgwa"
                 },
                 new Sparepart
                 {
@@ -114,8 +128,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 120,
                     Unit = "Cái",
                     UnitPrice = 18000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokzuuuB3bx8F5UQJBbDOeTYL6tNiKv4yauRxhk"
                 },
                 new Sparepart
                 {
@@ -127,8 +143,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 40,
                     Unit = "Cái",
                     UnitPrice = 22000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokFF4JkRqd19RfB5KsipWzlAC47ITP6tyx3g0m"
                 },
                 new Sparepart
                 {
@@ -140,8 +158,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 12,
                     Unit = "Bộ",
                     UnitPrice = 85000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokPVirpXkv6AE1mniDBjaJC5Qt2L4RUgOSZkcH"
                 },
                 new Sparepart
                 {
@@ -153,8 +173,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 100,
                     Unit = "Cái",
                     UnitPrice = 10000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokN2UCgOV4IDMyJx9NTBS753iYqonuLGlU2EXp"
                 },
                 new Sparepart
                 {
@@ -166,8 +188,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 60,
                     Unit = "Cái",
                     UnitPrice = 30000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokEGdrHxLwuh61HpY7JbcDqB3kIfTiZ0vdxXg4"
                 },
                 new Sparepart
                 {
@@ -179,8 +203,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 25,
                     Unit = "Cái",
                     UnitPrice = 40000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokFF4JkRqd19RfB5KsipWzlAC47ITP6tyx3g0m"
                 },
                 new Sparepart
                 {
@@ -192,8 +218,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 80,
                     Unit = "Cái",
                     UnitPrice = 7000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokczjqQGP5pEV4CwLG3qfhzZHB09l8knOUtgTr"
                 },
                 new Sparepart
                 {
@@ -205,8 +233,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 15,
                     Unit = "Cái",
                     UnitPrice = 65000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokxUrNglWTtWSeJEm1lCPnvQyXqhb4H5K9MkpO"
                 },
                 new Sparepart
                 {
@@ -218,8 +248,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 12,
                     Unit = "Bộ",
                     UnitPrice = 90000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokfIhaD9r2Nts7xR3Hrv8ubn5UTDICXF1gKaEQ"
                 },
                 new Sparepart
                 {
@@ -231,8 +263,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 150,
                     Unit = "Cái",
                     UnitPrice = 3000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokuS1lRXYbcXZ6NgPmv8HVYCf2thDe5URMzTsi"
                 },
                 new Sparepart
                 {
@@ -244,8 +278,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 30,
                     Unit = "Cái",
                     UnitPrice = 18000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokeyYMR6jpj8efN4DvxdO0pAP7mnZbz6XUIRgw"
                 },
                 new Sparepart
                 {
@@ -257,8 +293,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 100,
                     Unit = "Cuộn",
                     UnitPrice = 10000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokYx1Y4UT30pxDwNWytVRmKdarChlAXI6MY49B"
                 },
                 new Sparepart
                 {
@@ -270,8 +308,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 50,
                     Unit = "Bộ",
                     UnitPrice = 22000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8Sleokr4BhmyHS3eOV2oBnXyD590ZfGNxjsJY1zcEH"
                 },
                 new Sparepart
                 {
@@ -283,8 +323,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 80,
                     Unit = "Cái",
                     UnitPrice = 6000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokiSRQTGhrd8OhVlGAT5vS2mogsLYBKfZzcQyu"
                 },
                 new Sparepart
                 {
@@ -296,8 +338,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 40,
                     Unit = "Cái",
                     UnitPrice = 15000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokWK0xmpu5bvnVOme7tCHsXpqkYNa2M8f3SJFi"
                 },
                 new Sparepart
                 {
@@ -309,8 +353,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 100,
                     Unit = "Cái",
                     UnitPrice = 20000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokzuuuB3bx8F5UQJBbDOeTYL6tNiKv4yauRxhk"
                 },
                 new Sparepart
                 {
@@ -322,8 +368,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 18,
                     Unit = "Bộ",
                     UnitPrice = 95000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokMwrB7ZXnz8RCJBOWGHmQ7wUYgveiDjVkdp05"
                 },
                 new Sparepart
                 {
@@ -335,8 +383,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 75,
                     Unit = "Cái",
                     UnitPrice = 11000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8Sleokjzc7L9S4DlaOHVwc81qsjy274NAroQvebTWE"
                 },
                 new Sparepart
                 {
@@ -348,8 +398,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 25,
                     Unit = "Cái",
                     UnitPrice = 27000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleoktimWrGY05WdZjs9kFeJ2NylOV1vg7ariGfqI"
                 },
                 new Sparepart
                 {
@@ -361,8 +413,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 90,
                     Unit = "Bộ",
                     UnitPrice = 18000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokuS1lRXYbcXZ6NgPmv8HVYCf2thDe5URMzTsi"
                 },
                 new Sparepart
                 {
@@ -374,8 +428,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 40,
                     Unit = "Cái",
                     UnitPrice = 9000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8Sleoki1yzLmhrd8OhVlGAT5vS2mogsLYBKfZzcQyu"
                 },
                 new Sparepart
                 {
@@ -387,8 +443,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 5,
                     Unit = "Bộ",
                     UnitPrice = 350000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokcvXl0rqP5pEV4CwLG3qfhzZHB09l8knOUtgT"
                 },
                 new Sparepart
                 {
@@ -400,8 +458,10 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     StockQuantity = 55,
                     Unit = "Cái",
                     UnitPrice = 13000,
+                    SupplierId = Guid.Parse("50000000-0000-0000-0000-000000000002"),
                     CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow
+                    ModifiedDate = DateTime.UtcNow,
+                    ImgUrl = "https://3h91eb9nng.ufs.sh/f/mZryXl8SleokczjqQGP5pEV4CwLG3qfhzZHB09l8knOUtgTr"
                 }
             );
         }

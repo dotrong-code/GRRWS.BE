@@ -1,6 +1,7 @@
 ﻿using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
+using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.DTOs.Sparepart;
@@ -21,10 +22,10 @@ namespace GRRWS.Application.Implement.Service
         public async Task<Result> GetErrorSuggestionsAsync(string query, int maxResults)
         {
             if (string.IsNullOrWhiteSpace(query))
-                return Result.Failure(Error.Validation("InvalidQuery", "Query cannot be null or empty."));
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("InvalidQuery", "Query cannot be null or empty."));
 
             if (maxResults <= 0)
-                return Result.Failure(Error.Validation("InvalidMaxResults", "maxResults must be greater than 0."));
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("InvalidMaxResults", "maxResults must be greater than 0."));
 
             // Generate cache key
             var cacheKey = $"error_suggestions_{query.ToLowerInvariant()}";
@@ -56,14 +57,14 @@ namespace GRRWS.Application.Implement.Service
         {
             if (reportId == Guid.Empty)
             {
-                return Result.Failure(Error.Validation("InvalidReportId", "Report ID cannot be empty."));
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("InvalidReportId", "Report ID cannot be empty."));
             }
 
             var errors = await _unitOfWork.ErrorRepository.GetErrorsByReportIdWithoutTaskAsync(reportId);
 
             if (errors == null || !errors.Any())
             {
-                return Result.Failure(Error.NotFound("NoErrors", "No unassigned errors found for this report."));
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NoErrors", "No unassigned errors found for this report."));
             }
 
             return Result.SuccessWithObject(errors);
@@ -86,22 +87,40 @@ namespace GRRWS.Application.Implement.Service
         }
         public async Task<Result> GetSparepartsByErrorIdAsync(Guid errorId)
         {
-            var spareparts = await _unitOfWork.ErrorRepository.GetSparepartsByErrorIdAsync(errorId);
-            if (spareparts == null || !spareparts.Any())
-            {
-                return Result.Failure(Error.Validation("Guid not found", "Sparepart not found for this error"));
-            }
-            var sparepartDtos = spareparts.Select(s => new SparepartDto
-            {
-                Id = s.Id,
-                SparepartCode = s.SparepartCode,
-                SparepartName = s.SparepartName,
-                Description = s.Description,
-                Specification = s.Specification,
-                StockQuantity = s.StockQuantity
-            }).ToList();
+            //var spareparts = await _unitOfWork.ErrorRepository.GetSparepartsByErrorIdAsync(errorId);
+            //if (spareparts == null || !spareparts.Any())
+            //{
+            //    return Result.Failure(Error.Validation("Guid not found", "Sparepart not found for this error"));
+            //}
+            //var sparepartDtos = spareparts.Select(s => new SparepartDto
+            //{
+            //    Id = s.Id,
+            //    SparepartCode = s.SparepartCode,
+            //    SparepartName = s.SparepartName,
+            //    Description = s.Description,
+            //    Specification = s.Specification,
+            //    StockQuantity = s.StockQuantity
+            //}).ToList();
 
-            return Result.SuccessWithObject(sparepartDtos);
+            //return Result.SuccessWithObject(spareparts);
+            return null;
         }
+
+
+        public async Task<Result> GetListOfSparepartByErrorAsync(List<Guid> errorIds)
+        {
+            //// Await the task to get the result before calling Any()
+            //var missingError = await _unitOfWork.ErrorRepository.GetNotFoundErrorDisplayNamesAsync(errorIds);
+            //if (missingError.Any())
+            //{
+            //    return Result.Failure(Error.Validation("Error not found", $"The following errors were not found: {string.Join(", ", missingError)}"));
+            //}
+            //var spareparts = await _unitOfWork.ErrorRepository.GetListOfSparepartByErrorAsync(errorIds);
+
+            //// Add appropriate return statement if needed
+            //return Result.SuccessWithObject(spareparts);
+            return  null;
+        }
+
     }
 }

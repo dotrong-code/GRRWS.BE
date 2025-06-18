@@ -1,4 +1,5 @@
 ﻿using GRRWS.Domain.Entities;
+using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.Device;
 using GRRWS.Infrastructure.DTOs.History;
@@ -37,8 +38,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             if (!string.IsNullOrWhiteSpace(deviceCode))
                 query = query.Where(d => d.DeviceCode.Contains(deviceCode));
 
-            if (!string.IsNullOrWhiteSpace(status))
-                query = query.Where(d => d.Status == status);
+            if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<DeviceStatus>(status, true, out var deviceStatus))
+                query = query.Where(d => d.Status == deviceStatus);
 
             if (positionId.HasValue)
                 query = query.Where(d => d.PositionId == positionId.Value);
@@ -62,7 +63,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     InstallationDate = d.InstallationDate,
                     Description = d.Description,
                     PhotoUrl = d.PhotoUrl,
-                    Status = d.Status,
+                    Status = d.Status.ToString(),
                     IsUnderWarranty = d.IsUnderWarranty,
                     Specifications = d.Specifications,
                     PurchasePrice = d.PurchasePrice,
@@ -182,6 +183,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .OrderByDescending(dw => dw.WarrantyEndDate ?? DateTime.MinValue)
                 .Select(dw => new DeviceWarrantyStatusResponse
                 {
+                    Id = dw.Id,
                     IsUnderWarranty = !(dw.WarrantyEndDate < DateTime.UtcNow
     || dw.Status == "Rejected"
     || dw.Status == "Completed"),

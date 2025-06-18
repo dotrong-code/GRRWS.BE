@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 
 namespace GRRWS.Infrastructure.Interfaces.IRepositories.IGeneric
 {
@@ -17,6 +12,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories.IGeneric
         Task<int> UpdateAsync(T entity);
         bool Remove(T entity);
         Task<bool> RemoveAsync(T entity);
+        Task<bool> IsExistAsync(Guid? id);
         T GetById(int id);
         Task<T> GetByIdAsync(int id);
         T GetById(string code);
@@ -28,6 +24,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories.IGeneric
 
         Task<T> GetByIdAsync(Guid id, params Expression<Func<T, object>>[] includes);
         int Save();
+        Task UpdateRangeAsync(IEnumerable<T> e);
         Task<int> SaveAsync();
     }
 }

@@ -33,16 +33,29 @@ namespace GRRWS.Infrastructure.DB
         public DbSet<Sparepart> Spareparts { get; set; }
         public DbSet<Tasks> Tasks { get; set; }
         public DbSet<User> Users { get; set; }
-        public DbSet<ErrorSparepart> ErrorSpareparts { get; set; } 
-        public DbSet<TechnicalSymptom> TechnicalSymptoms { get; set; } 
+        public DbSet<ErrorSparepart> ErrorSpareparts { get; set; }
+        public DbSet<TechnicalSymptom> TechnicalSymptoms { get; set; }
         public DbSet<IssueTechnicalSymptom> IssueTechnicalSymptoms { get; set; }
         public DbSet<TechnicalSymptomReport> TechnicalSymptomReports { get; set; }
-
         public DbSet<MachineIssueHistory> MachineIssueHistories { get; set; }
         public DbSet<MachineErrorHistory> MachineErrorHistories { get; set; }
         public DbSet<DeviceIssueHistory> DeviceIssueHistories { get; set; }
         public DbSet<DeviceErrorHistory> DeviceErrorHistories { get; set; }
         public DbSet<WarrantyDetail> WarrantyDetails { get; set; }
+        public DbSet<ErrorGuideline> ErrorGuidelines { get; set; }
+        public DbSet<ErrorFixStep> ErrorFixSteps { get; set; }
+        public DbSet<ErrorFixProgress> ErrorFixProgresses { get; set; }
+        public DbSet<SparePartUsage> SparePartUsages { get; set; }
+
+        public DbSet<RequestTakeSparePartUsage> RequestTakeSparePartUsages { get; set; }
+        public DbSet<Supplier> Suppliers { get; set; }
+        public DbSet<MachineSparepart> MachineSpareparts { get; set; }
+
+        public DbSet<WarrantyClaim> WarrantyClaims { get; set; }
+        public DbSet<WarrantyClaimDocument> WarrantyClaimDocuments { get; set; }
+        public DbSet<TaskGroup> TaskGroups { get; set; }
+        public DbSet<Shift> Shifts { get; set; }
+        public DbSet<MechanicShift> MechanicShifts { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -55,14 +68,11 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.ApplyConfiguration(new ErrorConfiguration());
             modelBuilder.ApplyConfiguration(new SparepartConfiguration());
             modelBuilder.ApplyConfiguration(new IssueErrorConfiguration());
-            modelBuilder.ApplyConfiguration(new ErrorSparepartConfiguration());
             modelBuilder.ApplyConfiguration(new MachineConfiguration());
             modelBuilder.ApplyConfiguration(new RequestConfiguration());
             modelBuilder.ApplyConfiguration(new ZoneConfiguration());
             modelBuilder.ApplyConfiguration(new AreaConfiguration());
             modelBuilder.ApplyConfiguration(new PositionConfiguration());
-            modelBuilder.ApplyConfiguration(new DeviceErrorHistoryConfiguration());
-            modelBuilder.ApplyConfiguration(new DeviceIssueHistoryConfiguration());
             modelBuilder.ApplyConfiguration(new DeviceHistoryConfiguration());
             modelBuilder.ApplyConfiguration(new DeviceWarrantyConfiguration());
             modelBuilder.ApplyConfiguration(new MachineErrorHistoryConfiguration());
@@ -70,21 +80,33 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.ApplyConfiguration(new TasksConfiguration());
             modelBuilder.ApplyConfiguration(new ReportConfiguration());
             modelBuilder.ApplyConfiguration(new RequestIssueConfiguration());
+            modelBuilder.ApplyConfiguration(new RequestTakeSparePartUsageConfiguration());
+            modelBuilder.ApplyConfiguration(new SparePartUsageConfiguration());
             modelBuilder.ApplyConfiguration(new ErrorDetailConfiguration());
             modelBuilder.ApplyConfiguration(new DeviceWarrantyHistoryConfiguration());
             modelBuilder.ApplyConfiguration(new TechnicalSymptomConfiguration());
             modelBuilder.ApplyConfiguration(new IssueTechnicalSymptomConfiguration());
             modelBuilder.ApplyConfiguration(new TechnicalSymptomReportConfiguration());
 
+            modelBuilder.ApplyConfiguration(new ErrorGuidelineConfiguration());
+            modelBuilder.ApplyConfiguration(new ErrorFixStepConfiguration());
+            modelBuilder.ApplyConfiguration(new ErrorSparepartConfiguration());
+            modelBuilder.ApplyConfiguration(new SupplierConfiguration());
+            modelBuilder.ApplyConfiguration(new MachineSparepartConfiguration());
+            modelBuilder.ApplyConfiguration(new ShiftConfiguration());
             #endregion
-
-
             #region Entity Configurations
 
             // Area
             modelBuilder.Entity<Area>()
                 .Property(a => a.AreaName)
                 .IsRequired();
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Area)
+                .WithMany(a => a.Users)
+                .HasForeignKey(u => u.AreaId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Zone
             modelBuilder.Entity<Zone>()
@@ -107,7 +129,9 @@ namespace GRRWS.Infrastructure.DB
             {
                 entity.Property(d => d.DeviceName).IsRequired();
                 entity.Property(d => d.DeviceCode).IsRequired();
-                entity.Property(d => d.Status).IsRequired();
+                entity.Property(d => d.Status)
+                    .IsRequired()
+                    .HasConversion<string>();
                 entity.HasIndex(d => d.DeviceCode).IsUnique();
             });
 
@@ -132,23 +156,81 @@ namespace GRRWS.Infrastructure.DB
                 .HasForeignKey<Report>(rep => rep.RequestId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Request>(entity =>
+            {
+                entity.Property(r => r.DeviceId).IsRequired();
+                entity.Property(r => r.RequestedById).IsRequired();
+                entity.Property(r => r.Status)
+                    .HasConversion<string>();
+                entity.Property(r => r.Priority)
+                    .HasConversion<string>();
+                entity.HasOne(r => r.Device)
+                    .WithMany(d => d.Requests)
+                    .HasForeignKey(r => r.DeviceId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+            // ErrorSparepart
+            modelBuilder.Entity<ErrorSparepart>()
+                .HasKey(es => new { es.ErrorGuidelineId, es.SparepartId }); // Định nghĩa composite key
+
+
+            modelBuilder.Entity<ErrorSparepart>()
+                .HasOne(es => es.ErrorGuideline)
+                .WithMany(eg => eg.ErrorSpareparts)
+                .HasForeignKey(es => es.ErrorGuidelineId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ErrorSparepart>()
+                .HasOne(es => es.Sparepart)
+                .WithMany(s => s.ErrorSpareparts)
+                .HasForeignKey(es => es.SparepartId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Request - Device (Many-to-One)
+            modelBuilder.Entity<Request>()
+                .HasOne(r => r.Device)
+                .WithMany(d => d.Requests)
+                .HasForeignKey(r => r.DeviceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
             // DeviceHistory
             modelBuilder.Entity<DeviceHistory>()
                 .Property(dh => dh.EventDate)
                 .IsRequired();
+
+            modelBuilder.Entity<DeviceHistory>()
+                .HasOne(dh => dh.Device)
+                .WithMany(d => d.Histories)
+                .HasForeignKey(dh => dh.DeviceId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // DeviceWarranty
             modelBuilder.Entity<DeviceWarranty>()
                 .Property(dw => dw.DeviceId)
                 .IsRequired();
 
+            modelBuilder.Entity<DeviceWarranty>()
+                .HasOne(dw => dw.Device)
+                .WithMany(d => d.Warranties)
+                .HasForeignKey(dw => dw.DeviceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // DeviceWarrantyHistory
             modelBuilder.Entity<DeviceWarrantyHistory>(entity =>
             {
                 entity.Property(dwh => dwh.DeviceId).IsRequired();
                 entity.Property(dwh => dwh.DeviceDescription).IsRequired();
-                entity.Property(dwh => dwh.Status).IsRequired();
+                entity.Property(dwh => dwh.Status)
+                    .IsRequired()
+                    .HasConversion<string>();
             });
+
+            modelBuilder.Entity<DeviceWarrantyHistory>()
+                .HasOne(dwh => dwh.Device)
+                .WithMany()
+                .HasForeignKey(dwh => dwh.DeviceId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // EmailTemplate
             modelBuilder.Entity<EmailTemplate>(entity =>
@@ -168,9 +250,238 @@ namespace GRRWS.Infrastructure.DB
                 entity.HasIndex(e => e.ErrorCode).IsUnique();
             });
 
+            // ErrorGuideline
+            modelBuilder.Entity<ErrorGuideline>()
+                .HasKey(eg => eg.Id);
+
+            modelBuilder.Entity<ErrorGuideline>()
+                .Property(eg => eg.Title)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            modelBuilder.Entity<ErrorGuideline>()
+                .HasOne(eg => eg.Error)
+                .WithMany(e => e.ErrorGuidelines)
+                .HasForeignKey(eg => eg.ErrorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // ErrorDetail
             modelBuilder.Entity<ErrorDetail>()
-                .HasKey(ed => new { ed.ReportId, ed.ErrorId });
+                .HasKey(ed => ed.Id);
+
+            modelBuilder.Entity<ErrorDetail>()
+                .HasIndex(ed => new { ed.ReportId, ed.ErrorId })
+                .IsUnique();
+
+            //.HasKey(ed => new { ed.ReportId, ed.ErrorId });
+
+
+            modelBuilder.Entity<ErrorDetail>()
+                .Property(ed => ed.ErrorId)
+                .IsRequired();
+
+            modelBuilder.Entity<ErrorDetail>()
+                .Property(ed => ed.ErrorGuideLineId);
+
+            modelBuilder.Entity<ErrorDetail>()
+                .Property(ed => ed.RequestTakeSparePartUsageId); // Thêm cột cho quan hệ 1-1
+
+            modelBuilder.Entity<ErrorDetail>()
+                .HasOne(ed => ed.Report)
+                .WithMany(r => r.ErrorDetails)
+                .HasForeignKey(ed => ed.ReportId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ErrorDetail>()
+                .HasOne(ed => ed.Error)
+                .WithMany(e => e.ErrorDetails)
+                .HasForeignKey(ed => ed.ErrorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ErrorDetail>()
+                .HasOne(ed => ed.ErrorGuideline)
+                .WithMany(eg => eg.ErrorDetails)
+                .HasForeignKey(ed => ed.ErrorGuideLineId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<ErrorDetail>()
+                .HasOne(ed => ed.Task)
+                .WithMany(t => t.ErrorDetails)
+                .HasForeignKey(ed => ed.TaskId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Xóa cấu hình liên kết với SparePartUsage trực tiếp
+
+            // RequestTakeSparePartUsage
+
+            modelBuilder.Entity<RequestTakeSparePartUsage>()
+                .HasKey(rtspu => rtspu.Id);
+
+            modelBuilder.Entity<RequestTakeSparePartUsage>()
+                .Property(rtspu => rtspu.RequestCode)
+                .IsRequired();
+
+            modelBuilder.Entity<RequestTakeSparePartUsage>()
+                .Property(rtspu => rtspu.Status)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<RequestTakeSparePartUsage>()
+                .HasOne(rtspu => rtspu.ErrorDetail)
+                .WithOne(ed => ed.RequestTakeSparePartUsage)
+                .HasForeignKey<ErrorDetail>(ed => ed.RequestTakeSparePartUsageId)
+                .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<RequestTakeSparePartUsage>()
+    .HasOne(rtspu => rtspu.RequestedBy)
+    .WithMany()
+    .HasForeignKey(rtspu => rtspu.RequestedById)
+    .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<RequestTakeSparePartUsage>()
+                .HasOne(rtspu => rtspu.ConfirmedBy)
+                .WithMany()
+                .HasForeignKey(rtspu => rtspu.ConfirmedById)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<RequestTakeSparePartUsage>()
+                .HasOne(rtspu => rtspu.Assignee)
+                .WithMany()
+                .HasForeignKey(rtspu => rtspu.AssigneeId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<RequestTakeSparePartUsage>()
+                .HasMany(rtspu => rtspu.SparePartUsages)
+                .WithOne(spu => spu.RequestTakeSparePartUsage)
+                .HasForeignKey(spu => spu.RequestTakeSparePartUsageId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // SparePartUsage
+            modelBuilder.Entity<SparePartUsage>()
+                .HasKey(spu => spu.Id);
+
+            modelBuilder.Entity<SparePartUsage>()
+                .HasOne(spu => spu.SparePart)
+                .WithMany()
+                .HasForeignKey(spu => spu.SparePartId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SparePartUsage>()
+                .Property(spu => spu.QuantityUsed)
+                .IsRequired();
+
+            modelBuilder.Entity<SparePartUsage>()
+                .Property(spu => spu.IsTakenFromStock)
+                .IsRequired();
+
+
+            modelBuilder.Entity<SparePartUsage>()
+                .HasOne(spu => spu.RequestTakeSparePartUsage)
+                .WithMany(rtspu => rtspu.SparePartUsages)
+                .HasForeignKey(spu => spu.RequestTakeSparePartUsageId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Xóa cấu hình liên kết với ErrorDetail trong SparePartUsage
+
+            // WarrantyClaim
+            modelBuilder.Entity<WarrantyClaim>()
+                .HasKey(wc => wc.Id);
+
+            modelBuilder.Entity<WarrantyClaim>()
+                .Property(wc => wc.ClaimNumber)
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<WarrantyClaim>()
+                .HasIndex(wc => wc.ClaimNumber)
+                .IsUnique();
+
+            modelBuilder.Entity<WarrantyClaim>()
+                .Property(wc => wc.ClaimStatus)
+                .IsRequired()
+                .HasMaxLength(20);
+
+
+
+            modelBuilder.Entity<WarrantyClaim>()
+                .Property(wc => wc.Resolution)
+                .HasMaxLength(1000);
+
+            modelBuilder.Entity<WarrantyClaim>()
+                .Property(wc => wc.WarrantyNotes)
+                .HasMaxLength(500);
+
+            modelBuilder.Entity<WarrantyClaim>()
+                .Property(wc => wc.ClaimAmount)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<WarrantyClaim>()
+                .HasOne(wc => wc.DeviceWarranty)
+                .WithMany(dw => dw.WarrantyClaims)
+                .HasForeignKey(wc => wc.DeviceWarrantyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<WarrantyClaim>()
+                .HasOne(wc => wc.SubmittedByTask)
+                .WithMany()
+                .HasForeignKey(wc => wc.SubmittedByTaskId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<WarrantyClaim>()
+                .HasOne(wc => wc.ReturnTask)
+                .WithMany()
+                .HasForeignKey(wc => wc.ReturnTaskId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<WarrantyClaim>()
+                .HasOne(wc => wc.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(wc => wc.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // WarrantyClaimDocument
+            modelBuilder.Entity<WarrantyClaimDocument>()
+                .HasKey(wcd => wcd.Id);
+
+            modelBuilder.Entity<WarrantyClaimDocument>()
+                .Property(wcd => wcd.DocumentType)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<WarrantyClaimDocument>()
+                .Property(wcd => wcd.DocumentName)
+                .IsRequired()
+                .HasMaxLength(255);
+
+            modelBuilder.Entity<WarrantyClaimDocument>()
+                .Property(wcd => wcd.DocumentUrl)
+                .IsRequired()
+                .HasMaxLength(500);
+
+            modelBuilder.Entity<WarrantyClaimDocument>()
+                .Property(wcd => wcd.Description)
+                .HasMaxLength(500);
+
+            modelBuilder.Entity<WarrantyClaimDocument>()
+                .Property(wcd => wcd.UploadDate)
+                .IsRequired();
+
+            modelBuilder.Entity<WarrantyClaimDocument>()
+                .HasOne(wcd => wcd.WarrantyClaim)
+                .WithMany(wc => wc.Documents)
+                .HasForeignKey(wcd => wcd.WarrantyClaimId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<WarrantyClaimDocument>()
+                .HasOne(wcd => wcd.UploadedByUser)
+                .WithMany()
+                .HasForeignKey(wcd => wcd.UploadedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Tasks - WarrantyClaim relationship
+            modelBuilder.Entity<Tasks>()
+                .HasOne(t => t.WarrantyClaim)
+                .WithMany()
+                .HasForeignKey(t => t.WarrantyClaimId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Feedback
             modelBuilder.Entity<Feedback>()
@@ -193,12 +504,25 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<IssueError>()
                 .HasKey(ie => new { ie.IssueId, ie.ErrorId });
 
+            modelBuilder.Entity<IssueError>()
+                .HasOne(ie => ie.Issue)
+                .WithMany(i => i.IssueErrors)
+                .HasForeignKey(ie => ie.IssueId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<IssueError>()
+                .HasOne(ie => ie.Error)
+                .WithMany(e => e.IssueErrors)
+                .HasForeignKey(ie => ie.ErrorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Machine
             modelBuilder.Entity<Machine>(entity =>
             {
                 entity.Property(m => m.MachineCode).IsRequired();
                 entity.HasIndex(m => m.MachineCode).IsUnique();
             });
+
             // MachineIssueHistory
             modelBuilder.Entity<MachineIssueHistory>(entity =>
             {
@@ -209,111 +533,6 @@ namespace GRRWS.Infrastructure.DB
                 entity.HasIndex(mih => new { mih.MachineId, mih.IssueId });
             });
 
-            // MachineErrorHistory
-            modelBuilder.Entity<MachineErrorHistory>(entity =>
-            {
-                entity.Property(meh => meh.MachineId).IsRequired();
-                entity.Property(meh => meh.ErrorId).IsRequired();
-                entity.Property(meh => meh.LastOccurredDate).IsRequired();
-                entity.Property(meh => meh.OccurrenceCount).IsRequired().HasDefaultValue(1);
-                entity.HasIndex(meh => new { meh.MachineId, meh.ErrorId });
-            });
-
-            // DeviceIssueHistory
-            modelBuilder.Entity<DeviceIssueHistory>(entity =>
-            {
-                entity.Property(dih => dih.DeviceId).IsRequired();
-                entity.Property(dih => dih.IssueId).IsRequired();
-                entity.Property(dih => dih.LastOccurredDate).IsRequired();
-                entity.Property(dih => dih.OccurrenceCount).IsRequired().HasDefaultValue(1);
-                entity.HasIndex(dih => new { dih.DeviceId, dih.IssueId });
-            });
-
-            // DeviceErrorHistory
-            modelBuilder.Entity<DeviceErrorHistory>(entity =>
-            {
-                entity.Property(deh => deh.DeviceId).IsRequired();
-                entity.Property(deh => deh.ErrorId).IsRequired();
-                entity.Property(deh => deh.LastOccurredDate).IsRequired();
-                entity.Property(deh => deh.OccurrenceCount).IsRequired().HasDefaultValue(1);
-                entity.HasIndex(deh => new { deh.DeviceId, deh.ErrorId });
-            });
-            // Notification
-            modelBuilder.Entity<Notification>(entity =>
-            {
-                entity.Property(n => n.SenderId).IsRequired();
-                entity.Property(n => n.ReceiverId).IsRequired();
-            });
-
-            // RepairSparepart
-            modelBuilder.Entity<RepairSparepart>()
-                .HasKey(rs => new { rs.SpareId, rs.TaskId });
-
-            // ErrorSparepart
-            modelBuilder.Entity<ErrorSparepart>()
-                .HasKey(es => new { es.ErrorId, es.SparepartId }); // Composite Key
-
-            // Report
-            modelBuilder.Entity<Report>(entity =>
-            {
-                entity.Property(r => r.Location).IsRequired();
-                entity.Property(r => r.Status).IsRequired();
-                entity.Property(r => r.Priority).IsRequired();
-            });
-
-            // Request
-            modelBuilder.Entity<Request>(entity =>
-            {
-                entity.Property(r => r.DeviceId).IsRequired();
-                entity.Property(r => r.RequestedById).IsRequired();
-            });
-
-            // RequestIssue
-            modelBuilder.Entity<RequestIssue>(entity =>
-            {
-                entity.HasKey(ri => ri.Id);
-                entity.HasIndex(ri => new { ri.RequestId, ri.IssueId }).IsUnique();
-            });
-
-            // Sparepart
-            modelBuilder.Entity<Sparepart>(entity =>
-            {
-                entity.Property(s => s.SparepartName).IsRequired();
-                // Removed IsAvailable configuration as it's a calculated property
-                entity.Property(s => s.StockQuantity).IsRequired().HasDefaultValue(0);
-                entity.HasIndex(s => s.SparepartCode).IsUnique();
-            });
-
-
-            // Tasks
-            // User - Tasks (One-to-Many)
-            modelBuilder.Entity<Tasks>()
-                .HasOne(t => t.Assignee)
-                .WithMany(u => u.Tasks)
-                .HasForeignKey(t => t.AssigneeId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Tasks - RepairSparepart (Many-to-Many)
-            modelBuilder.Entity<RepairSparepart>()
-                .HasOne(rs => rs.Task)
-                .WithMany(t => t.RepairSpareparts)
-                .HasForeignKey(rs => rs.TaskId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<RepairSparepart>()
-                .HasOne(rs => rs.Sparepart)
-                .WithMany(s => s.RepairSpareparts)
-                .HasForeignKey(rs => rs.SpareId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Image - RequestIssue (Many-to-One)
-            modelBuilder.Entity<Image>()
-                .HasOne(i => i.RequestIssue)
-                .WithMany() // No navigation property in RequestIssue
-                .HasForeignKey(i => i.RequestIssueId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Machine - MachineIssueHistory (One-to-Many)
             modelBuilder.Entity<MachineIssueHistory>()
                 .HasOne(mih => mih.Machine)
                 .WithMany()
@@ -326,7 +545,16 @@ namespace GRRWS.Infrastructure.DB
                 .HasForeignKey(mih => mih.IssueId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Machine - MachineErrorHistory (One-to-Many)
+            // MachineErrorHistory
+            modelBuilder.Entity<MachineErrorHistory>(entity =>
+            {
+                entity.Property(meh => meh.MachineId).IsRequired();
+                entity.Property(meh => meh.ErrorId).IsRequired();
+                entity.Property(meh => meh.LastOccurredDate).IsRequired();
+                entity.Property(meh => meh.OccurrenceCount).IsRequired().HasDefaultValue(1);
+                entity.HasIndex(meh => new { meh.MachineId, meh.ErrorId });
+            });
+
             modelBuilder.Entity<MachineErrorHistory>()
                 .HasOne(meh => meh.Machine)
                 .WithMany()
@@ -339,7 +567,16 @@ namespace GRRWS.Infrastructure.DB
                 .HasForeignKey(meh => meh.ErrorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Device - DeviceIssueHistory (One-to-Many)
+            // DeviceIssueHistory
+            modelBuilder.Entity<DeviceIssueHistory>(entity =>
+            {
+                entity.Property(dih => dih.DeviceId).IsRequired();
+                entity.Property(dih => dih.IssueId).IsRequired();
+                entity.Property(dih => dih.LastOccurredDate).IsRequired();
+                entity.Property(dih => dih.OccurrenceCount).IsRequired().HasDefaultValue(1);
+                entity.HasIndex(dih => new { dih.DeviceId, dih.IssueId });
+            });
+
             modelBuilder.Entity<DeviceIssueHistory>()
                 .HasOne(dih => dih.Device)
                 .WithMany()
@@ -352,7 +589,16 @@ namespace GRRWS.Infrastructure.DB
                 .HasForeignKey(dih => dih.IssueId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Device - DeviceErrorHistory (One-to-Many)
+            // DeviceErrorHistory
+            modelBuilder.Entity<DeviceErrorHistory>(entity =>
+            {
+                entity.Property(deh => deh.DeviceId).IsRequired();
+                entity.Property(deh => deh.ErrorId).IsRequired();
+                entity.Property(deh => deh.LastOccurredDate).IsRequired();
+                entity.Property(deh => deh.OccurrenceCount).IsRequired().HasDefaultValue(1);
+                entity.HasIndex(deh => new { deh.DeviceId, deh.ErrorId });
+            });
+
             modelBuilder.Entity<DeviceErrorHistory>()
                 .HasOne(deh => deh.Device)
                 .WithMany()
@@ -365,70 +611,46 @@ namespace GRRWS.Infrastructure.DB
                 .HasForeignKey(deh => deh.ErrorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Error - ErrorSparepart (One-to-Many)
-            modelBuilder.Entity<ErrorSparepart>()
-                .HasOne(es => es.Error)
-                .WithMany(e => e.ErrorSpareparts)
-                .HasForeignKey(es => es.ErrorId)
+            // Notification
+            modelBuilder.Entity<Notification>(entity =>
+            {
+                entity.Property(n => n.SenderId).IsRequired();
+                entity.Property(n => n.ReceiverId).IsRequired();
+            });
+
+            // RepairSparepart
+            modelBuilder.Entity<RepairSparepart>()
+                .HasKey(rs => new { rs.SpareId, rs.TaskId });
+
+            modelBuilder.Entity<RepairSparepart>()
+                .HasOne(rs => rs.Task)
+                .WithMany(t => t.RepairSpareparts)
+                .HasForeignKey(rs => rs.TaskId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Sparepart - ErrorSparepart (One-to-Many)
-            modelBuilder.Entity<ErrorSparepart>()
-                .HasOne(es => es.Sparepart)
-                .WithMany(s => s.ErrorSpareparts)
-                .HasForeignKey(es => es.SparepartId)
+            modelBuilder.Entity<RepairSparepart>()
+                .HasOne(rs => rs.Sparepart)
+                .WithMany(s => s.RepairSpareparts)
+                .HasForeignKey(rs => rs.SpareId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Issue - IssueError (One-to-Many)
-            modelBuilder.Entity<IssueError>()
-                .HasOne(ie => ie.Issue)
-                .WithMany(i => i.IssueErrors)
-                .HasForeignKey(ie => ie.IssueId)
-                .OnDelete(DeleteBehavior.Restrict);
+            // Report
+            modelBuilder.Entity<Report>(entity =>
+            {
+                entity.Property(r => r.Location).IsRequired();
+            });
 
-            // Error - IssueError (One-to-Many)
-            modelBuilder.Entity<IssueError>()
-                .HasOne(ie => ie.Error)
-                .WithMany(e => e.IssueErrors)
-                .HasForeignKey(ie => ie.ErrorId)
-                .OnDelete(DeleteBehavior.Restrict);
+            // RequestIssue
+            modelBuilder.Entity<RequestIssue>(entity =>
+            {
+                entity.HasKey(ri => ri.Id);
+                entity.HasIndex(ri => new { ri.RequestId, ri.IssueId }).IsUnique();
+            });
 
-            modelBuilder.Entity<DeviceHistory>()
-                .HasOne(dh => dh.Device)
-                .WithMany(d => d.Histories)
-                .HasForeignKey(dh => dh.DeviceId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<DeviceWarranty>()
-                .HasOne(dw => dw.Device)
-                .WithMany(d => d.Warranties)
-                .HasForeignKey(dw => dw.DeviceId)
-                .OnDelete(DeleteBehavior.Restrict);
-            // Add this relationship configuration
-            modelBuilder.Entity<DeviceWarrantyHistory>()
-                .HasOne(dwh => dwh.Device)
-                .WithMany()  // No navigation property in Device for DeviceWarrantyHistories
-                .HasForeignKey(dwh => dwh.DeviceId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Add this relationship configuration
             modelBuilder.Entity<RequestIssue>()
                 .HasOne(ri => ri.Request)
                 .WithMany(r => r.RequestIssues)
                 .HasForeignKey(ri => ri.RequestId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // And fix the typo in the SerderId relationship
-            modelBuilder.Entity<Request>()
-                .HasOne(r => r.Sender)
-                .WithMany(u => u.Requests)
-                .HasForeignKey(r => r.SerderId)  // This should be SenderId in your entity
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Request>()
-                .HasOne(r => r.Device)
-                .WithMany(d => d.Requests)
-                .HasForeignKey(r => r.DeviceId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<RequestIssue>()
@@ -436,58 +658,55 @@ namespace GRRWS.Infrastructure.DB
                 .WithMany(i => i.RequestIssues)
                 .HasForeignKey(ri => ri.IssueId)
                 .OnDelete(DeleteBehavior.Restrict);
-            // Update your existing Image-RequestIssue relationship to use the collection
+
+            // Image
             modelBuilder.Entity<Image>()
                 .HasOne(i => i.RequestIssue)
                 .WithMany(ri => ri.Images)
                 .HasForeignKey(i => i.RequestIssueId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Add these relationship configurations to your OnModelCreating method
-            modelBuilder.Entity<ErrorDetail>()
-                .HasOne(ed => ed.Report)
-                .WithMany(r => r.ErrorDetails)
-                .HasForeignKey(ed => ed.ReportId)
+            // Sparepart
+            modelBuilder.Entity<Sparepart>(entity =>
+            {
+                entity.Property(s => s.SparepartCode).IsRequired();
+                entity.HasIndex(s => s.SparepartCode).IsUnique();
+                entity.Property(s => s.SparepartName).IsRequired();
+                entity.Property(s => s.StockQuantity).IsRequired().HasDefaultValue(0);
+                entity.Property(s => s.ExpectedAvailabilityDate);
+            });
+
+            // Tasks
+            modelBuilder.Entity<Tasks>()
+                .HasOne(t => t.Assignee)
+                .WithMany(u => u.Tasks)
+                .HasForeignKey(t => t.AssigneeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<ErrorDetail>()
-                .HasOne(ed => ed.Error)
-                .WithMany(e => e.ErrorDetails)
-                .HasForeignKey(ed => ed.ErrorId)
-                .OnDelete(DeleteBehavior.Restrict);
+            // Tasks - WarrantyClaim relationship
+            modelBuilder.Entity<Tasks>()
+                .HasOne(t => t.WarrantyClaim)
+                .WithMany()
+                .HasForeignKey(t => t.WarrantyClaimId)
+                .OnDelete(DeleteBehavior.SetNull);
 
-            // If you have a Task relationship in ErrorDetail
-            modelBuilder.Entity<ErrorDetail>()
-                .HasOne(ed => ed.Task)
-                .WithMany(t => t.ErrorDetails)
-                .HasForeignKey(ed => ed.TaskId)
-                .OnDelete(DeleteBehavior.Restrict);
-            // Cấu hình cho WarrantyDetail
+            // WarrantyDetail
             modelBuilder.Entity<WarrantyDetail>(entity =>
             {
                 entity.Property(wd => wd.ReportId).IsRequired();
                 entity.Property(wd => wd.WarrantyNotes).HasMaxLength(1000);
             });
 
-            // WarrantyDetail - Report (One-to-Many)
             modelBuilder.Entity<WarrantyDetail>()
                 .HasOne(wd => wd.Report)
                 .WithMany(r => r.WarrantyDetails)
                 .HasForeignKey(wd => wd.ReportId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // WarrantyDetail - Tasks (One-to-One)
             modelBuilder.Entity<WarrantyDetail>()
                 .HasOne(wd => wd.Task)
-                .WithMany() // Không cần navigation property trong Tasks
+                .WithMany()
                 .HasForeignKey(wd => wd.TaskId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // WarrantyDetail - Issue (One-to-Many)
-            modelBuilder.Entity<Issue>()
-                .HasOne(i => i.WarrantyDetail)
-                .WithMany(wd => wd.Issues)
-                .HasForeignKey(i => i.WarrantyDetailId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // IssueTechnicalSymptom
@@ -503,7 +722,9 @@ namespace GRRWS.Infrastructure.DB
                 .HasForeignKey(its => its.TechnicalSymptomId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // TechnicalSymptomReport 
+            // TechnicalSymptomReport
+            modelBuilder.Entity<TechnicalSymptomReport>()
+                .HasKey(tsr => new { tsr.ReportId, tsr.TechnicalSymptomId });
 
             modelBuilder.Entity<TechnicalSymptomReport>()
                 .HasOne(tsr => tsr.Report)
@@ -521,8 +742,51 @@ namespace GRRWS.Infrastructure.DB
                 .HasOne(tsr => tsr.Task)
                 .WithMany(t => t.TechnicalSymptomReports)
                 .HasForeignKey(tsr => tsr.TaskId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.SetNull);
+            // ErrorFixProgress
+            modelBuilder.Entity<ErrorFixProgress>()
+                .HasKey(efp => efp.Id);
 
+            modelBuilder.Entity<ErrorFixProgress>()
+                .HasOne(efp => efp.ErrorDetail)
+                .WithMany(ed => ed.ProgressRecords)
+                .HasForeignKey(efp => efp.ErrorDetailId)
+                .OnDelete(DeleteBehavior.Cascade); // Giữ cascade cho ErrorDetail
+
+            modelBuilder.Entity<ErrorFixProgress>()
+                .HasOne(efp => efp.ErrorFixStep)
+                .WithMany() // Không cần WithMany nếu ErrorFixStep không có collection
+                .HasForeignKey(efp => efp.ErrorFixStepId)
+                .OnDelete(DeleteBehavior.Restrict); // Thay bằng Restrict để tránh vòng lặp
+
+            modelBuilder.Entity<ErrorFixProgress>()
+                .Property(efp => efp.IsCompleted)
+                .IsRequired();
+            modelBuilder.Entity<Sparepart>()
+    .HasOne(s => s.Supplier)
+    .WithMany(sp => sp.Spareparts)
+    .HasForeignKey(s => s.SupplierId)
+    .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Sparepart>()
+    .Property(s => s.SupplierId)
+    .IsRequired(false);
+
+            modelBuilder.Entity<MachineSparepart>()
+    .HasKey(ms => new { ms.MachineId, ms.SparepartId }); // Composite key
+
+            modelBuilder.Entity<MachineSparepart>()
+    .HasOne(ms => ms.Machine)
+    .WithMany(m => m.MachineSpareparts)
+    .HasForeignKey(ms => ms.MachineId)
+    .IsRequired() // Đảm bảo MachineId không NULL
+    .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<MachineSparepart>()
+    .HasOne(ms => ms.Sparepart)
+    .WithMany(s => s.MachineSpareparts)
+    .HasForeignKey(ms => ms.SparepartId)
+    .IsRequired() // Đảm bảo SparepartId không NULL
+    .OnDelete(DeleteBehavior.Restrict);
             // BaseEntity Defaults
             modelBuilder.Entity<BaseEntity>()
                 .Property(b => b.Id)
@@ -536,8 +800,21 @@ namespace GRRWS.Infrastructure.DB
                 .Property(b => b.IsDeleted)
                 .HasDefaultValue(false);
 
-            #endregion
+            //TaskGroup
+            modelBuilder.Entity<TaskGroup>(entity =>
+            {
+                entity.HasMany(tg => tg.Tasks)
+                    .WithOne(t => t.TaskGroup)
+                    .HasForeignKey(t => t.TaskGroupId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+            modelBuilder.Entity<TaskGroup>()
+                .HasOne(r => r.Report)
+                .WithMany(tg => tg.TaskGroups)
+                .HasForeignKey(r => r.ReportId)
+                .OnDelete(DeleteBehavior.NoAction);
 
+            #endregion
             #region Table Mappings
             modelBuilder.Entity<Area>().ToTable("Areas");
             modelBuilder.Entity<Zone>().ToTable("Zones");
@@ -566,6 +843,16 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<TechnicalSymptom>().ToTable("TechnicalSymptoms");
             modelBuilder.Entity<IssueTechnicalSymptom>().ToTable("IssueTechnicalSymptoms");
             modelBuilder.Entity<TechnicalSymptomReport>().ToTable("TechnicalSymptomReports");
+            modelBuilder.Entity<ErrorGuideline>().ToTable("ErrorGuidelines");
+            modelBuilder.Entity<ErrorFixStep>().ToTable("ErrorFixSteps");
+            modelBuilder.Entity<ErrorFixProgress>().ToTable("ErrorFixProgresses");
+            modelBuilder.Entity<SparePartUsage>().ToTable("SparePartUsages");
+            modelBuilder.Entity<RequestTakeSparePartUsage>().ToTable("RequestTakeSparePartUsages");
+            modelBuilder.Entity<MachineSparepart>().ToTable("MachineSpareparts");
+            modelBuilder.Entity<Supplier>().ToTable("Suppliers");
+            modelBuilder.Entity<TaskGroup>().ToTable("TaskGroups");
+            modelBuilder.Entity<Shift>().ToTable("Shifts");
+            modelBuilder.Entity<MechanicShift>().ToTable("MechanicShifts");
             #endregion
         }
     }

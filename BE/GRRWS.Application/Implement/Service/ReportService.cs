@@ -3,14 +3,13 @@ using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
+
+using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
+using GRRWS.Infrastructure.DTOs.ErrorDetail;
+
 using GRRWS.Infrastructure.DTOs.Report;
 using GRRWS.Infrastructure.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -74,7 +73,6 @@ namespace GRRWS.Application.Implement.Service
 
             var report = _mapper.Map<Report>(dto);
             report.Id = Guid.NewGuid();
-            report.Status = "InProgress";
             report.CreatedDate = DateTime.Now;
             report.Location = createLocation;
 
@@ -93,10 +91,11 @@ namespace GRRWS.Application.Implement.Service
             await _unit.ReportRepository.CreateAsync(report);
             var getRequest = await _unit.RequestRepository.GetRequestByIdAsync((Guid)report.RequestId);
             getRequest.ReportId = report.Id;
-            getRequest.Status = "Approved";
+            getRequest.Status = Status.InProgress;
             await _unit.RequestRepository.UpdateAsync(getRequest);
             return Result.SuccessWithObject(new { Message = "Report created successfully!", ReportId = report.Id });
         }
+
         public async Task<Result> CreateWarrantyReportAsync(ReportWarrantyCreateDTO dto)
         {
             if (dto.RequestId == null)
@@ -146,7 +145,6 @@ namespace GRRWS.Application.Implement.Service
 
             var report = _mapper.Map<Report>(dto);
             report.Id = Guid.NewGuid();
-            report.Status = "InWarranty";
             report.CreatedDate = DateTime.Now;
             report.Location = createLocation;
 
@@ -165,10 +163,10 @@ namespace GRRWS.Application.Implement.Service
             await _unit.ReportRepository.CreateAsync(report);
             var getRequest = await _unit.RequestRepository.GetRequestByIdAsync((Guid)report.RequestId);
             getRequest.ReportId = report.Id;
-            getRequest.Status = "Approved";
             await _unit.RequestRepository.UpdateAsync(getRequest);
             return Result.SuccessWithObject(new { Message = "Report created successfully!", ReportId = report.Id });
         }
+
         public async Task<Result> UpdateAsync(ReportUpdateDTO dto)
         {
             var report = await _unit.ReportRepository.GetByIdAsync(dto.Id);
@@ -211,6 +209,7 @@ namespace GRRWS.Application.Implement.Service
             var dtos = _mapper.Map<List<ReportViewDTO>>(reports).Cast<object>().ToList();
             return Result.SuccessWithObject(dtos);
         }
+
         public async Task<Result> CreateReportWithIssueErrorAsync(ReportCreateWithIssueErrorDTO dto)
         {
             // Kiểm tra RequestId
@@ -275,14 +274,12 @@ namespace GRRWS.Application.Implement.Service
                 createLocation = "Create title fail";
             }
 
-            // Tạo Report
+            // Tạo Report (ánh xạ thủ công)
             var report = new Report
             {
                 Id = Guid.NewGuid(),
                 RequestId = dto.RequestId,
-                Priority = dto.Priority,
                 Location = createLocation,
-                Status = "InProgress",
                 CreatedDate = DateTime.Now
             };
 
@@ -308,7 +305,6 @@ namespace GRRWS.Application.Implement.Service
                 var errorIds = mapping.Value;
                 foreach (var errorId in errorIds)
                 {
-                    // Check if the IssueError combination already exists
                     var existingIssueError = await _unit.IssueErrorRepository.GetByIssueAndErrorIdAsync(issueId, errorId);
                     if (existingIssueError == null) // Only add if it doesn't exist
                     {
@@ -330,14 +326,15 @@ namespace GRRWS.Application.Implement.Service
             await _unit.ReportRepository.CreateAsync(report);
 
             // Cập nhật Request
-            request.ReportId = report.Id;
-            request.Status = "Approved";
-            await _unit.RequestRepository.UpdateAsync(request);
+            var getRequest = await _unit.RequestRepository.GetRequestByIdAsync((Guid)report.RequestId);
+            getRequest.ReportId = report.Id;
+            await _unit.RequestRepository.UpdateAsync(getRequest);
 
             await _unit.SaveChangesAsync();
 
             return Result.SuccessWithObject(new { Message = "Report created successfully with IssueErrors!", ReportId = report.Id });
         }
+
         public async Task<Result> CreateReportWithIssueSymtomAsync(ReportCreateWithIssueSymtomDTO dto)
         {
             // Kiểm tra RequestId
@@ -407,9 +404,7 @@ namespace GRRWS.Application.Implement.Service
             {
                 Id = Guid.NewGuid(),
                 RequestId = dto.RequestId,
-                Priority = dto.Priority,
                 Location = createLocation,
-                Status = "InWarranty",
                 CreatedDate = DateTime.Now
             };
 
@@ -458,12 +453,37 @@ namespace GRRWS.Application.Implement.Service
 
             // Cập nhật Request
             request.ReportId = report.Id;
-            request.Status = "Approved";
             await _unit.RequestRepository.UpdateAsync(request);
 
             await _unit.SaveChangesAsync();
 
             return Result.SuccessWithObject(new { Message = "Report created successfully with IssueSymtoms!", ReportId = report.Id });
+        }
+        public async Task<Result> GetErrorReportByIdAsync(Guid id)
+        {
+            var report = await _unit.ReportRepository.GetReportWithErrorDetailsAsync(id);
+            if (report == null)
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Report not found.", 0));
+
+            // Ánh xạ thủ công sang DTO nếu cần
+            var resultDto = new ReportViewErorDTO
+            {
+                Id = report.Id,
+                RequestId = report.RequestId,
+                Location = report.Location,
+                CreatedDate = report.CreatedDate,
+                ModifiedDate = report.ModifiedDate,
+                IsDeleted = report.IsDeleted,
+                ErrorDetails = report.ErrorDetails?.Select(ed => new ErrorDetailViewDTO
+                {
+                    Id = ed.Id,
+                    ReportId = ed.ReportId,
+                    ErrorId = ed.ErrorId,
+                    ErrorName = ed.Error?.Name 
+                }).ToList()
+            };
+
+            return Result.SuccessWithObject(resultDto);
         }
     }
 }

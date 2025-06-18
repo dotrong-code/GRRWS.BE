@@ -10,7 +10,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
 {
     public interface IWarrantyDetailRepository : IGenericRepository<WarrantyDetail>
     {
-        Task<WarrantyDetail> GetByIdAsync(Guid id);
+        Task<WarrantyDetail> GetByIdInclueErrorFixStepErrorSparepartssAsync(Guid id);
         Task<IEnumerable<WarrantyDetail>> GetAllAsync();
         Task CreateAsync(WarrantyDetail warrantyDetail);
         Task UpdateAsync(WarrantyDetail warrantyDetail);

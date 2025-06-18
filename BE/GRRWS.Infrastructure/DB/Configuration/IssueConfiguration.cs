@@ -455,6 +455,15 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Description = "Máy có khói nhẹ bốc ra khi chạy, rất bất thường.",
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
+                },
+                new Issue
+                {
+                    Id = Guid.Parse("deadbeef-dead-beef-dead-beefdeadbeef"),
+                    IssueKey = "MAY_HU_HONG_NANG",
+                    DisplayName = "Máy Bị Hư Hỏng Nặng",
+                    Description = "Máy gặp sự cố nghiêm trọng, không thể vận hành hoặc hoạt động bị suy giảm nghiêm trọng.",
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
                 }
             );
         }

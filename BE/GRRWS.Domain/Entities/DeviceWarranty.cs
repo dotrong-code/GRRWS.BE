@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GRRWS.Domain.Entities
+﻿namespace GRRWS.Domain.Entities
 {
     public class DeviceWarranty : BaseEntity
     {
@@ -14,6 +8,7 @@ namespace GRRWS.Domain.Entities
         public DateTime? WarrantyStartDate { get; set; }
         public DateTime? WarrantyEndDate { get; set; }
         public string? Provider { get; set; }
+        public string? Location { get; set; } // Location of the warranty service
         public string? WarrantyCode { get; set; }
         public string? Notes { get; set; }
         public decimal? Cost { get; set; }
@@ -24,6 +19,6 @@ namespace GRRWS.Domain.Entities
         public Guid DeviceId { get; set; }
         // Navigation
         public Device Device { get; set; }
-       
+        public ICollection<WarrantyClaim>? WarrantyClaims { get; set; }
     }
 }

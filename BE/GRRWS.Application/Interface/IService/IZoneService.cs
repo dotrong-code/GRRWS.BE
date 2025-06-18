@@ -15,5 +15,6 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetAllZonesAsync(Guid? areaId, int pageNumber, int pageSize);
         Task<Result> UpdateZoneAsync(UpdateZoneRequest request);
         Task<Result> DeleteZoneAsync(Guid id);
+        Task<Result> GetPositionsAndDevicesByZoneAsync(Guid zoneId, int pageNumber, int pageSize);
     }
 }

@@ -32,13 +32,29 @@ namespace GRRWS.Infrastructure.Common
 
         public ITaskRepository TaskRepository { get; private set; }
         public IWarrantyDetailRepository WarrantyDetailRepository { get; private set; }
-        public IIssueErrorRepository IssueErrorRepository { get; private set; }
 
+        public IErrorDetailRepository ErrorDetailRepository { get; }
+
+        public IIssueErrorRepository IssueErrorRepository { get; private set; }
+        public ISparepartRepository SparepartRepository { get; private set; }
+        public IErrorFixStepRepository ErrorFixStepRepository { get; private set; }
+        public IErrorSparepartRepository ErrorSparepartRepository { get; private set; }
+        public IErrorGuidelineRepository ErrorGuidelineRepository { get; private set; }
+        public IErrorFixProgressRepository ErrorFixProgressRepository { get; private set; }
+        public ISparePartUsageRepository SparePartUsageRepository { get; private set; }
+        public IRequestTakeSparePartUsageRepository RequestTakeSparePartUsageRepository { get; private set; }
+        public IMachineSparepartRepository MachineSparepartRepository { get; private set; }
+
+        public IMachineRepository MachineRepository { get; private set; }
+        public ISupplierRepository SupplierRepository { get; private set; }
+        public ITaskGroupRepository TaskGroupRepository { get; private set; }
+        public IShiftRepository ShiftRepository { get; private set; }
+        public IMechanicShiftRepository MechanicShiftRepository { get; private set; }
         public async Task<int> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync();
         }
-        public UnitOfWork(GRRWSContext context, StorageClient storageClient, ILogger<UnitOfWork> logger)
+        public UnitOfWork(GRRWSContext context, StorageClient storageClient, ILogger<UnitOfWork> logger, IErrorDetailRepository errorDetailRepository)
         {
             _context = context;
             _logger = logger;
@@ -63,7 +79,21 @@ namespace GRRWS.Infrastructure.Common
             DeviceIssueHistoryRepository = new DeviceIssueHistoryRepository(_context);
             DeviceHistoryRepository = new DeviceHistoryRepository(_context);
             WarrantyDetailRepository = new WarrantyDetailRepository(_context);
+            ErrorDetailRepository = errorDetailRepository;
             IssueErrorRepository = new IssueErrorRepository(_context);
+            SparepartRepository = new SparepartRepository(_context);
+            ErrorFixStepRepository = new ErrorFixStepRepository(_context);
+            ErrorSparepartRepository = new ErrorSparepartRepository(_context);
+            ErrorGuidelineRepository = new ErrorGuidelineRepository(_context);
+            ErrorFixProgressRepository = new ErrorFixProgressRepository(_context);
+            SparePartUsageRepository = new SparePartUsageRepository(_context);
+            RequestTakeSparePartUsageRepository = new RequestTakeSparePartUsageRepository(_context);
+            MachineSparepartRepository = new MachineSparepartRepository(_context);
+            MachineRepository = new MachineRepository(_context);
+            SupplierRepository = new SupplierRepository(_context);
+            TaskGroupRepository = new TaskGroupRepository(_context);
+            ShiftRepository = new ShiftRepository(_context);
+            MechanicShiftRepository = new MechanicShiftRepository(_context);
         }
         public int Complete()
         {

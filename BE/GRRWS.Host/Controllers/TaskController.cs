@@ -1,9 +1,15 @@
-﻿using GRRWS.Application.Common.Result;
+﻿using GRRWS.Application.Common;
+using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
+using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.Task;
+using GRRWS.Infrastructure.DTOs.Task.ActionTask;
+using GRRWS.Infrastructure.DTOs.Task.Get;
+using GRRWS.Infrastructure.DTOs.Task.Repair;
+using GRRWS.Infrastructure.DTOs.Task.Warranty;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace GRRWS.Host.Controllers
 {
@@ -12,12 +18,118 @@ namespace GRRWS.Host.Controllers
     public class TaskController : ControllerBase
     {
         private readonly ITaskService _taskService;
+        private readonly IHttpContextAccessor _contextAccessor;
 
-        public TaskController(ITaskService taskService)
+        public TaskController(ITaskService taskService, IHttpContextAccessor contextAccessor)
         {
             _taskService = taskService;
+            _contextAccessor = contextAccessor;
         }
-
+        [HttpGet("mechanicshift/suggest")]
+        public async Task<IResult> GetMechanicRecommendation([FromQuery, BindRequired] int pageSize = 5, [FromQuery, BindRequired] int pageIndex = 0)
+        {
+            var result = await _taskService.GetMechanicRecommendationAsync(pageSize, pageIndex);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Get suggest Mechanic successfully!")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [Authorize]
+        [HttpPost("uninstall")]
+        public async Task<IResult> CreateUninstallTask([FromBody] CreateUninstallTaskRequest request)
+        {
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _taskService.CreateUninstallTask(request, c.UserId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Uninstall task created successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [Authorize]
+        [HttpPost("install")]
+        public async Task<IResult> CreateInstallTask([FromBody] CreateInstallTaskRequest request)
+        {
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _taskService.CreateInstallTask(request, c.UserId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Install task created successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [Authorize]
+        [HttpPost("warranty-task/submit")]
+        public async Task<IResult> CreateWarrantyTask([FromBody] CreateWarrantyTaskRequest request)
+        {
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _taskService.CreateWarrantyTask(request, c.UserId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Warranty task created successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [Authorize]
+        [HttpPost("repair-task")]
+        public async Task<IResult> CreateRepairTask([FromBody] CreateRepairTaskRequest request)
+        {
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _taskService.CreateRepairTask(request, c.UserId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Warranty task created successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpPut("warranty-task/submit/fill-infor")]
+        public async Task<IResult> FillInWarrantyTask([FromBody] FillInWarrantyTask request)
+        {
+            var result = await _taskService.FillInWarrantyTask(request);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Warranty task created successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpGet("warranty-task-submit/{taskId}")]
+        public async Task<IResult> GetWarrantySubmitTaskDetails(Guid taskId)
+        {
+            var result = await _taskService.GetGetDetailWarrantyTaskForMechanicByIdAsync(taskId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Warranty task details retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpGet("warranty-task-return/{taskId}")]
+        public async Task<IResult> GetWarrantyReturnTaskDetails(Guid taskId)
+        {
+            var result = await _taskService.GetGetDetailWarrantyReturnTaskForMechanicByIdAsync(taskId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Warranty task details retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpGet("repair-task/{taskId}")]
+        public async Task<IResult> GetRepairTaskDetails(Guid taskId)
+        {
+            var result = await _taskService.GetDetailtRepairTaskForMechanicByIdAsync(taskId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Warranty task details retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpGet("uninstall-task/{taskId}")]
+        public async Task<IResult> GetUninstallTaskDetails(Guid taskId)
+        {
+            var result = await _taskService.GetDetailUninstallTaskForMechanicByIdAsync(taskId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Uninstall task details retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpGet("install-task/{taskId}")]
+        public async Task<IResult> GetInstallTaskDetails(Guid taskId)
+        {
+            var result = await _taskService.GetDetailInstallTaskForMechanicByIdAsync(taskId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Install task details retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpPut("status/{taskId}")]
+        public async Task<IResult> UpdateTaskStatus(Guid taskId)
+        {
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _taskService.UpdateTaskStatusAsync(taskId, c.UserId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Task status updated successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
         [HttpGet("ByReport/{reportId}")]
         public async Task<IResult> GetTasksByReportId(Guid reportId)
         {
@@ -26,54 +138,24 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Tasks retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
-        //[Authorize] 
-        //[HttpGet("MyTasks")]
-        //public async Task<IResult> GetMyTasks([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
-        //{
-        //    // Lấy mechanicId từ claims của user đã xác thực
-        //    var mechanicIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        //    if (string.IsNullOrEmpty(mechanicIdClaim) || !Guid.TryParse(mechanicIdClaim, out var mechanicId))
-        //    {
-        //        return ResultExtensions.ToProblemDetails(Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Invalid user authentication.", 0)));
-        //    }
-
-        //    var result = await _taskService.GetTasksByMechanicIdAsync(mechanicId, pageNumber, pageSize);
-        //    return result.IsSuccess
-        //        ? ResultExtensions.ToSuccessDetails(result, "Tasks retrieved successfully")
-        //        : ResultExtensions.ToProblemDetails(result);
-        //}
-
         [HttpGet("mechanic/{mechanicId}")]
-        public async Task<IResult> GetTasksByMechanicId(Guid mechanicId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IResult> GetTasksByMechanicId(Guid mechanicId, [FromQuery] GetAllSingleTasksRequest request)
         {
-            var result = await _taskService.GetTasksByMechanicIdAsync(mechanicId, pageNumber, pageSize);
+            var result = await _taskService.GetTasksByMechanicIdAsync(mechanicId, request);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Tasks retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
-
-        [HttpPost("start")]
-        public async Task<IResult> StartTask([FromBody] StartTaskRequest request)
+        [Authorize]
+        [HttpGet("mechanic")]
+        public async Task<IResult> GetTasksForMechanic([FromQuery] GetAllSingleTasksRequest request)
         {
-            var result = await _taskService.StartTaskAsync(request);
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _taskService.GetTasksByMechanicIdAsync(c.UserId, request);
             return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, "Task started successfully")
+                ? ResultExtensions.ToSuccessDetails(result, "Tasks retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
-
-        [HttpGet("details/{taskId}")]
-        public async Task<IResult> GetTaskDetails(Guid taskId)
-        {
-            var result = await _taskService.GetTaskDetailsAsync(taskId);
-            return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, "Task details retrieved successfully")
-                : ResultExtensions.ToProblemDetails(result);
-        }
-
-
         [HttpPost("report")]
         public async Task<IResult> CreateTaskReport([FromBody] CreateTaskReportRequest request)
         {
@@ -82,8 +164,6 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Task report created successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
-
         [HttpGet]
         public async Task<IResult> GetAll()
         {
@@ -92,51 +172,36 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved tasks")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
-        [HttpGet("{id}")]
-        public async Task<IResult> GetById(Guid id)
+        [HttpGet("single-tasks")]
+        public async Task<IResult> GetAllSingleTasks([FromQuery] GetAllSingleTasksRequest request)
         {
-            var result = await _taskService.GetByIdAsync(id);
+            var result = await _taskService.GetAllSingleTasksAsync(request);
             return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved task")
+                ? ResultExtensions.ToSuccessDetails(result, "Single tasks retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
-        [HttpPost]
-        public async Task<IResult> Create([FromBody] CreateTaskDTO dto)
+        [HttpGet("groups")]
+        public async Task<IResult> GetAllGroupTasks([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var result = await _taskService.CreateAsync(dto);
+            var result = await _taskService.GetAllGroupTasksAsync(pageNumber, pageSize);
             return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, "Task created successfully")
+                ? ResultExtensions.ToSuccessDetails(result, "Task groups retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
-        [HttpPut("{id}")]
-        public async Task<IResult> Update(Guid id, [FromBody] UpdateTaskDTO dto)
+        [HttpGet("groups/request/{requestId:guid}")]
+        public async Task<IResult> GetGroupTasksByRequestId(Guid requestId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var result = await _taskService.UpdateAsync(id, dto);
+            var request = new GetTasksByRequestIdRequest
+            {
+                RequestId = requestId,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            var result = await _taskService.GetGroupTasksByRequestIdAsync(request);
             return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, "Task updated successfully")
+                ? ResultExtensions.ToSuccessDetails(result, "Task groups retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
-        [HttpDelete("{id}")]
-        public async Task<IResult> Delete(Guid id)
-        {
-            var result = await _taskService.DeleteAsync(id);
-            return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, "Task deleted successfully")
-                : ResultExtensions.ToProblemDetails(result);
-        }
-
-        [HttpPut("{taskId}/assign")]
-        public async Task<IResult> AssignTask(Guid taskId, [FromBody] AssignTaskDTO dto)
-        {
-            var result = await _taskService.AssignTaskAsync(taskId, dto);
-            return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, "Task assigned successfully")
-                : ResultExtensions.ToProblemDetails(result);
-        }
-
     }
 }

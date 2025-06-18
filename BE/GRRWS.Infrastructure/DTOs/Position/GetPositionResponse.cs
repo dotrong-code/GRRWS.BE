@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GRRWS.Infrastructure.DTOs.Device;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,5 +15,6 @@ namespace GRRWS.Infrastructure.DTOs.Position
         public Guid? DeviceId { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
+        public GetDeviceResponse? Device { get; set; }
     }
 }

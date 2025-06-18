@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentValidation;
+﻿using FluentValidation;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
@@ -12,6 +7,12 @@ using GRRWS.Infrastructure.DTOs.Area;
 using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
 using GRRWS.Infrastructure.DTOs.Paging;
+using GRRWS.Infrastructure.DTOs.Zone;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -119,6 +120,34 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(AreaErrorMessage.AreaDeleteFailed());
             }
             return Result.SuccessWithObject(result);
+        }
+        public async Task<Result> GetZonesByAreaAsync(Guid areaId, int pageNumber, int pageSize)
+        {
+            var area = await _unitOfWork.AreaRepository.GetByIdAsync(areaId);
+            if (area == null)
+            {
+                return Result.Failure(AreaErrorMessage.AreaNotExist());
+            }
+
+            var (zones, totalCount) = await _unitOfWork.ZoneRepository.GetAllZonesAsync(areaId, pageNumber, pageSize);
+            var zoneResponses = zones.Select(z => new GetZoneResponse
+            {
+                Id = z.Id,
+                ZoneName = z.ZoneName,
+                AreaId = z.AreaId,
+                CreatedDate = z.CreatedDate,
+                ModifiedDate = z.ModifiedDate
+            }).ToList();
+
+            var response = new PagedResponse<GetZoneResponse>
+            {
+                Data = zoneResponses,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            return Result.SuccessWithObject(response);
         }
     }
 }

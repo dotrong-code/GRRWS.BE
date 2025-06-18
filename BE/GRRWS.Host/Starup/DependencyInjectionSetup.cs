@@ -2,6 +2,7 @@
 using FluentValidation;
 using Google.Apis.Auth.OAuth2;
 using Google.Cloud.Storage.V1;
+using GRRWS.Application.Common;
 using GRRWS.Application.Common.Validator.AreaVali;
 using GRRWS.Application.Common.Validator.DeviceVali;
 using GRRWS.Application.Common.Validator.DeviceWarranty;
@@ -18,6 +19,7 @@ using GRRWS.Infrastructure.DTOs.Device;
 using GRRWS.Infrastructure.DTOs.DeviceWarranty;
 using GRRWS.Infrastructure.DTOs.Position;
 using GRRWS.Infrastructure.DTOs.Task;
+using GRRWS.Infrastructure.DTOs.Task.Get;
 using GRRWS.Infrastructure.DTOs.User.Login;
 using GRRWS.Infrastructure.DTOs.User.Register;
 using GRRWS.Infrastructure.DTOs.User.Update;
@@ -68,7 +70,9 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IValidator<CreateDeviceWarrantyRequest>, CreateDeviceWarrantyRequestValidator>();
             services.AddTransient<IValidator<UpdateDeviceWarrantyRequest>, UpdateDeviceWarrantyRequestValidator>();
 
-
+            // In Program.cs or Startup.cs
+            services.AddTransient<IValidator<GetAllSingleTasksRequest>, GetAllSingleTasksValidator>();
+            services.AddTransient<IValidator<GetTasksByRequestIdRequest>, GetTasksByRequestIdValidator>();
             services.AddTransient<IValidator<StartTaskRequest>, StartTaskRequestValidator>();
             services.AddTransient<IValidator<CreateTaskReportRequest>, CreateTaskReportRequestValidator>();
 
@@ -81,6 +85,7 @@ namespace GRRWS.Host.Starup
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddTransient<IUnitOfWork, UnitOfWork>();
             services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddTransient<CheckIsExist>();
             #endregion
 
             #region Service
@@ -104,7 +109,13 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IPositionService, PositionService>();
             services.AddTransient<ITaskService, TaskService>();
             services.AddTransient<IWarrantyDetailService, WarrantyDetailService>();
-            
+            services.AddTransient<IErrorDetailService, ErrorDetailService>();
+            services.AddTransient<IErrorFixProgressService, ErrorFixProgressService>();
+            services.AddTransient<IErrorGuidelineService, ErrorGuidelineService>();
+            services.AddTransient<ISparePartUsageService, SparePartUsageService>();
+            services.AddTransient<ISparepartService, SparepartService>();
+            services.AddTransient<ITaskGroupService, TaskGroupService>();
+
             #endregion
 
             #region Repositories
@@ -130,6 +141,20 @@ namespace GRRWS.Host.Starup
             services.AddTransient<ITaskRepository, TaskRepository>();
             services.AddTransient<IWarrantyDetailRepository, WarrantyDetailRepository>();
             services.AddTransient<IIssueErrorRepository, IssueErrorRepository>();
+            services.AddTransient<IErrorDetailRepository, ErrorDetailRepository>();
+            services.AddTransient<IErrorSparepartRepository, ErrorSparepartRepository>();
+            services.AddTransient<IErrorFixStepRepository, ErrorFixStepRepository>();
+            services.AddTransient<IErrorFixProgressRepository, ErrorFixProgressRepository>();
+            services.AddTransient<IErrorGuidelineRepository, ErrorGuidelineRepository>();
+            services.AddTransient<ISparePartUsageRepository, SparePartUsageRepository>();
+            services.AddTransient<ISparepartRepository, SparepartRepository>();
+            services.AddTransient<IMachineSparepartRepository, MachineSparepartRepository>();
+            services.AddTransient<IMachineRepository, MachineRepository>();
+            services.AddTransient<ISupplierRepository, SupplierRepository>();
+            services.AddTransient<IRequestTakeSparePartUsageRepository, RequestTakeSparePartUsageRepository>();
+            services.AddTransient<ITaskGroupRepository, TaskGroupRepository>();
+            services.AddTransient<IShiftRepository, ShiftRepository>();
+            services.AddTransient<IMechanicShiftRepository, MechanicShiftRepository>();
             #endregion
 
             #region GenericRepositories

@@ -3,11 +3,6 @@ using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GRRWS.Infrastructure.Implement.Repositories
 {
@@ -68,10 +63,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 throw new Exception("Report not found.");
 
             existingReport.Location = updatedReport.Location;
-            existingReport.Status = updatedReport.Status;
-            existingReport.ModifiedDate = DateTime.Now;
-            existingReport.Priority = updatedReport.Priority;
 
+            existingReport.ModifiedDate = DateTime.Now;
             existingReport.ErrorDetails.Clear();
 
             var newErrorDetails = newErrorIds.Select(errorId => new ErrorDetail
@@ -87,7 +80,14 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             await _context.SaveChangesAsync();
         }
-
+        public async Task<Report> GetReportWithErrorDetailsAsync(Guid id)
+        {
+            return await _context.Reports
+                .Include(r => r.ErrorDetails)
+                .ThenInclude(ed => ed.Error)
+                .Where(r => r.IsDeleted != true && r.Id == id)
+                .FirstOrDefaultAsync();
+        }
     }
 
 }

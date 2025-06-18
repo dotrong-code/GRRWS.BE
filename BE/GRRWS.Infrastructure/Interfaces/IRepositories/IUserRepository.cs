@@ -1,4 +1,5 @@
 ﻿using GRRWS.Domain.Entities;
+using GRRWS.Infrastructure.DTOs.Task.Get;
 using GRRWS.Infrastructure.DTOs.User.Get;
 using GRRWS.Infrastructure.Interfaces.IRepositories.IGeneric;
 
@@ -23,5 +24,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<int> DeleteUserAsync(Guid id);
         Task<List<User>> GetUsers();
         Task<List<User>> GetUsersByRole(int role);
+        Task<List<User>> GetUsersByIdsBySearchNameAsync(List<Guid> ids, string? searchName = null); // New method
+        Task<List<GetMechanicRecommendation>> GetRecommendedMechanicsAsync(DateTime currentTime, Guid shiftId, int pageIndex, int pageSize);
     }
 }

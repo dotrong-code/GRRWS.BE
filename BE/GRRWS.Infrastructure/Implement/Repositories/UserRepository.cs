@@ -1,5 +1,6 @@
 ﻿using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DB;
+using GRRWS.Infrastructure.DTOs.Task.Get;
 using GRRWS.Infrastructure.DTOs.User.Get;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
@@ -116,6 +117,133 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         public async Task<bool> IdExistsAsync(Guid id)
         {
             return await _context.Users.AsNoTracking().AnyAsync(d => d.Id == id && !d.IsDeleted);
+        }
+        public async Task<List<User>> GetUsersByIdsBySearchNameAsync(List<Guid> ids, string? searchName = null)
+        {
+            var query = _context.Users
+                .Where(u => ids.Contains(u.Id) && !u.IsDeleted);
+
+            if (!string.IsNullOrWhiteSpace(searchName))
+            {
+                query = query.Where(u => u.FullName.Contains(searchName));
+            }
+
+            return await query.ToListAsync();
+        }
+        //public async Task<List<GetMechanicRecommendation>> GetRecommendedMechanicsAsync(DateTime currentTime, Guid shiftId)
+        //{
+        //    var availableMechanics = await _context.Users
+        //                    .Where(u => u.Role == 3)
+        //                    .GroupJoin(_context.MechanicShifts
+        //                        .Where(ms => ms.Date.Date == currentTime.Date && ms.ShiftId == shiftId),
+        //                        u => u.Id,
+        //                        ms => ms.MechanicId,
+        //                        (u, ms) => new { User = u, MechanicShifts = ms })
+        //                    .SelectMany(
+        //                        x => x.MechanicShifts.DefaultIfEmpty(),
+        //                        (x, ms) => new { x.User, MechanicShift = ms })
+        //                    .Where(x => x.MechanicShift == null || x.MechanicShift.IsAvailable == true)
+        //                    .GroupBy(x => x.User.Id)
+        //                    .Select(g => g.First().User)
+        //                    .ToListAsync();
+
+        //    var recommendations = new List<GetMechanicRecommendation>();
+
+        //    foreach (var user in availableMechanics)
+        //    {
+        //        var completedTasks = await _context.Tasks
+        //            .Where(t => t.AssigneeId == user.Id &&
+        //                        t.Status == GRRWS.Domain.Enum.Status.Completed &&
+        //                        t.EndTime != null &&
+        //                        t.StartTime != null)
+        //            .ToListAsync();
+
+        //        double avgCompletionTime = completedTasks.Any()
+        //            ? completedTasks.Average(t => (t.EndTime.Value - t.StartTime.Value).TotalMinutes)
+        //            : -1.00;
+
+        //        var shift = await _context.Shifts.FindAsync(shiftId);
+
+        //        recommendations.Add(new GetMechanicRecommendation
+        //        {
+        //            MechanicId = user.Id,
+        //            FullName = user.FullName ?? "Unknown",
+        //            AverageCompletionTime = Math.Round(avgCompletionTime, 2),
+        //            ShiftName = shift?.ShiftName ?? "Unknown",
+        //            Date = currentTime
+        //        });
+        //    }
+
+        //    return recommendations.OrderBy(r => r.AverageCompletionTime < 0 ? 1 : 0)
+        //        .ThenBy(r => r.AverageCompletionTime)
+        //        .ToList();
+        //}
+        public async Task<List<GetMechanicRecommendation>> GetRecommendedMechanicsAsync(DateTime currentTime, Guid shiftId, int pageIndex, int pageSize)
+        {
+            var availableMechanics = await _context.Users
+                .Where(u => u.Role == 3)
+                .GroupJoin(_context.MechanicShifts
+                    .Where(ms => ms.Date.Date == currentTime.Date && ms.ShiftId == shiftId),
+                    u => u.Id,
+                    ms => ms.MechanicId,
+                    (u, ms) => new { User = u, MechanicShifts = ms })
+                .SelectMany(
+                    x => x.MechanicShifts.DefaultIfEmpty(),
+                    (x, ms) => new { x.User, MechanicShift = ms })
+                .GroupBy(x => x.User.Id)
+                .Select(g => g.First().User)
+                .ToListAsync();
+
+            var recommendations = new List<GetMechanicRecommendation>();
+
+            foreach (var user in availableMechanics)
+            {
+                var completedTasks = await _context.Tasks
+                    .Where(t => t.AssigneeId == user.Id &&
+                                t.Status == GRRWS.Domain.Enum.Status.Completed &&
+                                t.EndTime != null &&
+                                t.StartTime != null)
+                    .ToListAsync();
+
+                double avgCompletionTime = completedTasks.Any()
+                    ? completedTasks.Average(t => (t.EndTime.Value - t.StartTime.Value).TotalMinutes)
+                    : -1.00;
+
+                var shift = await _context.Shifts.FindAsync(shiftId);
+                var mechanicShift = await _context.MechanicShifts
+                    .FirstOrDefaultAsync(ms => ms.MechanicId == user.Id && ms.ShiftId == shiftId && ms.Date.Date == currentTime.Date);
+
+                DateTime expectedTime = currentTime; 
+                if (mechanicShift != null && !mechanicShift.IsAvailable)
+                {
+                    var activeTask = await _context.Tasks
+                        .FirstOrDefaultAsync(t => t.AssigneeId == user.Id &&
+                                               t.MechanicShifts.Any(ms => ms.MechanicId == user.Id && ms.ShiftId == shiftId && !ms.IsAvailable) &&
+                                               t.Status != GRRWS.Domain.Enum.Status.Completed);
+                    if (activeTask != null && activeTask.ExpectedTime.HasValue)
+                    {
+                        expectedTime = currentTime.Add(activeTask.ExpectedTime.Value - currentTime.Date); 
+                    }
+                }
+
+                recommendations.Add(new GetMechanicRecommendation
+                {
+                    MechanicId = user.Id,
+                    FullName = user.FullName ?? "Unknown",
+                    AverageCompletionTime = Math.Round(avgCompletionTime, 2),
+                    ShiftName = shift?.ShiftName ?? "Unknown",
+                    ExpectedTime = expectedTime,
+                    Message = mechanicShift != null && !mechanicShift.IsAvailable
+                        ? "Chú ý: Thợ máy này đã có việc! Nếu gán cho Thợ máy này thì sẽ tự động gán cho ca làm sau!"
+                        : "Đề xuất"
+                });
+            }
+
+            return recommendations.OrderBy(r => r.AverageCompletionTime < 0 ? 1 : 0)
+                .ThenBy(r => r.AverageCompletionTime)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
         }
     }
 }

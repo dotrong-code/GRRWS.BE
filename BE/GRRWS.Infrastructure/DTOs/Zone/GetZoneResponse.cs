@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GRRWS.Infrastructure.DTOs.Device;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,5 +14,6 @@ namespace GRRWS.Infrastructure.DTOs.Zone
         public Guid? AreaId { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
+        
     }
 }

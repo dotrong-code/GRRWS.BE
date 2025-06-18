@@ -22,12 +22,12 @@ namespace GRRWS.Host.Controllers
         }
 
         [HttpGet]
-        public async Task<IResult> GetAll()
+        public async Task<IResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? search = null, [FromQuery] string? searchType = null)
         {
-            var result = await _requestService.GetAllAsync();
+            var result = await _requestService.GetAllAsync(pageNumber, pageSize, search, searchType);
             return result.IsSuccess
-    ? ResultExtensions.ToSuccessDetails(result, "Successfully")
-    : ResultExtensions.ToProblemDetails(result);
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved requests")
+                : ResultExtensions.ToProblemDetails(result);
         }
         [HttpGet("deviceId")]
         public async Task<IResult> GetRequestByDeviceIdAsync(Guid id)
@@ -37,13 +37,15 @@ namespace GRRWS.Host.Controllers
     ? ResultExtensions.ToSuccessDetails(result, "Successfully")
     : ResultExtensions.ToProblemDetails(result);
         }
-        [HttpGet("userId")]
-        public async Task<IResult> GetRequestByUserIdAsync(Guid userId)
+        [Authorize]
+        [HttpGet("by-user")]
+        public async Task<IResult> GetRequestByUserIdAsync([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? search = null, [FromQuery] string? searchType = null)
         {
-            var result = await _requestService.GetRequestByUserIdAsync(userId);
+            CurrentUserObject currentUser = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _requestService.GetRequestByUserIdAsync(currentUser.UserId, pageNumber, pageSize, search, searchType);
             return result.IsSuccess
-    ? ResultExtensions.ToSuccessDetails(result, "Successfully")
-    : ResultExtensions.ToProblemDetails(result);
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved user requests")
+                : ResultExtensions.ToProblemDetails(result);
         }
 
         [HttpGet("{id}")]
@@ -66,23 +68,38 @@ namespace GRRWS.Host.Controllers
 : ResultExtensions.ToProblemDetails(result);
         }
 
-        [HttpPost("test-create-signal")]
-        public async Task<IResult> TestCreateRequestSignal()
-        {
-            var result = await _requestService.TestCreateRequestSignalAsync();
-            return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, "SignalR notification sent successfully")
-                : ResultExtensions.ToProblemDetails(result);
-        }
+        //[HttpPost("api/Request/custom")]
+
+
+        //public async Task<IResult> CreateRequest([FromForm] CreateRequestDTO dto)
+        //{
+        //    // Assume userId is obtained from authentication (e.g., JWT)
+        //    CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+
+
+        //    var result = await _requestService.CreateAsync(dto, c.UserId);
+        //    return result.IsSuccess
+        //        ? ResultExtensions.ToSuccessDetails(result, "Request created successfully")
+        //        : ResultExtensions.ToProblemDetails(result);
+        //}
+
+        //[HttpPost("test-create")]
+        //[Consumes("multipart/form-data")]
+        //public async Task<IResult> TestCreateRequest([FromForm] TestCreateRequestDTO dto)
+        //{
+        //    CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+        //    var result = await _requestService.CreateTestAsync(dto, c.UserId);
+        //    return result.IsSuccess
+        //        ? ResultExtensions.ToSuccessDetails(result, "Request created successfully for testing")
+        //        : ResultExtensions.ToProblemDetails(result);
+        //}
 
         [HttpPost("api/Request/custom")]
-        
-        
         public async Task<IResult> CreateRequest([FromForm] CreateRequestDTO dto)
         {
             // Assume userId is obtained from authentication (e.g., JWT)
             CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
-           
+
 
             var result = await _requestService.CreateAsync(dto, c.UserId);
             return result.IsSuccess
@@ -137,18 +154,40 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved issues")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [HttpGet("detail/{requestId}")]
+        public async Task<IResult> GetRequestDetailWebById(Guid requestId)
+        {
+            var result = await _requestService.GetRequestDetailWebByIdAsync(requestId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved request detail")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpGet("errors/{requestId}")]
+        public async Task<IResult> GetErrorsForRequestDetailWeb(Guid requestId)
+        {
+            var result = await _requestService.GetErrorsForRequestDetailWebAsync(requestId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved errors")
+                : ResultExtensions.ToProblemDetails(result);
+        }
 
+        [HttpGet("technical-issues/{requestId}")]
+        public async Task<IResult> GetTechnicalIssuesForRequestDetailWeb(Guid requestId)
+        {
+            var result = await _requestService.GetTechnicalIssuesForRequestDetailWebAsync(requestId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved technical issues")
+                : ResultExtensions.ToProblemDetails(result);
+        }
 
-        //[HttpPost("create-request")]
-        //public async Task<IResult> CreateRequest([FromBody] CreateRequest request)
-        //{
-        //    CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
-        //    var result = await _requestService.CreateRequestAsync(request, c.UserId);
-        //    return result.IsSuccess
-        //        ? ResultExtensions.ToSuccessDetails(result, "Successfully created request")
-        //        : ResultExtensions.ToProblemDetails(result);
-        //}
-
+        [HttpGet("tasks/{requestId}")]
+        public async Task<IResult> GetTasksForRequestDetailWeb(Guid requestId)
+        {
+            var result = await _requestService.GetTasksForRequestDetailWebAsync(requestId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved tasks")
+                : ResultExtensions.ToProblemDetails(result);
+        }
 
         [HttpGet("get-summary")]
         public async Task<IResult> GetSummary()

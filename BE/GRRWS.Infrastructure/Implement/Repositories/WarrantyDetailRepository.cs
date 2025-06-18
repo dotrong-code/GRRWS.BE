@@ -15,7 +15,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
     {
         public WarrantyDetailRepository(GRRWSContext context) : base(context) { }
 
-        public async Task<WarrantyDetail> GetByIdAsync(Guid id)
+        public async Task<WarrantyDetail> GetByIdInclueErrorFixStepErrorSparepartssAsync(Guid id)
         {
             return await _context.WarrantyDetails
                 .Include(wd => wd.Issues)

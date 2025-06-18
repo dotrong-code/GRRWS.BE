@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using GRRWS.Infrastructure.DB;
+﻿using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.Interfaces.IRepositories.IGeneric;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace GRRWS.Infrastructure.Implement.Repositories.Generic
 {
@@ -121,6 +116,19 @@ namespace GRRWS.Infrastructure.Implement.Repositories.Generic
         {
             return await _context.Set<T>()
                 .FirstOrDefaultAsync(x => EF.Property<string>(x, type) == value);
+        }
+
+        public async Task<bool> IsExistAsync(Guid? id)
+        {
+            if (!id.HasValue)
+                return false;
+
+            return await _context.Set<T>().AnyAsync(e => EF.Property<Guid>(e, "Id") == id.Value);
+        }
+        public async Task UpdateRangeAsync(IEnumerable<T> e)
+        {
+            _context.Set<T>().UpdateRange(e);
+            await _context.SaveChangesAsync();
         }
     }
 }

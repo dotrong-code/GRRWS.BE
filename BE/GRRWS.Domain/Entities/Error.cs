@@ -11,7 +11,8 @@
         public string? Severity { get; set; } // Low, Medium, High
         // Navigation
         public ICollection<IssueError>? IssueErrors { get; set; }
-        public ICollection<ErrorDetail>? ErrorDetails { get; set; }
-        public ICollection<ErrorSparepart>? ErrorSpareparts { get; set; }
+        public ICollection<ErrorDetail>? ErrorDetails { get; set; }        
+        public ICollection<ErrorGuideline>? ErrorGuidelines { get; set; } // Navigation property for guidelines
+
     }
 }

@@ -15,10 +15,11 @@
 
 
 #firebase key
-GRRWS.BackEnd/GRRWS.Host/Keys/
+/BE/GRRWS.Host/Keys/
+
 
 #migration
-GRRWS.BackEnd/GRRWS.Infrastructure/Migrations/*
+/BE/GRRWS.Infrastructure/Migrations/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -489,5 +490,3 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
-# Firebase keys
-GRRWS.Host/Keys/*.json
