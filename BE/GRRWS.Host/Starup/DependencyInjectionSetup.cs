@@ -120,6 +120,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<ITaskGroupService, TaskGroupService>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<IExpoPushService, ExpoPushService>();
+            services.AddTransient<IImportService, ImportService>();
 
             #endregion
 

@@ -10,7 +10,8 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
 {
     public interface IMechanicShiftRepository : IGenericRepository<MechanicShift>
     {
-        Task<bool> UpdateMechanicShiftAvailableAsync(Guid userId, Guid taskId);
-        Task<bool> CreateMechanicShift(Guid userId, Guid taskId, Guid shiftId);
+        Task<bool> UpdateMechanicShiftAvailableAsync(Guid mechanicShiftId);
+        Task<bool> CreateMechanicShift(Guid userId, Guid taskId);
+        Task<List<MechanicShift>> GetAllMechanicShiftAsync();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using GRRWS.Application.Common.Result;
+using GRRWS.Application.Implement.Service;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
 using GRRWS.Domain.Enum;
@@ -8,24 +9,29 @@ using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
 using GRRWS.Infrastructure.DTOs.Device;
 using GRRWS.Infrastructure.DTOs.History;
+using GRRWS.Infrastructure.DTOs.Import;
 using GRRWS.Infrastructure.DTOs.Paging;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 public class DeviceService : IDeviceService
 {
     private readonly UnitOfWork _unitOfWork;
     private readonly IValidator<CreateDeviceRequest> _createDeviceValidator;
     private readonly IValidator<UpdateDeviceRequest> _updateDeviceValidator;
+    private readonly IImportService _importService;
 
-    public DeviceService(UnitOfWork unitOfWork, IValidator<CreateDeviceRequest> createDeviceValidator, IValidator<UpdateDeviceRequest> updateDeviceValidator)
+    public DeviceService(UnitOfWork unitOfWork, IValidator<CreateDeviceRequest> createDeviceValidator, IValidator<UpdateDeviceRequest> updateDeviceValidator, IImportService importService)
     {
         _unitOfWork = unitOfWork;
         _createDeviceValidator = createDeviceValidator;
         _updateDeviceValidator = updateDeviceValidator;
+        _importService = importService;
     }
 
     public async Task<Result> CreateDeviceAsync(CreateDeviceRequest request)
@@ -357,5 +363,14 @@ public class DeviceService : IDeviceService
         };
 
         return Result.SuccessWithObject(response);
+    }
+    public async Task<Result> ImportDevicesAsync(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return Result.Failure(GRRWS.Infrastructure.DTOs.Common.Error.Validation("Excel file is empty or invalid.", "empty"));
+        }
+
+        return await _importService.ImportAsync<Device>(file.OpenReadStream(), _unitOfWork.DeviceRepository);
     }
 }
