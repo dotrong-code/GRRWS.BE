@@ -18,7 +18,7 @@ namespace GRRWS.Infrastructure.Hubs
             _context = context;
             _logger = logger;
         }
-
+        //comenent
         // Khi client kết nối vào Hub
         public override async Task OnConnectedAsync()
         {
