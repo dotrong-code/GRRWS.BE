@@ -14,7 +14,7 @@ namespace GRRWS.Application.Implement.Service
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Guid> CreateOrGetTaskGroupAsync(Guid? taskGroupId, TaskType groupType, string deviceName, Guid userId, Guid reportId)
+        public async Task<Guid> CreateOrGetTaskGroupAsync(Guid? taskGroupId, TaskType groupType, string deviceName, Guid reportId, Guid userId)
         {
             if (taskGroupId.HasValue)
             {

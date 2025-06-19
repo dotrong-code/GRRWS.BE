@@ -63,7 +63,28 @@ namespace GRRWS.Application.Implement.Service
                     RequestTakeSparePartUsageId = s.RequestTakeSparePartUsageId,
                     SparePartId = s.SparePartId,
                     QuantityUsed = s.QuantityUsed,
-                    IsTakenFromStock = s.IsTakenFromStock
+                    IsTakenFromStock = s.IsTakenFromStock,
+                    Spareparts = s.SparePart != null
+        ? new List<SparepartDto>
+        {
+            new SparepartDto
+            {
+                Id = s.SparePart.Id,
+                SparepartCode = s.SparePart.SparepartCode,
+                SparepartName = s.SparePart.SparepartName,
+                Description = s.SparePart.Description,
+                Specification = s.SparePart.Specification,
+                StockQuantity = s.SparePart.StockQuantity,
+                IsAvailable = s.SparePart.IsAvailable,
+                Unit = s.SparePart.Unit,
+                
+                ExpectedAvailabilityDate = s.SparePart.ExpectedAvailabilityDate,
+                SupplierId = s.SparePart.SupplierId,
+                Category = s.SparePart.Category,
+                ImgUrl = s.SparePart.ImgUrl
+            }
+        }
+        : new List<SparepartDto>()
                 }).ToList()
             }).ToList();
 
@@ -101,7 +122,28 @@ namespace GRRWS.Application.Implement.Service
                     RequestTakeSparePartUsageId = s.RequestTakeSparePartUsageId,
                     SparePartId = s.SparePartId,
                     QuantityUsed = s.QuantityUsed,
-                    IsTakenFromStock = s.IsTakenFromStock
+                    IsTakenFromStock = s.IsTakenFromStock,
+                    Spareparts = s.SparePart != null
+        ? new List<SparepartDto>
+        {
+            new SparepartDto
+            {
+                Id = s.SparePart.Id,
+                SparepartCode = s.SparePart.SparepartCode,
+                SparepartName = s.SparePart.SparepartName,
+                Description = s.SparePart.Description,
+                Specification = s.SparePart.Specification,
+                StockQuantity = s.SparePart.StockQuantity,
+                IsAvailable = s.SparePart.IsAvailable,
+                Unit = s.SparePart.Unit,
+
+                ExpectedAvailabilityDate = s.SparePart.ExpectedAvailabilityDate,
+                SupplierId = s.SparePart.SupplierId,
+                Category = s.SparePart.Category,
+                ImgUrl = s.SparePart.ImgUrl
+            }
+        }
+        : new List<SparepartDto>()
                 }).ToList()
             }).ToList();
 
@@ -139,7 +181,28 @@ namespace GRRWS.Application.Implement.Service
                     RequestTakeSparePartUsageId = s.RequestTakeSparePartUsageId,
                     SparePartId = s.SparePartId,
                     QuantityUsed = s.QuantityUsed,
-                    IsTakenFromStock = s.IsTakenFromStock
+                    IsTakenFromStock = s.IsTakenFromStock,
+                    Spareparts = s.SparePart != null
+        ? new List<SparepartDto>
+        {
+            new SparepartDto
+            {
+                Id = s.SparePart.Id,
+                SparepartCode = s.SparePart.SparepartCode,
+                SparepartName = s.SparePart.SparepartName,
+                Description = s.SparePart.Description,
+                Specification = s.SparePart.Specification,
+                StockQuantity = s.SparePart.StockQuantity,
+                IsAvailable = s.SparePart.IsAvailable,
+                Unit = s.SparePart.Unit,
+
+                ExpectedAvailabilityDate = s.SparePart.ExpectedAvailabilityDate,
+                SupplierId = s.SparePart.SupplierId,
+                Category = s.SparePart.Category,
+                ImgUrl = s.SparePart.ImgUrl
+            }
+        }
+        : new List<SparepartDto>()
                 }).ToList()
             }).ToList();
 
@@ -176,7 +239,28 @@ namespace GRRWS.Application.Implement.Service
                     RequestTakeSparePartUsageId = s.RequestTakeSparePartUsageId,
                     SparePartId = s.SparePartId,
                     QuantityUsed = s.QuantityUsed,
-                    IsTakenFromStock = s.IsTakenFromStock
+                    IsTakenFromStock = s.IsTakenFromStock,
+                    Spareparts = s.SparePart != null
+        ? new List<SparepartDto>
+        {
+            new SparepartDto
+            {
+                Id = s.SparePart.Id,
+                SparepartCode = s.SparePart.SparepartCode,
+                SparepartName = s.SparePart.SparepartName,
+                Description = s.SparePart.Description,
+                Specification = s.SparePart.Specification,
+                StockQuantity = s.SparePart.StockQuantity,
+                IsAvailable = s.SparePart.IsAvailable,
+                Unit = s.SparePart.Unit,
+
+                ExpectedAvailabilityDate = s.SparePart.ExpectedAvailabilityDate,
+                SupplierId = s.SparePart.SupplierId,
+                Category = s.SparePart.Category,
+                ImgUrl = s.SparePart.ImgUrl
+            }
+        }
+        : new List<SparepartDto>()
                 }).ToList()
             }).ToList();
 
@@ -214,7 +298,28 @@ namespace GRRWS.Application.Implement.Service
                     RequestTakeSparePartUsageId = s.RequestTakeSparePartUsageId,
                     SparePartId = s.SparePartId,
                     QuantityUsed = s.QuantityUsed,
-                    IsTakenFromStock = s.IsTakenFromStock
+                    IsTakenFromStock = s.IsTakenFromStock,
+                    Spareparts = s.SparePart != null
+        ? new List<SparepartDto>
+        {
+            new SparepartDto
+            {
+                Id = s.SparePart.Id,
+                SparepartCode = s.SparePart.SparepartCode,
+                SparepartName = s.SparePart.SparepartName,
+                Description = s.SparePart.Description,
+                Specification = s.SparePart.Specification,
+                StockQuantity = s.SparePart.StockQuantity,
+                IsAvailable = s.SparePart.IsAvailable,
+                Unit = s.SparePart.Unit,
+
+                ExpectedAvailabilityDate = s.SparePart.ExpectedAvailabilityDate,
+                SupplierId = s.SparePart.SupplierId,
+                Category = s.SparePart.Category,
+                ImgUrl = s.SparePart.ImgUrl
+            }
+        }
+        : new List<SparepartDto>()
                 }).ToList()
             }).ToList();
 
@@ -252,7 +357,28 @@ namespace GRRWS.Application.Implement.Service
                     RequestTakeSparePartUsageId = s.RequestTakeSparePartUsageId,
                     SparePartId = s.SparePartId,
                     QuantityUsed = s.QuantityUsed,
-                    IsTakenFromStock = s.IsTakenFromStock
+                    IsTakenFromStock = s.IsTakenFromStock,
+                    Spareparts = s.SparePart != null
+        ? new List<SparepartDto>
+        {
+            new SparepartDto
+            {
+                Id = s.SparePart.Id,
+                SparepartCode = s.SparePart.SparepartCode,
+                SparepartName = s.SparePart.SparepartName,
+                Description = s.SparePart.Description,
+                Specification = s.SparePart.Specification,
+                StockQuantity = s.SparePart.StockQuantity,
+                IsAvailable = s.SparePart.IsAvailable,
+                Unit = s.SparePart.Unit,
+
+                ExpectedAvailabilityDate = s.SparePart.ExpectedAvailabilityDate,
+                SupplierId = s.SparePart.SupplierId,
+                Category = s.SparePart.Category,
+                ImgUrl = s.SparePart.ImgUrl
+            }
+        }
+        : new List<SparepartDto>()
                 }).ToList()
             }).ToList();
 
@@ -287,7 +413,27 @@ namespace GRRWS.Application.Implement.Service
                     SparePartId = s.SparePartId,
                     QuantityUsed = s.QuantityUsed,
                     IsTakenFromStock = s.IsTakenFromStock,
-                    Spareparts = sparepartDto != null ? new List<SparepartDto> { sparepartDto } : new List<SparepartDto>()
+                    Spareparts = s.SparePart != null
+        ? new List<SparepartDto>
+        {
+            new SparepartDto
+            {
+                Id = s.SparePart.Id,
+                SparepartCode = s.SparePart.SparepartCode,
+                SparepartName = s.SparePart.SparepartName,
+                Description = s.SparePart.Description,
+                Specification = s.SparePart.Specification,
+                StockQuantity = s.SparePart.StockQuantity,
+                IsAvailable = s.SparePart.IsAvailable,
+                Unit = s.SparePart.Unit,
+
+                ExpectedAvailabilityDate = s.SparePart.ExpectedAvailabilityDate,
+                SupplierId = s.SparePart.SupplierId,
+                Category = s.SparePart.Category,
+                ImgUrl = s.SparePart.ImgUrl
+            }
+        }
+        : new List<SparepartDto>()
                 });
             }
 
@@ -426,7 +572,7 @@ namespace GRRWS.Application.Implement.Service
             if (request.ExpectedAvailabilityDate <= DateTime.UtcNow)
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", "ExpectedAvailabilityDate must be in the future"));
 
-            var requestUsage = await _unitOfWork.RequestTakeSparePartUsageRepository.GetByIdAsync(request.RequestTakeSparePartUsageId);
+            var requestUsage = await _unitOfWork.RequestTakeSparePartUsageRepository.GetByIdIncludeSparePartUsagesAsync(request.RequestTakeSparePartUsageId);
             if (requestUsage == null)
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", $"Request take spare part usage with ID {request.RequestTakeSparePartUsageId} not found"));
 

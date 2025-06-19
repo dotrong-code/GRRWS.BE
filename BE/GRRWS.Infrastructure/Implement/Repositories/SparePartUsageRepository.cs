@@ -20,6 +20,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         {
             var query = _context.RequestTakeSparePartUsages
                 .Include(rtspu => rtspu.SparePartUsages)
+                    .ThenInclude(spu => spu.SparePart)
                 .Include(rtspu => rtspu.Assignee)
                 .AsQueryable();
 
@@ -49,6 +50,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         {
             var query = _context.RequestTakeSparePartUsages
                 .Include(rtspu => rtspu.SparePartUsages)
+                    .ThenInclude(spu => spu.SparePart)
                 .Include(rtspu => rtspu.Assignee)
                 .Where(rtspu => rtspu.Status == status)
                 .AsQueryable();
@@ -79,6 +81,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         {
             return await _context.RequestTakeSparePartUsages
                 .Include(rtspu => rtspu.SparePartUsages)
+                    .ThenInclude(spu => spu.SparePart)
                 .Include(rtspu => rtspu.Assignee)
                 .Where(rtspu => rtspu.Id == id)
                 .FirstOrDefaultAsync();

@@ -190,7 +190,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .SelectMany(
                     x => x.MechanicShifts.DefaultIfEmpty(),
                     (x, ms) => new { x.User, MechanicShift = ms })
-                .Where(x => x.MechanicShift == null || x.MechanicShift.IsAvailable == true)
                 .GroupBy(x => x.User.Id)
                 .Select(g => g.First().User)
                 .ToListAsync();
@@ -214,12 +213,26 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 var mechanicShift = await _context.MechanicShifts
                     .FirstOrDefaultAsync(ms => ms.MechanicId == user.Id && ms.ShiftId == shiftId && ms.Date.Date == currentTime.Date);
 
+                DateTime expectedTime = currentTime; 
+                if (mechanicShift != null && !mechanicShift.IsAvailable)
+                {
+                    var activeTask = await _context.Tasks
+                        .FirstOrDefaultAsync(t => t.AssigneeId == user.Id &&
+                                               t.MechanicShifts.Any(ms => ms.MechanicId == user.Id && ms.ShiftId == shiftId && !ms.IsAvailable) &&
+                                               t.Status != GRRWS.Domain.Enum.Status.Completed);
+                    if (activeTask != null && activeTask.ExpectedTime.HasValue)
+                    {
+                        expectedTime = currentTime.Add(activeTask.ExpectedTime.Value - currentTime.Date); 
+                    }
+                }
+
                 recommendations.Add(new GetMechanicRecommendation
                 {
                     MechanicId = user.Id,
                     FullName = user.FullName ?? "Unknown",
                     AverageCompletionTime = Math.Round(avgCompletionTime, 2),
                     ShiftName = shift?.ShiftName ?? "Unknown",
+                    ExpectedTime = expectedTime,
                     Message = mechanicShift != null && !mechanicShift.IsAvailable
                         ? "Chú ý: Thợ máy này đã có việc! Nếu gán cho Thợ máy này thì sẽ tự động gán cho ca làm sau!"
                         : "Đề xuất"

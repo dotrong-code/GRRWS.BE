@@ -9,6 +9,7 @@ using GRRWS.Infrastructure.DTOs.Task.Repair;
 using GRRWS.Infrastructure.DTOs.Task.Warranty;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace GRRWS.Host.Controllers
 {
@@ -25,7 +26,7 @@ namespace GRRWS.Host.Controllers
             _contextAccessor = contextAccessor;
         }
         [HttpGet("mechanicshift/suggest")]
-        public async Task<IResult> GetMechanicRecommendation(int pageSize, int pageIndex)
+        public async Task<IResult> GetMechanicRecommendation([FromQuery, BindRequired] int pageSize = 5, [FromQuery, BindRequired] int pageIndex = 0)
         {
             var result = await _taskService.GetMechanicRecommendationAsync(pageSize, pageIndex);
             return result.IsSuccess
@@ -129,7 +130,6 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Task status updated successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
         [HttpGet("ByReport/{reportId}")]
         public async Task<IResult> GetTasksByReportId(Guid reportId)
         {
@@ -138,7 +138,6 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Tasks retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
         [HttpGet("mechanic/{mechanicId}")]
         public async Task<IResult> GetTasksByMechanicId(Guid mechanicId, [FromQuery] GetAllSingleTasksRequest request)
         {
@@ -157,7 +156,6 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Tasks retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
         [HttpPost("report")]
         public async Task<IResult> CreateTaskReport([FromBody] CreateTaskReportRequest request)
         {
@@ -174,7 +172,6 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved tasks")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
         [HttpGet("single-tasks")]
         public async Task<IResult> GetAllSingleTasks([FromQuery] GetAllSingleTasksRequest request)
         {
@@ -183,7 +180,6 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Single tasks retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
         [HttpGet("groups")]
         public async Task<IResult> GetAllGroupTasks([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
@@ -192,8 +188,6 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Task groups retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
-
         [HttpGet("groups/request/{requestId:guid}")]
         public async Task<IResult> GetGroupTasksByRequestId(Guid requestId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
