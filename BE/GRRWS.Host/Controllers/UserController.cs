@@ -2,6 +2,7 @@
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.DTOs.Common;
+using GRRWS.Infrastructure.DTOs.User.Create;
 using GRRWS.Infrastructure.DTOs.User.Update;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -77,6 +78,14 @@ namespace GRRWS.Host.Controllers
             var result = await _userService.GetUsersByRole(role);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Users by role retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpPost]
+        public async Task<IResult> AddUser([FromBody] CreateUserRequest createUserRequest)
+        {
+            var result = await _userService.AddUserAsync(createUserRequest);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "User created successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
 

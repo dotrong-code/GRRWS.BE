@@ -6,6 +6,7 @@ using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
 using GRRWS.Infrastructure.DTOs.Firebase.GetImage;
 using GRRWS.Infrastructure.DTOs.Paging;
+using GRRWS.Infrastructure.DTOs.User.Create;
 using GRRWS.Infrastructure.DTOs.User.Get;
 using GRRWS.Infrastructure.DTOs.User.Update;
 
@@ -15,12 +16,14 @@ namespace GRRWS.Application.Implement.Service
     {
         private readonly UnitOfWork _unitOfWork;
         private readonly IValidator<UpdateUserRequest> _updateUserValidator;
+        private readonly IValidator<CreateUserRequest> _createUserValidator;
         private readonly IFirebaseService _firebaseService;
-        public UserService(UnitOfWork unitOfWork, IValidator<UpdateUserRequest> updateUserValidator, IFirebaseService firebaseService)
+        public UserService(UnitOfWork unitOfWork, IValidator<UpdateUserRequest> updateUserValidator, IFirebaseService firebaseService, IValidator<CreateUserRequest> createUserValidator)
         {
             _unitOfWork = unitOfWork;
             _updateUserValidator = updateUserValidator;
             _firebaseService = firebaseService;
+            _createUserValidator = createUserValidator;
         }
 
         public async Task<Result> DeleteUserAsync(Guid id)
@@ -177,6 +180,41 @@ namespace GRRWS.Application.Implement.Service
             if (updateResult == 0)
             {
                 return Result.Failure(UserErrorMessage.UserUpdateFailed());
+            }
+
+            return Result.SuccessWithObject(user);
+        }
+
+        public async Task<Result> AddUserAsync(CreateUserRequest request)
+        {
+            var validationResult = await _createUserValidator.ValidateAsync(request);
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors
+                    .Select(e => (Error)e.CustomState)
+                    .ToList();
+                return Result.Failures(errors);
+            }
+
+            var user = new Domain.Entities.User
+            {
+                Id = Guid.NewGuid(),
+                FullName = request?.FullName,
+                UserName = request.UserName,
+                Email = request.Email,
+                PasswordHash = request.Password,
+                PhoneNumber = request?.PhoneNumber,
+                DateOfBirth = request?.DateOfBirth,
+                ProfilePictureUrl = request?.ProfilePictureUrl,
+                Role = request.Role,
+                CreatedDate = DateTime.UtcNow,
+                ModifiedDate = DateTime.UtcNow
+            };
+
+            var result = await _unitOfWork.UserRepository.CreateAsync(user);
+            if (result == 0)
+            {
+                return Result.Failure(UserErrorMessage.UserCreationFailed());
             }
 
             return Result.SuccessWithObject(user);

@@ -20,6 +20,7 @@ using GRRWS.Infrastructure.DTOs.DeviceWarranty;
 using GRRWS.Infrastructure.DTOs.Position;
 using GRRWS.Infrastructure.DTOs.Task;
 using GRRWS.Infrastructure.DTOs.Task.Get;
+using GRRWS.Infrastructure.DTOs.User.Create;
 using GRRWS.Infrastructure.DTOs.User.Login;
 using GRRWS.Infrastructure.DTOs.User.Register;
 using GRRWS.Infrastructure.DTOs.User.Update;
@@ -58,6 +59,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IValidator<LoginRequest>, LoginValidator>();
             services.AddTransient<IValidator<RegisterRequest>, RegisterValidator>();
             services.AddTransient<IValidator<RegisterRequest>, RegisterValidator>();
+            services.AddTransient<IValidator<CreateUserRequest>, CreateUserValidator>();
             services.AddTransient<IValidator<UpdateUserRequest>, UpdateUserValidator>();
             services.AddTransient<IValidator<CreateDeviceRequest>, CreateDeviceValidator>();
             services.AddTransient<IValidator<UpdateDeviceRequest>, UpdateDeviceValidator>();
