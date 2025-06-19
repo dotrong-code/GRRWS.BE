@@ -1,10 +1,11 @@
-﻿using System;
+﻿using GRRWS.Application.Common.Result;
+using GRRWS.Infrastructure.DTOs.Device;
+using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using GRRWS.Application.Common.Result;
-using GRRWS.Infrastructure.DTOs.Device;
 
 namespace GRRWS.Application.Interface.IService
 {
@@ -28,5 +29,6 @@ namespace GRRWS.Application.Interface.IService
 
         Task<Result> GetAllDeviceAndMachineIssueHistoryByDeviceIdAsync(Guid deviceId);
         Task<Result> GetAllDeviceAndMachineErrorHistoryByDeviceIdAsync(Guid deviceId);
+        Task<Result> ImportDevicesAsync(IFormFile file);
     }
 }

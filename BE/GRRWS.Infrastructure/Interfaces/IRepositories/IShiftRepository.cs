@@ -11,5 +11,6 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
     public interface IShiftRepository : IGenericRepository<Shift>
     {
         Task<Shift> GetCurrentShiftAsync(DateTime currentTime);
+        Task<Shift> GetNearestShiftAsync(DateTime currentTime);
     }
 }
