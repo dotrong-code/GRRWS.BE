@@ -7,7 +7,7 @@ namespace GRRWS.Domain.Entities
         public Guid ErrorId { get; set; }
         public string? Title { get; set; } // Unique
         public TimeSpan? EstimatedRepairTime { get; set; }
-        public Priority? Priority { get; set; } // Assuming Priority is an enum defined elsewhere
+        public Priority? Priority { get; set; }
         public Error? Error { get; set; }
 
         public ICollection<ErrorDetail>? ErrorDetails { get; set; }
