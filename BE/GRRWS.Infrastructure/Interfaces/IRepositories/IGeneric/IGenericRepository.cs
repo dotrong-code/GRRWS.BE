@@ -26,5 +26,6 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories.IGeneric
         int Save();
         Task UpdateRangeAsync(IEnumerable<T> e);
         Task<int> SaveAsync();
+        Task CreateRangeAsync(IEnumerable<T> entities);
     }
 }

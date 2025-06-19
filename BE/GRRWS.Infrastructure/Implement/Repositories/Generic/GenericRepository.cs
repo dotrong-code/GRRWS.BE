@@ -130,5 +130,10 @@ namespace GRRWS.Infrastructure.Implement.Repositories.Generic
             _context.Set<T>().UpdateRange(e);
             await _context.SaveChangesAsync();
         }
+        public async Task CreateRangeAsync(IEnumerable<T> entities)
+        {
+            await _context.Set<T>().AddRangeAsync(entities);
+            await _context.SaveChangesAsync();
+        }
     }
 }
