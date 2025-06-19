@@ -17,10 +17,9 @@ namespace GRRWS.Application.Implement.Service
         private readonly IRequestRepository _requestRepository;
         private readonly ITokenService _tokenService;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly RequestNotificationService _notificationService;
 
 
-        public RequestService(IRequestRepository requestRepository, ITokenService tokenService, IUnitOfWork unitOfWork, RequestNotificationService notificationService)
+        public RequestService(IRequestRepository requestRepository, ITokenService tokenService, IUnitOfWork unitOfWork)
         {
             _requestRepository = requestRepository;
             _tokenService = tokenService;

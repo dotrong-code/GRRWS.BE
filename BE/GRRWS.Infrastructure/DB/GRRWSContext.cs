@@ -26,6 +26,7 @@ namespace GRRWS.Infrastructure.DB
         public DbSet<IssueError> IssueErrors { get; set; }
         public DbSet<Machine> Machines { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<PushToken> PushTokens { get; set; }
         public DbSet<RepairSparepart> RepairSpareparts { get; set; }
         public DbSet<Report> Reports { get; set; }
         public DbSet<Request> Requests { get; set; }
@@ -611,13 +612,6 @@ namespace GRRWS.Infrastructure.DB
                 .HasForeignKey(deh => deh.ErrorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Notification
-            modelBuilder.Entity<Notification>(entity =>
-            {
-                entity.Property(n => n.SenderId).IsRequired();
-                entity.Property(n => n.ReceiverId).IsRequired();
-            });
-
             // RepairSparepart
             modelBuilder.Entity<RepairSparepart>()
                 .HasKey(rs => new { rs.SpareId, rs.TaskId });
@@ -813,7 +807,34 @@ namespace GRRWS.Infrastructure.DB
                 .WithMany(tg => tg.TaskGroups)
                 .HasForeignKey(r => r.ReportId)
                 .OnDelete(DeleteBehavior.NoAction);
+            // PushToken
+            modelBuilder.Entity<PushToken>(entity =>
+            {
+                // entity.HasKey(e => e.Id);
+                entity.Property(e => e.Token).IsRequired().HasMaxLength(500);
+                entity.Property(e => e.Platform).HasMaxLength(20);
+                entity.Property(e => e.IsActive).HasDefaultValue(true);
+                entity.Property(e => e.LastUsed).IsRequired();
+                entity.HasIndex(e => new { e.UserId, e.Token }).IsUnique();
 
+                entity.HasOne(e => e.User)
+                      .WithMany()
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Notification>(entity =>
+            {
+                entity.HasOne(e => e.Sender)
+                      .WithMany()
+                      .HasForeignKey(e => e.SenderId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.ReceiverUser)
+                      .WithMany()
+                      .HasForeignKey(e => e.ReceiverId)
+                      .OnDelete(DeleteBehavior.NoAction);
+            });
             #endregion
             #region Table Mappings
             modelBuilder.Entity<Area>().ToTable("Areas");
@@ -832,6 +853,7 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<IssueError>().ToTable("IssueErrors");
             modelBuilder.Entity<Machine>().ToTable("Machines");
             modelBuilder.Entity<Notification>().ToTable("Notifications");
+            modelBuilder.Entity<PushToken>().ToTable("PushTokens");
             modelBuilder.Entity<RepairSparepart>().ToTable("RepairSpareparts");
             modelBuilder.Entity<Report>().ToTable("Reports");
             modelBuilder.Entity<Request>().ToTable("Requests");

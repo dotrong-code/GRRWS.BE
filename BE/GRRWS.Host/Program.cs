@@ -16,7 +16,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add SignalR services
 builder.Services.AddSignalR();
-builder.Services.AddScoped<RequestNotificationService>();
 
 // Add services to the container.
 CommonObject.Initialize(builder.Configuration);
@@ -116,7 +115,7 @@ builder.Services.AddCors(options =>
         policy =>
         {
             //policy.AllowAnyOrigin()
-            policy.WithOrigins("http://localhost:8081", "exp://192.168.1.6:8081")
+            policy.WithOrigins("http://localhost:8081", "exp://192.168.1.5:8081")
                   .AllowAnyMethod()
                   .AllowAnyHeader()
                 .WithExposedHeaders("Authorization")
@@ -156,8 +155,11 @@ app.UseExceptionHandler(errorApp =>
     });
 });
 
+ app.UseCors("AllowAll");
+
 // Map SignalR hub
 app.MapHub<RequestHub>("/hubs/request");
+
 
 //app.UseHttpsRedirection();
 app.UseAuthentication();
@@ -166,6 +168,5 @@ app.MigrateDatabases();
 //app.ConfigureMiddleware();
 app.MapControllers();
 
-app.UseCors("AllowAll");
 
 app.Run();
