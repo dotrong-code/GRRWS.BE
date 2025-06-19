@@ -161,7 +161,7 @@ app.UseExceptionHandler(errorApp =>
 app.MapHub<RequestHub>("/hubs/request");
 
 
-//app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MigrateDatabases();
