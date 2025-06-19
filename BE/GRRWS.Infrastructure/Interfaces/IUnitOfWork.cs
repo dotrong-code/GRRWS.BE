@@ -7,7 +7,9 @@ namespace GRRWS.Infrastructure.Interfaces
         IUserRepository UserRepository { get; }
         IEmailTemplateRepository EmailTemplateRepository { get; }
         IFirebaseRepository FirebaseRepository { get; }
-
+        IPushTokenRepository PushTokenRepository { get; }
+        INotificationRepository NotificationRepository { get; }
+        
         IIssueRepository IssueRepository { get; }
         IErrorRepository ErrorRepository { get; }
         ITechnicalSymtomRepository TechnicalSymtomRepository { get; }

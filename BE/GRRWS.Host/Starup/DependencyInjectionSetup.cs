@@ -12,6 +12,7 @@ using GRRWS.Application.Common.Validator.UserVali;
 using GRRWS.Application.Common.Validator.Zone;
 using GRRWS.Application.Implement.Service;
 using GRRWS.Application.Interface.IService;
+using GRRWS.Application.Interfaces;
 using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.Area;
@@ -115,9 +116,8 @@ namespace GRRWS.Host.Starup
             services.AddTransient<ISparePartUsageService, SparePartUsageService>();
             services.AddTransient<ISparepartService, SparepartService>();
             services.AddTransient<ITaskGroupService, TaskGroupService>();
-            services.AddTransient<IImportService, ImportService>();
-            services.AddTransient<IMachineService, MachineService>();
-
+            services.AddTransient<INotificationService, NotificationService>();
+            services.AddTransient<IExpoPushService, ExpoPushService>();
 
             #endregion
 
@@ -158,6 +158,8 @@ namespace GRRWS.Host.Starup
             services.AddTransient<ITaskGroupRepository, TaskGroupRepository>();
             services.AddTransient<IShiftRepository, ShiftRepository>();
             services.AddTransient<IMechanicShiftRepository, MechanicShiftRepository>();
+            services.AddTransient<IPushTokenRepository, PushTokenRepository>();
+            services.AddTransient<INotificationRepository, NotificationRepository>();
             #endregion
 
             #region GenericRepositories
@@ -175,8 +177,9 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IGenericRepository<Report>, GenericRepository<Report>>();
             services.AddTransient<IGenericRepository<WarrantyDetail>, GenericRepository<WarrantyDetail>>();
             services.AddTransient<IGenericRepository<IssueError>, GenericRepository<IssueError>>();
+            services.AddTransient<IGenericRepository<PushToken>, GenericRepository<PushToken>>();
+            services.AddTransient<IGenericRepository<Notification>, GenericRepository<Notification>>();
             #endregion
-
 
 
 

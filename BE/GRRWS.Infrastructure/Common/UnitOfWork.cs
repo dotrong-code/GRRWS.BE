@@ -11,6 +11,7 @@ namespace GRRWS.Infrastructure.Common
     {
         private readonly GRRWSContext _context;
         private readonly ILogger<UnitOfWork> _logger; // Thêm logger
+        private readonly ILoggerFactory _loggerFactory;
         public IUserRepository UserRepository { get; private set; }
         public IEmailTemplateRepository EmailTemplateRepository { get; private set; }
         public IFirebaseRepository FirebaseRepository { get; private set; }
@@ -50,17 +51,25 @@ namespace GRRWS.Infrastructure.Common
         public ITaskGroupRepository TaskGroupRepository { get; private set; }
         public IShiftRepository ShiftRepository { get; private set; }
         public IMechanicShiftRepository MechanicShiftRepository { get; private set; }
+        public IPushTokenRepository PushTokenRepository { get; private set; }
+        public INotificationRepository NotificationRepository { get; private set; }
+
         public async Task<int> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync();
         }
-        public UnitOfWork(GRRWSContext context, StorageClient storageClient, ILogger<UnitOfWork> logger, IErrorDetailRepository errorDetailRepository)
+        public UnitOfWork(GRRWSContext context, StorageClient storageClient, ILogger<UnitOfWork> logger, IErrorDetailRepository errorDetailRepository, ILoggerFactory loggerFactory)
         {
             _context = context;
             _logger = logger;
+            _loggerFactory = loggerFactory;
+
             UserRepository = new UserRepository(_context);
             FirebaseRepository = new FirebaseRepository(storageClient);
             EmailTemplateRepository = new EmailTemplateRepository(_context);
+
+            PushTokenRepository = new PushTokenRepository(_context, _loggerFactory.CreateLogger<PushTokenRepository>());
+            NotificationRepository = new NotificationRepository(_context, _loggerFactory.CreateLogger<NotificationRepository>());
 
             IssueRepository = new IssueRepository(_context);
             ErrorRepository = new ErrorRepository(_context);

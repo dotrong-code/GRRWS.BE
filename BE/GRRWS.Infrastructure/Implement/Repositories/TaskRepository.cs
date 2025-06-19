@@ -1474,15 +1474,15 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .FirstOrDefaultAsync(t => t.Id == taskId && !t.IsDeleted);
             if (task == null)
                 return false;
-            if (task.Status.Equals(Status.InProgress))
-            {
-                var getMechanicShift = await _context.MechanicShifts
-                    .FirstOrDefaultAsync(ms => ms.MechanicId == userId && ms.TaskId == taskId);
-                if (getMechanicShift == null)
-                    return false; // Mechanic shift not found or already available
-                getMechanicShift.IsAvailable = true;
-                _context.MechanicShifts.Update(getMechanicShift);
-            }
+            //if (task.Status.Equals(Status.InProgress))
+            //{
+            //    var getMechanicShift = await _context.MechanicShifts
+            //        .FirstOrDefaultAsync(ms => ms.MechanicId == userId && ms.TaskId == taskId);
+            //    if (getMechanicShift == null)
+            //        return false; // Mechanic shift not found or already available
+            //    getMechanicShift.IsAvailable = true;
+            //    _context.MechanicShifts.Update(getMechanicShift);
+            //}
 
 
             // Update status based on current status

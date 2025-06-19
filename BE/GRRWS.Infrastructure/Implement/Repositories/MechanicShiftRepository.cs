@@ -14,6 +14,14 @@ namespace GRRWS.Infrastructure.Implement.Repositories
     public class MechanicShiftRepository : GenericRepository<MechanicShift>, IMechanicShiftRepository
     {
         public MechanicShiftRepository(GRRWSContext context) : base(context) { }
+        public async Task<List<MechanicShift>> GetAllMechanicShiftAsync()
+        {
+            return await _context.MechanicShifts
+                .Include(ms => ms.Shift)
+                .Include(ms => ms.Mechanic)
+                .Include(ms => ms.Task)
+                .ToListAsync();
+        }
         //public async Task<bool> CreateMechanicShift(Guid userId, Guid taskId, Guid shiftId)
         //{
         //    try
@@ -36,58 +44,42 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         //        return false;
         //    }
         //}
-        public async Task<bool> CreateMechanicShift(Guid userId, Guid taskId, Guid shiftId)
+        public async Task<bool> CreateMechanicShift(Guid userId, Guid taskId)
         {
             try
             {
-                var existingShift = await _context.MechanicShifts
-                    .FirstOrDefaultAsync(ms => ms.MechanicId == userId && ms.ShiftId == shiftId && !ms.IsAvailable);
+                if (userId == Guid.Empty || taskId == Guid.Empty)
+                {
+                    return false;
+                }
+
+                var existingShifts = await _context.MechanicShifts
+                    .Where(ms => ms.MechanicId == userId && !ms.IsAvailable)
+                    .ToListAsync();
 
                 var shifts = _context.Shifts.OrderBy(s => s.StartTime).ToList();
-                var currentShift = shifts.FirstOrDefault(s => s.Id == shiftId);
-                if (currentShift == null) return false;
+                if (!shifts.Any()) return false;
 
-                var currentDate = DateTime.Now.Date;
-                var startIndex = shifts.IndexOf(currentShift);
-                DateTime dateToUse = DateTime.Now;
+                var getTask = await _context.Tasks
+                    .FirstOrDefaultAsync(t => t.Id == taskId);
 
-                if (existingShift != null)
+                if (getTask == null || !getTask.StartTime.HasValue)
                 {
-                    bool foundNextShift = false;
-                    for (int i = startIndex + 1; i < shifts.Count; i++)
-                    {
-                        var shift = shifts[i];
-                        var shiftStart = currentDate.Add(shift.StartTime);
-                        if (shiftStart > DateTime.Now)
-                        {
-                            dateToUse = shiftStart;
-                            foundNextShift = true;
-                            break;
-                        }
-                    }
+                    return false;
+                }
 
-                    if (!foundNextShift)
-                    {
-                        var nextDay = currentDate.AddDays(1);
-                        for (int i = 0; i < shifts.Count; i++)
-                        {
-                            var shift = shifts[i];
-                            var shiftStart = nextDay.Add(shift.StartTime);
-                            if (shiftStart.Date <= currentDate.AddDays(3))
-                            {
-                                dateToUse = shiftStart;
-                                break;
-                            }
-                        }
-                    }
+                if (existingShifts.Any())
+                {
+                    return false;
                 }
 
                 var mechanicShift = new MechanicShift
                 {
                     MechanicId = userId,
                     TaskId = taskId,
-                    ShiftId = shiftId,
-                    Date = dateToUse,
+                    ShiftId = shifts.FirstOrDefault(s => s.StartTime <= getTask.StartTime.Value.TimeOfDay && s.EndTime >= getTask.StartTime.Value.TimeOfDay)?.Id ?? shifts[0].Id,
+                    StartTime = getTask.StartTime,
+                    EndTime = getTask.EndTime,
                     IsAvailable = false
                 };
 
@@ -100,10 +92,10 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 return false;
             }
         }
-        public async Task<bool> UpdateMechanicShiftAvailableAsync(Guid userId, Guid taskId)
+        public async Task<bool> UpdateMechanicShiftAvailableAsync(Guid mechanicShiftId)
         {
             var mechanicShift = await _context.MechanicShifts
-                .FirstOrDefaultAsync(ms => ms.MechanicId == userId && ms.TaskId == taskId);
+                .FirstOrDefaultAsync(ms => ms.Id == mechanicShiftId);
 
             if (mechanicShift == null)
             {
@@ -111,6 +103,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             }
 
             mechanicShift.IsAvailable = true;
+            _context.MechanicShifts.Update(mechanicShift);
             await _context.SaveChangesAsync();
             return true;
         }
