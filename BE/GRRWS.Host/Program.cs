@@ -1,5 +1,4 @@
 ﻿using GRRWS.Application.Common;
-using GRRWS.Application.Implement.Service;
 using GRRWS.Host.Starup;
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.Hubs;
@@ -115,7 +114,7 @@ builder.Services.AddCors(options =>
         policy =>
         {
             //policy.AllowAnyOrigin()
-            policy.WithOrigins("http://localhost:8081", "exp://192.168.1.5:8081")
+            policy.WithOrigins("http://localhost:8081", "exp://192.168.1.5:8081", "http://localhost:3000")
                   .AllowAnyMethod()
                   .AllowAnyHeader()
                 .WithExposedHeaders("Authorization")
@@ -155,7 +154,7 @@ app.UseExceptionHandler(errorApp =>
     });
 });
 
- app.UseCors("AllowAll");
+app.UseCors("AllowAll");
 
 // Map SignalR hub
 app.MapHub<RequestHub>("/hubs/request");
