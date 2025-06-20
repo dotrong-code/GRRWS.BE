@@ -19,6 +19,7 @@
         public Guid IssueId { get; set; }
         public string DisplayName { get; set; }
         public string Status { get; set; } // e.g., Open, In Progress, Closed
+        public List<string>? Images { get; set; }
     }
     public class ErrorForRequestDetailWeb
     {

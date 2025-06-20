@@ -117,6 +117,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<ITaskGroupService, TaskGroupService>();
             services.AddTransient<IImportService, ImportService>();
             services.AddTransient<IMachineService, MachineService>();
+            services.AddTransient<IHOTDashboardService, HOTDashboardService>();
 
 
             #endregion
@@ -158,6 +159,8 @@ namespace GRRWS.Host.Starup
             services.AddTransient<ITaskGroupRepository, TaskGroupRepository>();
             services.AddTransient<IShiftRepository, ShiftRepository>();
             services.AddTransient<IMechanicShiftRepository, MechanicShiftRepository>();
+
+            services.AddTransient<IHOTDashboardRepository, HOTDashboardRepository>();
             #endregion
 
             #region GenericRepositories

@@ -205,6 +205,10 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Request is not exist"));
             }
             var requestDetail = await _requestRepository.GetRequestDetailWebByIdAsync(requestId);
+
+
+
+
             if (requestDetail == null)
             {
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Request is not exist"));
@@ -262,7 +266,7 @@ namespace GRRWS.Application.Implement.Service
         public async Task<Result> GetIssuesByRequestIdAsync(Guid requestId)
         {
             var requestIssues = await _requestRepository.GetIssuesByRequestIdAsync(requestId);
-            
+
 
             var issues = await MapIssuesWithImagesAsync(requestIssues);
             return Result.SuccessWithObject(issues);
@@ -392,12 +396,12 @@ namespace GRRWS.Application.Implement.Service
         {
             var dtos = new List<RequestDTO>();
             var requests = await _requestRepository.GetRequestByDeviceIdAsync(id);
-            if (requests == null || !requests.Any()) 
+            if (requests == null || !requests.Any())
             {
-                
+
                 return Result.SuccessWithObject(dtos);
             }
-                 
+
             foreach (var r in requests.Where(r => !r.IsDeleted).OrderByDescending(r => r.CreatedDate))
             {
                 var dto = await MapRequestToDTOAsync(r);
