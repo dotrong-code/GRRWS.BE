@@ -30,8 +30,6 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved recommended errors")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
-
         [HttpGet("spare-parts")]
         public async Task<IResult> GetSparepartsByErrorId(Guid errorId)
         {

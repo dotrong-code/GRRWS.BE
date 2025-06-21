@@ -51,8 +51,12 @@ namespace GRRWS.Infrastructure.Common
         public ITaskGroupRepository TaskGroupRepository { get; private set; }
         public IShiftRepository ShiftRepository { get; private set; }
         public IMechanicShiftRepository MechanicShiftRepository { get; private set; }
+
         public IPushTokenRepository PushTokenRepository { get; private set; }
         public INotificationRepository NotificationRepository { get; private set; }
+
+
+        public IHOTDashboardRepository HOTDashboardRepository { get; private set; }
 
         public async Task<int> SaveChangesAsync()
         {
@@ -103,6 +107,7 @@ namespace GRRWS.Infrastructure.Common
             TaskGroupRepository = new TaskGroupRepository(_context);
             ShiftRepository = new ShiftRepository(_context);
             MechanicShiftRepository = new MechanicShiftRepository(_context);
+            HOTDashboardRepository = new HOTDashboardRepository(_context);
         }
         public int Complete()
         {
