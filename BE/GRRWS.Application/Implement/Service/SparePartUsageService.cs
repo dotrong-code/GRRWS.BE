@@ -479,21 +479,46 @@ namespace GRRWS.Application.Implement.Service
 
             var usageToUpdate = new List<SparePartUsage>();
             var requestIds = new HashSet<Guid>();
+            var sparePartsToUpdate = new Dictionary<Guid, Sparepart>();
 
             foreach (var usageId in request.SparePartUsageIds)
             {
                 var usage = await _unitOfWork.SparePartUsageRepository.GetByIdAsync(usageId);
                 if (usage == null)
                     return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", $"Spare part usage with ID {usageId} not found"));
-                usage.IsTakenFromStock = request.IsTakenFromStock;
-                usageToUpdate.Add(usage);
-                if (usage.RequestTakeSparePartUsageId.HasValue)
-                    requestIds.Add(usage.RequestTakeSparePartUsageId.Value);
+
+                if (usage.IsTakenFromStock != request.IsTakenFromStock)
+                {
+                    usage.IsTakenFromStock = request.IsTakenFromStock;
+                    usageToUpdate.Add(usage);
+
+                    if (request.IsTakenFromStock)
+                    {
+                        var sparePart = await _unitOfWork.SparepartRepository.GetByIdAsync(usage.SparePartId);
+                        if (sparePart == null)
+                            return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", $"Spare part with ID {usage.SparePartId} not found"));
+
+                        if (sparePart.StockQuantity < usage.QuantityUsed)
+                            return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Insufficient stock", $"Spare part {sparePart.SparepartCode} has insufficient stock quantity"));
+
+                        sparePart.StockQuantity -= usage.QuantityUsed;
+                        sparePart.IsAvailable = sparePart.StockQuantity > 0;
+                        sparePartsToUpdate[sparePart.Id] = sparePart;
+                    }
+
+                    if (usage.RequestTakeSparePartUsageId.HasValue)
+                        requestIds.Add(usage.RequestTakeSparePartUsageId.Value);
+                }
             }
 
             foreach (var usage in usageToUpdate)
             {
                 await _unitOfWork.SparePartUsageRepository.UpdateAsync(usage);
+            }
+
+            foreach (var sparePart in sparePartsToUpdate.Values)
+            {
+                await _unitOfWork.SparepartRepository.UpdateAsync(sparePart);
             }
 
             foreach (var requestId in requestIds)
@@ -511,6 +536,8 @@ namespace GRRWS.Application.Implement.Service
                     }
                 }
             }
+
+            await _unitOfWork.SaveChangesAsync();
 
             return Result.SuccessWithObject(new { Message = "Update successfully" });
         }
