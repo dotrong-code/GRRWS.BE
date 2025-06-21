@@ -91,7 +91,7 @@ namespace GRRWS.Application.Implement.Service
             await _unit.ReportRepository.CreateAsync(report);
             var getRequest = await _unit.RequestRepository.GetRequestByIdAsync((Guid)report.RequestId);
             getRequest.ReportId = report.Id;
-            getRequest.Status = Status.Completed;
+            getRequest.Status = Status.Approved;
             await _unit.RequestRepository.UpdateAsync(getRequest);
             return Result.SuccessWithObject(new { Message = "Report created successfully!", ReportId = report.Id });
         }
