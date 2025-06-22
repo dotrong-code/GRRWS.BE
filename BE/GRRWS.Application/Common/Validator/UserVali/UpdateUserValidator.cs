@@ -13,11 +13,14 @@ namespace GRRWS.Application.Common.Validator.UserVali
     {
         public UpdateUserValidator(UnitOfWork unitOfWork) : base(unitOfWork)
         {
-            AddEmailRules(request => request.Email, checkExists: true);
-            AddUserNameRules(request => request.UserName, checkExists: true);
+            //AddEmailRules(request => request.Email, checkExists: true);
+            //AddUserNameRules(request => request.UserName, checkExists: true);
+
+            AddEmailRules(request => request.Email);
+            AddUserNameRules(request => request.UserName);
             AddFullNameRules(request => request.FullName);
             AddPhoneNumberRules(request => request.PhoneNumber);
-            AddBirthdayRules(x => x.DateOfBirth);
+            AddBirthdayRules(request => request.DateOfBirth ?? DateTime.MinValue);
         }
     }
 }
