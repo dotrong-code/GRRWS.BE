@@ -26,5 +26,6 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<List<User>> GetUsersByRole(int role);
         Task<List<User>> GetUsersByIdsBySearchNameAsync(List<Guid> ids, string? searchName = null); // New method
         Task<List<GetMechanicRecommendation>> GetRecommendedMechanicsAsync(DateTime currentTime, int pageIndex, int pageSize);
+        Task<List<Guid>> GetAllUserIdsAsync();
     }
 }

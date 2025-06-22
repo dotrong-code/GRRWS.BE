@@ -16,17 +16,37 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             _logger = logger;
         }
 
-        public async Task<List<Notification>> GetUserNotificationsAsync(Guid userId, int skip = 0, int take = 50)
+        public async Task<List<object>> GetUserNotificationsAsync(Guid userId, int userRole, int skip = 0, int take = 50)
         {
             try
             {
-                return await _context.Notifications
+                var notifications = await _context.NotificationReceivers
                     .AsNoTracking()
-                    .Where(n => n.ReceiverId == userId && n.Enabled == true)
-                    .OrderByDescending(n => n.CreatedDate)
+                    .Where(nr => nr.ReceiverId == userId && nr.Notification.Enabled == true)
+                    .Include(nr => nr.Notification)
+                        .ThenInclude(n => n.Sender)
+                    .OrderByDescending(nr => nr.Notification.CreatedDate)
                     .Skip(skip)
                     .Take(take)
+                    .Select(nr => new
+                    {
+                        Id = nr.Notification.Id,
+                        Title = nr.Notification.Title,
+                        Body = nr.Notification.Body,
+                        Type = nr.Notification.Type,
+                        Channel = nr.Notification.Channel,
+                        Data = nr.Notification.Data,
+                        Priority = nr.Notification.Priority,
+                        CreatedDate = nr.Notification.CreatedDate,
+                        SenderId = nr.Notification.SenderId,
+                        SenderName = nr.Notification.Sender.FullName,
+                        IsRead = nr.IsRead,
+                        ReadAt = nr.ReadAt,
+                        NotificationReceiverId = nr.Id
+                    })
                     .ToListAsync();
+
+                return notifications.Cast<object>().ToList();
             }
             catch (Exception ex)
             {
@@ -39,9 +59,9 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         {
             try
             {
-                return await _context.Notifications
+                return await _context.NotificationReceivers
                     .AsNoTracking()
-                    .CountAsync(n => n.ReceiverId == userId && !n.IsRead && n.Enabled == true);
+                    .CountAsync(nr => nr.ReceiverId == userId && !nr.IsRead && nr.Notification.Enabled == true);
             }
             catch (Exception ex)
             {
@@ -54,19 +74,21 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         {
             try
             {
-                var notification = await _context.Notifications
-                    .FirstOrDefaultAsync(n => n.Id == notificationId && n.ReceiverId == userId);
+                var notificationReceiver = await _context.NotificationReceivers
+                    .FirstOrDefaultAsync(nr => nr.NotificationId == notificationId && nr.ReceiverId == userId);
 
-                if (notification != null)
+                if (notificationReceiver != null && !notificationReceiver.IsRead)
                 {
-                    notification.IsRead = true;
-                    notification.ReadAt = DateTime.UtcNow;
-                    _context.Notifications.Update(notification);
+                    notificationReceiver.IsRead = true;
+                    notificationReceiver.ReadAt = DateTime.UtcNow;
+                    notificationReceiver.ModifiedDate = DateTime.UtcNow;
+                    
+                    _context.NotificationReceivers.Update(notificationReceiver);
                     _logger.LogDebug("Notification {NotificationId} marked as read for user {UserId}", notificationId, userId);
                 }
                 else
                 {
-                    _logger.LogWarning("Notification {NotificationId} not found for user {UserId}", notificationId, userId);
+                    _logger.LogWarning("Notification {NotificationId} not found or already read for user {UserId}", notificationId, userId);
                 }
             }
             catch (Exception ex)
@@ -81,7 +103,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             try
             {
                 await _context.Notifications.AddAsync(notification);
-                _logger.LogDebug("Notification added for receiver {ReceiverId}", notification.ReceiverId);
+                _logger.LogDebug("Notification added with ID {NotificationId}", notification.Id);
             }
             catch (Exception ex)
             {
@@ -90,16 +112,51 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             }
         }
 
-        public async Task<int> SaveChangesAsync()
+        public async Task AddNotificationReceiversAsync(List<NotificationReceiver> receivers)
         {
             try
             {
-                return await _context.SaveChangesAsync();
+                await _context.NotificationReceivers.AddRangeAsync(receivers);
+                _logger.LogDebug("Added {Count} notification receivers", receivers.Count);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error saving notification changes");
+                _logger.LogError(ex, "Error adding notification receivers");
                 throw;
+            }
+        }
+
+        public async Task<List<Guid>> GetUserIdsByRoleAsync(int role)
+        {
+            try
+            {
+                return await _context.Users
+                    .AsNoTracking()
+                    .Where(u => u.Role == role && !u.IsDeleted)
+                    .Select(u => u.Id)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting user IDs by role {Role}", role);
+                throw;
+            }
+        }
+
+        public async Task<bool> IsNotificationReadByUserAsync(Guid notificationId, Guid userId)
+        {
+            try
+            {
+                var notificationReceiver = await _context.NotificationReceivers
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(nr => nr.NotificationId == notificationId && nr.ReceiverId == userId);
+
+                return notificationReceiver?.IsRead ?? false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking if notification is read by user");
+                return false;
             }
         }
     }

@@ -9,6 +9,7 @@ namespace GRRWS.Application.Interfaces
     {
         Task<Result> SendNotificationAsync(NotificationRequest request);
         Task<Result> SendToUserAsync(Guid userId, string title, string body, NotificationType type = NotificationType.General, object data = null);
+        Task<Result> SendToUsersAsync(List<Guid> userIds, string title, string body, NotificationType type = NotificationType.General, object data = null);
         Task<Result> SendToRoleAsync(int role, string title, string body, NotificationType type = NotificationType.General, object data = null);
         Task<Result> SendToAllAsync(string title, string body, NotificationType type = NotificationType.General, object data = null);
         Task<Result> GetUserNotificationsAsync(Guid userId, int skip = 0, int take = 50);

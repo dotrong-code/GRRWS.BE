@@ -1,9 +1,11 @@
+using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interfaces;
 using GRRWS.Infrastructure.Interfaces;
 using GRRWS.Domain.Entities;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using GRRWS.Infrastructure.DTOs.Common.Message;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -21,21 +23,24 @@ namespace GRRWS.Application.Implement.Service
             _logger = logger;
         }
 
-        public async Task<bool> SendPushNotificationAsync(string pushToken, string title, string body, object data = null)
+        public async Task<Result> SendPushNotificationAsync(string pushToken, string title, string body, object data = null)
         {
             return await SendPushNotificationsAsync(new List<string> { pushToken }, title, body, data);
         }
 
-        public async Task<bool> SendPushNotificationsAsync(List<string> pushTokens, string title, string body, object data = null)
+        public async Task<Result> SendPushNotificationsAsync(List<string> pushTokens, string title, string body, object data = null)
         {
             try
             {
+                if (pushTokens == null || !pushTokens.Any())
+                    return Result.Failure(NotificationErrorMessage.FieldIsEmpty("Push tokens"));
+
                 var validTokens = pushTokens.Where(token => IsValidExpoToken(token)).ToList();
                 
                 if (!validTokens.Any())
                 {
                     _logger.LogWarning("No valid Expo push tokens provided");
-                    return false;
+                    return Result.Failure(NotificationErrorMessage.InvalidPlatform());
                 }
 
                 var messages = validTokens.Select(token => new
@@ -61,7 +66,8 @@ namespace GRRWS.Application.Implement.Service
                 if (response.IsSuccessStatusCode)
                 {
                     _logger.LogInformation("Successfully sent push notification to {TokenCount} tokens", validTokens.Count);
-                    return true;
+                    await HandleFailedTokens(validTokens, responseContent);
+                    return Result.SuccessWithObject(new { sentCount = validTokens.Count });
                 }
                 else
                 {
@@ -69,20 +75,30 @@ namespace GRRWS.Application.Implement.Service
                         response.StatusCode, responseContent);
                     
                     await HandleFailedTokens(validTokens, responseContent);
-                    return false;
+                    return Result.Failure(NotificationErrorMessage.PushTokenRegistrationFailed());
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error sending push notification");
-                return false;
+                return Result.Failure(NotificationErrorMessage.PushTokenRegistrationFailed());
             }
         }
 
-        public async Task RegisterPushTokenAsync(Guid userId, string token, string platform)
+        public async Task<Result> RegisterPushTokenAsync(Guid userId, string token, string platform)
         {
             try
             {
+                if (string.IsNullOrEmpty(token))
+                    return Result.Failure(NotificationErrorMessage.FieldIsEmpty("Token"));
+
+                if (string.IsNullOrEmpty(platform))
+                    return Result.Failure(NotificationErrorMessage.FieldIsEmpty("Platform"));
+
+                var validPlatforms = new[] { "ios", "android" };
+                if (!validPlatforms.Contains(platform.ToLower()))
+                    return Result.Failure(NotificationErrorMessage.InvalidPlatform());
+
                 var existingToken = await _unitOfWork.PushTokenRepository.GetByUserIdAndTokenAsync(userId, token);
 
                 if (existingToken != null)
@@ -111,52 +127,66 @@ namespace GRRWS.Application.Implement.Service
 
                 await _unitOfWork.SaveChangesAsync();
                 _logger.LogInformation("Push token registered successfully for user {UserId}", userId);
+                
+                return Result.SuccessWithObject(new 
+                { 
+                    message = "Push token registered successfully",
+                    userId = userId,
+                    platform = platform.ToLower()
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error registering push token for user {UserId}", userId);
-                throw;
+                return Result.Failure(NotificationErrorMessage.PushTokenRegistrationFailed());
             }
         }
 
-        public async Task DeactivateTokenAsync(string token)
+        public async Task<Result> DeactivateTokenAsync(string token)
         {
             try
             {
+                if (string.IsNullOrEmpty(token))
+                    return Result.Failure(NotificationErrorMessage.FieldIsEmpty("Token"));
+
                 await _unitOfWork.PushTokenRepository.DeactivateTokenAsync(token);
                 await _unitOfWork.SaveChangesAsync();
                 _logger.LogInformation("Push token deactivated successfully");
+                
+                return Result.Success();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deactivating push token {Token}", token);
-                throw;
+                return Result.Failure(NotificationErrorMessage.PushTokenRegistrationFailed());
             }
         }
 
-        public async Task<List<string>> GetUserPushTokensAsync(Guid userId)
+        public async Task<Result> GetUserPushTokensAsync(Guid userId)
         {
             try
             {
-                return await _unitOfWork.PushTokenRepository.GetActiveTokensByUserIdAsync(userId);
+                var tokens = await _unitOfWork.PushTokenRepository.GetActiveTokensByUserIdAsync(userId);
+                return Result.SuccessWithObject(tokens);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving push tokens for user {UserId}", userId);
-                return new List<string>();
+                return Result.Failure(NotificationErrorMessage.NotificationRetrieveFailed());
             }
         }
 
-        public async Task<List<string>> GetTokensByRoleAsync(int role)
+        public async Task<Result> GetTokensByRoleAsync(int role)
         {
             try
             {
-                return await _unitOfWork.PushTokenRepository.GetTokensByRoleAsync(role);
+                var tokens = await _unitOfWork.PushTokenRepository.GetTokensByRoleAsync(role);
+                return Result.SuccessWithObject(tokens);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving push tokens for role {Role}", role);
-                return new List<string>();
+                return Result.Failure(NotificationErrorMessage.NotificationRetrieveFailed());
             }
         }
 

@@ -41,25 +41,63 @@ namespace GRRWS.Application.Implement.Service
                 if (string.IsNullOrEmpty(request.Body))
                     return Result.Failure(NotificationErrorMessage.FieldIsEmpty("Body"));
 
-                Notification notification = null;
+                // Determine recipient user IDs
+                var recipientUserIds = new List<Guid>();
 
-                if (request.SaveToDatabase)
+                if (request.ReceiverId.HasValue && request.ReceiverId != Guid.Empty)
                 {
-                    notification = await SaveNotificationToDatabase(request);
+                    // Validate specific receiver
+                    if (!await _unitOfWork.UserRepository.IdExistsAsync(request.ReceiverId.Value))
+                    {
+                        return Result.Failure(NotificationErrorMessage.FieldIsEmpty("Invalid receiver ID"));
+                    }
+                    recipientUserIds.Add(request.ReceiverId.Value);
+                }
+                else if (request.Role.HasValue)
+                {
+                    // Get all users with the specified role
+                    recipientUserIds = await _unitOfWork.NotificationRepository.GetUserIdsByRoleAsync(request.Role.Value);
+                    if (!recipientUserIds.Any())
+                    {
+                        _logger.LogWarning("No users found with role {Role}", request.Role.Value);
+                        return Result.Success(); // Not an error, just no recipients
+                    }
+                }
+                else
+                {
+                    // Send to all users
+                    recipientUserIds = await _unitOfWork.UserRepository.GetAllUserIdsAsync();
+                    if (!recipientUserIds.Any())
+                    {
+                        _logger.LogWarning("No users found to send notification to");
+                        return Result.Success();
+                    }
                 }
 
+                // Save notification and create receivers
+                var notification = await SaveNotificationToDatabase(request, recipientUserIds);
+
+                // Send via SignalR if enabled
                 if (request.Channel == NotificationChannel.SignalR || request.Channel == NotificationChannel.Both)
                 {
-                    await SendSignalRNotification(request, notification);
+                    await SendSignalRNotification(request, notification, recipientUserIds);
                 }
 
+                // Send via Push Notification if enabled
                 if (request.Channel == NotificationChannel.Push || request.Channel == NotificationChannel.Both)
                 {
-                    await SendPushNotification(request);
+                    await SendPushNotification(request, recipientUserIds);
                 }
 
-                _logger.LogInformation("Notification sent successfully: {Title}", request.Title);
-                return Result.Success();
+                _logger.LogInformation("Notification sent successfully to {RecipientCount} users: {Title}", 
+                    recipientUserIds.Count, request.Title);
+                
+                return Result.SuccessWithObject(new 
+                { 
+                    NotificationId = notification.Id,
+                    RecipientCount = recipientUserIds.Count,
+                    Message = "Notification sent successfully"
+                });
             }
             catch (Exception ex)
             {
@@ -77,10 +115,64 @@ namespace GRRWS.Application.Implement.Service
                 Title = title,
                 Body = body,
                 Type = type,
-                Data = data
+                Data = data,
+                Channel = NotificationChannel.Both,
+                SaveToDatabase = true
             };
 
             return await SendNotificationAsync(request);
+        }
+
+        public async Task<Result> SendToUsersAsync(List<Guid> userIds, string title, string body, NotificationType type = NotificationType.General, object data = null)
+        {
+            try
+            {
+                if (!userIds.Any())
+                    return Result.Failure(NotificationErrorMessage.FieldIsEmpty("User IDs"));
+
+                // Validate all user IDs exist
+                foreach (var userId in userIds)
+                {
+                    if (!await _unitOfWork.UserRepository.IdExistsAsync(userId))
+                    {
+                        return Result.Failure(NotificationErrorMessage.FieldIsEmpty($"Invalid user ID: {userId}"));
+                    }
+                }
+
+                var request = new NotificationRequest
+                {
+                    SenderId = Guid.Empty,
+                    Title = title,
+                    Body = body,
+                    Type = type,
+                    Data = data,
+                    Channel = NotificationChannel.Both,
+                    SaveToDatabase = true
+                };
+
+                var notification = await SaveNotificationToDatabase(request, userIds);
+
+                // Send via SignalR
+                await SendSignalRNotification(request, notification, userIds);
+
+                // Send via Push Notification
+                await SendPushNotification(request, userIds);
+
+                _logger.LogInformation("Notification sent successfully to {RecipientCount} specific users: {Title}", 
+                    userIds.Count, title);
+                
+                return Result.SuccessWithObject(new 
+                { 
+                    NotificationId = notification.Id,
+                    RecipientCount = userIds.Count,
+                    Message = "Notification sent successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending notification to specific users: {Title}", title);
+                return Result.Failure(NotificationErrorMessage.NotificationSendFailed());
+            }
         }
 
         public async Task<Result> SendToRoleAsync(int role, string title, string body, NotificationType type = NotificationType.General, object data = null)
@@ -92,7 +184,9 @@ namespace GRRWS.Application.Implement.Service
                 Title = title,
                 Body = body,
                 Type = type,
-                Data = data
+                Data = data,
+                Channel = NotificationChannel.Both,
+                SaveToDatabase = true
             };
 
             return await SendNotificationAsync(request);
@@ -106,7 +200,9 @@ namespace GRRWS.Application.Implement.Service
                 Title = title,
                 Body = body,
                 Type = type,
-                Data = data
+                Data = data,
+                Channel = NotificationChannel.Both,
+                SaveToDatabase = true
             };
 
             return await SendNotificationAsync(request);
@@ -118,8 +214,9 @@ namespace GRRWS.Application.Implement.Service
             {
                 if (take > 100)
                     return Result.Failure(NotificationErrorMessage.InvalidPagination());
-
-                var notifications = await _unitOfWork.NotificationRepository.GetUserNotificationsAsync(userId, skip, take);
+                var user = await _unitOfWork.UserRepository.GetUserByIdAsync(userId);
+                var userRole = user.Role;
+                var notifications = await _unitOfWork.NotificationRepository.GetUserNotificationsAsync(userId, userRole, skip, take);
                 var unreadCount = await _unitOfWork.NotificationRepository.GetUnreadCountAsync(userId);
 
                 var result = new
@@ -151,7 +248,8 @@ namespace GRRWS.Application.Implement.Service
                 await _unitOfWork.NotificationRepository.MarkAsReadAsync(notificationId, userId);
                 await _unitOfWork.SaveChangesAsync();
                 _logger.LogInformation("Notification {NotificationId} marked as read by user {UserId}", notificationId, userId);
-                return Result.Success();
+                
+                return Result.SuccessWithObject(new { Message = "Notification marked as read successfully" });
             }
             catch (Exception ex)
             {
@@ -188,9 +286,20 @@ namespace GRRWS.Application.Implement.Service
                 if (!validPlatforms.Contains(platform.ToLower()))
                     return Result.Failure(NotificationErrorMessage.InvalidPlatform());
 
-                await _expoPushService.RegisterPushTokenAsync(userId, token, platform.ToLower());
-                _logger.LogInformation("Push token registered successfully for user {UserId}", userId);
-                return Result.Success();
+                var result = await _expoPushService.RegisterPushTokenAsync(userId, token, platform.ToLower());
+                if (result.IsSuccess)
+                {
+                    _logger.LogInformation("Push token registered successfully for user {UserId}", userId);
+                    return Result.SuccessWithObject(new 
+                    { 
+                        message = "Push token registered successfully",
+                        userId = userId,
+                        platform = platform.ToLower(),
+                        registeredAt = DateTime.UtcNow
+                    });
+                }
+
+                return result;
             }
             catch (Exception ex)
             {
@@ -199,32 +308,45 @@ namespace GRRWS.Application.Implement.Service
             }
         }
 
-        private async Task<Notification> SaveNotificationToDatabase(NotificationRequest request)
+        private async Task<Notification> SaveNotificationToDatabase(NotificationRequest request, List<Guid> recipientUserIds)
         {
             var notification = new Notification
             {
                 Id = Guid.NewGuid(),
                 SenderId = request.SenderId,
-                ReceiverId = request.ReceiverId ?? Guid.Empty,
                 Title = request.Title,
                 Body = request.Body,
                 Type = request.Type,
                 Channel = request.Channel,
                 Data = request.Data != null ? JsonSerializer.Serialize(request.Data) : null,
+                Priority = request.Priority,
                 CreatedDate = DateTime.UtcNow,
                 Enabled = true
             };
 
             await _unitOfWork.NotificationRepository.AddAsync(notification);
+
+            // Create notification receivers for each recipient
+            var notificationReceivers = recipientUserIds.Select(userId => new NotificationReceiver
+            {
+                Id = Guid.NewGuid(),
+                NotificationId = notification.Id,
+                ReceiverId = userId,
+                IsRead = false,
+                CreatedDate = DateTime.UtcNow
+            }).ToList();
+
+            await _unitOfWork.NotificationRepository.AddNotificationReceiversAsync(notificationReceivers);
             await _unitOfWork.SaveChangesAsync();
+
             return notification;
         }
 
-        private async Task SendSignalRNotification(NotificationRequest request, Notification notification)
+        private async Task SendSignalRNotification(NotificationRequest request, Notification notification, List<Guid> recipientUserIds)
         {
             var signalRMessage = new
             {
-                id = notification?.Id,
+                id = notification.Id,
                 title = request.Title,
                 body = request.Body,
                 type = request.Type.ToString(),
@@ -232,45 +354,35 @@ namespace GRRWS.Application.Implement.Service
                 timestamp = DateTime.UtcNow
             };
 
-            if (request.ReceiverId.HasValue && request.ReceiverId != Guid.Empty)
+            foreach (var userId in recipientUserIds)
             {
-                await _hubContext.Clients.Group($"user:{request.ReceiverId}")
+                await _hubContext.Clients.Group($"user:{userId}")
                     .SendAsync("NotificationReceived", signalRMessage);
             }
-            else if (request.Role.HasValue)
+
+            // Also send to role groups if applicable
+            if (request.Role.HasValue)
             {
                 var roleName = ((Role)request.Role.Value).ToString();
                 await _hubContext.Clients.Group($"role:{roleName}")
                     .SendAsync("NotificationReceived", signalRMessage);
             }
-            else
-            {
-                await _hubContext.Clients.All.SendAsync("NotificationReceived", signalRMessage);
-            }
 
-            _logger.LogDebug("SignalR notification sent successfully");
+            _logger.LogDebug("SignalR notification sent successfully to {RecipientCount} users", recipientUserIds.Count);
         }
 
-        private async Task SendPushNotification(NotificationRequest request)
+        private async Task SendPushNotification(NotificationRequest request, List<Guid> recipientUserIds)
         {
-            if (request.ReceiverId.HasValue && request.ReceiverId != Guid.Empty)
+            foreach (var userId in recipientUserIds)
             {
-                var pushTokens = await _expoPushService.GetUserPushTokensAsync(request.ReceiverId.Value);
-                if (pushTokens.Any())
+                var tokenResult = await _expoPushService.GetUserPushTokensAsync(userId);
+                if (tokenResult.IsSuccess && tokenResult.Object is List<string> tokens && tokens.Any())
                 {
-                    await _expoPushService.SendPushNotificationsAsync(pushTokens, request.Title, request.Body, request.Data);
-                }
-            }
-            else if (request.Role.HasValue)
-            {
-                var pushTokens = await _expoPushService.GetTokensByRoleAsync(request.Role.Value);
-                if (pushTokens.Any())
-                {
-                    await _expoPushService.SendPushNotificationsAsync(pushTokens, request.Title, request.Body, request.Data);
+                    await _expoPushService.SendPushNotificationsAsync(tokens, request.Title, request.Body, request.Data);
                 }
             }
 
-            _logger.LogDebug("Push notification sent successfully");
+            _logger.LogDebug("Push notification sent successfully to {RecipientCount} users", recipientUserIds.Count);
         }
     }
 }

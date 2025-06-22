@@ -4,6 +4,7 @@ using GRRWS.Application.Interfaces;
 using System.Security.Claims;
 using GRRWS.Infrastructure.DTOs.Notification;
 using GRRWS.Application.Common.Result;
+using GRRWS.Domain.Enum;
 
 namespace GRRWS.Host.Controllers
 {
@@ -16,7 +17,7 @@ namespace GRRWS.Host.Controllers
         private readonly ILogger<NotificationsController> _logger;
 
         public NotificationsController(
-            INotificationService notificationService, 
+            INotificationService notificationService,
             ILogger<NotificationsController> logger)
         {
             _notificationService = notificationService;
