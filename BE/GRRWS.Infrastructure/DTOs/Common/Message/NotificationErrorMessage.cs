@@ -27,5 +27,8 @@ namespace GRRWS.Infrastructure.DTOs.Common.Message
 
         public static Error InvalidPlatform() =>
             Error.Validation("PushToken.InvalidPlatform", "Platform must be 'ios' or 'android'.");
+
+        public static Error InvalidReceiver() =>
+            Error.Validation("Notification.InvalidReceiver", "One or more receiver IDs are invalid.");
     }
 }

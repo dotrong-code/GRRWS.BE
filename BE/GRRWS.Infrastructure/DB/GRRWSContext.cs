@@ -26,6 +26,7 @@ namespace GRRWS.Infrastructure.DB
         public DbSet<IssueError> IssueErrors { get; set; }
         public DbSet<Machine> Machines { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<NotificationReceiver> NotificationReceivers { get; set; }
         public DbSet<PushToken> PushTokens { get; set; }
         public DbSet<RepairSparepart> RepairSpareparts { get; set; }
         public DbSet<Report> Reports { get; set; }
@@ -57,7 +58,11 @@ namespace GRRWS.Infrastructure.DB
         public DbSet<TaskGroup> TaskGroups { get; set; }
         public DbSet<Shift> Shifts { get; set; }
         public DbSet<MechanicShift> MechanicShifts { get; set; }
+
         public DbSet<RequestMachineReplacement> RequestMachineReplacements { get; set; }
+
+
+
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -884,16 +889,41 @@ namespace GRRWS.Infrastructure.DB
 
             modelBuilder.Entity<Notification>(entity =>
             {
-                entity.HasOne(e => e.Sender)
-                      .WithMany()
-                      .HasForeignKey(e => e.SenderId)
-                      .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(e => e.ReceiverUser)
-                      .WithMany()
-                      .HasForeignKey(e => e.ReceiverId)
-                      .OnDelete(DeleteBehavior.NoAction);
+                entity.Property(n => n.Title).IsRequired().HasMaxLength(200);
+                entity.Property(n => n.Body).IsRequired().HasMaxLength(1000);
+                entity.Property(n => n.Type).IsRequired().HasConversion<int>();
+                entity.Property(n => n.Channel).IsRequired().HasConversion<int>();
+                entity.Property(n => n.Enabled).HasDefaultValue(true);
             });
+
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.Sender)
+                .WithMany()
+                .HasForeignKey(n => n.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // NotificationReceiver
+            modelBuilder.Entity<NotificationReceiver>(entity =>
+            {
+                entity.HasKey(nr => nr.Id); // Đặt Id làm khóa chính
+                entity.Property(nr => nr.NotificationId).IsRequired();
+                entity.Property(nr => nr.ReceiverId).IsRequired();
+                entity.Property(nr => nr.IsRead).HasDefaultValue(false);
+                entity.HasIndex(nr => new { nr.NotificationId, nr.ReceiverId }).IsUnique();
+            });
+
+            modelBuilder.Entity<NotificationReceiver>()
+                        .HasOne(nr => nr.Notification)
+                        .WithMany(n => n.NotificationReceivers)
+                        .HasForeignKey(nr => nr.NotificationId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<NotificationReceiver>()
+                        .HasOne(nr => nr.Receiver)
+                        .WithMany()
+                        .HasForeignKey(nr => nr.ReceiverId)
+                        .OnDelete(DeleteBehavior.Restrict);
+
             #endregion
             #region Table Mappings
             modelBuilder.Entity<Area>().ToTable("Areas");
@@ -912,6 +942,7 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<IssueError>().ToTable("IssueErrors");
             modelBuilder.Entity<Machine>().ToTable("Machines");
             modelBuilder.Entity<Notification>().ToTable("Notifications");
+            modelBuilder.Entity<NotificationReceiver>().ToTable("NotificationReceivers");
             modelBuilder.Entity<PushToken>().ToTable("PushTokens");
             modelBuilder.Entity<RepairSparepart>().ToTable("RepairSpareparts");
             modelBuilder.Entity<Report>().ToTable("Reports");

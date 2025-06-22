@@ -428,6 +428,21 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             }
             return double.MaxValue; // Giá trị mặc định cho các trường hợp không hợp lệ
         }
+        public async Task<List<Guid>> GetAllUserIdsAsync()
+        {
+            try
+            {
+                return await _context.Users
+                    .AsNoTracking()
+                    .Where(u => !u.IsDeleted)
+                    .Select(u => u.Id)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
     }
 }
 

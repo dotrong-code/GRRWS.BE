@@ -1,10 +1,12 @@
 ﻿using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
+using GRRWS.Application.Interfaces;
 using GRRWS.Domain.Entities;
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.DTOs.Firebase.AddImage;
 using GRRWS.Infrastructure.DTOs.Firebase.GetImage;
+using GRRWS.Infrastructure.DTOs.Notification;
 using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.Interfaces;
@@ -17,13 +19,16 @@ namespace GRRWS.Application.Implement.Service
         private readonly IRequestRepository _requestRepository;
         private readonly ITokenService _tokenService;
         private readonly IUnitOfWork _unitOfWork;
+        // Add the missing field declaration for _notificationService
+        private readonly INotificationService _notificationService;
 
 
-        public RequestService(IRequestRepository requestRepository, ITokenService tokenService, IUnitOfWork unitOfWork)
+        public RequestService(IRequestRepository requestRepository, ITokenService tokenService, IUnitOfWork unitOfWork, INotificationService notificationService)
         {
             _requestRepository = requestRepository;
             _tokenService = tokenService;
             _unitOfWork = unitOfWork;
+            _notificationService = notificationService;
         }
 
         public async Task<Result> GetAllAsync(int pageNumber, int pageSize, string? search, string? searchType)
@@ -387,10 +392,33 @@ namespace GRRWS.Application.Implement.Service
                     }
                 }
             }
+            // Send notification to Head of Technical (HOT)
+            
 
             await _requestRepository.CreateAsync(request);
             await _unitOfWork.SaveChangesAsync();
-            return Result.SuccessWithObject(new { Message = "Test request created successfully!" });
+            var notificationRequest = new NotificationRequest
+            {
+                SenderId = userId,
+                Role = 2, 
+                ReceiverId = null,
+                Title = "Yêu cầu mới đã được tạo",
+                Body = $"Yêu cầu cho thiết bị {getDevice.DeviceName} đã được tạo.",
+                Type = NotificationType.RequestCreated,
+                Channel = NotificationChannel.Both,
+                Data = new
+                {
+                    RequestId = request.Id,
+                    DeviceId = request.DeviceId,
+                    DeviceName = getDevice.DeviceName,
+                    CreatedBy = userId,
+                    CreatedDate = request.CreatedDate
+                },
+                SaveToDatabase = true
+            };
+            await _notificationService.SendNotificationAsync(notificationRequest);
+
+            return Result.SuccessWithObject(new { Message = "Test request with notification created successfully!" });
         }
 
         public async Task<Result> GetRequestByDeviceIdAsync(Guid id)

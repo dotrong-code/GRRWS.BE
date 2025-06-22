@@ -4,6 +4,7 @@ using GRRWS.Application.Interfaces;
 using System.Security.Claims;
 using GRRWS.Infrastructure.DTOs.Notification;
 using GRRWS.Application.Common.Result;
+using GRRWS.Domain.Enum;
 
 namespace GRRWS.Host.Controllers
 {
@@ -16,7 +17,7 @@ namespace GRRWS.Host.Controllers
         private readonly ILogger<NotificationsController> _logger;
 
         public NotificationsController(
-            INotificationService notificationService, 
+            INotificationService notificationService,
             ILogger<NotificationsController> logger)
         {
             _notificationService = notificationService;
@@ -34,10 +35,18 @@ namespace GRRWS.Host.Controllers
         }
 
         [HttpGet]
-        public async Task<IResult> GetNotifications([FromQuery] int skip = 0, [FromQuery] int take = 50)
+        public async Task<IResult> GetNotifications(
+        [FromQuery] int skip = 0,
+        [FromQuery] int take = 50,
+        [FromQuery] string? search = null,
+        [FromQuery] string? type = null,
+        [FromQuery] bool? isRead = null,
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null)
         {
             var userId = GetCurrentUserId();
-            var result = await _notificationService.GetUserNotificationsAsync(userId, skip, take);
+            var result = await _notificationService.GetUserNotificationsAsync(
+                userId, skip, take, search, type, isRead, fromDate, toDate);
             return result.IsSuccess
                 ? result.ToSuccessDetails("Successfully retrieved notifications")
                 : result.ToProblemDetails();
