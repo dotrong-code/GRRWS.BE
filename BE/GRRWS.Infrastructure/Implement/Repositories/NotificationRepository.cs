@@ -1,4 +1,5 @@
 using GRRWS.Domain.Entities;
+using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
@@ -16,15 +17,51 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             _logger = logger;
         }
 
-        public async Task<List<object>> GetUserNotificationsAsync(Guid userId, int userRole, int skip = 0, int take = 50)
+        public async Task<List<object>> GetUserNotificationsAsync(
+    Guid userId, int userRole, int skip = 0, int take = 50,
+    string? search = null, string? type = null, bool? isRead = null,
+    DateTime? fromDate = null, DateTime? toDate = null)
         {
             try
             {
-                var notifications = await _context.NotificationReceivers
+                var query = _context.NotificationReceivers
                     .AsNoTracking()
                     .Where(nr => nr.ReceiverId == userId && nr.Notification.Enabled == true)
                     .Include(nr => nr.Notification)
                         .ThenInclude(n => n.Sender)
+                    .AsQueryable();
+
+                // Search filter
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    query = query.Where(nr =>
+                        (nr.Notification.Title != null && nr.Notification.Title.Contains(search)) ||
+                        (nr.Notification.Body != null && nr.Notification.Body.Contains(search)));
+                }
+
+                // Type filter
+                if (!string.IsNullOrWhiteSpace(type) && Enum.TryParse<NotificationType>(type, true, out var typeEnum))
+                {
+                    query = query.Where(nr => nr.Notification.Type == typeEnum);
+                }
+
+                // Read status filter
+                if (isRead.HasValue)
+                {
+                    query = query.Where(nr => nr.IsRead == isRead.Value);
+                }
+
+                // Date range filter
+                if (fromDate.HasValue)
+                {
+                    query = query.Where(nr => nr.Notification.CreatedDate >= fromDate.Value);
+                }
+                if (toDate.HasValue)
+                {
+                    query = query.Where(nr => nr.Notification.CreatedDate <= toDate.Value);
+                }
+
+                var notifications = await query
                     .OrderByDescending(nr => nr.Notification.CreatedDate)
                     .Skip(skip)
                     .Take(take)
@@ -82,7 +119,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     notificationReceiver.IsRead = true;
                     notificationReceiver.ReadAt = DateTime.UtcNow;
                     notificationReceiver.ModifiedDate = DateTime.UtcNow;
-                    
+
                     _context.NotificationReceivers.Update(notificationReceiver);
                     _logger.LogDebug("Notification {NotificationId} marked as read for user {UserId}", notificationId, userId);
                 }
