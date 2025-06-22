@@ -57,6 +57,7 @@ namespace GRRWS.Infrastructure.DB
         public DbSet<TaskGroup> TaskGroups { get; set; }
         public DbSet<Shift> Shifts { get; set; }
         public DbSet<MechanicShift> MechanicShifts { get; set; }
+        public DbSet<RequestMachineReplacement> RequestMachineReplacements { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -312,7 +313,65 @@ namespace GRRWS.Infrastructure.DB
                 .OnDelete(DeleteBehavior.SetNull);
 
             // Xóa cấu hình liên kết với SparePartUsage trực tiếp
+            // RequestMachineReplacement
+            modelBuilder.Entity<RequestMachineReplacement>()
+                .HasKey(rmr => rmr.Id);
 
+            modelBuilder.Entity<RequestMachineReplacement>()
+                .Property(rmr => rmr.RequestCode)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<RequestMachineReplacement>()
+                .Property(rmr => rmr.Status)
+                .IsRequired()
+                .HasConversion<string>();
+
+            modelBuilder.Entity<RequestMachineReplacement>()
+                .HasIndex(rmr => rmr.RequestCode)
+                .IsUnique();
+            modelBuilder.Entity<RequestMachineReplacement>()
+                .HasOne(rmr => rmr.RequestedBy)
+                .WithMany()
+                .HasForeignKey(rmr => rmr.RequestedById)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<RequestMachineReplacement>()
+                .HasOne(rmr => rmr.Assignee)
+                .WithMany()
+                .HasForeignKey(rmr => rmr.AssigneeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<RequestMachineReplacement>()
+                .HasOne(rmr => rmr.ApprovedBy)
+                .WithMany()
+                .HasForeignKey(rmr => rmr.ApprovedById)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<RequestMachineReplacement>()
+                .HasOne(rmr => rmr.OldDevice)
+                .WithMany()
+                .HasForeignKey(rmr => rmr.OldDeviceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<RequestMachineReplacement>()
+                .HasOne(rmr => rmr.NewDevice)
+                .WithMany()
+                .HasForeignKey(rmr => rmr.NewDeviceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Quan hệ với Machine
+            modelBuilder.Entity<RequestMachineReplacement>()
+                .HasOne(rmr => rmr.Machine)
+                .WithMany()
+                .HasForeignKey(rmr => rmr.MachineId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Quan hệ với ErrorDetail (1-1)
+            modelBuilder.Entity<RequestMachineReplacement>()
+                .HasOne(rmr => rmr.ErrorDetail)
+                .WithOne(ed => ed.RequestMachineReplacement)
+                .HasForeignKey<RequestMachineReplacement>(ed => ed.ErrorDetailId)
+                .OnDelete(DeleteBehavior.SetNull);
             // RequestTakeSparePartUsage
 
             modelBuilder.Entity<RequestTakeSparePartUsage>()
