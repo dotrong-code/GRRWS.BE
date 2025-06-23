@@ -156,7 +156,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         public async Task<List<RequestDTO>> GetRequestsContainReportAsync()
         {
             return await _context.Requests
-                .Where(r => !r.IsDeleted && r.Report != null)
+                .Where(r => !r.IsDeleted && r.Report != null && r.ReportId != null)
                 .Include(r => r.Report)
                 .Include(r => r.Device)
                 .ThenInclude(d => d.Position)
@@ -208,7 +208,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         {
             var totalTasks = await _context.Tasks.Where(t => !t.IsDeleted && (t.TaskType == TaskType.Warranty || t.TaskType == TaskType.Repair || t.TaskType == TaskType.Replacement)).CountAsync();
 
-            var totalWarrantyTasks = await _context.Tasks.Where(t => !t.IsDeleted && t.TaskType == TaskType.Warranty).CountAsync();
+            var totalWarrantyTasks = await _context.Tasks.Where(t => !t.IsDeleted && t.TaskType == TaskType.WarrantySubmission).CountAsync();
 
             var totalRepairTasks = await _context.Tasks.Where(t => !t.IsDeleted && t.TaskType == TaskType.Repair).CountAsync();
 
