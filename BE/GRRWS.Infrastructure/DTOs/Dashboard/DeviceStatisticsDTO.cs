@@ -14,5 +14,7 @@ namespace GRRWS.Infrastructure.DTOs.Dashboard
         public int TotalInRepairDevices { get; set; }
         public int TotalInWarrantyDevices { get; set; }
         public int TotalDecommissionedDevices { get; set; }
+        public int TotalDevicesWarrantyValid { get; set; }
+        public int TotalDevicesWarrantyExpired { get; set; }
     }
 }
