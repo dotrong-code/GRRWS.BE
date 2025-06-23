@@ -206,7 +206,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         }
         public async Task<TaskStatisticsDTO> GetTaskStatisticsAsync()
         {
-            var totalTasks = await _context.Tasks.Where(t => !t.IsDeleted && t.TaskType == TaskType.Warranty && t.TaskType == TaskType.Repair && t.TaskType == TaskType.Replacement).CountAsync();
+            var totalTasks = await _context.Tasks.Where(t => !t.IsDeleted && (t.TaskType == TaskType.Warranty || t.TaskType == TaskType.Repair || t.TaskType == TaskType.Replacement)).CountAsync();
 
             var totalWarrantyTasks = await _context.Tasks.Where(t => !t.IsDeleted && t.TaskType == TaskType.Warranty).CountAsync();
 

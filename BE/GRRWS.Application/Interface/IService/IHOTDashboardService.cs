@@ -11,6 +11,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetReportStatisticsAsync();
         Task<Result> GetTaskStatisticsAsync();
         Task<Result> GetDeviceStatisticsAsync();
+        Task<Result> GetTotalTaskRequestReportAsync();
         Task<Result> GetTotalUserByRoleAsync();
         Task<Result> GetTaskCompletionCountByWeekAndMonthAsync();
     }
