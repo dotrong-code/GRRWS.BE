@@ -55,6 +55,14 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Get task statistics successfully!")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [HttpGet("get-total-task-request-report")]
+        public async Task<IResult> GetTotalTaskRequestReportAsync()
+        {
+            var result = await _hotDashboardService.GetTotalTaskRequestReportAsync();
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Get task statistics successfully!")
+                : ResultExtensions.ToProblemDetails(result);
+        }
         [HttpGet("get-total-user-by-role")]
         public async Task<IResult> GetTotalUserByRoleAsync()
         {
