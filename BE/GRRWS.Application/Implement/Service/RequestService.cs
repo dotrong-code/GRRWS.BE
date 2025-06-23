@@ -401,7 +401,7 @@ namespace GRRWS.Application.Implement.Service
             var notificationRequestForHOT = new NotificationRequest
             {
                 SenderId = userId,
-                Role = (int)Role.HOT, // 0 for HOT
+                Role = 2, // 0 for HOT
                 ReceiverId = null,
                 Title = "Yêu cầu mới đã được tạo",
                 Body = $"Yêu cầu cho thiết bị {getDevice.DeviceName} đã được tạo.",
