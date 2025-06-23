@@ -162,6 +162,10 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .ThenInclude(d => d.Position)
                 .ThenInclude(p => p.Zone)
                 .ThenInclude(z => z.Area)
+                .Include(r => r.RequestIssues)
+                .ThenInclude(i => i.Images)
+                .Include(r => r.RequestIssues)
+                .ThenInclude(i => i.Issue)
                 .Select(r => new RequestDTO
                 {
                     Id = r.Id,
@@ -178,9 +182,15 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     Status = r.Status.ToString(),
                     Priority = r.Priority.ToString(),
                     CreatedDate = r.CreatedDate,
-                    CreatedBy = r.CreatedBy,
+                    CreatedBy = r.RequestedById,
                     ModifiedBy = r.ModifiedBy,
-                    ModifiedDate = r.ModifiedDate
+                    ModifiedDate = r.ModifiedDate,
+                    Issues = r.RequestIssues.Select(ri => new IssueDTO
+                    {
+                        Id = ri.Id,
+                        DisplayName = ri.Issue.DisplayName,
+                        ImageUrls = ri.Images.Select(i => i.ImageUrl).ToList(),
+                    }).ToList()
                 })
                 .OrderBy(r => r.CreatedDate)
                 .ToListAsync();
