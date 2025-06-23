@@ -514,7 +514,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         .ThenInclude(p => p.Zone)
                             .ThenInclude(z => z.Area)
                 .Include(r => r.Report)
-                .Where(r => r.ReportId != null && _context.Tasks.Any(t => t.Id == taskId))
+                .Where(r => r.ReportId == task.TaskGroup.ReportId)
                 .Select(r => new
                 {
                     DeviceId = r.Device.Id,
