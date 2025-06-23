@@ -69,6 +69,7 @@ namespace GRRWS.Application.Implement.Service
                     UserName = user.UserName ?? "",
                     PhoneNumber = user.PhoneNumber ?? "",
                     DateOfBirth = user.DateOfBirth,
+                    CreatedDate = user.CreatedDate,
                     Role = user.Role,
                     ProfilePictureUrl = userImg.ImageUrl ?? string.Empty
                 };
@@ -168,11 +169,11 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(UserErrorMessage.UserNotExist());
             }
 
-            user.FullName = request.FullName;
+            user.FullName = request?.FullName;
             user.UserName = request.UserName;
             user.Email = request.Email;
-            user.PhoneNumber = request.PhoneNumber;
-            user.DateOfBirth = request.DateOfBirth;
+            user.PhoneNumber = request?.PhoneNumber;
+            user.DateOfBirth = request?.DateOfBirth;
             user.Role = request.Role;
             user.ModifiedDate = DateTime.UtcNow;
 
@@ -207,8 +208,7 @@ namespace GRRWS.Application.Implement.Service
                 DateOfBirth = request?.DateOfBirth,
                 ProfilePictureUrl = request?.ProfilePictureUrl,
                 Role = request.Role,
-                CreatedDate = DateTime.UtcNow,
-                ModifiedDate = DateTime.UtcNow
+                CreatedDate = DateTime.UtcNow
             };
 
             var result = await _unitOfWork.UserRepository.CreateAsync(user);

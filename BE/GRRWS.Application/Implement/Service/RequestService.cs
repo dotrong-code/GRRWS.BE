@@ -393,14 +393,15 @@ namespace GRRWS.Application.Implement.Service
                 }
             }
             // Send notification to Head of Technical (HOT)
-            
+
 
             await _requestRepository.CreateAsync(request);
             await _unitOfWork.SaveChangesAsync();
-            var notificationRequest = new NotificationRequest
+            // Notify Head of Technical (HOT)
+            var notificationRequestForHOT = new NotificationRequest
             {
                 SenderId = userId,
-                Role = 2, 
+                Role = 2, // 0 for HOT
                 ReceiverId = null,
                 Title = "Yêu cầu mới đã được tạo",
                 Body = $"Yêu cầu cho thiết bị {getDevice.DeviceName} đã được tạo.",
@@ -416,7 +417,27 @@ namespace GRRWS.Application.Implement.Service
                 },
                 SaveToDatabase = true
             };
-            await _notificationService.SendNotificationAsync(notificationRequest);
+            await _notificationService.SendNotificationAsync(notificationRequestForHOT);
+            // Notify yourself (the creator)
+            var notificationRequestForSelf = new NotificationRequest
+            {
+                SenderId = userId,
+                ReceiverId = userId,
+                Title = "Bạn đã tạo một yêu cầu mới",
+                Body = $"Yêu cầu cho thiết bị {getDevice.DeviceName} đã được tạo thành công.",
+                Type = NotificationType.RequestCreated,
+                Channel = NotificationChannel.Both,
+                Data = new
+                {
+                    RequestId = request.Id,
+                    DeviceId = request.DeviceId,
+                    DeviceName = getDevice.DeviceName,
+                    CreatedBy = userId,
+                    CreatedDate = request.CreatedDate
+                },
+                SaveToDatabase = true
+            };
+            await _notificationService.SendNotificationAsync(notificationRequestForSelf);
 
             return Result.SuccessWithObject(new { Message = "Test request with notification created successfully!" });
         }
