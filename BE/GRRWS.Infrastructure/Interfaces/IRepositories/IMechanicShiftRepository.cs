@@ -13,5 +13,8 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<bool> UpdateMechanicShiftAvailableAsync(Guid mechanicShiftId);
         Task<bool> CreateMechanicShift(Guid userId, Guid taskId);
         Task<List<MechanicShift>> GetAllMechanicShiftAsync();
+        Task<List<MechanicShift>> GetOverlappingShiftsAsync(Guid mechanicId, DateTime startTime, DateTime endTime);
+        Task<List<MechanicShift>> GetMechanicShiftsByShiftAndDateAsync(Guid shiftId, DateTime date);
+        Task<MechanicShift?> GetCurrentShiftAsync(Guid mechanicId, DateTime currentTime);
     }
 }

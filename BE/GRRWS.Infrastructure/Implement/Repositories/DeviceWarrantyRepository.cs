@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using GRRWS.Domain.Entities;
+﻿using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.DeviceWarranty;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
@@ -69,6 +64,14 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return await _context.DeviceWarrantyHistories
                 .Where(dh => dh.DeviceId == deviceId)
                 .ToListAsync();
+        }
+
+        public async Task<Guid> GetDeviceWarrantyByDeviceIdForDevice(Guid deviceId)
+        {
+            return await _context.DeviceWarranties
+                .Where(dw => dw.DeviceId == deviceId && !dw.IsDeleted && dw.SparePartCode == null && dw.SparePartName == null)
+                .Select(dw => dw.Id)
+                .FirstOrDefaultAsync();
         }
     }
 }

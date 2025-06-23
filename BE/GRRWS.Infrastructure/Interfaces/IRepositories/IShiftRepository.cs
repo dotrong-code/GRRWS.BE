@@ -12,5 +12,6 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
     {
         Task<Shift> GetCurrentShiftAsync(DateTime currentTime);
         Task<Shift> GetNearestShiftAsync(DateTime currentTime);
+        Task<List<Shift>> GetShiftsByTimeRangeAsync(TimeSpan startTime, TimeSpan endTime);
     }
 }

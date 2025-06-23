@@ -8,7 +8,8 @@
         InProgress = 3, // Work is currently being done on the request
         Completed = 4, // Work on the request has been completed
         Cancelled = 5, // Request has been cancelled
-        OnHold = 6 // Work on the request is temporarily paused
+        OnHold = 6, // Work on the request is temporarily paused
+        Suggested = 7, // Request has been suggested for future consideration
     }
 }
 //[EnumDataType(typeof(Status))]

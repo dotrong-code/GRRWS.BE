@@ -36,7 +36,6 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetGetDetailWarrantyReturnTaskForMechanicByIdAsync(Guid taskId);
         Task<Result> GetDetailtRepairTaskForMechanicByIdAsync(Guid taskId);
         Task<Result> GetDetailReplaceTaskForMechanicByIdAsync(Guid taskId, string type);
-        // ...existing code...
         Task<Result> GetDetailUninstallTaskForMechanicByIdAsync(Guid taskId);
         Task<Result> GetDetailInstallTaskForMechanicByIdAsync(Guid taskId);
         // ...existing code...
@@ -46,6 +45,9 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetAllGroupTasksAsync(int pageNumber, int pageSize);
         Task<Result> GetGroupTasksByRequestIdAsync(GetTasksByRequestIdRequest request);
         Task<Result> GetMechanicRecommendationAsync(int pageSize, int pageIndex);
+        Task<Result> ApplySuggestedTaskGroupAssignmentsAsync(Guid taskGroupId);
+        Task<Result> ApplySuggestedTaskAssignmentAsync(Guid taskId, Guid? mechanicId = null);
+        Task<Result> GetSuggestedTasksByTaskGroupIdAsync(Guid taskGroupId);
 
 
 

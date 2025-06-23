@@ -5,10 +5,11 @@ using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
 
 using GRRWS.Domain.Enum;
-using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.ErrorDetail;
 
 using GRRWS.Infrastructure.DTOs.Report;
+using GRRWS.Infrastructure.DTOs.Task.ActionTask;
+using GRRWS.Infrastructure.DTOs.Task.Warranty;
 using GRRWS.Infrastructure.Interfaces;
 
 namespace GRRWS.Application.Implement.Service
@@ -17,11 +18,17 @@ namespace GRRWS.Application.Implement.Service
     {
         private readonly IUnitOfWork _unit;
         private readonly IMapper _mapper;
+        private readonly ITaskService _taskService;
+        private readonly ITaskGroupService _taskGroupService;
+        private readonly IMechanicShiftService _mechanicShiftService;
 
-        public ReportService(IUnitOfWork unit, IMapper mapper)
+        public ReportService(IUnitOfWork unit, IMapper mapper, ITaskService taskService, ITaskGroupService taskGroupService, IMechanicShiftService mechanicShiftService)
         {
             _unit = unit;
             _mapper = mapper;
+            _taskService = taskService;
+            _taskGroupService = taskGroupService;
+            _mechanicShiftService = mechanicShiftService;
         }
 
         public async Task<Result> CreateAsync(ReportCreateDTO dto)
@@ -460,6 +467,13 @@ namespace GRRWS.Application.Implement.Service
 
             await _unit.SaveChangesAsync();
 
+            // Fix for CS0019 and CS1001 errors
+            var users = await _unit.UserRepository.GetUsersByRole(2);
+            var systemUserId = users?.FirstOrDefault()?.Id ?? Guid.Parse("43333333-3333-3333-3333-333333333333");
+            var taskGroupId = await CreateWarrantyTaskGroup(report.Id, allSymtomIds.Distinct().ToList(), systemUserId);
+
+            await AutoAssignedTask(taskGroupId);
+
             return Result.SuccessWithObject(new { Message = "Report created successfully with IssueSymtoms!", ReportId = report.Id });
         }
         public async Task<Result> GetErrorReportByIdAsync(Guid id)
@@ -482,11 +496,165 @@ namespace GRRWS.Application.Implement.Service
                     Id = ed.Id,
                     ReportId = ed.ReportId,
                     ErrorId = ed.ErrorId,
-                    ErrorName = ed.Error?.Name 
+                    ErrorName = ed.Error?.Name
                 }).ToList()
             };
 
             return Result.SuccessWithObject(resultDto);
         }
+
+
+        private async Task<Guid> CreateWarrantyTaskGroup(Guid reportId, List<Guid> technicalSymptomIds, Guid createdByUserId)
+        {
+            try
+            {
+                _unit.ClearChangeTracker(); // Clear change tracker to avoid tracking issues
+                var report = await _unit.ReportRepository.GetByIdAsync(reportId);
+                if (report == null)
+                {
+                    throw new InvalidOperationException("Report not found");
+                }
+
+                var requestId = report.RequestId ?? Guid.Empty;
+                if (requestId == Guid.Empty)
+                {
+                    throw new InvalidOperationException("RequestId is required for creating warranty task group");
+                }
+
+                // Get request to verify it exists and get device information
+                var request = await _unit.RequestRepository.GetRequestByIdAsync(requestId);
+                if (request == null)
+                {
+                    throw new InvalidOperationException("Request not found");
+                }
+
+                var newDeviceId = await _unit.DeviceRepository.GetDeviceByStatusAsync(DeviceStatus.Active);
+                var deviceWarrantyId = await _unit.DeviceWarrantyRepository.GetDeviceWarrantyByDeviceIdForDevice(request.DeviceId);
+                // Step 2: Create Warranty Submission Task using existing TaskService method
+                var warrantyRequest = new CreateWarrantyTaskRequest
+                {
+                    RequestId = requestId,
+                    AssigneeId = null, // Will be assigned later through auto-assignment
+                    DeviceWarrantyId = deviceWarrantyId,
+                    TechnicalIssueIds = technicalSymptomIds,
+
+                    // Add other required properties based on your CreateWarrantyTaskRequest
+                };
+                var warrantyResult = await _taskService.CreateWarrantyTask(warrantyRequest, createdByUserId);
+                dynamic data = warrantyResult.Object;
+
+                Guid taskGroupId = data.TaskGroupId;
+                _unit.ClearChangeTracker();
+                // Step 1: Create Uninstallation Task using existing TaskService method
+                var uninstallRequest = new CreateUninstallTaskRequest
+                {
+                    RequestId = requestId,
+                    AssigneeId = null, // Will be assigned later through auto-assignment
+                    TaskGroupId = taskGroupId,
+                    // Add other required properties based on your CreateUninstallTaskRequest
+                };
+
+                var uninstallResult = await _taskService.CreateUninstallTask(uninstallRequest, createdByUserId);
+
+                _unit.ClearChangeTracker();
+
+                // Step 3: Create Installation Task for replacement device using existing TaskService method
+                var installRequest = new CreateInstallTaskRequest
+                {
+                    RequestId = requestId,
+                    AssigneeId = null, // Will be assigned later through auto-assignment
+                    TaskGroupId = taskGroupId,
+                    NewDeviceId = newDeviceId, // Will be set when replacement device arrives
+                                               // Add other required properties based on your CreateInstallTaskRequest
+                };
+
+                var installResult = await _taskService.CreateInstallTask(installRequest, createdByUserId);
+                return taskGroupId;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to create warranty task group: {ex.Message}", ex);
+            }
+        }
+        private async Task AutoAssignedTask(Guid taskGroupId)
+        {
+            try
+            {
+                _unit.ClearChangeTracker();
+                // Get all tasks in the task group
+                var tasks = await _unit.TaskRepository.GetTasksByTaskGroupIdAsync(taskGroupId);
+
+                if (!tasks.Any())
+                {
+                    throw new InvalidOperationException("No tasks found in the task group");
+                }
+
+                // Get available mechanics using the existing recommendation system
+                var currentTime = DateTime.Now;
+                var availableMechanics = await _unit.UserRepository.GetRecommendedMechanicsAsync(currentTime, 1, 10);
+
+                if (!availableMechanics.Any())
+                {
+                    throw new InvalidOperationException("No available mechanics for auto-assignment");
+                }
+
+                // Find specific task types (each task group should have only 1 of each type)
+                var uninstallTask = tasks.FirstOrDefault(t => t.TaskType == TaskType.Uninstallation);
+                var warrantyTask = tasks.FirstOrDefault(t => t.TaskType == TaskType.WarrantySubmission);
+                var installTask = tasks.FirstOrDefault(t => t.TaskType == TaskType.Installation);
+
+                // Select mechanics based on availability and performance
+                var primaryMechanic = availableMechanics.First(); // Best available mechanic
+                var secondaryMechanic = availableMechanics.Count > 1 ? availableMechanics[1] : primaryMechanic;
+
+                var uninstallWarrantyMechanicId = primaryMechanic.MechanicId;
+                var installMechanicId = secondaryMechanic.MechanicId;
+
+                // Assign same mechanic to Uninstall and Warranty tasks
+                if (uninstallTask != null && !uninstallTask.AssigneeId.HasValue)
+                {
+                    uninstallTask.AssigneeId = uninstallWarrantyMechanicId;
+                    uninstallTask.ModifiedDate = DateTime.Now;
+                    uninstallTask.ExpectedTime = primaryMechanic.ExpectedTime;
+                    await _unit.TaskRepository.UpdateAsync(uninstallTask);
+
+                    // Create mechanic shift for uninstall task
+                    await _mechanicShiftService.CreateMechanicShiftAsync(uninstallWarrantyMechanicId, uninstallTask.Id);
+                }
+                _unit.ClearChangeTracker();
+                if (warrantyTask != null && !warrantyTask.AssigneeId.HasValue)
+                {
+                    warrantyTask.AssigneeId = uninstallWarrantyMechanicId;
+                    warrantyTask.ModifiedDate = DateTime.Now;
+                    warrantyTask.ExpectedTime = primaryMechanic.ExpectedTime;
+                    await _unit.TaskRepository.UpdateAsync(warrantyTask);
+
+                    // Create mechanic shift for warranty task
+                    await _mechanicShiftService.CreateMechanicShiftAsync(uninstallWarrantyMechanicId, warrantyTask.Id);
+                }
+                _unit.ClearChangeTracker();
+                // Assign different mechanic to Install task
+                if (installTask != null && !installTask.AssigneeId.HasValue)
+                {
+                    installTask.AssigneeId = installMechanicId;
+                    installTask.ModifiedDate = DateTime.Now;
+                    installTask.ExpectedTime = secondaryMechanic.ExpectedTime;
+                    await _unit.TaskRepository.UpdateAsync(installTask);
+
+                    // Create mechanic shift for install task
+                    await _mechanicShiftService.CreateMechanicShiftAsync(installMechanicId, installTask.Id);
+                }
+
+                await _unit.SaveChangesAsync();
+
+                // Return the primary mechanic ID (uninstall/warranty mechanic)
+
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to auto-assign tasks: {ex.Message}", ex);
+            }
+        }
+
     }
 }

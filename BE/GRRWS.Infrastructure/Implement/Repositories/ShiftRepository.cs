@@ -3,11 +3,6 @@ using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GRRWS.Infrastructure.Implement.Repositories
 {
@@ -64,6 +59,11 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 StartTime = firstShiftOfNextDay.StartTime,
                 EndTime = firstShiftOfNextDay.EndTime
             };
+        }
+
+        public Task<List<Shift>> GetShiftsByTimeRangeAsync(TimeSpan startTime, TimeSpan endTime)
+        {
+            throw new NotImplementedException();
         }
     }
 }

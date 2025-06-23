@@ -49,5 +49,13 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<(List<GetGroupTaskResponse> Groups, int TotalCount)> GetAllGroupTasksAsync(int pageNumber, int pageSize);
         Task<(List<GetGroupTaskResponse> Groups, int TotalCount)> GetGroupTasksByRequestIdAsync(Guid requestId, int pageNumber, int pageSize);
 
+
+
+
+        Task<List<Tasks>> GetTasksByMechanicInTimeRangeAsync(Guid mechanicId, DateTime startTime, DateTime endTime);
+        Task<List<Tasks>> GetTasksByTaskGroupIdAsync(Guid taskGroupId);
+        Task<List<Tasks>> GetSuggestedTasksByTaskGroupIdAsync(Guid taskGroupId);
+
+
     }
 }

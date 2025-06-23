@@ -58,6 +58,10 @@ namespace GRRWS.Infrastructure.Common
 
         public IHOTDashboardRepository HOTDashboardRepository { get; private set; }
 
+        public IMechanicPerformanceHistoryRepository MechanicPerformanceHistoryRepository { get; private set; }
+
+        public IMechanicPerformanceRepository MechanicPerformanceRepository { get; private set; }
+
         public async Task<int> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync();
@@ -108,10 +112,16 @@ namespace GRRWS.Infrastructure.Common
             ShiftRepository = new ShiftRepository(_context);
             MechanicShiftRepository = new MechanicShiftRepository(_context);
             HOTDashboardRepository = new HOTDashboardRepository(_context);
+            MechanicPerformanceHistoryRepository = new MechanicPerformanceHistoryRepository(_context);
+            MechanicPerformanceRepository = new MechanicPerformanceRepository(_context);
         }
         public int Complete()
         {
             return _context.SaveChanges();
+        }
+        public void ClearChangeTracker()
+        {
+            _context.ChangeTracker.Clear();
         }
         public void Dispose()
         {

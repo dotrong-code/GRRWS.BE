@@ -653,8 +653,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         ClaimNumber = claimNumber,
                         ClaimStatus = Status.Pending,
                         IssueDescription = issueDescription,
-                        DeviceWarrantyId = request.DeviceWarrantyId,
-                        CreatedByUserId = request.AssigneeId,
+                        DeviceWarrantyId = (Guid)request.DeviceWarrantyId,
+                        CreatedByUserId = userId,
                         CreatedDate = DateTime.UtcNow,
                         IsDeleted = false,
                         SubmittedByTaskId = null // Explicitly null to avoid circular dependency
@@ -671,7 +671,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         TaskType = TaskType.WarrantySubmission,
                         TaskDescription = $"Mang thiết bị đi bảo hành với cái triệu chứng:{issueDescription}",
                         StartTime = request.StartDate,
-                        ExpectedTime = request.StartDate.AddHours(5),
+                        // Fix for CS1061: Ensure null-coalescing operator is used to handle nullable DateTime
+                        ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(5),
                         Status = Status.Pending,
                         Priority = Domain.Enum.Priority.High,
                         AssigneeId = request.AssigneeId,
@@ -777,8 +778,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         ClaimNumber = claimNumber,
                         ClaimStatus = Status.Pending,
                         IssueDescription = issueDescription,
-                        DeviceWarrantyId = request.DeviceWarrantyId,
-                        CreatedByUserId = request.AssigneeId,
+                        DeviceWarrantyId = (Guid)request.DeviceWarrantyId,
+                        CreatedByUserId = userId,
                         CreatedDate = DateTime.UtcNow,
                         IsDeleted = false,
                         SubmittedByTaskId = null // Explicitly null to avoid circular dependency
@@ -795,8 +796,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         TaskType = TaskType.WarrantySubmission,
                         TaskDescription = $"Mang thiết bị đi bảo hành với cái triệu chứng:{issueDescription}",
                         StartTime = request.StartDate,
-                        ExpectedTime = request.StartDate.AddHours(5),
-                        Status = Status.Pending,
+                        ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(5),
+                        Status = request.AssigneeId == null ? Status.Suggested : Status.Pending,
                         Priority = Domain.Enum.Priority.High,
                         AssigneeId = request.AssigneeId,
                         WarrantyClaimId = warrantyClaim.Id,
@@ -815,18 +816,42 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     // Link technical symptoms to the task through TechnicalSymptomReports
                     if (request.TechnicalIssueIds != null && request.TechnicalIssueIds.Any())
                     {
+                        // First, detach any existing tracked TechnicalSymptomReport entities
+                        var trackedEntities = _context.ChangeTracker.Entries<TechnicalSymptomReport>()
+                            .Where(e => e.Entity.ReportId == reportId && request.TechnicalIssueIds.Contains(e.Entity.TechnicalSymptomId))
+                            .ToList();
+
+                        foreach (var entity in trackedEntities)
+                        {
+                            entity.State = EntityState.Detached;
+                        }
+
+                        // Use a fresh query with AsNoTracking to avoid tracking conflicts
                         var existingSymptomReports = await _context.TechnicalSymptomReports
+                            .AsNoTracking()
                             .Where(tsr => tsr.ReportId == reportId &&
                                           request.TechnicalIssueIds.Contains(tsr.TechnicalSymptomId))
                             .ToListAsync();
 
-                        foreach (var report in existingSymptomReports)
-                        {
-                            report.TaskId = task.Id;
-                        }
-
+                        // Update only the TaskId for existing records
                         if (existingSymptomReports.Any())
-                            _context.TechnicalSymptomReports.UpdateRange(existingSymptomReports);
+                        {
+                            foreach (var symptomReport in existingSymptomReports)
+                            {
+                                // Create a new entity with updated TaskId to avoid tracking conflicts
+                                var updatedReport = new TechnicalSymptomReport
+                                {
+                                    ReportId = symptomReport.ReportId,
+                                    TechnicalSymptomId = symptomReport.TechnicalSymptomId,
+                                    TaskId = task.Id
+                                };
+
+                                // Use Entry to update specific properties
+                                var entry = _context.Entry(updatedReport);
+                                entry.State = EntityState.Modified;
+                                entry.Property(x => x.TaskId).IsModified = true;
+                            }
+                        }
                     }
 
                     await _context.SaveChangesAsync(); // Save Tasks and updated WarrantyClaim
@@ -1105,7 +1130,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         TaskDescription = $"Sửa lỗi: {string.Join(", ", errorGuidelines.Select(eg => eg.Error?.Name ?? "Unknown"))}",
                         StartTime = request.StartDate,
                         ExpectedTime = request.StartDate.Add(totalExpectedTime),
-                        Status = Status.Pending,
+                        Status = request.AssigneeId == null ? Status.Suggested : Status.Pending,
                         Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,
                         TaskGroupId = taskGroupId,
@@ -1302,7 +1327,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         TaskDescription = $"Tháo thiết bị {requestInfo.DeviceName} ({requestInfo.DeviceCode}) tại vị trí: {requestInfo.Location}",
                         StartTime = request.StartDate ?? DateTime.UtcNow,
                         ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(2), // Default 2 hours for uninstallation
-                        Status = Status.Pending,
+                        Status = request.AssigneeId == null ? Status.Suggested : Status.Pending,
                         Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,
                         TaskGroupId = taskGroupId,
@@ -1447,7 +1472,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         TaskDescription = $"Lặp đặt máy {deviceInfo} tại vị trí: {requestInfo.Location}",
                         StartTime = request.StartDate ?? DateTime.UtcNow,
                         ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(3), // Default 3 hours for installation
-                        Status = Status.Pending,
+                        Status = request.AssigneeId == null ? Status.Suggested : Status.Pending,
                         Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,
                         TaskGroupId = taskGroupId,
@@ -1691,5 +1716,27 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return (groups, totalCount);
         }
 
+        public Task<List<Tasks>> GetTasksByMechanicInTimeRangeAsync(Guid mechanicId, DateTime startTime, DateTime endTime)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<List<Tasks>> GetTasksByTaskGroupIdAsync(Guid taskGroupId)
+        {
+            return await _context.Tasks
+                .Include(t => t.Assignee)
+                .Where(t => t.TaskGroupId == taskGroupId && !t.IsDeleted)
+                .OrderBy(t => t.OrderIndex)
+                .ToListAsync();
+        }
+
+        public async Task<List<Tasks>> GetSuggestedTasksByTaskGroupIdAsync(Guid taskGroupId)
+        {
+            return await _context.Tasks
+                .Include(t => t.Assignee)
+                .Where(t => t.TaskGroupId == taskGroupId && !t.IsDeleted && t.Status == Status.Suggested)
+                .OrderBy(t => t.OrderIndex)
+                .ToListAsync();
+        }
     }
 }
