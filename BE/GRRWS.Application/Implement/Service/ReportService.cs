@@ -163,6 +163,7 @@ namespace GRRWS.Application.Implement.Service
             await _unit.ReportRepository.CreateAsync(report);
             var getRequest = await _unit.RequestRepository.GetRequestByIdAsync((Guid)report.RequestId);
             getRequest.ReportId = report.Id;
+            getRequest.Status = Status.Approved;
             await _unit.RequestRepository.UpdateAsync(getRequest);
             return Result.SuccessWithObject(new { Message = "Report created successfully!", ReportId = report.Id });
         }
@@ -328,6 +329,7 @@ namespace GRRWS.Application.Implement.Service
             // Cập nhật Request
             var getRequest = await _unit.RequestRepository.GetRequestByIdAsync((Guid)report.RequestId);
             getRequest.ReportId = report.Id;
+            getRequest.Status = Status.Approved;
             await _unit.RequestRepository.UpdateAsync(getRequest);
 
             await _unit.SaveChangesAsync();
@@ -453,6 +455,7 @@ namespace GRRWS.Application.Implement.Service
 
             // Cập nhật Request
             request.ReportId = report.Id;
+            request.Status = Status.Approved;
             await _unit.RequestRepository.UpdateAsync(request);
 
             await _unit.SaveChangesAsync();

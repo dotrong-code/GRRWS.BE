@@ -89,11 +89,11 @@ namespace GRRWS.Application.Implement.Service
                     await SendPushNotification(request, recipientUserIds);
                 }
 
-                _logger.LogInformation("Notification sent successfully to {RecipientCount} users: {Title}", 
+                _logger.LogInformation("Notification sent successfully to {RecipientCount} users: {Title}",
                     recipientUserIds.Count, request.Title);
-                
-                return Result.SuccessWithObject(new 
-                { 
+
+                return Result.SuccessWithObject(new
+                {
                     NotificationId = notification.Id,
                     RecipientCount = recipientUserIds.Count,
                     Message = "Notification sent successfully"
@@ -158,11 +158,11 @@ namespace GRRWS.Application.Implement.Service
                 // Send via Push Notification
                 await SendPushNotification(request, userIds);
 
-                _logger.LogInformation("Notification sent successfully to {RecipientCount} specific users: {Title}", 
+                _logger.LogInformation("Notification sent successfully to {RecipientCount} specific users: {Title}",
                     userIds.Count, title);
-                
-                return Result.SuccessWithObject(new 
-                { 
+
+                return Result.SuccessWithObject(new
+                {
                     NotificationId = notification.Id,
                     RecipientCount = userIds.Count,
                     Message = "Notification sent successfully"
@@ -208,7 +208,10 @@ namespace GRRWS.Application.Implement.Service
             return await SendNotificationAsync(request);
         }
 
-        public async Task<Result> GetUserNotificationsAsync(Guid userId, int skip = 0, int take = 50)
+        public async Task<Result> GetUserNotificationsAsync(
+        Guid userId, int skip = 0, int take = 50,
+        string? search = null, string? type = null, bool? isRead = null,
+        DateTime? fromDate = null, DateTime? toDate = null)
         {
             try
             {
@@ -216,7 +219,8 @@ namespace GRRWS.Application.Implement.Service
                     return Result.Failure(NotificationErrorMessage.InvalidPagination());
                 var user = await _unitOfWork.UserRepository.GetUserByIdAsync(userId);
                 var userRole = user.Role;
-                var notifications = await _unitOfWork.NotificationRepository.GetUserNotificationsAsync(userId, userRole, skip, take);
+                var notifications = await _unitOfWork.NotificationRepository.GetUserNotificationsAsync(
+                    userId, userRole, skip, take, search, type, isRead, fromDate, toDate);
                 var unreadCount = await _unitOfWork.NotificationRepository.GetUnreadCountAsync(userId);
 
                 var result = new
@@ -248,7 +252,7 @@ namespace GRRWS.Application.Implement.Service
                 await _unitOfWork.NotificationRepository.MarkAsReadAsync(notificationId, userId);
                 await _unitOfWork.SaveChangesAsync();
                 _logger.LogInformation("Notification {NotificationId} marked as read by user {UserId}", notificationId, userId);
-                
+
                 return Result.SuccessWithObject(new { Message = "Notification marked as read successfully" });
             }
             catch (Exception ex)
@@ -290,8 +294,8 @@ namespace GRRWS.Application.Implement.Service
                 if (result.IsSuccess)
                 {
                     _logger.LogInformation("Push token registered successfully for user {UserId}", userId);
-                    return Result.SuccessWithObject(new 
-                    { 
+                    return Result.SuccessWithObject(new
+                    {
                         message = "Push token registered successfully",
                         userId = userId,
                         platform = platform.ToLower(),
