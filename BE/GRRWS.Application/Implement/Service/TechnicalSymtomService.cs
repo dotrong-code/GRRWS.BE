@@ -58,13 +58,13 @@ namespace GRRWS.Application.Implement.Service
         {
             if (dto == null || dto.IssueIds == null || !dto.IssueIds.Any())
             {
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Issue IDs cannot be empty.", 0));
+                return Result.Failure(Error.Validation("InvalidRequest", "Issue IDs cannot be empty."));
             }
 
             var symtoms = await _unitOfWork.TechnicalSymtomRepository.GetSymtomsByIssueIdsAsync(dto.IssueIds);
             if (!symtoms.Any())
             {
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "No symtoms found for the provided issues.", 0));
+                return Result.Failure(Error.NotFound("NoSymptomsFound", "No symptoms found for the provided issues."));
             }
 
             return Result.SuccessWithObject(symtoms);
