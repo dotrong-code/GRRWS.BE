@@ -99,7 +99,15 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 {
                     if (Enum.TryParse<Status>(search, true, out var status))
                     {
-                        query = query.Where(r => r.Status == status);
+                        if (status == Status.InProgress)
+                        {
+                            // Include both InProgress and Approved statuses
+                            query = query.Where(r => r.Status == Status.InProgress || r.Status == Status.Approved);
+                        }
+                        else
+                        {
+                            query = query.Where(r => r.Status == status);
+                        }
                     }
                     else
                     {
