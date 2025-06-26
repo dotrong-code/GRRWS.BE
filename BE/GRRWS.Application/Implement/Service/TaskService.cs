@@ -464,6 +464,26 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", ex.Message));
             }
         }
+
+        public async Task<Result> UpdateUninstallDeviceInTask(Guid taskId, Guid mechanicId)
+        {
+            var checkTask = await _checkIsExist.Task(taskId);
+            if (!checkTask.IsSuccess) return checkTask;
+            var checkMechanic = await _checkIsExist.User(mechanicId);
+            if (!checkMechanic.IsSuccess) return checkMechanic;
+            var isUpdated = await _unitOfWork.TaskRepository.UpdateUninstallDeviceInTask(taskId, mechanicId);
+            if (isUpdated == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Task not found or device already uninstalled."));
+            }
+            return Result.SuccessWithObject(new
+            {
+                Message = "Uninstall device updated successfully!",
+                TaskId = taskId,
+                UpdatedAt = TimeHelper.GetHoChiMinhTime()
+            });
+        }
+
         #endregion
         #region old methods
         public async Task<Result> GetTasksByReportIdAsync(Guid reportId)

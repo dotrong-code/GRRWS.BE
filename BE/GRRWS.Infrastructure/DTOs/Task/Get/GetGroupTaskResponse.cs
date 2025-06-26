@@ -26,5 +26,6 @@ namespace GRRWS.Infrastructure.DTOs.Task.Get
         public string? AssigneeName { get; set; }
         public Guid? AssigneeId { get; set; }
         public DateTime? CreatedDate { get; set; }
+        public bool IsUninstallDevice { get; set; } // Indicates if the device needs to be uninstalled
     }
 }

@@ -204,8 +204,6 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
-
-
         [HttpPost("apply-suggested-group-assignments/{taskGroupId}")]
         public async Task<IResult> ApplySuggestedTaskGroupAssignments(Guid taskGroupId)
         {
@@ -235,5 +233,17 @@ namespace GRRWS.Host.Controllers
             ? ResultExtensions.ToSuccessDetails(result, "Task groups retrieved successfully")
             : ResultExtensions.ToProblemDetails(result);
         }
+
+        [HttpPut("uninstall-device/{taskId}")]
+        public async Task<IResult> UpdateUninstallDeviceInTask(Guid taskId)
+        {
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _taskService.UpdateUninstallDeviceInTask(taskId, c.UserId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Uninstall device updated successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+
     }
 }
