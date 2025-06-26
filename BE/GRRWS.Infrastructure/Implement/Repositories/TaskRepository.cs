@@ -418,7 +418,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 WarrantyNotes = task.WarrantyClaim?.WarrantyNotes,
                 ClaimAmount = task.WarrantyClaim?.ClaimAmount,
                 ContractNumber = task.WarrantyClaim?.ContractNumber,
-                HotNumber = task.WarrantyClaim?.CreatedByUser?.PhoneNumber // Assuming CreatedByUser has PhoneNumber property
+                HotNumber = task.WarrantyClaim?.CreatedByUser?.PhoneNumber, // Assuming CreatedByUser has PhoneNumber property
+                IsUninstallDevice = task.IsUninstall ?? false // Assuming IsUninstall is a property in Tasks
             };
         }
         public async Task<GetDetailtRepairTaskForMechanic> GetDetailtRepairTaskForMechanicByIdAsync(Guid taskId, string type)
@@ -1558,7 +1559,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             // Return true if no such task exists OR all are completed
             return !tasksOfType.Any() || tasksOfType.All(t => t.Status == Status.Completed);
         }
-
         public async Task<(List<GetSingleTaskResponse> Tasks, int TotalCount)> GetAllSingleTasksAsync(string? taskType, string? status, string? priority, string? order, int pageNumber, int pageSize)
         {
             var query = _context.Tasks
@@ -1614,6 +1614,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     AssigneeId = t.AssigneeId,
                     CreatedDate = t.CreatedDate,
                     ModifiedDate = t.ModifiedDate,
+                    IsUninstallDevice = t.IsUninstall ?? false, // Include uninstall device status
                     RequestId = _context.Requests
                         .Where(r => r.ReportId != null &&
                                    _context.Reports.Any(rep => rep.Id == r.ReportId &&
@@ -1625,7 +1626,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             return (tasks, totalCount);
         }
-
         public async Task<(List<GetGroupTaskResponse> Groups, int TotalCount)> GetAllGroupTasksAsync(int pageNumber, int pageSize)
         {
             var query = _context.TaskGroups
@@ -1664,7 +1664,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                             EndTime = t.EndTime,
                             AssigneeName = t.Assignee.FullName,
                             AssigneeId = t.AssigneeId,
-                            CreatedDate = t.CreatedDate
+                            CreatedDate = t.CreatedDate,
+                            IsUninstallDevice = t.IsUninstall ?? false // Include uninstall device status
                         })
                         .ToList()
                 })
@@ -1672,7 +1673,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             return (groups, totalCount);
         }
-
         public async Task<(List<GetGroupTaskResponse> Groups, int TotalCount)> GetGroupTasksByRequestIdAsync(Guid requestId, int pageNumber, int pageSize)
         {
             var query = _context.TaskGroups
@@ -1741,6 +1741,24 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Where(t => t.TaskGroupId == taskGroupId && !t.IsDeleted && t.Status == Status.Suggested)
                 .OrderBy(t => t.OrderIndex)
                 .ToListAsync();
+        }
+
+        public async Task<Guid> UpdateUninstallDeviceInTask(Guid taskId, Guid mechanicId)
+        {
+            var task = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == taskId && !t.IsDeleted);
+            if ((bool)task.IsUninstall)
+            {
+                task.IsUninstall = false;
+            }
+            else
+            {
+                task.IsUninstall = true;
+            }
+            task.ModifiedBy = mechanicId;
+            task.ModifiedDate = TimeHelper.GetHoChiMinhTime();
+            _context.Tasks.Update(task);
+            await _context.SaveChangesAsync();
+            return task.Id;
         }
     }
 }

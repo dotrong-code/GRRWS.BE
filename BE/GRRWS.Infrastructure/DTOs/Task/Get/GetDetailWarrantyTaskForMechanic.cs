@@ -17,5 +17,6 @@
         public string? WarrantyNotes { get; set; }
         public decimal? ClaimAmount { get; set; }
         public string? HotNumber { get; set; } // Head of technical's phone number
+        public bool IsUninstallDevice { get; set; } // Indicates if the device needs to be uninstalled
     }
 }

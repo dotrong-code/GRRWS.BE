@@ -20,7 +20,7 @@ namespace GRRWS.Application.Common.Validator.UserVali
             AddUserNameRules(request => request.UserName);
             AddFullNameRules(request => request.FullName);
             AddPhoneNumberRules(request => request.PhoneNumber);
-            AddBirthdayRules(request => request.DateOfBirth ?? DateTime.MinValue);
+            AddBirthdayRules(request => request.DateOfBirth);
         }
     }
 }
