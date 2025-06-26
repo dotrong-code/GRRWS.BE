@@ -21,5 +21,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<TotalUserByRoleDTO> GetTotalUserByRoleAsync();
         Task<TaskByWeekAndMonthDTO> GetTaskCompletionCountByWeekAndMonthAsync();
         Task<List<MostErrorDeviceDTO>> GetTop5MostErrorDevicesAsync();
+        Task<List<Top3MechanicDTO>> GetTop3MechanicsAsync();
+        Task<List<RequestIn6MonthChartDTO>> GetMonthlyRequestCountForLast6MonthsAsync();
     }
 }

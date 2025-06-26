@@ -61,6 +61,7 @@ namespace GRRWS.Infrastructure.Common
         public IMechanicPerformanceHistoryRepository MechanicPerformanceHistoryRepository { get; private set; }
 
         public IMechanicPerformanceRepository MechanicPerformanceRepository { get; private set; }
+        public IWarrantyClaimRepository WarrantyClaimRepository { get; private set; }
 
         public async Task<int> SaveChangesAsync()
         {
@@ -114,6 +115,7 @@ namespace GRRWS.Infrastructure.Common
             HOTDashboardRepository = new HOTDashboardRepository(_context);
             MechanicPerformanceHistoryRepository = new MechanicPerformanceHistoryRepository(_context);
             MechanicPerformanceRepository = new MechanicPerformanceRepository(_context);
+            WarrantyClaimRepository = new WarrantyClaimRepository(_context);
         }
         public int Complete()
         {
