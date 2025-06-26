@@ -211,13 +211,13 @@ namespace GRRWS.Application.Implement.Service
                     return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "SymtomIds cannot contain empty GUIDs.", 0));
                 allSymtomIds.AddRange(dto.TechnicalSymtomIds);
             }
-            else 
+            else
             {
                 dto.TechnicalSymtomIds = new List<Guid> { Guid.Parse("A1A1A1A1-1111-1111-1111-111111111111") };
                 allSymtomIds.Add(Guid.Parse("A1A1A1A1-1111-1111-1111-111111111111"));
 
             }
-                // Kiểm tra IssueSymtomMappings
+            // Kiểm tra IssueSymtomMappings
             var issueSymtomMappings = dto.IssueSymtomMappings ?? new Dictionary<Guid, List<Guid>>();
             if (issueSymtomMappings.Any())
             {
@@ -318,8 +318,8 @@ namespace GRRWS.Application.Implement.Service
             }
             dynamic data = result.Object;
 
-            Guid taskGroupId = data.TaskGroupId;
-            var createSchedulingResult = await _taskService.ApplySuggestedTaskGroupAssignmentsAsync(taskGroupId);
+            Guid taskGroupId = data.taskGroupId;
+            var createSchedulingResult = await CreateMechanicScheduleForWarranty(taskGroupId);
             if (createSchedulingResult.IsFailure)
             {
                 return Result.SuccessWithObject(new { Message = $"Report created successfully but failed to auto-assign tasks!.{createSchedulingResult.Error.Description}", ReportId = report.Id });
@@ -439,6 +439,119 @@ namespace GRRWS.Application.Implement.Service
                 ));
             }
         }
+
+
+        private async Task<Result> CreateMechanicScheduleForWarranty(Guid taskGroupId)
+        {
+            try
+            {
+                // Get all suggested tasks in the task group
+                var suggestedTasks = await _unit.TaskRepository.GetTasksByTaskGroupIdAsync(taskGroupId);
+                var tasksToApply = suggestedTasks.Where(t => t.Status == Status.Pending).ToList();
+
+                if (!tasksToApply.Any())
+                {
+                    return Result.Failure(new Infrastructure.DTOs.Common.Error("NoSuggestedTasks", "No suggested tasks found in this task group.", 0));
+                }
+
+                // Get current shift for assignment
+                var currentTime = DateTime.Now;
+                var currentShift = await _unit.ShiftRepository.GetCurrentShiftAsync(currentTime);
+                if (currentShift == null)
+                {
+                    currentShift = await _unit.ShiftRepository.GetNearestShiftAsync(currentTime);
+                }
+
+                if (currentShift == null)
+                {
+                    return Result.Failure(new Infrastructure.DTOs.Common.Error("NoShiftAvailable", "No shift available for assignment.", 0));
+                }
+
+                // Get available mechanics using the existing recommendation system
+                var availableMechanics = await _unit.UserRepository.GetRecommendedMechanicsAsync(currentTime, 1, 10);
+
+                if (!availableMechanics.Any())
+                {
+                    return Result.Failure(new Infrastructure.DTOs.Common.Error("NoAvailableMechanics", "No available mechanics for assignment.", 0));
+                }
+
+                // Apply the same assignment logic as AutoAssignedTask
+                var uninstallTask = tasksToApply.FirstOrDefault(t => t.TaskType == TaskType.Uninstallation);
+                var warrantyTask = tasksToApply.FirstOrDefault(t => t.TaskType == TaskType.WarrantySubmission);
+                var installTask = tasksToApply.FirstOrDefault(t => t.TaskType == TaskType.Installation);
+
+                // Select mechanics based on availability and performance
+                var primaryMechanic = availableMechanics.First(); // Best available mechanic
+                var secondaryMechanic = availableMechanics.Count > 1 ? availableMechanics[1] : primaryMechanic;
+
+                var uninstallWarrantyMechanicId = primaryMechanic.MechanicId;
+                var installMechanicId = secondaryMechanic.MechanicId;
+
+                var appliedTasks = new List<object>();
+                _unit.ClearChangeTracker();
+                // Apply assignments to Uninstall and Warranty tasks (same mechanic)
+                if (uninstallTask != null)
+                {
+                    uninstallTask.AssigneeId = uninstallWarrantyMechanicId;
+                    uninstallTask.Status = Status.Pending;
+                    uninstallTask.ModifiedDate = DateTime.Now;
+                    uninstallTask.ExpectedTime = primaryMechanic.ExpectedTime;
+                    await _unit.TaskRepository.UpdateAsync(uninstallTask);
+
+                    // Create mechanic shift for uninstall task
+                    var uninstallShiftResult = await _mechanicShiftService.CreateMechanicShiftAsync(uninstallWarrantyMechanicId, uninstallTask.Id);
+
+                    appliedTasks.Add(new { TaskId = uninstallTask.Id, TaskType = "Uninstallation", MechanicId = uninstallWarrantyMechanicId });
+                }
+                _unit.ClearChangeTracker();
+                if (warrantyTask != null)
+                {
+                    warrantyTask.AssigneeId = uninstallWarrantyMechanicId;
+                    warrantyTask.Status = Status.Pending;
+                    warrantyTask.ModifiedDate = DateTime.Now;
+                    warrantyTask.ExpectedTime = primaryMechanic.ExpectedTime;
+                    await _unit.TaskRepository.UpdateAsync(warrantyTask);
+
+                    // Create mechanic shift for warranty task
+                    var warrantyShiftResult = await _mechanicShiftService.CreateMechanicShiftAsync(uninstallWarrantyMechanicId, warrantyTask.Id);
+
+                    appliedTasks.Add(new { TaskId = warrantyTask.Id, TaskType = "WarrantySubmission", MechanicId = uninstallWarrantyMechanicId });
+                }
+                _unit.ClearChangeTracker();
+                // Apply assignment to Install task (different mechanic)
+                if (installTask != null)
+                {
+                    installTask.AssigneeId = installMechanicId;
+                    installTask.Status = Status.Pending;
+                    installTask.ModifiedDate = DateTime.Now;
+                    installTask.ExpectedTime = secondaryMechanic.ExpectedTime;
+                    await _unit.TaskRepository.UpdateAsync(installTask);
+
+                    // Create mechanic shift for install task
+                    var installShiftResult = await _mechanicShiftService.CreateMechanicShiftAsync(installMechanicId, installTask.Id);
+
+                    appliedTasks.Add(new { TaskId = installTask.Id, TaskType = "Installation", MechanicId = installMechanicId });
+                }
+
+                await _unit.SaveChangesAsync();
+
+                return Result.SuccessWithObject(new
+                {
+                    Message = "Suggested task assignments applied successfully!",
+                    TaskGroupId = taskGroupId,
+                    AppliedTasks = appliedTasks,
+                    PrimaryMechanicId = uninstallWarrantyMechanicId,
+                    SecondaryMechanicId = installMechanicId
+                });
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("AssignmentError", $"Failed to apply suggested assignments: {ex.Message}", 0));
+            }
+        }
+
+
+
         private async Task AutoAssignedTask(Guid taskGroupId)
         {
             try
