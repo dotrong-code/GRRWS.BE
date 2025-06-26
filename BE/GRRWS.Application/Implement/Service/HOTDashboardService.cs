@@ -71,9 +71,15 @@ namespace GRRWS.Application.Implement.Service
             var taskCompletionCount = await _unitOfWork.HOTDashboardRepository.GetTaskCompletionCountByWeekAndMonthAsync();
             return Result.SuccessWithObject(taskCompletionCount);
         }
-        public async Task<Result> GetTotalTaskRequestReportAsync() { 
+        public async Task<Result> GetTotalTaskRequestReportAsync()
+        {
             var totalTaskRequestReport = await _unitOfWork.HOTDashboardRepository.GetTotalTaskRequestReportAsync();
             return Result.SuccessWithObject(totalTaskRequestReport);
+        }
+        public async Task<Result> GetTop5MostErrorDevicesAsync()
+        {
+            var top5MostErrorDevices = await _unitOfWork.HOTDashboardRepository.GetTop5MostErrorDevicesAsync();
+            return Result.SuccessWithObject(top5MostErrorDevices);
         }
     }
 }
