@@ -21,7 +21,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetTasksByReportIdAsync(Guid reportId);
 
 
-
+        Task<Result> UpdateUninstallDeviceInTask(Guid taskId, Guid mechanicId);
 
         ///New versions of create task
         #region create task

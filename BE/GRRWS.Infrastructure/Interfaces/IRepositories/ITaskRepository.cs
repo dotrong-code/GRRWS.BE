@@ -43,6 +43,10 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<Guid> CreateUninstallTaskWithGroup(CreateUninstallTaskRequest request, Guid userId, Guid taskGroupId, int orderIndex);
         Task<Guid> CreateInstallTaskWithGroup(CreateInstallTaskRequest request, Guid userId, Guid taskGroupId, int orderIndex);
         Task<Guid> CreateRepairTaskWithGroup(CreateRepairTaskRequest request, Guid userId, Guid? taskGroupId, int orderIndex);
+
+        Task<Guid> UpdateUninstallDeviceInTask(Guid taskId, Guid mechanicId);
+
+
         Task<bool> IsTaskCompletedInReqestAsync(Guid requestId, TaskType taskType);
         // Add to ITaskRepository interface
         Task<(List<GetSingleTaskResponse> Tasks, int TotalCount)> GetAllSingleTasksAsync(string? taskType, string? status, string? priority, string? order, int pageNumber, int pageSize);
@@ -55,6 +59,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<List<Tasks>> GetTasksByMechanicInTimeRangeAsync(Guid mechanicId, DateTime startTime, DateTime endTime);
         Task<List<Tasks>> GetTasksByTaskGroupIdAsync(Guid taskGroupId);
         Task<List<Tasks>> GetSuggestedTasksByTaskGroupIdAsync(Guid taskGroupId);
+
 
 
     }
