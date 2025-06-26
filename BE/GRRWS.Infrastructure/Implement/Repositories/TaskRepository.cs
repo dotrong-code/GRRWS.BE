@@ -886,7 +886,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             // Update warranty claim details
             var warrantyClaim = task.WarrantyClaim;
-            warrantyClaim.ExpectedReturnDate = DateTime.UtcNow.Add(request.WarrantyTime);
+            warrantyClaim.ExpectedReturnDate = request.WarrantyTime;
             warrantyClaim.Resolution = request.Resolution;
             warrantyClaim.ContractNumber = request.ContractNumber;
             warrantyClaim.ClaimStatus = Status.InProgress;
