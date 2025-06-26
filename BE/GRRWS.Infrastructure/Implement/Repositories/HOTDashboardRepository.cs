@@ -331,37 +331,73 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         }
         public async Task<List<MostErrorDeviceDTO>> GetTop5MostErrorDevicesAsync()
         {
-            var currentDate = TimeHelper.GetHoChiMinhTime();
-            var startOfMonth = new DateTime(currentDate.Year, currentDate.Month, 1).Date;
-
             var topDevices = await _context.Devices
                 .Where(d => !d.IsDeleted)
-                .Select(d => new
+                .GroupJoin(
+                    _context.DeviceErrorHistories,
+                    d => d.Id,
+                    deh => deh.DeviceId,
+                    (d, deviceErrors) => new { d, deviceErrors }
+                )
+                .SelectMany(
+                    x => x.deviceErrors.DefaultIfEmpty(),
+                    (d, de) => new { d.d, de }
+                )
+                .GroupBy(x => x.d.Id)
+                .Select(g => new MostErrorDeviceDTO
                 {
-                    Device = d,
-                    ErrorCount = _context.DeviceErrorHistories
-                        .Where(deh => deh.DeviceId == d.Id)
-                        .Sum(deh => deh.OccurrenceCount),
-                    RequestCountByMonth = _context.Requests
-                        .Count(r => r.DeviceId == d.Id && r.CreatedDate >= startOfMonth && r.CreatedDate <= currentDate),
-                    MechanicFixCount = _context.Tasks
-                        .Count(t => t.WarrantyClaimId.HasValue && _context.Requests.Any(r => r.Id == t.WarrantyClaimId && r.DeviceId == d.Id) && t.Status == Status.Completed)
-                })
-                .Select(x => new MostErrorDeviceDTO
-                {
-                    DeviceId = x.Device.Id,
-                    DeviceName = x.Device.DeviceName,
-                    ErrorCount = x.ErrorCount,
-                    MechanicFixCount = x.MechanicFixCount,
-                    RequestCountByMonth = x.RequestCountByMonth
+                    DeviceId = g.Key,
+                    DeviceName = g.Select(x => x.d.DeviceName).FirstOrDefault(),
+                    ErrorCount = g.Sum(x => x.de != null ? x.de.OccurrenceCount : 0)
                 })
                 .OrderByDescending(d => d.ErrorCount)
-                .ThenByDescending(d => d.MechanicFixCount)
-                .ThenByDescending(d => d.RequestCountByMonth)
                 .Take(5)
                 .ToListAsync();
 
             return topDevices;
+        }
+        public async Task<List<Top3MechanicDTO>> GetTop3MechanicsAsync()
+        {
+            var topMechanics = await _context.Tasks
+                .Where(t => t.Status == Status.Completed)
+                .GroupJoin(_context.Users, t => t.AssigneeId, u => u.Id, (t, users) => new { t, users })
+                .SelectMany(x => x.users.DefaultIfEmpty(), (t, u) => new { t.t, User = u })
+                .GroupBy(x => new { x.User.Id, x.User.UserName })
+                .Select(g => new Top3MechanicDTO
+                {
+                    MechanicId = g.Key.Id,
+                    MechanicName = g.Key.UserName,
+                    CompletedTaskCount = g.Count()
+                })
+                .OrderByDescending(m => m.CompletedTaskCount)
+                .Take(3)
+                .ToListAsync();
+
+            return topMechanics;
+        }
+        public async Task<List<RequestIn6MonthChartDTO>> GetMonthlyRequestCountForLast6MonthsAsync()
+        {
+            var currentDate = TimeHelper.GetHoChiMinhTime();
+            var months = Enumerable.Range(0, 6)
+                .Select(i => currentDate.AddMonths(-i))
+                .OrderByDescending(d => d)
+                .Select(d => new DateTime(d.Year, d.Month, 1))
+                .Distinct()
+                .ToList();
+
+            var requestCounts = await _context.Requests
+                .Where(r => !r.IsDeleted && r.CreatedDate != default(DateTime) && months.Any(m => m.Year == r.CreatedDate.Year && m.Month == r.CreatedDate.Month))
+                .GroupBy(r => new { Year = r.CreatedDate.Year, Month = r.CreatedDate.Month })
+                .Select(g => new { g.Key.Year, g.Key.Month, RequestCount = g.Count() })
+                .ToDictionaryAsync(g => new DateTime(g.Year, g.Month, 1), g => g.RequestCount);
+
+            var result = months.Select(m => new RequestIn6MonthChartDTO
+            {
+                MonthYear = m.ToString("MMM yyyy"),
+                RequestCount = requestCounts.ContainsKey(m) ? requestCounts[m] : 0
+            }).ToList();
+
+            return result;
         }
     }
 }

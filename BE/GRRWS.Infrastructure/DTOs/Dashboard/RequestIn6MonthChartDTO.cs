@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace GRRWS.Infrastructure.DTOs.Dashboard
 {
-    public class MostErrorDeviceDTO
+    public class RequestIn6MonthChartDTO
     {
-        public Guid DeviceId { get; set; }
-        public string DeviceName { get; set; }
-        public int ErrorCount { get; set; }
+        public string MonthYear { get; set; }
+        public int RequestCount { get; set; }
     }
 }
