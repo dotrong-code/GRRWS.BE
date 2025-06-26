@@ -31,167 +31,6 @@ namespace GRRWS.Application.Implement.Service
             _mechanicShiftService = mechanicShiftService;
         }
 
-        public async Task<Result> CreateAsync(ReportCreateDTO dto)
-        {
-            if (dto.RequestId == null)
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "RequestId is required.", 0));
-
-            if (dto.ErrorIds != null && dto.ErrorIds.Any())
-                if (dto.ErrorIds.Any(errorId => errorId == Guid.Empty))
-                    return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "ErrorIds cannot contain empty GUIDs.", 0));
-
-            if (dto.Priority.GetType() != typeof(int))
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Priority must be an integer.", 0));
-
-            if (dto.Priority < 0 || dto.Priority > 5)
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Priority must be between 0 and 5.", 0));
-
-            var request = await _unit.RequestRepository.GetRequestByIdAsync((Guid)dto.RequestId);
-            if (request == null)
-            {
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
-                    "NotFound", "Request not found for the provided RequestId."
-                ));
-            }
-            if (request.ReportId != null)
-            {
-                return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict(
-                    "Conflict", "Request already has an associated report."
-                ));
-            }
-
-            var missingErrors = await _unit.ErrorRepository.GetNotFoundErrorDisplayNamesAsync(dto.ErrorIds);
-            if (missingErrors.Any())
-            {
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
-                    "NotFound", "Some errors do not exist: " + string.Join(", ", missingErrors.Select(x => x.Id))
-                ));
-            }
-
-            var createLocation = "";
-            try
-            {
-                createLocation = TitleHelper.GenerateReportTitle(request.Device.Position.Zone.Area.AreaCode, request.Device.Position.Zone.ZoneCode, request.Device.Position.Index, request.Device.DeviceCode);
-            }
-            catch (Exception)
-            {
-                createLocation = "Create title fail";
-            }
-
-            var report = _mapper.Map<Report>(dto);
-            report.Id = Guid.NewGuid();
-            report.CreatedDate = DateTime.Now;
-            report.Location = createLocation;
-
-            if (dto.ErrorIds != null && dto.ErrorIds.Any())
-            {
-                report.ErrorDetails = dto.ErrorIds.Select(errorId => new ErrorDetail
-                {
-                    ReportId = report.Id,
-                    ErrorId = errorId
-                }).ToList();
-            }
-            else
-            {
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "ErrorIds is null!.", 0));
-            }
-            await _unit.ReportRepository.CreateAsync(report);
-            var getRequest = await _unit.RequestRepository.GetRequestByIdAsync((Guid)report.RequestId);
-            getRequest.ReportId = report.Id;
-            getRequest.Status = Status.Approved;
-            await _unit.RequestRepository.UpdateAsync(getRequest);
-            return Result.SuccessWithObject(new { Message = "Report created successfully!", ReportId = report.Id });
-        }
-
-        public async Task<Result> CreateWarrantyReportAsync(ReportWarrantyCreateDTO dto)
-        {
-            if (dto.RequestId == null)
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "RequestId is required.", 0));
-
-            if (dto.TechnicalSymtomIds != null && dto.TechnicalSymtomIds.Any())
-                if (dto.TechnicalSymtomIds.Any(technicalSymtomId => technicalSymtomId == Guid.Empty))
-                    return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "TechnicalSymtomIds cannot contain empty GUIDs.", 0));
-
-            if (dto.Priority.GetType() != typeof(int))
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Priority must be an integer.", 0));
-
-            if (dto.Priority < 0 || dto.Priority > 5)
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Priority must be between 0 and 5.", 0));
-
-            var request = await _unit.RequestRepository.GetRequestByIdAsync((Guid)dto.RequestId);
-            if (request == null)
-            {
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
-                    "NotFound", "Request not found for the provided RequestId."
-                ));
-            }
-            if (request.ReportId != null)
-            {
-                return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict(
-                    "Conflict", "Request already has an associated report."
-                ));
-            }
-
-            var missingSymtoms = await _unit.TechnicalSymtomRepository.GetNotFoundTechnicalSymtomDisplayNamesAsync(dto.TechnicalSymtomIds);
-            if (missingSymtoms.Any())
-            {
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
-                    "NotFound", "Some symtoms do not exist: " + string.Join(", ", missingSymtoms.Select(x => x.Id))
-                ));
-            }
-
-            var createLocation = "";
-            try
-            {
-                createLocation = TitleHelper.GenerateReportTitle(request.Device.Position.Zone.Area.AreaCode, request.Device.Position.Zone.ZoneCode, request.Device.Position.Index, request.Device.DeviceCode);
-            }
-            catch (Exception)
-            {
-                createLocation = "Create title fail";
-            }
-
-            var report = _mapper.Map<Report>(dto);
-            report.Id = Guid.NewGuid();
-            report.CreatedDate = DateTime.Now;
-            report.Location = createLocation;
-
-            if (dto.TechnicalSymtomIds != null && dto.TechnicalSymtomIds.Any())
-            {
-                report.TechnicalSymptomReports = dto.TechnicalSymtomIds.Select(symtomId => new TechnicalSymptomReport
-                {
-                    ReportId = report.Id,
-                    TechnicalSymptomId = symtomId
-                }).ToList();
-            }
-            else
-            {
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "TechnicalSymptomIds is null!.", 0));
-            }
-            await _unit.ReportRepository.CreateAsync(report);
-            var getRequest = await _unit.RequestRepository.GetRequestByIdAsync((Guid)report.RequestId);
-            getRequest.ReportId = report.Id;
-            getRequest.Status = Status.Approved;
-            await _unit.RequestRepository.UpdateAsync(getRequest);
-            return Result.SuccessWithObject(new { Message = "Report created successfully!", ReportId = report.Id });
-        }
-
-        public async Task<Result> UpdateAsync(ReportUpdateDTO dto)
-        {
-            var report = await _unit.ReportRepository.GetByIdAsync(dto.Id);
-            if (report == null) return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Report not found.", 0));
-            _mapper.Map(dto, report);
-            if (dto.ErrorIds != null)
-            {
-                report.ErrorDetails = dto.ErrorIds.Select(errorId => new ErrorDetail
-                {
-                    ReportId = report.Id,
-                    ErrorId = errorId
-                }).ToList();
-            }
-            await _unit.ReportRepository.UpdateReportAsync(report, dto.ErrorIds ?? new List<Guid>());
-            return Result.SuccessWithObject(new { Message = "Report updated successfully!" });
-        }
-
         public async Task<Result> DeleteAsync(Guid id)
         {
             var report = await _unit.ReportRepository.GetByIdAsync(id);
@@ -201,7 +40,6 @@ namespace GRRWS.Application.Implement.Service
             await _unit.ReportRepository.UpdateAsync(report);
             return Result.SuccessWithObject(new { Message = "Report canceled successfully!" });
         }
-
         public async Task<Result> GetByIdAsync(Guid id)
         {
             var report = await _unit.ReportRepository.GetReportWithRequestAsync(id);
@@ -217,7 +55,6 @@ namespace GRRWS.Application.Implement.Service
             var dtos = _mapper.Map<List<ReportViewDTO>>(reports).Cast<object>().ToList();
             return Result.SuccessWithObject(dtos);
         }
-
         public async Task<Result> CreateReportWithIssueErrorAsync(ReportCreateWithIssueErrorDTO dto)
         {
             // Kiểm tra RequestId
@@ -343,7 +180,6 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.SuccessWithObject(new { Message = "Report created successfully with IssueErrors!", ReportId = report.Id });
         }
-
         public async Task<Result> CreateReportWithIssueSymtomAsync(ReportCreateWithIssueSymtomDTO dto)
         {
             // Kiểm tra RequestId
@@ -469,10 +305,20 @@ namespace GRRWS.Application.Implement.Service
 
             // Fix for CS0019 and CS1001 errors
             var users = await _unit.UserRepository.GetUsersByRole(2);
-            var systemUserId = users?.FirstOrDefault()?.Id ?? Guid.Parse("43333333-3333-3333-3333-333333333333");
-            var taskGroupId = await CreateWarrantyTaskGroup(report.Id, allSymtomIds.Distinct().ToList(), systemUserId);
+            var systemUserId = users?.FirstOrDefault()?.Id ?? Guid.Parse("32222222-2222-2222-2222-222222222222");
+            var result = await CreateWarrantyTaskGroup(report.Id, allSymtomIds.Distinct().ToList(), systemUserId);
+            if (result.IsFailure)
+            {
+                return Result.SuccessWithObject(new { Message = $"Report created successfully but failed to create task!.{result.Error.Description}", ReportId = report.Id });
+            }
+            dynamic data = result.Object;
 
-            await AutoAssignedTask(taskGroupId);
+            Guid taskGroupId = data.TaskGroupId;
+            var createSchedulingResult = await _taskService.ApplySuggestedTaskGroupAssignmentsAsync(taskGroupId);
+            if (createSchedulingResult.IsFailure)
+            {
+                return Result.SuccessWithObject(new { Message = $"Report created successfully but failed to auto-assign tasks!.{createSchedulingResult.Error.Description}", ReportId = report.Id });
+            }
 
             return Result.SuccessWithObject(new { Message = "Report created successfully with IssueSymtoms!", ReportId = report.Id });
         }
@@ -503,8 +349,7 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(resultDto);
         }
 
-
-        private async Task<Guid> CreateWarrantyTaskGroup(Guid reportId, List<Guid> technicalSymptomIds, Guid createdByUserId)
+        private async Task<Result> CreateWarrantyTaskGroup(Guid reportId, List<Guid> technicalSymptomIds, Guid createdByUserId)
         {
             try
             {
@@ -512,21 +357,33 @@ namespace GRRWS.Application.Implement.Service
                 var report = await _unit.ReportRepository.GetByIdAsync(reportId);
                 if (report == null)
                 {
-                    throw new InvalidOperationException("Report not found");
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
+                        "NotFound", $"Report not found for the provided {reportId}."
+                    ));
                 }
-
                 var requestId = report.RequestId ?? Guid.Empty;
                 if (requestId == Guid.Empty)
                 {
-                    throw new InvalidOperationException("RequestId is required for creating warranty task group");
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
+                        "NotFound", $"Request not exist in this Report {reportId}."
+                    ));
                 }
-
                 // Get request to verify it exists and get device information
                 var request = await _unit.RequestRepository.GetRequestByIdAsync(requestId);
                 if (request == null)
                 {
-                    throw new InvalidOperationException("Request not found");
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", $"Request not found for the provided {reportId}."));
                 }
+                var currentTime = DateTime.Now;
+                var availableMechanics = await _unit.UserRepository.GetRecommendedMechanicsAsync(currentTime, 1, 10);
+
+                if (!availableMechanics.Any())
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", $"No more mechanic available."));
+                }
+
+                var primaryMechanic = availableMechanics.First(); // Best available mechanic
+                var secondaryMechanic = availableMechanics.Count > 1 ? availableMechanics[1] : primaryMechanic;
 
                 var newDeviceId = await _unit.DeviceRepository.GetDeviceByStatusAsync(DeviceStatus.Active);
                 var deviceWarrantyId = await _unit.DeviceWarrantyRepository.GetDeviceWarrantyByDeviceIdForDevice(request.DeviceId);
@@ -534,46 +391,47 @@ namespace GRRWS.Application.Implement.Service
                 var warrantyRequest = new CreateWarrantyTaskRequest
                 {
                     RequestId = requestId,
-                    AssigneeId = null, // Will be assigned later through auto-assignment
+                    AssigneeId = primaryMechanic.MechanicId, // Will be assigned later through auto-assignment
                     DeviceWarrantyId = deviceWarrantyId,
                     TechnicalIssueIds = technicalSymptomIds,
 
-                    // Add other required properties based on your CreateWarrantyTaskRequest
                 };
                 var warrantyResult = await _taskService.CreateWarrantyTask(warrantyRequest, createdByUserId);
-                dynamic data = warrantyResult.Object;
-
-                Guid taskGroupId = data.TaskGroupId;
-                _unit.ClearChangeTracker();
-                // Step 1: Create Uninstallation Task using existing TaskService method
-                var uninstallRequest = new CreateUninstallTaskRequest
+                if (warrantyResult.IsFailure)
                 {
-                    RequestId = requestId,
-                    AssigneeId = null, // Will be assigned later through auto-assignment
-                    TaskGroupId = taskGroupId,
-                    // Add other required properties based on your CreateUninstallTaskRequest
-                };
-
-                var uninstallResult = await _taskService.CreateUninstallTask(uninstallRequest, createdByUserId);
-
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.Failure(
+                        "Failure", $"Warranty task creation failed"
+                    ));
+                }
+                dynamic data = warrantyResult.Object;
+                Guid taskGroupId = data.TaskGroupId;
                 _unit.ClearChangeTracker();
 
                 // Step 3: Create Installation Task for replacement device using existing TaskService method
                 var installRequest = new CreateInstallTaskRequest
                 {
                     RequestId = requestId,
-                    AssigneeId = null, // Will be assigned later through auto-assignment
+                    AssigneeId = secondaryMechanic.MechanicId, // Will be assigned later through auto-assignment
                     TaskGroupId = taskGroupId,
-                    NewDeviceId = newDeviceId, // Will be set when replacement device arrives
-                                               // Add other required properties based on your CreateInstallTaskRequest
+                    NewDeviceId = newDeviceId,
                 };
-
                 var installResult = await _taskService.CreateInstallTask(installRequest, createdByUserId);
-                return taskGroupId;
+                if (installResult.IsFailure)
+                {
+                    {
+                        return Result.Failure(Infrastructure.DTOs.Common.Error.Failure(
+                            "Failure", $"Installation task creation failed"
+                        ));
+                    }
+
+                }
+                return Result.SuccessWithObject(new { Message = "Create task group sucessfully", taskGroupId = taskGroupId });
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"Failed to create warranty task group: {ex.Message}", ex);
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure(
+                    "InternalServerError", $"Failed to create warranty task group: {ex.Message}"
+                ));
             }
         }
         private async Task AutoAssignedTask(Guid taskGroupId)
