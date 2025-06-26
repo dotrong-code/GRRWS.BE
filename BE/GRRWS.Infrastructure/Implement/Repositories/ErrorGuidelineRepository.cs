@@ -3,11 +3,6 @@ using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GRRWS.Infrastructure.Implement.Repositories
 {
@@ -29,6 +24,15 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             .Include(eg => eg.ErrorFixSteps)
             .Include(eg => eg.ErrorSpareparts)
             .FirstOrDefaultAsync();
+        }
+
+        public async Task<ErrorGuideline> GetFirstByErrorIdAsync(Guid errorId)
+        {
+            return await _context.ErrorGuidelines
+                .Where(eg => eg.ErrorId == errorId)
+                .Include(eg => eg.ErrorFixSteps)
+                .Include(eg => eg.ErrorSpareparts)
+                .FirstOrDefaultAsync(); // Assuming you want the first one
         }
     }
 }

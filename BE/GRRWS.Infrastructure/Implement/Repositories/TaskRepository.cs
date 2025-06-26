@@ -1745,20 +1745,30 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
         public async Task<Guid> UpdateUninstallDeviceInTask(Guid taskId, Guid mechanicId)
         {
-            var task = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == taskId && !t.IsDeleted);
-            if ((bool)task.IsUninstall)
+            var task = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == taskId);
+            if (task == null)
             {
-                task.IsUninstall = false;
+                // return something if task doesn't exist
+                return Guid.Empty;
             }
-            else
+
+            // If part of a group, mark all tasks in that group as IsUninstall = true
+            if (task.TaskGroupId.HasValue)
             {
-                task.IsUninstall = true;
+                var tasksInGroup = await _context.Tasks
+                    .Where(t => t.TaskGroupId == task.TaskGroupId)
+                    .ToListAsync();
+
+                foreach (var groupedTask in tasksInGroup)
+                {
+                    groupedTask.IsUninstall = true;
+                }
+
+                _context.Tasks.UpdateRange(tasksInGroup);
+                await _context.SaveChangesAsync();
             }
-            task.ModifiedBy = mechanicId;
-            task.ModifiedDate = TimeHelper.GetHoChiMinhTime();
-            _context.Tasks.Update(task);
-            await _context.SaveChangesAsync();
-            return task.Id;
+
+            return taskId;
         }
     }
 }
