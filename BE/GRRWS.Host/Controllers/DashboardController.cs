@@ -87,5 +87,21 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Get top 5 most error devices successfully!")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [HttpGet("get-top-3-mechanics")]
+        public async Task<IResult> GetTop3MechanicsAsync()
+        {
+            var result = await _hotDashboardService.GetTop3MechanicsAsync();
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Get top 3 mechanics successfully!")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpGet("get-monthly-request-count-for-last-6-months")]
+        public async Task<IResult> GetMonthlyRequestCountForLast6MonthsAsync()
+        {
+            var result = await _hotDashboardService.GetMonthlyRequestCountForLast6MonthsAsync();
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Get monthly request count for last 6 months successfully!")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }

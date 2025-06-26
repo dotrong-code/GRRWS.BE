@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace GRRWS.Infrastructure.DTOs.Dashboard
 {
-    public class MostErrorDeviceDTO
+    public class Top3MechanicDTO
     {
-        public Guid DeviceId { get; set; }
-        public string DeviceName { get; set; }
-        public int ErrorCount { get; set; }
+        public Guid MechanicId { get; set; }
+        public string MechanicName { get; set; }
+        public int CompletedTaskCount { get; set; }
     }
 }
