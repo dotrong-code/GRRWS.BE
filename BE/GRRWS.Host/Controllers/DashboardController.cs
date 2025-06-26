@@ -79,5 +79,13 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Get task completion count by week and month successfully!")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [HttpGet("get-top-5-most-error-devices")]
+        public async Task<IResult> GetTop5MostErrorDevicesAsync()
+        {
+            var result = await _hotDashboardService.GetTop5MostErrorDevicesAsync();
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Get top 5 most error devices successfully!")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using GRRWS.Domain.Enum;
+﻿using GRRWS.Domain.Entities;
+using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.Dashboard;
@@ -326,6 +327,36 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             };
 
             return result;
+        }
+        public async Task<List<MostErrorDeviceDTO>> GetTop5MostErrorDevicesAsync()
+        {
+            var currentDate = DateTime.UtcNow;
+            var startOfMonth = new DateTime(currentDate.Year, currentDate.Month, 1).Date;
+
+            var topDevices = await (from d in _context.Devices
+                                    join deh in _context.DeviceErrorHistories on d.Id equals deh.DeviceId into deviceErrors
+                                    from de in deviceErrors.DefaultIfEmpty()
+                                    join r in _context.Requests on d.Id equals r.DeviceId into deviceRequests
+                                    from dr in deviceRequests.DefaultIfEmpty()
+                                    join t in _context.Tasks on dr.Id equals t.WarrantyClaimId into taskGroup
+                                    from tg in taskGroup.DefaultIfEmpty()
+                                    where !d.IsDeleted
+                                    group new { d, de, dr, tg } by d.Id into g
+                                    select new MostErrorDeviceDTO
+                                    {
+                                        DeviceId = g.Key,
+                                        DeviceName = g.Select(x => x.d.DeviceName).FirstOrDefault(),
+                                        ErrorCount = g.Sum(x => x.de != null ? x.de.OccurrenceCount : 0),
+                                        MechanicFixCount = g.SelectMany(x => x.tg != null ? x.tg.MechanicShifts : Enumerable.Empty<MechanicShift>()).Count(),
+                                        RequestCountByMonth = g.Count(x => x.dr != null && x.dr.CreatedDate >= startOfMonth && x.dr.CreatedDate <= currentDate)
+                                    })
+                                   .OrderByDescending(d => d.ErrorCount)
+                                   .ThenByDescending(d => d.MechanicFixCount)
+                                   .ThenByDescending(d => d.RequestCountByMonth)
+                                   .Take(5)
+                                   .ToListAsync();
+
+            return topDevices;
         }
     }
 }
