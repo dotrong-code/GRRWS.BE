@@ -17,5 +17,6 @@ namespace GRRWS.Infrastructure.DTOs.User.Get
         public DateTime DateOfBirth { get; set; }
         public DateTime CreatedDate { get; set; }
         public int Role { get; set; }
+        public Guid? AreaId { get; set; }
     }
 }

@@ -108,7 +108,9 @@ namespace GRRWS.Application.Implement.Service
                 PhoneNumber = user.PhoneNumber ?? "",
                 DateOfBirth = user.DateOfBirth ?? DateTime.MinValue,
                 ProfilePictureUrl = UserImg.ImageUrl ?? string.Empty,
-                Role = user.Role
+                Role = user.Role,
+                AreaId = user.AreaId ?? Guid.Empty
+
 
             };
 
@@ -138,7 +140,8 @@ namespace GRRWS.Application.Implement.Service
                 ProfilePictureUrl = UserImg.ImageUrl ?? string.Empty,
                 CreatedDate = user.CreatedDate,
                 DateOfBirth = user.DateOfBirth ?? DateTime.MinValue,
-                Role = user.Role
+                Role = user.Role,
+                AreaId = user.AreaId ?? Guid.Empty
             };
             return Result.SuccessWithObject(response);
         }

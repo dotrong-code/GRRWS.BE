@@ -360,7 +360,7 @@ namespace GRRWS.Application.Implement.Service
                     "Conflict", "Request already has an associated report."
                 ));
 
-            // Kiểm tra ErrorIds
+            // Kiểm tra allSymtomIds
             var allSymtomIds = new List<Guid>();
             if (dto.TechnicalSymtomIds != null && dto.TechnicalSymtomIds.Any())
             {
@@ -368,8 +368,13 @@ namespace GRRWS.Application.Implement.Service
                     return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "SymtomIds cannot contain empty GUIDs.", 0));
                 allSymtomIds.AddRange(dto.TechnicalSymtomIds);
             }
+            else 
+            {
+                dto.TechnicalSymtomIds = new List<Guid> { Guid.Parse("A1A1A1A1-1111-1111-1111-111111111111") };
+                allSymtomIds.Add(Guid.Parse("A1A1A1A1-1111-1111-1111-111111111111"));
 
-            // Kiểm tra IssueSymtomMappings
+            }
+                // Kiểm tra IssueSymtomMappings
             var issueSymtomMappings = dto.IssueSymtomMappings ?? new Dictionary<Guid, List<Guid>>();
             if (issueSymtomMappings.Any())
             {
@@ -410,7 +415,7 @@ namespace GRRWS.Application.Implement.Service
                 CreatedDate = DateTime.Now
             };
 
-            // Tạo ErrorDetails
+            // Tạo TechnicalSymptomReports
             if (allSymtomIds.Any())
             {
                 report.TechnicalSymptomReports = allSymtomIds.Select(symtomId => new TechnicalSymptomReport
@@ -424,7 +429,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "No SymptomIds provided.", 0));
             }
 
-            // Tạo IssueErrors
+            // Tạo issueSymptoms
             var issueSymptoms = new List<IssueTechnicalSymptom>();
             foreach (var mapping in issueSymtomMappings)
             {
