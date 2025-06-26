@@ -359,6 +359,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         public async Task<List<Top3MechanicDTO>> GetTop3MechanicsAsync()
         {
             var topMechanics = await _context.Users
+                .Where(u => u.Role == 3)
                 .GroupJoin(
                     _context.Tasks.Where(t => t.Status == Status.Completed),
                     u => u.Id,
