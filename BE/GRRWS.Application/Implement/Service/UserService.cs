@@ -169,11 +169,11 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(UserErrorMessage.UserNotExist());
             }
 
-            user.FullName = request?.FullName;
+            user.FullName = request.FullName;
             user.UserName = request.UserName;
             user.Email = request.Email;
-            user.PhoneNumber = request?.PhoneNumber;
-            user.DateOfBirth = request?.DateOfBirth;
+            user.PhoneNumber = request.PhoneNumber;
+            user.DateOfBirth = request.DateOfBirth;
             user.Role = request.Role;
             user.ModifiedDate = DateTime.UtcNow;
 
@@ -200,12 +200,12 @@ namespace GRRWS.Application.Implement.Service
             var user = new Domain.Entities.User
             {
                 Id = Guid.NewGuid(),
-                FullName = request?.FullName,
+                FullName = request.FullName,
                 UserName = request.UserName,
                 Email = request.Email,
                 PasswordHash = request.Password,
-                PhoneNumber = request?.PhoneNumber,
-                DateOfBirth = request?.DateOfBirth,
+                PhoneNumber = request.PhoneNumber,
+                DateOfBirth = request.DateOfBirth,
                 ProfilePictureUrl = request?.ProfilePictureUrl,
                 Role = request.Role,
                 CreatedDate = DateTime.UtcNow
