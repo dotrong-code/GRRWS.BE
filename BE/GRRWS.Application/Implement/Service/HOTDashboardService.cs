@@ -81,5 +81,15 @@ namespace GRRWS.Application.Implement.Service
             var top5MostErrorDevices = await _unitOfWork.HOTDashboardRepository.GetTop5MostErrorDevicesAsync();
             return Result.SuccessWithObject(top5MostErrorDevices);
         }
+        public async Task<Result> GetTop3MechanicsAsync()
+        {
+            var top3Mechanics = await _unitOfWork.HOTDashboardRepository.GetTop3MechanicsAsync();
+            return Result.SuccessWithObject(top3Mechanics);
+        }
+        public async Task<Result> GetMonthlyRequestCountForLast6MonthsAsync()
+        {
+            var monthlyRequestCount = await _unitOfWork.HOTDashboardRepository.GetMonthlyRequestCountForLast6MonthsAsync();
+            return Result.SuccessWithObject(monthlyRequestCount);
+        }
     }
 }
