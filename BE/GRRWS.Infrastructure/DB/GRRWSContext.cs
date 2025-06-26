@@ -83,6 +83,8 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.ApplyConfiguration(new PositionConfiguration());
             modelBuilder.ApplyConfiguration(new DeviceHistoryConfiguration());
             modelBuilder.ApplyConfiguration(new DeviceWarrantyConfiguration());
+            modelBuilder.ApplyConfiguration(new DeviceErrorHistoryConfiguration());
+            modelBuilder.ApplyConfiguration(new DeviceIssueHistoryConfiguration());
             modelBuilder.ApplyConfiguration(new MachineErrorHistoryConfiguration());
             modelBuilder.ApplyConfiguration(new MachineIssueHistoryConfiguration());
             modelBuilder.ApplyConfiguration(new TasksConfiguration());
