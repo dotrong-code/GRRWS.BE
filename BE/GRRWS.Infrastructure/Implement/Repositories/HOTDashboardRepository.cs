@@ -358,16 +358,20 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         }
         public async Task<List<Top3MechanicDTO>> GetTop3MechanicsAsync()
         {
-            var topMechanics = await _context.Tasks
-                .Where(t => t.Status == Status.Completed)
-                .GroupJoin(_context.Users, t => t.AssigneeId, u => u.Id, (t, users) => new { t, users })
-                .SelectMany(x => x.users.DefaultIfEmpty(), (t, u) => new { t.t, User = u })
+            var topMechanics = await _context.Users
+                .GroupJoin(
+                    _context.Tasks.Where(t => t.Status == Status.Completed),
+                    u => u.Id,
+                    t => t.AssigneeId,
+                    (u, tasks) => new { User = u, Tasks = tasks.DefaultIfEmpty() }
+                )
+                .SelectMany(x => x.Tasks, (u, t) => new { u.User, Task = t })
                 .GroupBy(x => new { x.User.Id, x.User.UserName })
                 .Select(g => new Top3MechanicDTO
                 {
                     MechanicId = g.Key.Id,
                     MechanicName = g.Key.UserName,
-                    CompletedTaskCount = g.Count()
+                    CompletedTaskCount = g.Count(t => t.Task != null)
                 })
                 .OrderByDescending(m => m.CompletedTaskCount)
                 .Take(3)
