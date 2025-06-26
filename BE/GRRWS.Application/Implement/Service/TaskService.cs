@@ -26,11 +26,12 @@ namespace GRRWS.Application.Implement.Service
         private readonly IValidator<CreateTaskReportRequest> _createReportValidator;
         private readonly CheckIsExist _checkIsExist;
         private readonly ILogger<TaskService> _logger;
+        private readonly IMechanicShiftService _mechanicShiftService;
         public TaskService(UnitOfWork unitOfWork,
             ITaskGroupService taskGroupService,
             IValidator<StartTaskRequest> startTaskValidator,
             IValidator<CreateTaskReportRequest> createReportValidator,
-            CheckIsExist checkIsExist, ILogger<TaskService> logger)
+            CheckIsExist checkIsExist, ILogger<TaskService> logger, IMechanicShiftService mechanicShiftService)
         {
             _unitOfWork = unitOfWork;
             _taskGroupService = taskGroupService;
@@ -38,6 +39,7 @@ namespace GRRWS.Application.Implement.Service
             _createReportValidator = createReportValidator;
             _checkIsExist = checkIsExist;
             _logger = logger;
+            _mechanicShiftService = mechanicShiftService;
         }
 
         #region
@@ -744,6 +746,223 @@ namespace GRRWS.Application.Implement.Service
             {
                 _logger.LogError(ex, "Error fetching recommended mechanics for current time");
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "An error occurred while fetching mechanic recommendations.", 0));
+            }
+        }
+
+        public async Task<Result> ApplySuggestedTaskGroupAssignmentsAsync(Guid taskGroupId)
+        {
+            try
+            {
+                // Get all suggested tasks in the task group
+                var suggestedTasks = await _unitOfWork.TaskRepository.GetTasksByTaskGroupIdAsync(taskGroupId);
+                var tasksToApply = suggestedTasks.Where(t => t.Status == Status.Suggested).ToList();
+
+                if (!tasksToApply.Any())
+                {
+                    return Result.Failure(new Infrastructure.DTOs.Common.Error("NoSuggestedTasks", "No suggested tasks found in this task group.", 0));
+                }
+
+                // Get current shift for assignment
+                var currentTime = DateTime.Now;
+                var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(currentTime);
+                if (currentShift == null)
+                {
+                    currentShift = await _unitOfWork.ShiftRepository.GetNearestShiftAsync(currentTime);
+                }
+
+                if (currentShift == null)
+                {
+                    return Result.Failure(new Infrastructure.DTOs.Common.Error("NoShiftAvailable", "No shift available for assignment.", 0));
+                }
+
+                // Get available mechanics using the existing recommendation system
+                var availableMechanics = await _unitOfWork.UserRepository.GetRecommendedMechanicsAsync(currentTime, 1, 10);
+
+                if (!availableMechanics.Any())
+                {
+                    return Result.Failure(new Infrastructure.DTOs.Common.Error("NoAvailableMechanics", "No available mechanics for assignment.", 0));
+                }
+
+                // Apply the same assignment logic as AutoAssignedTask
+                var uninstallTask = tasksToApply.FirstOrDefault(t => t.TaskType == TaskType.Uninstallation);
+                var warrantyTask = tasksToApply.FirstOrDefault(t => t.TaskType == TaskType.WarrantySubmission);
+                var installTask = tasksToApply.FirstOrDefault(t => t.TaskType == TaskType.Installation);
+
+                // Select mechanics based on availability and performance
+                var primaryMechanic = availableMechanics.First(); // Best available mechanic
+                var secondaryMechanic = availableMechanics.Count > 1 ? availableMechanics[1] : primaryMechanic;
+
+                var uninstallWarrantyMechanicId = primaryMechanic.MechanicId;
+                var installMechanicId = secondaryMechanic.MechanicId;
+
+                var appliedTasks = new List<object>();
+                _unitOfWork.ClearChangeTracker();
+                // Apply assignments to Uninstall and Warranty tasks (same mechanic)
+                if (uninstallTask != null)
+                {
+                    uninstallTask.AssigneeId = uninstallWarrantyMechanicId;
+                    uninstallTask.Status = Status.Pending;
+                    uninstallTask.ModifiedDate = DateTime.Now;
+                    uninstallTask.ExpectedTime = primaryMechanic.ExpectedTime;
+                    await _unitOfWork.TaskRepository.UpdateAsync(uninstallTask);
+
+                    // Create mechanic shift for uninstall task
+                    var uninstallShiftResult = await _mechanicShiftService.CreateMechanicShiftAsync(uninstallWarrantyMechanicId, uninstallTask.Id);
+
+                    appliedTasks.Add(new { TaskId = uninstallTask.Id, TaskType = "Uninstallation", MechanicId = uninstallWarrantyMechanicId });
+                }
+                _unitOfWork.ClearChangeTracker();
+                if (warrantyTask != null)
+                {
+                    warrantyTask.AssigneeId = uninstallWarrantyMechanicId;
+                    warrantyTask.Status = Status.Pending;
+                    warrantyTask.ModifiedDate = DateTime.Now;
+                    warrantyTask.ExpectedTime = primaryMechanic.ExpectedTime;
+                    await _unitOfWork.TaskRepository.UpdateAsync(warrantyTask);
+
+                    // Create mechanic shift for warranty task
+                    var warrantyShiftResult = await _mechanicShiftService.CreateMechanicShiftAsync(uninstallWarrantyMechanicId, warrantyTask.Id);
+
+                    appliedTasks.Add(new { TaskId = warrantyTask.Id, TaskType = "WarrantySubmission", MechanicId = uninstallWarrantyMechanicId });
+                }
+                _unitOfWork.ClearChangeTracker();
+                // Apply assignment to Install task (different mechanic)
+                if (installTask != null)
+                {
+                    installTask.AssigneeId = installMechanicId;
+                    installTask.Status = Status.Pending;
+                    installTask.ModifiedDate = DateTime.Now;
+                    installTask.ExpectedTime = secondaryMechanic.ExpectedTime;
+                    await _unitOfWork.TaskRepository.UpdateAsync(installTask);
+
+                    // Create mechanic shift for install task
+                    var installShiftResult = await _mechanicShiftService.CreateMechanicShiftAsync(installMechanicId, installTask.Id);
+
+                    appliedTasks.Add(new { TaskId = installTask.Id, TaskType = "Installation", MechanicId = installMechanicId });
+                }
+
+                await _unitOfWork.SaveChangesAsync();
+
+                return Result.SuccessWithObject(new
+                {
+                    Message = "Suggested task assignments applied successfully!",
+                    TaskGroupId = taskGroupId,
+                    AppliedTasks = appliedTasks,
+                    PrimaryMechanicId = uninstallWarrantyMechanicId,
+                    SecondaryMechanicId = installMechanicId
+                });
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("AssignmentError", $"Failed to apply suggested assignments: {ex.Message}", 0));
+            }
+        }
+
+        public async Task<Result> ApplySuggestedTaskAssignmentAsync(Guid taskId, Guid? mechanicId = null)
+        {
+            try
+            {
+                // Get the suggested task
+                var task = await _unitOfWork.TaskRepository.GetByIdAsync(taskId);
+                if (task == null)
+                {
+                    return Result.Failure(new Infrastructure.DTOs.Common.Error("TaskNotFound", "Task not found.", 0));
+                }
+
+                if (task.Status != Status.Suggested)
+                {
+                    return Result.Failure(new Infrastructure.DTOs.Common.Error("InvalidStatus", "Task is not in suggested status.", 0));
+                }
+
+                Guid assignedMechanicId;
+
+                if (mechanicId.HasValue)
+                {
+                    // Manual assignment - verify mechanic exists and is available
+                    var mechanic = await _unitOfWork.UserRepository.GetByIdAsync(mechanicId.Value);
+                    if (mechanic == null)
+                    {
+                        return Result.Failure(new Infrastructure.DTOs.Common.Error("MechanicNotFound", "Mechanic not found.", 0));
+                    }
+
+                    // Check if mechanic is available at the current time
+                    var currentTime = DateTime.Now;
+                    var mechanicShift = await _unitOfWork.MechanicShiftRepository.GetCurrentShiftAsync(mechanicId.Value, currentTime);
+                    if (mechanicShift != null && !mechanicShift.IsAvailable)
+                    {
+                        return Result.Failure(new Infrastructure.DTOs.Common.Error("MechanicUnavailable", "Mechanic is not available at this time.", 0));
+                    }
+
+                    assignedMechanicId = mechanicId.Value;
+                }
+                else
+                {
+                    // Auto assignment - get best available mechanic
+                    var currentTime = DateTime.Now;
+                    var availableMechanics = await _unitOfWork.UserRepository.GetRecommendedMechanicsAsync(currentTime, 1, 1);
+
+                    if (!availableMechanics.Any())
+                    {
+                        return Result.Failure(new Infrastructure.DTOs.Common.Error("NoAvailableMechanics", "No available mechanics for assignment.", 0));
+                    }
+
+                    assignedMechanicId = availableMechanics.First().MechanicId;
+                }
+
+                // Apply the assignment
+                task.AssigneeId = assignedMechanicId;
+                task.Status = Status.Pending;
+                task.ModifiedDate = DateTime.Now;
+                await _unitOfWork.TaskRepository.UpdateAsync(task);
+
+                // Create mechanic shift for the task
+                var shiftResult = await _mechanicShiftService.CreateMechanicShiftAsync(assignedMechanicId, taskId);
+
+                await _unitOfWork.SaveChangesAsync();
+
+                return Result.SuccessWithObject(new
+                {
+                    Message = "Suggested task assignment applied successfully!",
+                    TaskId = taskId,
+                    AssignedMechanicId = assignedMechanicId,
+                    AssignmentType = mechanicId.HasValue ? "Manual" : "Auto"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("AssignmentError", $"Failed to apply suggested assignment: {ex.Message}", 0));
+            }
+        }
+
+        public async Task<Result> GetSuggestedTasksByTaskGroupIdAsync(Guid taskGroupId)
+        {
+            try
+            {
+                var suggestedTasks = await _unitOfWork.TaskRepository.GetSuggestedTasksByTaskGroupIdAsync(taskGroupId);
+
+                var tasksResponse = suggestedTasks.Select(t => new
+                {
+                    TaskId = t.Id,
+                    TaskName = t.TaskName,
+                    TaskType = t.TaskType.ToString(),
+                    TaskDescription = t.TaskDescription,
+                    Priority = t.Priority.ToString(),
+                    Status = t.Status.ToString(),
+                    ExpectedTime = t.ExpectedTime,
+                    CreatedDate = t.CreatedDate,
+                    OrderIndex = t.OrderIndex
+                }).ToList();
+
+                return Result.SuccessWithObject(new
+                {
+                    TaskGroupId = taskGroupId,
+                    SuggestedTasks = tasksResponse,
+                    TotalCount = tasksResponse.Count
+                });
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("RetrievalError", $"Failed to retrieve suggested tasks: {ex.Message}", 0));
             }
         }
         #endregion

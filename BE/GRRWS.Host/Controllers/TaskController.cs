@@ -203,5 +203,37 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Task groups retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+
+
+
+        [HttpPost("apply-suggested-group-assignments/{taskGroupId}")]
+        public async Task<IResult> ApplySuggestedTaskGroupAssignments(Guid taskGroupId)
+        {
+            var result = await _taskService.ApplySuggestedTaskGroupAssignmentsAsync(taskGroupId);
+            return result.IsSuccess
+            ? ResultExtensions.ToSuccessDetails(result, "Task groups retrieved successfully")
+            : ResultExtensions.ToProblemDetails(result);
+
+        }
+
+        [HttpPost("apply-suggested-assignment")]
+        public async Task<IResult> ApplySuggestedTaskAssignment([FromBody] ApplySuggestedTaskAssignmentRequest request)
+        {
+
+            var result = await _taskService.ApplySuggestedTaskAssignmentAsync(request.TaskId, request.MechanicId);
+            return result.IsSuccess
+            ? ResultExtensions.ToSuccessDetails(result, "Task groups retrieved successfully")
+            : ResultExtensions.ToProblemDetails(result);
+        }
+
+        [HttpGet("suggested-tasks/{taskGroupId}")]
+        public async Task<IResult> GetSuggestedTasksByTaskGroup(Guid taskGroupId)
+        {
+
+            var result = await _taskService.GetSuggestedTasksByTaskGroupIdAsync(taskGroupId);
+            return result.IsSuccess
+            ? ResultExtensions.ToSuccessDetails(result, "Task groups retrieved successfully")
+            : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }

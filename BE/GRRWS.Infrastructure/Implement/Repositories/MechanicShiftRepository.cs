@@ -107,5 +107,20 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public Task<List<MechanicShift>> GetOverlappingShiftsAsync(Guid mechanicId, DateTime startTime, DateTime endTime)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<MechanicShift>> GetMechanicShiftsByShiftAndDateAsync(Guid shiftId, DateTime date)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<MechanicShift?> GetCurrentShiftAsync(Guid mechanicId, DateTime currentTime)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

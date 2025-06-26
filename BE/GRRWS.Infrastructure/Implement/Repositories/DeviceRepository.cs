@@ -211,5 +211,12 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return await _context.Devices.AsNoTracking().AnyAsync(d => d.Id == deviceId && !d.IsDeleted);
         }
 
+        public async Task<Guid?> GetDeviceByStatusAsync(DeviceStatus deviceStatus)
+        {
+            return await _context.Devices
+                .Where(d => d.Status == deviceStatus && !d.IsDeleted)
+                .Select(d => d.Id)
+                .FirstOrDefaultAsync();
+        }
     }
 }

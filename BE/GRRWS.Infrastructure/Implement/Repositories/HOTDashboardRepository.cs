@@ -1,7 +1,10 @@
-﻿using GRRWS.Domain.Enum;
+﻿using GRRWS.Domain.Entities;
+using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.Common;
+using GRRWS.Infrastructure.DTOs.Dashboard;
 using GRRWS.Infrastructure.DTOs.HOTDashboard;
+using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
 using Microsoft.EntityFrameworkCore;
@@ -151,8 +154,210 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 }
             };
         }
+        public async Task<List<RequestDTO>> GetRequestsContainReportAsync()
+        {
+            return await _context.Requests
+                .Where(r => !r.IsDeleted && r.Report != null && r.ReportId != null)
+                .Include(r => r.Report)
+                .Include(r => r.Device)
+                .ThenInclude(d => d.Position)
+                .ThenInclude(p => p.Zone)
+                .ThenInclude(z => z.Area)
+                .Include(r => r.RequestIssues)
+                .ThenInclude(i => i.Images)
+                .Include(r => r.RequestIssues)
+                .ThenInclude(i => i.Issue)
+                .Select(r => new RequestDTO
+                {
+                    Id = r.Id,
+                    ReportId = r.Report.Id,
+                    DeviceId = r.Device.Id,
+                    DeviceName = r.Device.DeviceName,
+                    DeviceCode = r.Device.DeviceCode,
+                    PositionIndex = r.Device.Position.Index,
+                    ZoneName = r.Device.Position.Zone.ZoneName,
+                    AreaName = r.Device.Position.Zone.Area.AreaName,
+                    RequestDate = r.CreatedDate,
+                    RequestTitle = r.RequestTitle,
+                    Description = r.Description,
+                    Status = r.Status.ToString(),
+                    Priority = r.Priority.ToString(),
+                    CreatedDate = r.CreatedDate,
+                    CreatedBy = r.RequestedById,
+                    ModifiedBy = r.ModifiedBy,
+                    ModifiedDate = r.ModifiedDate,
+                    Issues = r.RequestIssues.Select(ri => new IssueDTO
+                    {
+                        Id = ri.Id,
+                        DisplayName = ri.Issue.DisplayName,
+                        ImageUrls = ri.Images.Select(i => i.ImageUrl).ToList(),
+                    }).ToList()
+                })
+                .OrderBy(r => r.CreatedDate)
+                .ToListAsync();
+        }
 
+        public async Task<ReportStatisticsDTO> GetReportStatisticsAsync()
+        {
+            var totalReports = await _context.Reports.Where(r => !r.IsDeleted).CountAsync();
+            var totalWarrantyReports = await _context.Reports.Where(r => !r.IsDeleted && r.TechnicalSymptomReports != null && r.ErrorDetails == null).CountAsync();
+            var totalRepairReports = await _context.Reports.Where(r => !r.IsDeleted && r.TechnicalSymptomReports == null && r.ErrorDetails != null).CountAsync();
+            var totalCompletedReports = await _context.Reports.Where(r => !r.IsDeleted && r.Request.Status == Status.Completed).CountAsync();
+            var totalPendingReports = await _context.Reports.Where(r => !r.IsDeleted && r.Request.Status == Status.Pending).CountAsync();
+            return new ReportStatisticsDTO
+            {
+                TotalReports = totalReports,
+                TotalRepairReports = totalRepairReports,
+                TotalWarrantyReports = totalWarrantyReports,
+                TotalCompletedReports = totalCompletedReports,
+                TotalPendingReports = totalPendingReports,
+                WarrantyReportsPercentage = totalReports > 0 ? Math.Round((double)totalWarrantyReports / totalReports * 100, 2) : 0,
+                RepairReportsPercentage = totalReports > 0 ? Math.Round((double)totalRepairReports / totalReports * 100, 2) : 0
+            };
+        }
+        public async Task<TaskStatisticsDTO> GetTaskStatisticsAsync()
+        {
+            var totalTasks = await _context.Tasks.Where(t => !t.IsDeleted && (t.TaskType == TaskType.WarrantySubmission || t.TaskType == TaskType.Repair || t.TaskType == TaskType.Replacement)).CountAsync();
+
+            var totalWarrantyTasks = await _context.Tasks.Where(t => !t.IsDeleted && t.TaskType == TaskType.WarrantySubmission).CountAsync();
+
+            var totalRepairTasks = await _context.Tasks.Where(t => !t.IsDeleted && t.TaskType == TaskType.Repair).CountAsync();
+
+            var totalReplaceTasks = await _context.Tasks.Where(t => !t.IsDeleted && t.TaskType == TaskType.Replacement).CountAsync();
+
+            var totalPendingTasks = await _context.Tasks.Where(t => !t.IsDeleted && t.Status == Status.Pending).CountAsync();
+
+            var totalCompletedTasks = await _context.Tasks.Where(t => !t.IsDeleted && t.Status == Status.Completed).CountAsync();
+            return new TaskStatisticsDTO
+            {
+                TotalTasks = totalTasks,
+                TotalPendingTasks = totalPendingTasks,
+                TotalCompletedTasks = totalCompletedTasks,
+                TotalWarrantyTasks = totalWarrantyTasks,
+                TotalRepairTasks = totalRepairTasks,
+                TotalReplaceTasks = totalReplaceTasks,
+                WarrantyTasksPercentage = totalTasks > 0 ? Math.Round((double)totalWarrantyTasks / totalTasks * 100, 2) : 0,
+                RepairTasksPercentage = totalTasks > 0 ? Math.Round((double)totalRepairTasks / totalTasks * 100, 2) : 0,
+                ReplaceTasksPercentage = totalTasks > 0 ? Math.Round((double)totalReplaceTasks / totalTasks * 100, 2) : 0
+            };
+        }
+        public async Task<DeviceStatisticsDTO> GetDeviceStatisticsAsync()
+        {
+            var totalDevices = await _context.Devices.Where(d => d.Status != DeviceStatus.Inactive).CountAsync();
+            var totalActiveDevices = await _context.Devices.Where(d => d.Status == DeviceStatus.Active).CountAsync();
+            var totalInUseDevices = await _context.Devices.Where(d => d.Status == DeviceStatus.InUse).CountAsync();
+            var totalInRepairDevices = await _context.Devices.Where(d => d.Status == DeviceStatus.InRepair).CountAsync();
+            var totalInWarrantyDevices = await _context.Devices.Where(d => d.Status == DeviceStatus.InWarranty).CountAsync();
+            var totalDecommissionedDevices = await _context.Devices.Where(d => d.Status == DeviceStatus.Decommissioned).CountAsync();
+
+            var currentDate = DateTime.UtcNow;
+
+            var warrantyStats = await _context.DeviceWarranties
+                .GroupBy(dw => dw.DeviceId)
+                .Select(g => g.OrderByDescending(dw => dw.CreatedDate).FirstOrDefault())
+                .ToListAsync();
+
+            var totalDevicesWarrantyValid = warrantyStats
+                .Count(dw => dw != null && dw.WarrantyEndDate.HasValue && dw.WarrantyStartDate <= currentDate && dw.WarrantyEndDate > currentDate);
+
+            var totalDevicesWarrantyExpired = warrantyStats
+                .Count(dw => dw != null && dw.WarrantyEndDate.HasValue && dw.WarrantyEndDate <= currentDate);
+
+            return new DeviceStatisticsDTO
+            {
+                TotalDevices = totalDevices,
+                TotalActiveDevices = totalActiveDevices,
+                TotalInUseDevices = totalInUseDevices,
+                TotalInRepairDevices = totalInRepairDevices,
+                TotalInWarrantyDevices = totalInWarrantyDevices,
+                TotalDecommissionedDevices = totalDecommissionedDevices,
+                TotalDevicesWarrantyValid = totalDevicesWarrantyValid,
+                TotalDevicesWarrantyExpired = totalDevicesWarrantyExpired
+            };
+        }
+        public async Task<TotalTaskRequestReportDTO> GetTotalTaskRequestReportAsync()
+        {
+            var totalTasks = await _context.Tasks.CountAsync(t => !t.IsDeleted);
+            var totalRequests = await _context.Requests.CountAsync(r => !r.IsDeleted);
+            var totalReports = await _context.Reports.CountAsync(r => !r.IsDeleted);
+            return new TotalTaskRequestReportDTO
+            {
+                TotalTasks = totalTasks,
+                TotalRequests = totalRequests,
+                TotalReports = totalReports
+            };
+        }
+        public async Task<TotalUserByRoleDTO> GetTotalUserByRoleAsync()
+        {
+            var totalUsers = await _context.Users.CountAsync(u => !u.IsDeleted);
+            var totalAdmins = await _context.Users.CountAsync(u => !u.IsDeleted && u.Role == 5);
+            var totalHeadDepartments = await _context.Users.CountAsync(u => !u.IsDeleted && u.Role == 1);
+            var totalHeadTechnicals = await _context.Users.CountAsync(u => !u.IsDeleted && u.Role == 2);
+            var totalMechanics = await _context.Users.CountAsync(u => !u.IsDeleted && u.Role == 3);
+            var totalStockKeepers = await _context.Users.CountAsync(u => !u.IsDeleted && u.Role == 4);
+            return new TotalUserByRoleDTO
+            {
+                TotalUsers = totalUsers,
+                TotalAdmins = totalAdmins,
+                TotalHeadsOfDepartment = totalHeadDepartments,
+                TotalHeadsOfTechnical = totalHeadTechnicals,
+                TotalMechanics = totalMechanics,
+                TotalStockKeepers = totalStockKeepers
+            };
+        }
+        public async Task<TaskByWeekAndMonthDTO> GetTaskCompletionCountByWeekAndMonthAsync()
+        {
+            var currentDate = DateTime.UtcNow;
+            var startOfWeek = currentDate.AddDays(-(int)currentDate.DayOfWeek + 1).Date;
+            if (currentDate.DayOfWeek == DayOfWeek.Sunday) startOfWeek = currentDate.AddDays(-6).Date;
+            var startOfMonth = new DateTime(currentDate.Year, currentDate.Month, 1).Date;
+
+            var result = new TaskByWeekAndMonthDTO
+            {
+                TotalTasksThisWeek = await _context.Tasks
+                    .CountAsync(t => t.Status == Status.Completed &&
+                                  t.EndTime.HasValue &&
+                                  t.EndTime.Value.Date >= startOfWeek &&
+                                  t.EndTime.Value.Date <= currentDate.Date),
+                TotalTasksThisMonth = await _context.Tasks
+                    .CountAsync(t => t.Status == Status.Completed &&
+                                  t.EndTime.HasValue &&
+                                  t.EndTime.Value.Date >= startOfMonth &&
+                                  t.EndTime.Value.Date <= currentDate.Date)
+            };
+
+            return result;
+        }
+        public async Task<List<MostErrorDeviceDTO>> GetTop5MostErrorDevicesAsync()
+        {
+            var currentDate = DateTime.UtcNow;
+            var startOfMonth = new DateTime(currentDate.Year, currentDate.Month, 1).Date;
+
+            var topDevices = await (from d in _context.Devices
+                                    join deh in _context.DeviceErrorHistories on d.Id equals deh.DeviceId into deviceErrors
+                                    from de in deviceErrors.DefaultIfEmpty()
+                                    join r in _context.Requests on d.Id equals r.DeviceId into deviceRequests
+                                    from dr in deviceRequests.DefaultIfEmpty()
+                                    join t in _context.Tasks on dr.Id equals t.WarrantyClaimId into taskGroup
+                                    from tg in taskGroup.DefaultIfEmpty()
+                                    where !d.IsDeleted
+                                    group new { d, de, dr, tg } by d.Id into g
+                                    select new MostErrorDeviceDTO
+                                    {
+                                        DeviceId = g.Key,
+                                        DeviceName = g.Select(x => x.d.DeviceName).FirstOrDefault(),
+                                        ErrorCount = g.Sum(x => x.de != null ? x.de.OccurrenceCount : 0),
+                                        MechanicFixCount = g.SelectMany(x => x.tg != null ? x.tg.MechanicShifts : Enumerable.Empty<MechanicShift>()).Count(),
+                                        RequestCountByMonth = g.Count(x => x.dr != null && x.dr.CreatedDate >= startOfMonth && x.dr.CreatedDate <= currentDate)
+                                    })
+                                   .OrderByDescending(d => d.ErrorCount)
+                                   .ThenByDescending(d => d.MechanicFixCount)
+                                   .ThenByDescending(d => d.RequestCountByMonth)
+                                   .Take(5)
+                                   .ToListAsync();
+
+            return topDevices;
+        }
     }
-
 }
 

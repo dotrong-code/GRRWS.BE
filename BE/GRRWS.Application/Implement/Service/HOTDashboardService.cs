@@ -1,6 +1,8 @@
 ﻿using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.Common;
+using GRRWS.Infrastructure.DTOs.Dashboard;
+using GRRWS.Infrastructure.DTOs.RequestDTO;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -38,6 +40,46 @@ namespace GRRWS.Application.Implement.Service
             {
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Failure", ex.Message));
             }
+        }
+        public async Task<Result> GetRequestsContainReportAsync()
+        {
+            var requests = await _unitOfWork.HOTDashboardRepository.GetRequestsContainReportAsync();
+            return Result.SuccessWithObject(requests);
+        }
+        public async Task<Result> GetReportStatisticsAsync()
+        {
+            var reportStats = await _unitOfWork.HOTDashboardRepository.GetReportStatisticsAsync();
+            return Result.SuccessWithObject(reportStats);
+        }
+        public async Task<Result> GetTaskStatisticsAsync()
+        {
+            var taskStats = await _unitOfWork.HOTDashboardRepository.GetTaskStatisticsAsync();
+            return Result.SuccessWithObject(taskStats);
+        }
+        public async Task<Result> GetDeviceStatisticsAsync()
+        {
+            var deviceStats = await _unitOfWork.HOTDashboardRepository.GetDeviceStatisticsAsync();
+            return Result.SuccessWithObject(deviceStats);
+        }
+        public async Task<Result> GetTotalUserByRoleAsync()
+        {
+            var totalUserByRole = await _unitOfWork.HOTDashboardRepository.GetTotalUserByRoleAsync();
+            return Result.SuccessWithObject(totalUserByRole);
+        }
+        public async Task<Result> GetTaskCompletionCountByWeekAndMonthAsync()
+        {
+            var taskCompletionCount = await _unitOfWork.HOTDashboardRepository.GetTaskCompletionCountByWeekAndMonthAsync();
+            return Result.SuccessWithObject(taskCompletionCount);
+        }
+        public async Task<Result> GetTotalTaskRequestReportAsync()
+        {
+            var totalTaskRequestReport = await _unitOfWork.HOTDashboardRepository.GetTotalTaskRequestReportAsync();
+            return Result.SuccessWithObject(totalTaskRequestReport);
+        }
+        public async Task<Result> GetTop5MostErrorDevicesAsync()
+        {
+            var top5MostErrorDevices = await _unitOfWork.HOTDashboardRepository.GetTop5MostErrorDevicesAsync();
+            return Result.SuccessWithObject(top5MostErrorDevices);
         }
     }
 }

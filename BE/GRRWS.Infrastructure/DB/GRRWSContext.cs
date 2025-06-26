@@ -60,7 +60,8 @@ namespace GRRWS.Infrastructure.DB
         public DbSet<MechanicShift> MechanicShifts { get; set; }
 
         public DbSet<RequestMachineReplacement> RequestMachineReplacements { get; set; }
-
+        //public DbSet<MechanicPerformance> MechanicPerformances { get; set; }
+        //public DbSet<MechanicPerformanceHistory> MechanicPerformanceHistories { get; set; }
 
 
         #endregion

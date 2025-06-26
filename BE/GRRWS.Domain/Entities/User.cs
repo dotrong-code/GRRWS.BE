@@ -23,5 +23,7 @@
         public ICollection<Tasks>? Tasks { get; set; }
         public Area? Area { get; set; }
         public ICollection<MechanicShift>? MechanicShift { get; set; }
+        //public MechanicPerformance? Performance { get; set; } // One-to-one relationship
+        //public ICollection<MechanicPerformanceHistory>? PerformanceHistory { get; set; }
     }
 }

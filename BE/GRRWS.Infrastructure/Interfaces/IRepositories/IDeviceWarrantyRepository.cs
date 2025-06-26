@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using GRRWS.Domain.Entities;
+﻿using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DTOs.DeviceWarranty;
 using GRRWS.Infrastructure.Interfaces.IRepositories.IGeneric;
 
@@ -18,5 +13,6 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<int> DeleteDeviceWarrantyAsync(Guid id);
 
         Task<List<DeviceWarrantyHistory>> GetDeviceWarrantyHistoryByDeviceIdAsync(Guid deviceId);
+        Task<Guid> GetDeviceWarrantyByDeviceIdForDevice(Guid deviceId);
     }
 }

@@ -9,7 +9,7 @@ namespace GRRWS.Infrastructure.Interfaces
         IFirebaseRepository FirebaseRepository { get; }
         IPushTokenRepository PushTokenRepository { get; }
         INotificationRepository NotificationRepository { get; }
-        
+
         IIssueRepository IssueRepository { get; }
         IErrorRepository ErrorRepository { get; }
         ITechnicalSymtomRepository TechnicalSymtomRepository { get; }
@@ -41,7 +41,10 @@ namespace GRRWS.Infrastructure.Interfaces
         IShiftRepository ShiftRepository { get; }
         IMechanicShiftRepository MechanicShiftRepository { get; }
         IHOTDashboardRepository HOTDashboardRepository { get; }
+        IMechanicPerformanceHistoryRepository MechanicPerformanceHistoryRepository { get; }
+        IMechanicPerformanceRepository MechanicPerformanceRepository { get; }
         int Complete();
+        void ClearChangeTracker(); // Add this method
         Task<int> SaveChangesAsync();
     }
 }
