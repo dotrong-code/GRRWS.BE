@@ -43,6 +43,7 @@ namespace GRRWS.Infrastructure.Interfaces
         IHOTDashboardRepository HOTDashboardRepository { get; }
         IMechanicPerformanceHistoryRepository MechanicPerformanceHistoryRepository { get; }
         IMechanicPerformanceRepository MechanicPerformanceRepository { get; }
+        IWarrantyClaimRepository WarrantyClaimRepository { get; }
         int Complete();
         void ClearChangeTracker(); // Add this method
         Task<int> SaveChangesAsync();
