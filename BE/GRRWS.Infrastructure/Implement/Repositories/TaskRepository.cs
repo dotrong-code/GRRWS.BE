@@ -1,5 +1,6 @@
 ﻿using GRRWS.Domain.Entities;
 using GRRWS.Domain.Enum;
+using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.DTOs.Task;
@@ -780,7 +781,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         IssueDescription = issueDescription,
                         DeviceWarrantyId = (Guid)request.DeviceWarrantyId,
                         CreatedByUserId = userId,
-                        CreatedDate = DateTime.UtcNow,
+                        CreatedDate = TimeHelper.GetHoChiMinhTime(),
                         IsDeleted = false,
                         SubmittedByTaskId = null // Explicitly null to avoid circular dependency
                     };
@@ -803,8 +804,9 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         WarrantyClaimId = warrantyClaim.Id,
                         TaskGroupId = taskGroupId,
                         OrderIndex = orderIndex,
-                        CreatedDate = DateTime.UtcNow,
+                        CreatedDate = TimeHelper.GetHoChiMinhTime(),
                         CreatedBy = userId,
+                        IsUninstall = false,
                         IsDeleted = false
                     };
                     await _context.Tasks.AddAsync(task);
@@ -886,7 +888,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             // Update warranty claim details
             var warrantyClaim = task.WarrantyClaim;
-            warrantyClaim.ExpectedReturnDate = DateTime.UtcNow.Add(request.WarrantyTime);
+            warrantyClaim.ExpectedReturnDate = request.WarrantyTime;
             warrantyClaim.Resolution = request.Resolution;
             warrantyClaim.ContractNumber = request.ContractNumber;
             warrantyClaim.ClaimStatus = Status.InProgress;
@@ -1399,14 +1401,15 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         TaskName = $"Lắp đặt máy - {deviceInfo}",
                         TaskType = TaskType.Installation,
                         TaskDescription = $"Lặp đặt máy {deviceInfo} tại vị trí: {requestInfo.Location}",
-                        StartTime = request.StartDate ?? DateTime.UtcNow,
+                        StartTime = request.StartDate ?? TimeHelper.GetHoChiMinhTime(),
                         ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(3), // Default 3 hours for installation
                         Status = Status.Pending,
                         Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,
                         TaskGroupId = request.TaskGroupId,
-                        CreatedDate = DateTime.UtcNow,
+                        CreatedDate = TimeHelper.GetHoChiMinhTime(),
                         CreatedBy = userId,
+                        IsUninstall = false,
                         IsDeleted = false
                     };
                     await _context.Tasks.AddAsync(task);
@@ -1470,15 +1473,16 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         TaskName = $"Lắp đặt máy - {deviceInfo}",
                         TaskType = TaskType.Installation,
                         TaskDescription = $"Lặp đặt máy {deviceInfo} tại vị trí: {requestInfo.Location}",
-                        StartTime = request.StartDate ?? DateTime.UtcNow,
+                        StartTime = request.StartDate ?? TimeHelper.GetHoChiMinhTime(),
                         ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(3), // Default 3 hours for installation
                         Status = request.AssigneeId == null ? Status.Suggested : Status.Pending,
                         Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,
                         TaskGroupId = taskGroupId,
                         OrderIndex = orderIndex,
-                        CreatedDate = DateTime.UtcNow,
+                        CreatedDate = TimeHelper.GetHoChiMinhTime(),
                         CreatedBy = userId,
+                        IsUninstall = false,
                         IsDeleted = false
                     };
                     await _context.Tasks.AddAsync(task);

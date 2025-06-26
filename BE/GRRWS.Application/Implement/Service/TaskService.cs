@@ -72,7 +72,7 @@ namespace GRRWS.Application.Implement.Service
                     userId);
 
                 var orderIndex = 1; // First task in new warranty group (WarrantySubmission)
-
+                request.StartDate = TimeHelper.GetHoChiMinhTime(); // Set start date to current time
                 var taskId = await _unitOfWork.TaskRepository.CreateWarrantyTaskWithGroup(request, userId, taskGroupId, orderIndex);
 
                 return Result.SuccessWithObject(new
@@ -342,7 +342,6 @@ namespace GRRWS.Application.Implement.Service
                 UpdatedAt = DateTime.UtcNow
             });
         }
-
         // Add to TaskService implementation
         public async Task<Result> GetAllSingleTasksAsync(GetAllSingleTasksRequest request)
         {
@@ -386,7 +385,6 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", ex.Message));
             }
         }
-
         public async Task<Result> GetAllGroupTasksAsync(int pageNumber, int pageSize)
         {
             if (pageNumber <= 0)
@@ -466,7 +464,6 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", ex.Message));
             }
         }
-
         #endregion
         #region old methods
         public async Task<Result> GetTasksByReportIdAsync(Guid reportId)
@@ -675,7 +672,6 @@ namespace GRRWS.Application.Implement.Service
         {
             throw new NotImplementedException();
         }
-
         private async Task<bool> IsTaskCompletedInRequestAsync(Guid requestId, TaskType taskType)
         {
             return await _unitOfWork.TaskRepository.IsTaskCompletedInReqestAsync(requestId, taskType);
@@ -748,7 +744,6 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "An error occurred while fetching mechanic recommendations.", 0));
             }
         }
-
         public async Task<Result> ApplySuggestedTaskGroupAssignmentsAsync(Guid taskGroupId)
         {
             try
@@ -857,7 +852,6 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("AssignmentError", $"Failed to apply suggested assignments: {ex.Message}", 0));
             }
         }
-
         public async Task<Result> ApplySuggestedTaskAssignmentAsync(Guid taskId, Guid? mechanicId = null)
         {
             try
@@ -933,7 +927,6 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("AssignmentError", $"Failed to apply suggested assignment: {ex.Message}", 0));
             }
         }
-
         public async Task<Result> GetSuggestedTasksByTaskGroupIdAsync(Guid taskGroupId)
         {
             try

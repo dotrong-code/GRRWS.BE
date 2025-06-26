@@ -137,10 +137,12 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [Authorize]
         [HttpDelete("Cancel")]
         public async Task<IResult> CancelRequest([FromBody] CancelRequestDTO dto)
         {
-            var result = await _requestService.CancelRequestAsync(dto);
+            CurrentUserObject currentUser = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _requestService.CancelRequestAsync(dto, currentUser.UserId);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully")
                 : ResultExtensions.ToProblemDetails(result);

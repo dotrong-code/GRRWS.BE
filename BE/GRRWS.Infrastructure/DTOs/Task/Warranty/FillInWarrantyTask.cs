@@ -3,7 +3,7 @@
     public class FillInWarrantyTask
     {
         public Guid TaskId { get; set; }
-        public TimeSpan WarrantyTime { get; set; }
+        public DateTime WarrantyTime { get; set; }
         public string? Resolution { get; set; }
         public string? ContractNumber { get; set; }
     }

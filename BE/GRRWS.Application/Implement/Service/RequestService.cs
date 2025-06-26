@@ -278,15 +278,16 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(issues);
         }
 
-        public async Task<Result> CancelRequestAsync(Infrastructure.DTOs.RequestDTO.CreateRequestFormDTO.CancelRequestDTO dto)
+        public async Task<Result> CancelRequestAsync(Infrastructure.DTOs.RequestDTO.CreateRequestFormDTO.CancelRequestDTO dto,Guid userId)
         {
             var r = await _requestRepository.GetByIdAsync(dto.RequestId);
             if (r == null || r.IsDeleted)
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Request not found.", 0));
 
-
-            r.Description = "Yêu cầu đã bị hủy với lý do: " + dto.Reason;
+            r.Status = Status.Cancelled;
+            r.RejectionReason = "Yêu cầu đã bị hủy với lý do: " + dto.Reason;
             r.ModifiedDate = DateTime.UtcNow;
+            r.ModifiedBy = userId;
             await _requestRepository.UpdateAsync(r);
 
             return Result.Success();
