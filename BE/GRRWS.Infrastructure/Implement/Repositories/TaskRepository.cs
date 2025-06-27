@@ -2,7 +2,6 @@
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DB;
-using GRRWS.Infrastructure.DTOs.Firebase.AddImage;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.DTOs.Task;
 using GRRWS.Infrastructure.DTOs.Task.ActionTask;
@@ -11,7 +10,6 @@ using GRRWS.Infrastructure.DTOs.Task.Get.SubObject;
 using GRRWS.Infrastructure.DTOs.Task.Repair;
 using GRRWS.Infrastructure.DTOs.Task.Warranty;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
-using GRRWS.Infrastructure.Interfaces;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -387,6 +385,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     .ThenInclude(wc => wc.DeviceWarranty)
                 .Include(t => t.WarrantyClaim)
                     .ThenInclude(u => u.CreatedByUser)
+                .Include(t => t.WarrantyClaim)
+                    .ThenInclude(dc => dc.Documents)
                 .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == type)
                 .FirstOrDefaultAsync();
 
@@ -421,7 +421,14 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 ClaimAmount = task.WarrantyClaim?.ClaimAmount,
                 ContractNumber = task.WarrantyClaim?.ContractNumber,
                 HotNumber = task.WarrantyClaim?.CreatedByUser?.PhoneNumber, // Assuming CreatedByUser has PhoneNumber property
-                IsUninstallDevice = task.IsUninstall ?? false // Assuming IsUninstall is a property in Tasks
+                IsUninstallDevice = task.IsUninstall ?? false, // Assuming IsUninstall is a property in Tasks
+                Documents = task.WarrantyClaim?.Documents?.Select(doc => new WarrantyDocument
+                {
+                    DocumentType = doc.DocumentType,
+                    DocumentName = doc.DocumentName,
+                    DocumentUrl = doc.DocumentUrl // Assuming DocumentUrl is a property in WarrantyClaimDocument
+                }).ToList() ?? new List<WarrantyDocument>()
+
             };
         }
         public async Task<GetDetailtRepairTaskForMechanic> GetDetailtRepairTaskForMechanicByIdAsync(Guid taskId, string type)
@@ -1831,20 +1838,30 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
         public async Task<Guid> UpdateUninstallDeviceInTask(Guid taskId, Guid mechanicId)
         {
-            var task = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == taskId && !t.IsDeleted);
-            if ((bool)task.IsUninstall)
+            var task = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == taskId);
+            if (task == null)
             {
-                task.IsUninstall = false;
+                // return something if task doesn't exist
+                return Guid.Empty;
             }
-            else
+
+            // If part of a group, mark all tasks in that group as IsUninstall = true
+            if (task.TaskGroupId.HasValue)
             {
-                task.IsUninstall = true;
+                var tasksInGroup = await _context.Tasks
+                    .Where(t => t.TaskGroupId == task.TaskGroupId)
+                    .ToListAsync();
+
+                foreach (var groupedTask in tasksInGroup)
+                {
+                    groupedTask.IsUninstall = true;
+                }
+
+                _context.Tasks.UpdateRange(tasksInGroup);
+                await _context.SaveChangesAsync();
             }
-            task.ModifiedBy = mechanicId;
-            task.ModifiedDate = TimeHelper.GetHoChiMinhTime();
-            _context.Tasks.Update(task);
-            await _context.SaveChangesAsync();
-            return task.Id;
+
+            return taskId;
         }
 
         public async Task<List<Tasks>> GetTasksByWarrantyClaimIdAsync(Guid warrantyClaimId, TaskType taskType)
