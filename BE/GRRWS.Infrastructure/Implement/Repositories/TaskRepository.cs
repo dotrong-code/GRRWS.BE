@@ -2,7 +2,6 @@
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DB;
-using GRRWS.Infrastructure.DTOs.Firebase.AddImage;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.DTOs.Task;
 using GRRWS.Infrastructure.DTOs.Task.ActionTask;
@@ -11,7 +10,6 @@ using GRRWS.Infrastructure.DTOs.Task.Get.SubObject;
 using GRRWS.Infrastructure.DTOs.Task.Repair;
 using GRRWS.Infrastructure.DTOs.Task.Warranty;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
-using GRRWS.Infrastructure.Interfaces;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -387,6 +385,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     .ThenInclude(wc => wc.DeviceWarranty)
                 .Include(t => t.WarrantyClaim)
                     .ThenInclude(u => u.CreatedByUser)
+                .Include(t => t.WarrantyClaim)
+                    .ThenInclude(dc => dc.Documents)
                 .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == type)
                 .FirstOrDefaultAsync();
 
@@ -421,7 +421,14 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 ClaimAmount = task.WarrantyClaim?.ClaimAmount,
                 ContractNumber = task.WarrantyClaim?.ContractNumber,
                 HotNumber = task.WarrantyClaim?.CreatedByUser?.PhoneNumber, // Assuming CreatedByUser has PhoneNumber property
-                IsUninstallDevice = task.IsUninstall ?? false // Assuming IsUninstall is a property in Tasks
+                IsUninstallDevice = task.IsUninstall ?? false, // Assuming IsUninstall is a property in Tasks
+                Documents = task.WarrantyClaim?.Documents?.Select(doc => new WarrantyDocument
+                {
+                    DocumentType = doc.DocumentType,
+                    DocumentName = doc.DocumentName,
+                    DocumentUrl = doc.DocumentUrl // Assuming DocumentUrl is a property in WarrantyClaimDocument
+                }).ToList() ?? new List<WarrantyDocument>()
+
             };
         }
         public async Task<GetDetailtRepairTaskForMechanic> GetDetailtRepairTaskForMechanicByIdAsync(Guid taskId, string type)
