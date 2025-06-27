@@ -422,6 +422,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 ContractNumber = task.WarrantyClaim?.ContractNumber,
                 HotNumber = task.WarrantyClaim?.CreatedByUser?.PhoneNumber, // Assuming CreatedByUser has PhoneNumber property
                 IsUninstallDevice = task.IsUninstall ?? false, // Assuming IsUninstall is a property in Tasks
+                WarrantyClaimId = task.WarrantyClaim?.Id, // Unique identifier for the warranty claim
                 Documents = task.WarrantyClaim?.Documents?.Select(doc => new WarrantyDocument
                 {
                     DocumentType = doc.DocumentType,
