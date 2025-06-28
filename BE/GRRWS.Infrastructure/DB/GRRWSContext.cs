@@ -62,7 +62,8 @@ namespace GRRWS.Infrastructure.DB
         public DbSet<RequestMachineReplacement> RequestMachineReplacements { get; set; }
         //public DbSet<MechanicPerformance> MechanicPerformances { get; set; }
         //public DbSet<MechanicPerformanceHistory> MechanicPerformanceHistories { get; set; }
-
+        public DbSet<DeviceTechnicalSymptomHistory> DeviceTechnicalSymptomHistories { get; set; }
+        public DbSet<MachineTechnicalSymptomHistory> MachineTechnicalSymptomHistories { get; set; }
 
         #endregion
 
@@ -240,6 +241,49 @@ namespace GRRWS.Infrastructure.DB
                 .HasOne(dwh => dwh.Device)
                 .WithMany()
                 .HasForeignKey(dwh => dwh.DeviceId)
+                .OnDelete(DeleteBehavior.Restrict);
+            // DeviceTechnicalSymptomHistory
+            modelBuilder.Entity<DeviceTechnicalSymptomHistory>(entity =>
+            {
+                entity.Property(dtsh => dtsh.DeviceId).IsRequired();
+                entity.Property(dtsh => dtsh.TechnicalSymptomId).IsRequired();
+                entity.Property(dtsh => dtsh.LastOccurredDate).IsRequired();
+                entity.Property(dtsh => dtsh.OccurrenceCount).IsRequired().HasDefaultValue(1);
+                entity.HasIndex(dtsh => new { dtsh.DeviceId, dtsh.TechnicalSymptomId });
+            });
+
+            modelBuilder.Entity<DeviceTechnicalSymptomHistory>()
+                .HasOne(dtsh => dtsh.Device)
+                .WithMany()
+                .HasForeignKey(dtsh => dtsh.DeviceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<DeviceTechnicalSymptomHistory>()
+                .HasOne(dtsh => dtsh.TechnicalSymptom)
+                .WithMany()
+                .HasForeignKey(dtsh => dtsh.TechnicalSymptomId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // MachineTechnicalSymptomHistory
+            modelBuilder.Entity<MachineTechnicalSymptomHistory>(entity =>
+            {
+                entity.Property(mtsh => mtsh.MachineId).IsRequired();
+                entity.Property(mtsh => mtsh.TechnicalSymptomId).IsRequired();
+                entity.Property(mtsh => mtsh.LastOccurredDate).IsRequired();
+                entity.Property(mtsh => mtsh.OccurrenceCount).IsRequired().HasDefaultValue(1);
+                entity.HasIndex(mtsh => new { mtsh.MachineId, mtsh.TechnicalSymptomId });
+            });
+
+            modelBuilder.Entity<MachineTechnicalSymptomHistory>()
+                .HasOne(mtsh => mtsh.Machine)
+                .WithMany()
+                .HasForeignKey(mtsh => mtsh.MachineId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<MachineTechnicalSymptomHistory>()
+                .HasOne(mtsh => mtsh.TechnicalSymptom)
+                .WithMany()
+                .HasForeignKey(mtsh => mtsh.TechnicalSymptomId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // EmailTemplate
@@ -968,6 +1012,8 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<TaskGroup>().ToTable("TaskGroups");
             modelBuilder.Entity<Shift>().ToTable("Shifts");
             modelBuilder.Entity<MechanicShift>().ToTable("MechanicShifts");
+            modelBuilder.Entity<DeviceTechnicalSymptomHistory>().ToTable("DeviceTechnicalSymptomHistories");
+            modelBuilder.Entity<MachineTechnicalSymptomHistory>().ToTable("MachineTechnicalSymptomHistories");
             #endregion
         }
     }

@@ -29,5 +29,9 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<Guid?> GetDeviceByStatusAsync(DeviceStatus deviceStatus);
         Task<bool> DeviceIdExistsAsync(Guid deviceId);
 
+
+
+        Task<List<DeviceTechnicalSymptomHistoryResponse>> GetDeviceTechnicalSymptomHistoryByDeviceIdAsync(Guid deviceId);
+        Task<List<MachineTechnicalSymptomHistoryResponse>> GetMachineTechnicalSymptomHistoryByMachineIdAsync(Guid machineId);
     }
 }

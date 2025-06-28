@@ -373,4 +373,39 @@ public class DeviceService : IDeviceService
 
         return await _importService.ImportAsync<Device>(file.OpenReadStream(), _unitOfWork.DeviceRepository);
     }
+    public async Task<Result> GetAllDeviceAndMachineTechnicalSymptomHistoryByDeviceIdAsync(Guid deviceId)
+    {
+        var device = await _unitOfWork.DeviceRepository.GetByIdAsync(deviceId);
+        if (device == null)
+            return Result.Failure(DeviceErrorMessage.DeviceNotExist());
+
+        // Lấy lịch sử TechnicalSymptom của Device
+        var deviceHistory = await _unitOfWork.DeviceRepository.GetDeviceTechnicalSymptomHistoryByDeviceIdAsync(deviceId);
+
+        // Lấy lịch sử TechnicalSymptom của Machine (nếu có)
+        var machineHistory = device.MachineId.HasValue
+            ? await _unitOfWork.DeviceRepository.GetMachineTechnicalSymptomHistoryByMachineIdAsync(device.MachineId.Value)
+            : new List<MachineTechnicalSymptomHistoryResponse>();
+
+        // Loại bỏ các TechnicalSymptom trùng lặp trong MachineHistory
+        if (deviceHistory.Any() && machineHistory.Any())
+        {
+            // Lấy danh sách TechnicalSymptomId từ DeviceHistory
+            var deviceTechnicalSymptomIds = deviceHistory.Select(dh => dh.TechnicalSymptomId).ToHashSet();
+
+            // Loại bỏ các bản ghi trong MachineHistory có TechnicalSymptomId trùng với DeviceHistory
+            machineHistory = machineHistory
+                .Where(mh => !deviceTechnicalSymptomIds.Contains(mh.TechnicalSymptomId))
+                .ToList();
+        }
+
+        var response = new DeviceAndMachineTechnicalSymptomHistoryResponse
+        {
+            DeviceHistory = deviceHistory,
+            MachineHistory = machineHistory
+        };
+
+        return Result.SuccessWithObject(response);
+    }
+
 }
