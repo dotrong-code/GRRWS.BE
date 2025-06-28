@@ -128,6 +128,15 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Error history retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [HttpGet("DeviceAndMachineTechnicalSymptomHistory/{deviceId}")]
+        public async Task<IResult> GetAllDeviceAndMachineTechnicalSymptomHistoryByDeviceId(Guid deviceId)
+        {
+            var result = await _deviceService.GetAllDeviceAndMachineTechnicalSymptomHistoryByDeviceIdAsync(deviceId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Technical symptom history retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
         [HttpPost("import")]
         public async Task<IResult> ImportDevice(IFormFile file)
         {
