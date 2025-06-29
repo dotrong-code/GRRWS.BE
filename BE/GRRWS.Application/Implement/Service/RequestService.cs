@@ -499,29 +499,25 @@ namespace GRRWS.Application.Implement.Service
 
                 var random = new Random();
                 var results = new ConcurrentBag<(bool Success, string Message, Guid? DeviceId, Guid? UserId)>();
-                var createdCount = 0;
+                var successCount = 0;
 
-                // 1. Get all areas with at least one device
+                // 1. Get all areas and prepare issue keywords
                 var areas = await _unitOfWork.AreaRepository.GetAllAsync();
-                var selectedAreas = areas.Take(Math.Min(count, areas.Count())).ToList();
-
-                if (!selectedAreas.Any())
+                if (!areas.Any())
                     return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NoAreas", "No areas found"));
 
-                // 2. Prepare issue keywords for random selection
+                // 2. Prepare issue keywords
                 var rawKeywords = new[] { "KIM", "Lỗi máy", "Trục kẹt", "Chập mạch", "Động cơ", "Không lên nguồn" };
-
-                // Step 2: Làm sạch từ khóa trước khi gửi vào repository
                 var keywords = rawKeywords
-                    .Select(k => k.Trim()) // bỏ khoảng trắng
-                    .Where(k => !string.IsNullOrWhiteSpace(k)) // bỏ từ trống
-                    .Select(k => StringHelper.RemoveDiacritics(k)) // bỏ dấu (như Service làm)
-                    .Select(k => k.ToLowerInvariant()) // chuẩn hóa để cache và so sánh
+                    .Select(k => k.Trim())
+                    .Where(k => !string.IsNullOrWhiteSpace(k))
+                    .Select(k => StringHelper.RemoveDiacritics(k))
+                    .Select(k => k.ToLowerInvariant())
                     .Distinct()
                     .ToArray();
-                var issuesByKeyword = new ConcurrentDictionary<string, List<SuggestObject>>();
 
-                // 3. Fetch issues for all keywords in parallel
+                // 3. Fetch issues for all keywords sequentially (to avoid DbContext threading issues)
+                var issuesByKeyword = new ConcurrentDictionary<string, List<SuggestObject>>();
                 foreach (var keyword in keywords)
                 {
                     var issues = await _unitOfWork.IssueRepository.GetIssueSuggestionsAsync(keyword, 20);
@@ -534,122 +530,79 @@ namespace GRRWS.Application.Implement.Service
                 if (!issuesByKeyword.Any())
                     return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NoIssues", "No issues found"));
 
-                // 4. Process each area
-                var processingTasks = new List<Task>();
+                // 4. Create a semaphore to limit concurrency
+                using var semaphore = new SemaphoreSlim(Math.Min(Environment.ProcessorCount * 2, 8));
 
-                foreach (var area in selectedAreas)
+                // 5. Process areas in batches until we create the requested number of requests
+                var areaList = areas.ToList();
+                var processedAreasTracker = new HashSet<Guid>(); // Track which areas we've tried
+                var attemptsRemaining = count * 10; // Safety limit to prevent infinite loops
+
+                // Keep processing areas until we've created enough requests or run out of attempts
+                while (successCount < count && attemptsRemaining > 0)
                 {
-                    try
+                    // Reset area tracker if we've gone through all areas once
+                    if (processedAreasTracker.Count >= areaList.Count)
+                        processedAreasTracker.Clear();
+
+                    // Find areas we haven't processed yet in this round
+                    var remainingAreas = areaList
+                        .Where(a => !processedAreasTracker.Contains(a.Id))
+                        .ToList();
+
+                    // If no remaining areas, start over with all areas
+                    if (!remainingAreas.Any())
+                        remainingAreas = areaList;
+
+                    // Take only as many areas as we need for remaining request count
+                    var batchAreas = remainingAreas
+                        .OrderBy(_ => random.Next()) // Shuffle to try different areas
+                        .Take(Math.Min(count - successCount, remainingAreas.Count))
+                        .ToList();
+
+                    // Process selected areas concurrently with semaphore for limiting concurrency
+                    var tasks = new List<Task>();
+
+                    foreach (var area in batchAreas)
                     {
-                        Console.WriteLine($"\n[INFO] Bắt đầu xử lý area: {area.AreaName}");
+                        processedAreasTracker.Add(area.Id);
+                        attemptsRemaining--;
 
-                        var zones = await _unitOfWork.ZoneRepository.GetZonesByAreaIdAsync(area.Id);
-                        if (!zones.Any())
+                        tasks.Add(Task.Run(async () =>
                         {
-                            Console.WriteLine("[WARN] Không có zone nào trong area này");
-                            results.Add((false, $"No zones found for area '{area.AreaName}'", null, null));
-                            continue;
-                        }
+                            // Acquire semaphore to limit concurrency
+                            await semaphore.WaitAsync();
+                            try
+                            {
+                                var result = await ProcessAreaForRequestCreationAsync(
+                                    area,
+                                    random,
+                                    issuesByKeyword,
+                                    keywords,
+                                    initiatorUserId,
+                                    results);
 
-                        var randomZone = zones[random.Next(zones.Count)];
-
-                        var positions = await _unitOfWork.PositionRepository.GetPositionsByZoneIdAsync(randomZone.Id);
-                        if (!positions.Any())
-                        {
-                            Console.WriteLine("[WARN] Không có vị trí nào trong zone này");
-                            results.Add((false, $"No positions found for zone '{randomZone.ZoneName}'", null, null));
-                            continue;
-                        }
-
-                        var randomPosition = positions[random.Next(positions.Count)];
-
-                        var devices = await _unitOfWork.DeviceRepository.GetDevicesByPositionIdAsync(randomPosition.Id);
-                        var activeDevices = devices.Where(d => (d.Status == DeviceStatus.InUse || d.Status == DeviceStatus.Active )&& !d.IsDeleted).ToList();
-
-                        if (!activeDevices.Any())
-                        {
-                            Console.WriteLine("[WARN] Không có thiết bị active");
-                            results.Add((false, $"No active devices found for position {randomPosition.Index} in zone '{randomZone.ZoneName}'", null, null));
-                            continue;
-                        }
-
-                        var randomDevice = activeDevices[random.Next(activeDevices.Count)];
-
-                        var existingRequests = await _unitOfWork.RequestRepository.GetRequestByDeviceIdAsync(randomDevice.Id);
-                        var restrictStatuses = new[] { Status.Pending, Status.InProgress };
-                        if (existingRequests.Any(r => !r.IsDeleted && restrictStatuses.Contains(r.Status)))
-                        {
-                            Console.WriteLine("[INFO] Thiết bị đã có request pending hoặc in-progress");
-                            results.Add((false, $"Device {randomDevice.DeviceName} already has pending or in-progress requests", randomDevice.Id, null));
-                            continue;
-                        }
-
-                        var areaUsers = await GetUsersByAreaAsync(area.Id);
-                        var validUsers = areaUsers.Where(u => !u.IsDeleted).ToList();
-
-                        Guid userId;
-                        string userInfo;
-
-                        if (!validUsers.Any())
-                        {
-                            userId = initiatorUserId;
-                            userInfo = $"Using initiator user (no users found in area '{area.AreaName}')";
-                        }
-                        else
-                        {
-                            var randomUser = validUsers[random.Next(validUsers.Count)];
-                            userId = randomUser.Id;
-                            userInfo = $"Using area user '{randomUser.FullName}' from area '{area.AreaName}'";
-                        }
-
-                        var randomKeyword = keywords[random.Next(keywords.Length)];
-
-                        if (!issuesByKeyword.TryGetValue(randomKeyword, out var availableIssues) || !availableIssues.Any())
-                        {
-                            Console.WriteLine("[WARN] Không tìm thấy issue với keyword: " + randomKeyword);
-                            results.Add((false, $"No issues found for keyword '{randomKeyword}'", randomDevice.Id, userId));
-                            continue;
-                        }
-
-                        var selectedIssues = availableIssues
-                            .OrderBy(_ => random.Next())
-                            .Take(random.Next(1, 6))
-                            .ToList();
-
-                        var requestDto = new TestCreateRequestDTO
-                        {
-                            DeviceId = randomDevice.Id,
-                            IssueIds = selectedIssues.Select(i => i.Id).ToList()
-                        };
-
-                        Console.WriteLine($"[DEBUG] Đang tạo request cho thiết bị: {randomDevice.DeviceName}, user: {userId}");
-
-                        var createResult = await CreateTestAsync(requestDto, userId);
-
-                        if (createResult.IsSuccess)
-                        {
-                            Interlocked.Increment(ref createdCount);
-                            Console.WriteLine("[SUCCESS] Đã tạo request");
-                            results.Add((true, $"Created request for device '{randomDevice.DeviceName}' in area '{area.AreaName}'. {userInfo}", randomDevice.Id, userId));
-                        }
-                        else
-                        {
-                            Console.WriteLine($"[ERROR] Không tạo được request: {createResult.Error?.Description}");
-                            results.Add((false, $"Failed to create request: {createResult.Error?.Description ?? "Unknown error"}", randomDevice.Id, userId));
-                        }
+                                if (result)
+                                    Interlocked.Increment(ref successCount);
+                            }
+                            finally
+                            {
+                                semaphore.Release();
+                            }
+                        }));
                     }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"[EXCEPTION] {ex.Message}");
-                        results.Add((false, $"Error processing area '{area.AreaName}': {ex.Message}", null, null));
-                    }
+
+                    // Wait for current batch to complete
+                    await Task.WhenAll(tasks);
+
+                    Console.WriteLine($"[PROGRESS] Created {successCount}/{count} requests so far, attempts remaining: {attemptsRemaining}");
                 }
 
                 // Return summary of results
                 return Result.SuccessWithObject(new
                 {
-                    TotalRequested = count,
-                    ActuallyCreated = createdCount,
+                    Requested = count,
+                    Created = successCount,
                     Details = results.ToList()
                 });
             }
@@ -659,10 +612,151 @@ namespace GRRWS.Application.Implement.Service
             }
         }
 
-        // Helper method to get users by area
+        // Helper method to process an area and try to create a request
+        private async Task<bool> ProcessAreaForRequestCreationAsync(
+            Area area,
+            Random random,
+            ConcurrentDictionary<string, List<SuggestObject>> issuesByKeyword,
+            string[] keywords,
+            Guid initiatorUserId,
+            ConcurrentBag<(bool Success, string Message, Guid? DeviceId, Guid? UserId)> results)
+        {
+            Console.WriteLine($"[INFO] Processing area: {area.AreaName}");
+
+            try
+            {
+                // 1. Get all zones for this area
+                var zones = await _unitOfWork.ZoneRepository.GetZonesByAreaIdAsync(area.Id);
+                if (!zones.Any())
+                {
+                    results.Add((false, $"No zones found for area '{area.AreaName}'", null, null));
+                    return false;
+                }
+
+                // 2. Shuffle zones to try different ones randomly
+                var shuffledZones = zones.OrderBy(_ => random.Next()).ToList();
+
+                // 3. Try each zone until we find a suitable one
+                foreach (var zone in shuffledZones)
+                {
+                    // 4. Get all positions for this zone
+                    var positions = await _unitOfWork.PositionRepository.GetPositionsByZoneIdAsync(zone.Id);
+                    if (!positions.Any())
+                    {
+                        Console.WriteLine($"[WARN] No positions in zone '{zone.ZoneName}'");
+                        continue; // Try next zone
+                    }
+
+                    // 5. Shuffle positions to try different ones randomly
+                    var shuffledPositions = positions.OrderBy(_ => random.Next()).ToList();
+
+                    // 6. Try each position until we find a suitable one
+                    foreach (var position in shuffledPositions)
+                    {
+                        // 7. Get devices for this position
+                        var devices = await _unitOfWork.DeviceRepository.GetDevicesByPositionIdAsync(position.Id);
+                        var activeDevices = devices
+                            .Where(d => (d.Status == DeviceStatus.InUse || d.Status == DeviceStatus.Active) && !d.IsDeleted)
+                            .ToList();
+
+                        if (!activeDevices.Any())
+                        {
+                            Console.WriteLine($"[WARN] No active devices at position {position.Index} in zone '{zone.ZoneName}'");
+                            continue; // Try next position
+                        }
+
+                        // 8. Shuffle devices to try different ones randomly
+                        var shuffledDevices = activeDevices.OrderBy(_ => random.Next()).ToList();
+
+                        // 9. Try each device until we find one without pending/in-progress requests
+                        foreach (var device in shuffledDevices)
+                        {
+                            // 10. Check for existing pending/in-progress requests
+                            var existingRequests = await _unitOfWork.RequestRepository.GetRequestByDeviceIdAsync(device.Id);
+                            var restrictStatuses = new[] { Status.Pending, Status.InProgress };
+                            if (existingRequests.Any(r => !r.IsDeleted && restrictStatuses.Contains(r.Status)))
+                            {
+                                Console.WriteLine($"[INFO] Device {device.DeviceName} already has pending requests");
+                                continue; // Try next device
+                            }
+
+                            // 11. Get users for this area
+                            var areaUsers = await GetUsersByAreaAsync(area.Id);
+                            var validUsers = areaUsers.Where(u => !u.IsDeleted).ToList();
+
+                            // 12. Select user from this area or fall back to initiator
+                            Guid userId;
+                            string userInfo;
+
+                            if (!validUsers.Any())
+                            {
+                                userId = initiatorUserId;
+                                userInfo = $"Using initiator user (no users in area '{area.AreaName}')";
+                            }
+                            else
+                            {
+                                var randomUser = validUsers[random.Next(validUsers.Count)];
+                                userId = randomUser.Id;
+                                userInfo = $"Using area user '{randomUser.FullName}'";
+                            }
+
+                            // 13. Select random issues from available keywords
+                            var randomKeyword = keywords[random.Next(keywords.Length)];
+
+                            if (!issuesByKeyword.TryGetValue(randomKeyword, out var availableIssues) || !availableIssues.Any())
+                            {
+                                Console.WriteLine($"[WARN] No issues found for keyword '{randomKeyword}'");
+                                continue; // Try with different device (which will try different keyword)
+                            }
+
+                            // 14. Create 1-5 random issues for this request
+                            var selectedIssues = availableIssues
+                                .OrderBy(_ => random.Next())
+                                .Take(random.Next(1, 6))
+                                .ToList();
+
+                            // 15. Create the request
+                            var requestDto = new TestCreateRequestDTO
+                            {
+                                DeviceId = device.Id,
+                                IssueIds = selectedIssues.Select(i => i.Id).ToList()
+                            };
+
+                            Console.WriteLine($"[DEBUG] Creating request for device: {device.DeviceName}, user: {userId}");
+
+                            var createResult = await CreateTestAsync(requestDto, userId);
+
+                            if (createResult.IsSuccess)
+                            {
+                                Console.WriteLine($"[SUCCESS] Created request for '{device.DeviceName}'");
+                                results.Add((true, $"Created request for '{device.DeviceName}' in '{area.AreaName}'. {userInfo}", device.Id, userId));
+                                return true; // Successfully created a request for this area
+                            }
+                            else
+                            {
+                                Console.WriteLine($"[ERROR] Failed to create request: {createResult.Error?.Description}");
+                                results.Add((false, $"Failed: {createResult.Error?.Description ?? "Unknown error"}", device.Id, userId));
+                            }
+                        }
+                    }
+                }
+
+                // If we get here, we've tried all zones, positions, and devices in this area without success
+                Console.WriteLine($"[WARN] No suitable device found in area '{area.AreaName}'");
+                results.Add((false, $"No suitable device found in area '{area.AreaName}'", null, null));
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[EXCEPTION] {ex.Message}");
+                results.Add((false, $"Error in area '{area.AreaName}': {ex.Message}", null, null));
+                return false;
+            }
+        }
+
+        // Helper method to get users by area (no changes needed)
         private async Task<List<Domain.Entities.User>> GetUsersByAreaAsync(Guid areaId)
         {
-            // Query users where AreaId equals the provided areaId
             return await _unitOfWork.UserRepository.GetUsersByAreaIdAsync(areaId);
         }
     }
