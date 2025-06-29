@@ -33,5 +33,6 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
 
         Task<List<DeviceTechnicalSymptomHistoryResponse>> GetDeviceTechnicalSymptomHistoryByDeviceIdAsync(Guid deviceId);
         Task<List<MachineTechnicalSymptomHistoryResponse>> GetMachineTechnicalSymptomHistoryByMachineIdAsync(Guid machineId);
+        Task<List<Device>> GetDevicesByPositionIdAsync(Guid positionId);
     }
 }

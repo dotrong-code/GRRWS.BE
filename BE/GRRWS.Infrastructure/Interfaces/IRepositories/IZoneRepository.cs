@@ -16,5 +16,6 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
             int pageNumber = 1,
             int pageSize = 10);
         Task<int> DeleteZoneAsync(Guid id);
+        Task<List<Zone>> GetZonesByAreaIdAsync(Guid areaId);
     }
 }

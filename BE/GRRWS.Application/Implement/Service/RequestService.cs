@@ -4,6 +4,7 @@ using GRRWS.Application.Interface.IService;
 using GRRWS.Application.Interfaces;
 using GRRWS.Domain.Entities;
 using GRRWS.Domain.Enum;
+using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.Firebase.AddImage;
 using GRRWS.Infrastructure.DTOs.Firebase.GetImage;
 using GRRWS.Infrastructure.DTOs.Notification;
@@ -11,6 +12,7 @@ using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.Interfaces;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
+using System.Collections.Concurrent;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -486,6 +488,182 @@ namespace GRRWS.Application.Implement.Service
         public Task<Result> UpdateRequestStatusAsync(Guid requestId, bool isRejected, string rejectionReason, string rejectionDetails)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<Result> BulkCreateRandomRequestsAsync(int count, Guid initiatorUserId)
+        {
+            try
+            {
+                if (count <= 0 || count > 100)
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("InvalidCount", "Count must be between 1 and 100"));
+
+                var random = new Random();
+                var results = new ConcurrentBag<(bool Success, string Message, Guid? DeviceId, Guid? UserId)>();
+                var createdCount = 0;
+
+                // 1. Get all areas with at least one device
+                var areas = await _unitOfWork.AreaRepository.GetAllAsync();
+                var selectedAreas = areas.Take(Math.Min(count, areas.Count())).ToList();
+
+                if (!selectedAreas.Any())
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NoAreas", "No areas found"));
+
+                // 2. Prepare issue keywords for random selection
+                var rawKeywords = new[] { "KIM", "Lỗi máy", "Trục kẹt", "Chập mạch", "Động cơ", "Không lên nguồn" };
+
+                // Step 2: Làm sạch từ khóa trước khi gửi vào repository
+                var keywords = rawKeywords
+                    .Select(k => k.Trim()) // bỏ khoảng trắng
+                    .Where(k => !string.IsNullOrWhiteSpace(k)) // bỏ từ trống
+                    .Select(k => StringHelper.RemoveDiacritics(k)) // bỏ dấu (như Service làm)
+                    .Select(k => k.ToLowerInvariant()) // chuẩn hóa để cache và so sánh
+                    .Distinct()
+                    .ToArray();
+                var issuesByKeyword = new ConcurrentDictionary<string, List<SuggestObject>>();
+
+                // 3. Fetch issues for all keywords in parallel
+                foreach (var keyword in keywords)
+                {
+                    var issues = await _unitOfWork.IssueRepository.GetIssueSuggestionsAsync(keyword, 20);
+                    if (issues != null && issues.Any())
+                    {
+                        issuesByKeyword[keyword] = issues;
+                    }
+                }
+
+                if (!issuesByKeyword.Any())
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NoIssues", "No issues found"));
+
+                // 4. Process each area
+                var processingTasks = new List<Task>();
+
+                foreach (var area in selectedAreas)
+                {
+                    try
+                    {
+                        Console.WriteLine($"\n[INFO] Bắt đầu xử lý area: {area.AreaName}");
+
+                        var zones = await _unitOfWork.ZoneRepository.GetZonesByAreaIdAsync(area.Id);
+                        if (!zones.Any())
+                        {
+                            Console.WriteLine("[WARN] Không có zone nào trong area này");
+                            results.Add((false, $"No zones found for area '{area.AreaName}'", null, null));
+                            continue;
+                        }
+
+                        var randomZone = zones[random.Next(zones.Count)];
+
+                        var positions = await _unitOfWork.PositionRepository.GetPositionsByZoneIdAsync(randomZone.Id);
+                        if (!positions.Any())
+                        {
+                            Console.WriteLine("[WARN] Không có vị trí nào trong zone này");
+                            results.Add((false, $"No positions found for zone '{randomZone.ZoneName}'", null, null));
+                            continue;
+                        }
+
+                        var randomPosition = positions[random.Next(positions.Count)];
+
+                        var devices = await _unitOfWork.DeviceRepository.GetDevicesByPositionIdAsync(randomPosition.Id);
+                        var activeDevices = devices.Where(d => (d.Status == DeviceStatus.InUse || d.Status == DeviceStatus.Active )&& !d.IsDeleted).ToList();
+
+                        if (!activeDevices.Any())
+                        {
+                            Console.WriteLine("[WARN] Không có thiết bị active");
+                            results.Add((false, $"No active devices found for position {randomPosition.Index} in zone '{randomZone.ZoneName}'", null, null));
+                            continue;
+                        }
+
+                        var randomDevice = activeDevices[random.Next(activeDevices.Count)];
+
+                        var existingRequests = await _unitOfWork.RequestRepository.GetRequestByDeviceIdAsync(randomDevice.Id);
+                        var restrictStatuses = new[] { Status.Pending, Status.InProgress };
+                        if (existingRequests.Any(r => !r.IsDeleted && restrictStatuses.Contains(r.Status)))
+                        {
+                            Console.WriteLine("[INFO] Thiết bị đã có request pending hoặc in-progress");
+                            results.Add((false, $"Device {randomDevice.DeviceName} already has pending or in-progress requests", randomDevice.Id, null));
+                            continue;
+                        }
+
+                        var areaUsers = await GetUsersByAreaAsync(area.Id);
+                        var validUsers = areaUsers.Where(u => !u.IsDeleted).ToList();
+
+                        Guid userId;
+                        string userInfo;
+
+                        if (!validUsers.Any())
+                        {
+                            userId = initiatorUserId;
+                            userInfo = $"Using initiator user (no users found in area '{area.AreaName}')";
+                        }
+                        else
+                        {
+                            var randomUser = validUsers[random.Next(validUsers.Count)];
+                            userId = randomUser.Id;
+                            userInfo = $"Using area user '{randomUser.FullName}' from area '{area.AreaName}'";
+                        }
+
+                        var randomKeyword = keywords[random.Next(keywords.Length)];
+
+                        if (!issuesByKeyword.TryGetValue(randomKeyword, out var availableIssues) || !availableIssues.Any())
+                        {
+                            Console.WriteLine("[WARN] Không tìm thấy issue với keyword: " + randomKeyword);
+                            results.Add((false, $"No issues found for keyword '{randomKeyword}'", randomDevice.Id, userId));
+                            continue;
+                        }
+
+                        var selectedIssues = availableIssues
+                            .OrderBy(_ => random.Next())
+                            .Take(random.Next(1, 6))
+                            .ToList();
+
+                        var requestDto = new TestCreateRequestDTO
+                        {
+                            DeviceId = randomDevice.Id,
+                            IssueIds = selectedIssues.Select(i => i.Id).ToList()
+                        };
+
+                        Console.WriteLine($"[DEBUG] Đang tạo request cho thiết bị: {randomDevice.DeviceName}, user: {userId}");
+
+                        var createResult = await CreateTestAsync(requestDto, userId);
+
+                        if (createResult.IsSuccess)
+                        {
+                            Interlocked.Increment(ref createdCount);
+                            Console.WriteLine("[SUCCESS] Đã tạo request");
+                            results.Add((true, $"Created request for device '{randomDevice.DeviceName}' in area '{area.AreaName}'. {userInfo}", randomDevice.Id, userId));
+                        }
+                        else
+                        {
+                            Console.WriteLine($"[ERROR] Không tạo được request: {createResult.Error?.Description}");
+                            results.Add((false, $"Failed to create request: {createResult.Error?.Description ?? "Unknown error"}", randomDevice.Id, userId));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[EXCEPTION] {ex.Message}");
+                        results.Add((false, $"Error processing area '{area.AreaName}': {ex.Message}", null, null));
+                    }
+                }
+
+                // Return summary of results
+                return Result.SuccessWithObject(new
+                {
+                    TotalRequested = count,
+                    ActuallyCreated = createdCount,
+                    Details = results.ToList()
+                });
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Exception", $"Error creating bulk requests: {ex.Message}"));
+            }
+        }
+
+        // Helper method to get users by area
+        private async Task<List<Domain.Entities.User>> GetUsersByAreaAsync(Guid areaId)
+        {
+            // Query users where AreaId equals the provided areaId
+            return await _unitOfWork.UserRepository.GetUsersByAreaIdAsync(areaId);
         }
     }
 }

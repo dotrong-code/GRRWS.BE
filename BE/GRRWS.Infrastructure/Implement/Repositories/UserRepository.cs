@@ -443,6 +443,12 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 throw;
             }
         }
+        public async Task<List<User>> GetUsersByAreaIdAsync(Guid areaId)
+        {
+            return await _context.Users
+                .Where(u => u.AreaId == areaId && !u.IsDeleted)
+                .ToListAsync();
+        }
     }
 }
 

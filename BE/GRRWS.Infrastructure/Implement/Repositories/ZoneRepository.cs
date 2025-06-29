@@ -51,5 +51,11 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             _context.Zones.Update(zone);
             return await _context.SaveChangesAsync();
         }
+        public async Task<List<Zone>> GetZonesByAreaIdAsync(Guid areaId)
+        {
+            return await _context.Zones
+                .Where(z => z.AreaId == areaId)
+                .ToListAsync();
+        }
     }
 }

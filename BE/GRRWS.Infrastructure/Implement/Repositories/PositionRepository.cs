@@ -80,5 +80,11 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             _context.Positions.Update(position);
             return await _context.SaveChangesAsync();
         }
+        public async Task<List<Position>> GetPositionsByZoneIdAsync(Guid zoneId)
+        {
+            return await _context.Positions
+                .Where(p => p.ZoneId == zoneId && !p.IsDeleted)
+                .ToListAsync();
+        }
     }
 }

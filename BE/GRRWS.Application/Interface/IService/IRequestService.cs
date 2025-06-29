@@ -11,7 +11,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> CreateAsync(CreateRequestDTO dto, Guid userId);
         Task<Result> CreateTestAsync(TestCreateRequestDTO dto, Guid userId);
         Task<Result> UpdateAsync(UpdateRequestDTO dto, Guid id);
-        Task<Result> CancelRequestAsync(CancelRequestDTO dto,Guid userId);
+        Task<Result> CancelRequestAsync(CancelRequestDTO dto, Guid userId);
         Task<Result> DeleteAsync(Guid id);
         Task<Result> GetRequestByDeviceIdAsync(Guid id);
         Task<Result> GetRequestByUserIdAsync(Guid userId, int pageNumber, int pageSize, string? search, string? searchType);
@@ -24,5 +24,6 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetErrorsForRequestDetailWebAsync(Guid requestId);
         Task<Result> GetTechnicalIssuesForRequestDetailWebAsync(Guid requestId);
         Task<Result> GetTasksForRequestDetailWebAsync(Guid requestId);
+        Task<Result> BulkCreateRandomRequestsAsync(int count, Guid initiatorUserId);
     }
 }

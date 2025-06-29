@@ -224,5 +224,15 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "RequestIssue status updated successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [HttpPost("bulk-random")]
+        [Authorize]
+        public async Task<IResult> BulkCreateRandomRequests([FromQuery] int count = 5)
+        {
+            CurrentUserObject currentUser = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _requestService.BulkCreateRandomRequestsAsync(count, currentUser.UserId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Random requests created successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }
