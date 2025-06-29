@@ -5,7 +5,6 @@ using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
 
 using GRRWS.Domain.Enum;
-using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.ErrorDetail;
 
 using GRRWS.Infrastructure.DTOs.Report;
@@ -510,7 +509,7 @@ namespace GRRWS.Application.Implement.Service
                     Id = ed.Id,
                     ReportId = ed.ReportId,
                     ErrorId = ed.ErrorId,
-                    ErrorName = ed.Error?.Name 
+                    ErrorName = ed.Error?.Name
                 }).ToList()
             };
 
