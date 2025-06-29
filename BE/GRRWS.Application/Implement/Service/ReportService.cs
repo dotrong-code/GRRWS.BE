@@ -19,15 +19,17 @@ namespace GRRWS.Application.Implement.Service
         private readonly IUnitOfWork _unit;
         private readonly IMapper _mapper;
         private readonly ITaskService _taskService;
+        private readonly ITaskGroupService _taskGroupService;
         private readonly IMechanicShiftService _mechanicShiftService;
-        public ReportService(IUnitOfWork unit, IMapper mapper, ITaskService taskService, IMechanicShiftService mechanicShiftService)
+
+        public ReportService(IUnitOfWork unit, IMapper mapper, ITaskService taskService, ITaskGroupService taskGroupService, IMechanicShiftService mechanicShiftService)
         {
             _unit = unit;
             _mapper = mapper;
             _taskService = taskService;
+            _taskGroupService = taskGroupService;
             _mechanicShiftService = mechanicShiftService;
         }
-
 
         public async Task<Result> CreateAsync(ReportCreateDTO dto)
         {
@@ -96,7 +98,7 @@ namespace GRRWS.Application.Implement.Service
             await _unit.ReportRepository.CreateAsync(report);
             var getRequest = await _unit.RequestRepository.GetRequestByIdAsync((Guid)report.RequestId);
             getRequest.ReportId = report.Id;
-            getRequest.Status = Status.InProgress;
+            getRequest.Status = Status.Approved;
             await _unit.RequestRepository.UpdateAsync(getRequest);
             return Result.SuccessWithObject(new { Message = "Report created successfully!", ReportId = report.Id });
         }
@@ -168,7 +170,7 @@ namespace GRRWS.Application.Implement.Service
             await _unit.ReportRepository.CreateAsync(report);
             var getRequest = await _unit.RequestRepository.GetRequestByIdAsync((Guid)report.RequestId);
             getRequest.ReportId = report.Id;
-            getRequest.Status = Status.InProgress;
+            getRequest.Status = Status.Approved;
             await _unit.RequestRepository.UpdateAsync(getRequest);
             return Result.SuccessWithObject(new { Message = "Report created successfully!", ReportId = report.Id });
         }
@@ -190,7 +192,6 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(new { Message = "Report updated successfully!" });
         }
 
-
         public async Task<Result> DeleteAsync(Guid id)
         {
             var report = await _unit.ReportRepository.GetByIdAsync(id);
@@ -200,6 +201,7 @@ namespace GRRWS.Application.Implement.Service
             await _unit.ReportRepository.UpdateAsync(report);
             return Result.SuccessWithObject(new { Message = "Report canceled successfully!" });
         }
+
         public async Task<Result> GetByIdAsync(Guid id)
         {
             var report = await _unit.ReportRepository.GetReportWithRequestAsync(id);
@@ -215,6 +217,7 @@ namespace GRRWS.Application.Implement.Service
             var dtos = _mapper.Map<List<ReportViewDTO>>(reports).Cast<object>().ToList();
             return Result.SuccessWithObject(dtos);
         }
+
         public async Task<Result> CreateReportWithIssueErrorAsync(ReportCreateWithIssueErrorDTO dto)
         {
             // Kiểm tra RequestId
@@ -333,13 +336,14 @@ namespace GRRWS.Application.Implement.Service
             // Cập nhật Request
             var getRequest = await _unit.RequestRepository.GetRequestByIdAsync((Guid)report.RequestId);
             getRequest.ReportId = report.Id;
-            getRequest.Status = Status.InProgress;
+            getRequest.Status = Status.Approved;
             await _unit.RequestRepository.UpdateAsync(getRequest);
 
             await _unit.SaveChangesAsync();
 
             return Result.SuccessWithObject(new { Message = "Report created successfully with IssueErrors!", ReportId = report.Id });
         }
+
         public async Task<Result> CreateReportWithIssueSymtomAsync(ReportCreateWithIssueSymtomDTO dto)
         {
             // Kiểm tra RequestId
@@ -363,7 +367,7 @@ namespace GRRWS.Application.Implement.Service
                     "Conflict", "Request already has an associated report."
                 ));
 
-            // Kiểm tra allSymtomIds
+            // Kiểm tra ErrorIds
             var allSymtomIds = new List<Guid>();
             if (dto.TechnicalSymtomIds != null && dto.TechnicalSymtomIds.Any())
             {
@@ -371,12 +375,7 @@ namespace GRRWS.Application.Implement.Service
                     return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "SymtomIds cannot contain empty GUIDs.", 0));
                 allSymtomIds.AddRange(dto.TechnicalSymtomIds);
             }
-            else
-            {
-                dto.TechnicalSymtomIds = new List<Guid> { Guid.Parse("A1A1A1A1-1111-1111-1111-111111111111") };
-                allSymtomIds.Add(Guid.Parse("A1A1A1A1-1111-1111-1111-111111111111"));
 
-            }
             // Kiểm tra IssueSymtomMappings
             var issueSymtomMappings = dto.IssueSymtomMappings ?? new Dictionary<Guid, List<Guid>>();
             if (issueSymtomMappings.Any())
@@ -418,7 +417,7 @@ namespace GRRWS.Application.Implement.Service
                 CreatedDate = DateTime.Now
             };
 
-            // Tạo TechnicalSymptomReports
+            // Tạo ErrorDetails
             if (allSymtomIds.Any())
             {
                 report.TechnicalSymptomReports = allSymtomIds.Select(symtomId => new TechnicalSymptomReport
@@ -432,7 +431,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "No SymptomIds provided.", 0));
             }
 
-            // Tạo issueSymptoms
+            // Tạo IssueErrors
             var issueSymptoms = new List<IssueTechnicalSymptom>();
             foreach (var mapping in issueSymtomMappings)
             {
@@ -463,29 +462,17 @@ namespace GRRWS.Application.Implement.Service
 
             // Cập nhật Request
             request.ReportId = report.Id;
-            request.Status = Status.InProgress;
+            request.Status = Status.Approved;
             await _unit.RequestRepository.UpdateAsync(request);
 
             await _unit.SaveChangesAsync();
 
-
             // Fix for CS0019 and CS1001 errors
             var users = await _unit.UserRepository.GetUsersByRole(2);
-            var systemUserId = users?.FirstOrDefault()?.Id ?? Guid.Parse("32222222-2222-2222-2222-222222222222");
-            var result = await CreateWarrantyTaskGroup(report.Id, allSymtomIds.Distinct().ToList(), systemUserId);
-            if (result.IsFailure)
-            {
-                return Result.SuccessWithObject(new { Message = $"Report created successfully but failed to create task!.{result.Error.Description}", ReportId = report.Id });
-            }
-            dynamic data = result.Object;
+            var systemUserId = users?.FirstOrDefault()?.Id ?? Guid.Parse("43333333-3333-3333-3333-333333333333");
+            var taskGroupId = await CreateWarrantyTaskGroup(report.Id, allSymtomIds.Distinct().ToList(), systemUserId);
 
-            Guid taskGroupId = data.taskGroupId;
-            var createSchedulingResult = await CreateMechanicScheduleForWarranty(taskGroupId);
-            if (createSchedulingResult.IsFailure)
-            {
-                return Result.SuccessWithObject(new { Message = $"Report created successfully but failed to auto-assign tasks!.{createSchedulingResult.Error.Description}", ReportId = report.Id });
-            }
-
+            await AutoAssignedTask(taskGroupId);
 
             return Result.SuccessWithObject(new { Message = "Report created successfully with IssueSymtoms!", ReportId = report.Id });
         }
@@ -517,41 +504,28 @@ namespace GRRWS.Application.Implement.Service
         }
 
 
-        private async Task<Result> CreateWarrantyTaskGroup(Guid reportId, List<Guid> technicalSymptomIds, Guid createdByUserId)
+        private async Task<Guid> CreateWarrantyTaskGroup(Guid reportId, List<Guid> technicalSymptomIds, Guid createdByUserId)
         {
             try
             {
-                _unit.ClearChangeTracker(); // Clear change tracker to avoid tracking issues
                 var report = await _unit.ReportRepository.GetByIdAsync(reportId);
                 if (report == null)
                 {
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
-                        "NotFound", $"Report not found for the provided {reportId}."
-                    ));
+                    throw new InvalidOperationException("Report not found");
                 }
+
                 var requestId = report.RequestId ?? Guid.Empty;
                 if (requestId == Guid.Empty)
                 {
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
-                        "NotFound", $"Request not exist in this Report {reportId}."
-                    ));
+                    throw new InvalidOperationException("RequestId is required for creating warranty task group");
                 }
+
                 // Get request to verify it exists and get device information
                 var request = await _unit.RequestRepository.GetRequestByIdAsync(requestId);
                 if (request == null)
                 {
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", $"Request not found for the provided {reportId}."));
+                    throw new InvalidOperationException("Request not found");
                 }
-                var currentTime = DateTime.Now;
-                var availableMechanics = await _unit.UserRepository.GetRecommendedMechanicsAsync(currentTime, 1, 10);
-
-                if (!availableMechanics.Any())
-                {
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", $"No more mechanic available."));
-                }
-
-                var primaryMechanic = availableMechanics.First(); // Best available mechanic
-                var secondaryMechanic = availableMechanics.Count > 1 ? availableMechanics[1] : primaryMechanic;
 
                 var newDeviceId = await _unit.DeviceRepository.GetDeviceByStatusAsync(DeviceStatus.Active);
                 var deviceWarrantyId = await _unit.DeviceWarrantyRepository.GetDeviceWarrantyByDeviceIdForDevice(request.DeviceId);
@@ -559,167 +533,52 @@ namespace GRRWS.Application.Implement.Service
                 var warrantyRequest = new CreateWarrantyTaskRequest
                 {
                     RequestId = requestId,
-                    AssigneeId = primaryMechanic.MechanicId, // Will be assigned later through auto-assignment
+                    AssigneeId = null, // Will be assigned later through auto-assignment
                     DeviceWarrantyId = deviceWarrantyId,
                     TechnicalIssueIds = technicalSymptomIds,
 
+                    // Add other required properties based on your CreateWarrantyTaskRequest
                 };
                 var warrantyResult = await _taskService.CreateWarrantyTask(warrantyRequest, createdByUserId);
-                if (warrantyResult.IsFailure)
-                {
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.Failure(
-                        "Failure", $"Warranty task creation failed"
-                    ));
-                }
                 dynamic data = warrantyResult.Object;
+
                 Guid taskGroupId = data.TaskGroupId;
-                _unit.ClearChangeTracker();
+
+                // Step 1: Create Uninstallation Task using existing TaskService method
+                var uninstallRequest = new CreateUninstallTaskRequest
+                {
+                    RequestId = requestId,
+                    AssigneeId = null, // Will be assigned later through auto-assignment
+                    TaskGroupId = taskGroupId,
+                    // Add other required properties based on your CreateUninstallTaskRequest
+                };
+
+                var uninstallResult = await _taskService.CreateUninstallTask(uninstallRequest, createdByUserId);
+
+
 
                 // Step 3: Create Installation Task for replacement device using existing TaskService method
                 var installRequest = new CreateInstallTaskRequest
                 {
                     RequestId = requestId,
-                    AssigneeId = secondaryMechanic.MechanicId, // Will be assigned later through auto-assignment
+                    AssigneeId = null, // Will be assigned later through auto-assignment
                     TaskGroupId = taskGroupId,
-                    NewDeviceId = newDeviceId,
+                    NewDeviceId = newDeviceId, // Will be set when replacement device arrives
+                                               // Add other required properties based on your CreateInstallTaskRequest
                 };
+
                 var installResult = await _taskService.CreateInstallTask(installRequest, createdByUserId);
-                if (installResult.IsFailure)
-                {
-                    {
-                        return Result.Failure(Infrastructure.DTOs.Common.Error.Failure(
-                            "Failure", $"Installation task creation failed"
-                        ));
-                    }
-
-                }
-                return Result.SuccessWithObject(new { Message = "Create task group sucessfully", taskGroupId = taskGroupId });
+                return taskGroupId;
             }
             catch (Exception ex)
             {
-                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure(
-                    "InternalServerError", $"Failed to create warranty task group: {ex.Message}"
-                ));
+                throw new InvalidOperationException($"Failed to create warranty task group: {ex.Message}", ex);
             }
         }
-
-
-        private async Task<Result> CreateMechanicScheduleForWarranty(Guid taskGroupId)
-        {
-            try
-            {
-                // Get all suggested tasks in the task group
-                var suggestedTasks = await _unit.TaskRepository.GetTasksByTaskGroupIdAsync(taskGroupId);
-                var tasksToApply = suggestedTasks.Where(t => t.Status == Status.Pending).ToList();
-
-                if (!tasksToApply.Any())
-                {
-                    return Result.Failure(new Infrastructure.DTOs.Common.Error("NoSuggestedTasks", "No suggested tasks found in this task group.", 0));
-                }
-
-                // Get current shift for assignment
-                var currentTime = DateTime.Now;
-                var currentShift = await _unit.ShiftRepository.GetCurrentShiftAsync(currentTime);
-                if (currentShift == null)
-                {
-                    currentShift = await _unit.ShiftRepository.GetNearestShiftAsync(currentTime);
-                }
-
-                if (currentShift == null)
-                {
-                    return Result.Failure(new Infrastructure.DTOs.Common.Error("NoShiftAvailable", "No shift available for assignment.", 0));
-                }
-
-                // Get available mechanics using the existing recommendation system
-                var availableMechanics = await _unit.UserRepository.GetRecommendedMechanicsAsync(currentTime, 1, 10);
-
-                if (!availableMechanics.Any())
-                {
-                    return Result.Failure(new Infrastructure.DTOs.Common.Error("NoAvailableMechanics", "No available mechanics for assignment.", 0));
-                }
-
-                // Apply the same assignment logic as AutoAssignedTask
-                var uninstallTask = tasksToApply.FirstOrDefault(t => t.TaskType == TaskType.Uninstallation);
-                var warrantyTask = tasksToApply.FirstOrDefault(t => t.TaskType == TaskType.WarrantySubmission);
-                var installTask = tasksToApply.FirstOrDefault(t => t.TaskType == TaskType.Installation);
-
-                // Select mechanics based on availability and performance
-                var primaryMechanic = availableMechanics.First(); // Best available mechanic
-                var secondaryMechanic = availableMechanics.Count > 1 ? availableMechanics[1] : primaryMechanic;
-
-                var uninstallWarrantyMechanicId = primaryMechanic.MechanicId;
-                var installMechanicId = secondaryMechanic.MechanicId;
-
-                var appliedTasks = new List<object>();
-                _unit.ClearChangeTracker();
-                // Apply assignments to Uninstall and Warranty tasks (same mechanic)
-                if (uninstallTask != null)
-                {
-                    uninstallTask.AssigneeId = uninstallWarrantyMechanicId;
-                    uninstallTask.Status = Status.Pending;
-                    uninstallTask.ModifiedDate = DateTime.Now;
-                    uninstallTask.ExpectedTime = primaryMechanic.ExpectedTime;
-                    await _unit.TaskRepository.UpdateAsync(uninstallTask);
-
-                    // Create mechanic shift for uninstall task
-                    var uninstallShiftResult = await _mechanicShiftService.CreateMechanicShiftAsync(uninstallWarrantyMechanicId, uninstallTask.Id);
-
-                    appliedTasks.Add(new { TaskId = uninstallTask.Id, TaskType = "Uninstallation", MechanicId = uninstallWarrantyMechanicId });
-                }
-                _unit.ClearChangeTracker();
-                if (warrantyTask != null)
-                {
-                    warrantyTask.AssigneeId = uninstallWarrantyMechanicId;
-                    warrantyTask.Status = Status.Pending;
-                    warrantyTask.ModifiedDate = DateTime.Now;
-                    warrantyTask.ExpectedTime = primaryMechanic.ExpectedTime;
-                    await _unit.TaskRepository.UpdateAsync(warrantyTask);
-
-                    // Create mechanic shift for warranty task
-                    var warrantyShiftResult = await _mechanicShiftService.CreateMechanicShiftAsync(uninstallWarrantyMechanicId, warrantyTask.Id);
-
-                    appliedTasks.Add(new { TaskId = warrantyTask.Id, TaskType = "WarrantySubmission", MechanicId = uninstallWarrantyMechanicId });
-                }
-                _unit.ClearChangeTracker();
-                // Apply assignment to Install task (different mechanic)
-                if (installTask != null)
-                {
-                    installTask.AssigneeId = installMechanicId;
-                    installTask.Status = Status.Pending;
-                    installTask.ModifiedDate = DateTime.Now;
-                    installTask.ExpectedTime = secondaryMechanic.ExpectedTime;
-                    await _unit.TaskRepository.UpdateAsync(installTask);
-
-                    // Create mechanic shift for install task
-                    var installShiftResult = await _mechanicShiftService.CreateMechanicShiftAsync(installMechanicId, installTask.Id);
-
-                    appliedTasks.Add(new { TaskId = installTask.Id, TaskType = "Installation", MechanicId = installMechanicId });
-                }
-
-                await _unit.SaveChangesAsync();
-
-                return Result.SuccessWithObject(new
-                {
-                    Message = "Suggested task assignments applied successfully!",
-                    TaskGroupId = taskGroupId,
-                    AppliedTasks = appliedTasks,
-                    PrimaryMechanicId = uninstallWarrantyMechanicId,
-                    SecondaryMechanicId = installMechanicId
-                });
-            }
-            catch (Exception ex)
-            {
-                return Result.Failure(new Infrastructure.DTOs.Common.Error("AssignmentError", $"Failed to apply suggested assignments: {ex.Message}", 0));
-            }
-        }
-
-
-
         private async Task AutoAssignedTask(Guid taskGroupId)
         {
             try
             {
-                _unit.ClearChangeTracker();
                 // Get all tasks in the task group
                 var tasks = await _unit.TaskRepository.GetTasksByTaskGroupIdAsync(taskGroupId);
 
@@ -760,7 +619,7 @@ namespace GRRWS.Application.Implement.Service
                     // Create mechanic shift for uninstall task
                     await _mechanicShiftService.CreateMechanicShiftAsync(uninstallWarrantyMechanicId, uninstallTask.Id);
                 }
-                _unit.ClearChangeTracker();
+
                 if (warrantyTask != null && !warrantyTask.AssigneeId.HasValue)
                 {
                     warrantyTask.AssigneeId = uninstallWarrantyMechanicId;
@@ -771,7 +630,7 @@ namespace GRRWS.Application.Implement.Service
                     // Create mechanic shift for warranty task
                     await _mechanicShiftService.CreateMechanicShiftAsync(uninstallWarrantyMechanicId, warrantyTask.Id);
                 }
-                _unit.ClearChangeTracker();
+
                 // Assign different mechanic to Install task
                 if (installTask != null && !installTask.AssigneeId.HasValue)
                 {
@@ -794,7 +653,6 @@ namespace GRRWS.Application.Implement.Service
                 throw new InvalidOperationException($"Failed to auto-assign tasks: {ex.Message}", ex);
             }
         }
-
 
     }
 }
