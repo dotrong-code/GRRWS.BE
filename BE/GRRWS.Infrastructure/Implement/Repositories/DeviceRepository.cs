@@ -218,5 +218,44 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Select(d => d.Id)
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<List<DeviceTechnicalSymptomHistoryResponse>> GetDeviceTechnicalSymptomHistoryByDeviceIdAsync(Guid deviceId)
+        {
+            return await _context.DeviceTechnicalSymptomHistories
+                .Where(dtsh => dtsh.DeviceId == deviceId && !dtsh.IsDeleted)
+                .OrderByDescending(dtsh => dtsh.OccurrenceCount)
+                .Select(dtsh => new DeviceTechnicalSymptomHistoryResponse
+                {
+                    Id = dtsh.Id,
+                    DeviceId = dtsh.DeviceId,
+                    TechnicalSymptomId = dtsh.TechnicalSymptomId,
+                    SymptomCode = dtsh.TechnicalSymptom.SymptomCode,
+                    SymptomDescription = dtsh.TechnicalSymptom.Description,
+                    LastOccurredDate = dtsh.LastOccurredDate,
+                    OccurrenceCount = dtsh.OccurrenceCount,
+                    Notes = dtsh.Notes
+                })
+                .ToListAsync();
+        }
+
+        public async Task<List<MachineTechnicalSymptomHistoryResponse>> GetMachineTechnicalSymptomHistoryByMachineIdAsync(Guid machineId)
+        {
+            return await _context.MachineTechnicalSymptomHistories
+                .Where(mtsh => mtsh.MachineId == machineId && !mtsh.IsDeleted)
+                .OrderByDescending(mtsh => mtsh.OccurrenceCount)
+                .Select(mtsh => new MachineTechnicalSymptomHistoryResponse
+                {
+                    Id = mtsh.Id,
+                    MachineId = mtsh.MachineId,
+                    TechnicalSymptomId = mtsh.TechnicalSymptomId,
+                    SymptomCode = mtsh.TechnicalSymptom.SymptomCode,
+                    SymptomDescription = mtsh.TechnicalSymptom.Description,
+                    LastOccurredDate = mtsh.LastOccurredDate,
+                    OccurrenceCount = mtsh.OccurrenceCount,
+                    Notes = mtsh.Notes
+                })
+                .ToListAsync();
+        }
+
     }
 }

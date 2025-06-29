@@ -16,5 +16,6 @@ namespace GRRWS.Infrastructure.DTOs.Task.Get
         public DateTime CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
         public Guid RequestId { get; set; }
+        public bool IsUninstallDevice { get; set; } // Indicates if the device needs to be uninstalled
     }
 }

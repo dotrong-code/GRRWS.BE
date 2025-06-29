@@ -3,10 +3,11 @@ using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Common.Validator.Task;
 using GRRWS.Application.Interface.IService;
-
+using GRRWS.Domain.Entities;
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
+using GRRWS.Infrastructure.DTOs.Firebase.AddImage;
 using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.DTOs.Task;
@@ -264,14 +265,52 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Error", ex.Message));
             }
         }
-        public async Task<Result> FillInWarrantyTask(FillInWarrantyTask request)
+        public async Task<Result> FillInWarrantyTask(FillInWarrantyTask request,Guid UserID)
         {
+            // Prepare documents for upload
+            var documents = new List<WarrantyClaimDocument>();
+            if (request.DocumentFiles != null && request.DocumentFiles.Any())
+            {
+                foreach (var file in request.DocumentFiles)
+                {
+                    if (file != null && file.Length > 0)
+                    {
+                        // Validate file size (e.g., max 5MB)
+                        if (file.Length > 5 * 1024 * 1024)
+                        {
+                            return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("ValidationError", $"File {file.FileName} exceeds 5MB limit."));
+                        }
+
+                        var imageRequest = new AddImageRequest(file, "WarrantyClaimDocuments");
+                        var uploadResult = await _unitOfWork.FirebaseRepository.UploadImageAsync(imageRequest);
+                        if (!uploadResult.Success)
+                        {
+                            return Result.Failure(Infrastructure.DTOs.Common.Error.Failure($"Failed to upload document","Failed"));
+                        }
+
+                        var document = new WarrantyClaimDocument
+                        {
+                            Id = Guid.NewGuid(),
+                            DocumentType = "Photos", // Assuming photos for appointment slips
+                            DocumentName = file.FileName,
+                            DocumentUrl = uploadResult.FilePath,
+                            Description = request.DocumentDescription,
+                            UploadDate = TimeHelper.GetHoChiMinhTime(),
+                            WarrantyClaimId = request.TaskId, // Will be updated later with correct WarrantyClaimId
+                            UploadedByUserId = UserID, // Use task creator
+                            IsDeleted = false
+                        };
+
+                        documents.Add(document);
+                    }
+                }
+            }
             try
             {
-                var taskId = await _unitOfWork.TaskRepository.FillInWarrantyTask(request);
+                var taskId = await _unitOfWork.TaskRepository.FillInWarrantyTask(request,documents);
                 return Result.SuccessWithObject(new
                 {
-                    Message = "Warranty task completed successfully!",
+                    Message = "Warranty task information filled successfully!",
                     TaskId = taskId
                 });
             }
@@ -280,6 +319,144 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(TaskErrorMessage.TaskUpdateFailed(ex.Message));
             }
         }
+        public async Task<Result> UpdateWarrantyClaim(UpdateWarrantyClaimRequest request, Guid userId)
+        {
+            
+
+            // Validate user existence
+            var userCheck = await _checkIsExist.User(userId);
+            if (!userCheck.IsSuccess) return userCheck;
+
+            // Handle document uploads
+            var documents = new List<WarrantyClaimDocument>();
+            if (request.DocumentFiles != null && request.DocumentFiles.Any())
+            {
+                foreach (var file in request.DocumentFiles)
+                {
+                    if (file != null && file.Length > 0)
+                    {
+                        var imageRequest = new AddImageRequest(file, "WarrantyClaimDocuments");
+                        var uploadResult = await _unitOfWork.FirebaseRepository.UploadImageAsync(imageRequest);
+                        if (!uploadResult.Success)
+                        {
+                            return Result.Failure(Infrastructure.DTOs.Common.Error.Failure($"Failed to upload document", "Failed"));
+                        }
+
+                        var document = new WarrantyClaimDocument
+                        {
+                            Id = Guid.NewGuid(),
+                            DocumentType = "Photos",
+                            DocumentName = file.FileName,
+                            DocumentUrl = uploadResult.FilePath,
+                            Description = request.DocumentDescription,
+                            UploadDate = TimeHelper.GetHoChiMinhTime(),
+                            WarrantyClaimId = request.WarrantyClaimId,
+                            UploadedByUserId = userId,
+                            IsDeleted = false
+                        };
+
+                        documents.Add(document);
+                    }
+                }
+            }
+
+            try
+            {
+                await _unitOfWork.TaskRepository.UpdateWarrantyClaimAsync(request, documents, userId);
+                return Result.SuccessWithObject(new
+                {
+                    Message = "Warranty claim updated successfully!",
+                    WarrantyClaimId = request.WarrantyClaimId
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating warranty claim for WarrantyClaimId: {WarrantyClaimId}", request.WarrantyClaimId);
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("UpdateFailed", ex.Message));
+            }
+        }
+        public async Task<Result> CreateWarrantyReturnTask(CreateWarrantyReturnTaskRequest request, Guid userId)
+        {
+            
+
+            // Validate user existence
+            var userCheck = await _checkIsExist.User(userId);
+            if (!userCheck.IsSuccess) return userCheck;
+
+            // Validate assignee existence (if provided)
+            var assigneeCheck = await _checkIsExist.User(request.AssigneeId, allowNull: true);
+            if (!assigneeCheck.IsSuccess) return assigneeCheck;
+
+            // Check if a warranty return task already exists for this claim
+            var existingReturnTask = await _unitOfWork.TaskRepository.GetTasksByWarrantyClaimIdAsync(request.WarrantyClaimId, TaskType.WarrantyReturn);
+            if (existingReturnTask.Any())
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Conflict", "A warranty return task already exists for this warranty claim."));
+            }
+
+            // Validate ActualReturnDate for early return
+            if (request.IsEarlyReturn && !request.ActualReturnDate.HasValue)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("ValidationError", "ActualReturnDate is required when IsEarlyReturn is true."));
+            }
+
+            try
+            {
+                // Get warranty claim details
+                var warrantyClaim = await _unitOfWork.TaskRepository.GetWarrantyClaimAsync(request.WarrantyClaimId);
+                if (warrantyClaim == null)
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Warranty claim not found."));
+                }
+
+                // Validate ActualReturnDate against ExpectedReturnDate for early return
+                if (request.IsEarlyReturn && warrantyClaim.ExpectedReturnDate.HasValue && request.ActualReturnDate > warrantyClaim.ExpectedReturnDate)
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("ValidationError", "Actual return date cannot be later than expected return date for early return."));
+                }
+
+                // Get task group associated with the warranty submission task
+                var submissionTask = await _unitOfWork.TaskRepository.GetTaskByIdAsync(warrantyClaim.SubmittedByTaskId ?? Guid.Empty);
+                if (submissionTask == null || !submissionTask.TaskGroupId.HasValue)
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "No associated warranty submission task or task group found."));
+                }
+
+                var taskGroupId = submissionTask.TaskGroupId.Value;
+                var orderIndex = await _taskGroupService.GetNextOrderIndexAsync(taskGroupId, TaskType.WarrantyReturn);
+
+                // Determine ActualReturnDate for WarrantyClaim update
+                DateTime actualReturnDate = request.IsEarlyReturn
+                    ? request.ActualReturnDate.Value // Use provided ActualReturnDate for early return
+                    : (request.ActualReturnDate ?? warrantyClaim.ExpectedReturnDate ?? TimeHelper.GetHoChiMinhTime()); // Fallback to ExpectedReturnDate or current time
+
+                // Create the warranty return task
+                var taskId = await _unitOfWork.TaskRepository.CreateWarrantyReturnTask(request, userId, taskGroupId, orderIndex);
+
+                // Update WarrantyClaim
+                warrantyClaim.ActualReturnDate = actualReturnDate;
+                warrantyClaim.WarrantyNotes = request.WarrantyNotes ?? warrantyClaim.WarrantyNotes;         
+                warrantyClaim.ModifiedDate = TimeHelper.GetHoChiMinhTime();
+                warrantyClaim.ModifiedBy = userId;
+                warrantyClaim.ReturnTaskId = taskId;
+
+                await _unitOfWork.WarrantyClaimRepository.UpdateAsync(warrantyClaim);
+                await _unitOfWork.SaveChangesAsync();
+
+                return Result.SuccessWithObject(new
+                {
+                    Message = "Warranty return task created successfully!",
+                    TaskId = taskId,
+                    TaskGroupId = taskGroupId
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating warranty return task for WarrantyClaimId: {WarrantyClaimId}", request.WarrantyClaimId);
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Error", ex.Message));
+            }
+        }
+
         public async Task<Result> GetGetDetailWarrantyTaskForMechanicByIdAsync(Guid taskId)
         {
             var task = await _unitOfWork.TaskRepository.GetGetDetailWarrantyTaskForMechanicByIdAsync(taskId, TaskType.WarrantySubmission);
@@ -464,6 +641,26 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", ex.Message));
             }
         }
+
+        public async Task<Result> UpdateUninstallDeviceInTask(Guid taskId, Guid mechanicId)
+        {
+            var checkTask = await _checkIsExist.Task(taskId);
+            if (!checkTask.IsSuccess) return checkTask;
+            var checkMechanic = await _checkIsExist.User(mechanicId);
+            if (!checkMechanic.IsSuccess) return checkMechanic;
+            var isUpdated = await _unitOfWork.TaskRepository.UpdateUninstallDeviceInTask(taskId, mechanicId);
+            if (isUpdated == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Task not found or device already uninstalled."));
+            }
+            return Result.SuccessWithObject(new
+            {
+                Message = "Uninstall device updated successfully!",
+                TaskId = taskId,
+                UpdatedAt = TimeHelper.GetHoChiMinhTime()
+            });
+        }
+
         #endregion
         #region old methods
         public async Task<Result> GetTasksByReportIdAsync(Guid reportId)

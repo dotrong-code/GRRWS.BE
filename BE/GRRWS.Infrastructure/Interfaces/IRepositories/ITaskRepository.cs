@@ -34,7 +34,8 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<GetDetailReplaceTaskForMechanic> GetDetailReplaceTaskForMechanicByIdAsync(Guid taskId, string type);
         Task<GetDetailUninstallTaskForMechanic> GetDetailUninstallTaskForMechanicByIdAsync(Guid taskId);
         Task<GetDetailInstallTaskForMechanic> GetDetailInstallTaskForMechanicByIdAsync(Guid taskId);
-        Task<Guid> FillInWarrantyTask(FillInWarrantyTask request);
+        Task<Guid> FillInWarrantyTask(FillInWarrantyTask request, List<WarrantyClaimDocument> documents);
+        Task UpdateWarrantyClaimAsync(UpdateWarrantyClaimRequest request, List<WarrantyClaimDocument> documents, Guid userId);
         Task<bool> UpdateTaskStatusAsync(Guid taskId, Guid userId);
         Task<List<Tasks>> GetTasksByGroupIdAsync(Guid taskGroupId);
         Task<RequestInfoDto> GetRequestInfoAsync(Guid requestId);
@@ -43,6 +44,10 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<Guid> CreateUninstallTaskWithGroup(CreateUninstallTaskRequest request, Guid userId, Guid taskGroupId, int orderIndex);
         Task<Guid> CreateInstallTaskWithGroup(CreateInstallTaskRequest request, Guid userId, Guid taskGroupId, int orderIndex);
         Task<Guid> CreateRepairTaskWithGroup(CreateRepairTaskRequest request, Guid userId, Guid? taskGroupId, int orderIndex);
+
+        Task<Guid> UpdateUninstallDeviceInTask(Guid taskId, Guid mechanicId);
+
+
         Task<bool> IsTaskCompletedInReqestAsync(Guid requestId, TaskType taskType);
         // Add to ITaskRepository interface
         Task<(List<GetSingleTaskResponse> Tasks, int TotalCount)> GetAllSingleTasksAsync(string? taskType, string? status, string? priority, string? order, int pageNumber, int pageSize);
@@ -56,6 +61,14 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<List<Tasks>> GetTasksByTaskGroupIdAsync(Guid taskGroupId);
         Task<List<Tasks>> GetSuggestedTasksByTaskGroupIdAsync(Guid taskGroupId);
 
+
+
+
+
+        // Add new methods
+        Task<List<Tasks>> GetTasksByWarrantyClaimIdAsync(Guid warrantyClaimId, TaskType taskType);
+        Task<WarrantyClaim> GetWarrantyClaimAsync(Guid warrantyClaimId);
+        Task<Guid> CreateWarrantyReturnTask(CreateWarrantyReturnTaskRequest request, Guid userId, Guid taskGroupId, int orderIndex);
 
     }
 }

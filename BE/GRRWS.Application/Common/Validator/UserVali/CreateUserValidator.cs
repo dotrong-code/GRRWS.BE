@@ -10,9 +10,9 @@ namespace GRRWS.Application.Common.Validator.UserVali
         {
             AddEmailRules(request => request.Email, checkExists: true);
             AddUserNameRules(request => request.UserName, checkExists: true);
-            //AddFullNameRules(request => request.FullName);
-            //AddPhoneNumberRules(request => request.PhoneNumber);
-            //AddBirthdayRules(request => request.DateOfBirth ?? DateTime.MinValue);
+            AddFullNameRules(request => request.FullName);
+            AddPhoneNumberRules(request => request.PhoneNumber);
+            AddBirthdayRules(request => request.DateOfBirth);
             AddPasswordRules(request => request.Password);
         }
     }

@@ -73,14 +73,39 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Warranty task created successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [Authorize]
         [HttpPut("warranty-task/submit/fill-infor")]
-        public async Task<IResult> FillInWarrantyTask([FromBody] FillInWarrantyTask request)
+        public async Task<IResult> FillInWarrantyTask([FromForm] FillInWarrantyTask request)
         {
-            var result = await _taskService.FillInWarrantyTask(request);
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _taskService.FillInWarrantyTask(request, c.UserId);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Warranty task created successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [Authorize]
+        [HttpPut("warranty-claim/update")]
+        public async Task<IResult> UpdateWarrantyClaim([FromForm] UpdateWarrantyClaimRequest request)
+        {
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            
+            var result = await _taskService.UpdateWarrantyClaim(request, c.UserId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Warranty claim updated successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+        [Authorize]
+        [HttpPost("warranty-task/return")]
+        public async Task<IResult> CreateWarrantyReturnTask([FromBody] CreateWarrantyReturnTaskRequest request)
+        {
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _taskService.CreateWarrantyReturnTask(request, c.UserId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Warranty return task created successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
         [HttpGet("warranty-task-submit/{taskId}")]
         public async Task<IResult> GetWarrantySubmitTaskDetails(Guid taskId)
         {
@@ -204,8 +229,6 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
-
-
         [HttpPost("apply-suggested-group-assignments/{taskGroupId}")]
         public async Task<IResult> ApplySuggestedTaskGroupAssignments(Guid taskGroupId)
         {
@@ -235,5 +258,17 @@ namespace GRRWS.Host.Controllers
             ? ResultExtensions.ToSuccessDetails(result, "Task groups retrieved successfully")
             : ResultExtensions.ToProblemDetails(result);
         }
+
+        [HttpPut("uninstall-device/{taskId}")]
+        public async Task<IResult> UpdateUninstallDeviceInTask(Guid taskId)
+        {
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _taskService.UpdateUninstallDeviceInTask(taskId, c.UserId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Uninstall device updated successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+
     }
 }

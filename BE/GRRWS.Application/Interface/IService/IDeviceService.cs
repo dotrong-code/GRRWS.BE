@@ -30,5 +30,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetAllDeviceAndMachineIssueHistoryByDeviceIdAsync(Guid deviceId);
         Task<Result> GetAllDeviceAndMachineErrorHistoryByDeviceIdAsync(Guid deviceId);
         Task<Result> ImportDevicesAsync(IFormFile file);
+        Task<Result> GetAllDeviceAndMachineTechnicalSymptomHistoryByDeviceIdAsync(Guid deviceId);
+
     }
 }

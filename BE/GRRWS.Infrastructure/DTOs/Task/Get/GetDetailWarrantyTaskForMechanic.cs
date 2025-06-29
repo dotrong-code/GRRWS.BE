@@ -17,5 +17,16 @@
         public string? WarrantyNotes { get; set; }
         public decimal? ClaimAmount { get; set; }
         public string? HotNumber { get; set; } // Head of technical's phone number
+        public bool IsUninstallDevice { get; set; } // Indicates if the device needs to be uninstalled
+        public Guid? WarrantyClaimId { get; set; } // Unique identifier for the warranty claim
+        public List<WarrantyDocument>? Documents { get; set; } // List of documents related to the warranty claim
     }
+
+    public class WarrantyDocument
+    {
+        public string? DocumentType { get; set; }
+        public string? DocumentName { get; set; }
+        public string? DocumentUrl { get; set; } // URL to the document
+    }
+
 }

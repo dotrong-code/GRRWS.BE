@@ -385,6 +385,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     .ThenInclude(wc => wc.DeviceWarranty)
                 .Include(t => t.WarrantyClaim)
                     .ThenInclude(u => u.CreatedByUser)
+                .Include(t => t.WarrantyClaim)
+                    .ThenInclude(dc => dc.Documents)
                 .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == type)
                 .FirstOrDefaultAsync();
 
@@ -418,7 +420,16 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 WarrantyNotes = task.WarrantyClaim?.WarrantyNotes,
                 ClaimAmount = task.WarrantyClaim?.ClaimAmount,
                 ContractNumber = task.WarrantyClaim?.ContractNumber,
-                HotNumber = task.WarrantyClaim?.CreatedByUser?.PhoneNumber // Assuming CreatedByUser has PhoneNumber property
+                HotNumber = task.WarrantyClaim?.CreatedByUser?.PhoneNumber, // Assuming CreatedByUser has PhoneNumber property
+                IsUninstallDevice = task.IsUninstall ?? false, // Assuming IsUninstall is a property in Tasks
+                WarrantyClaimId = task.WarrantyClaim?.Id, // Unique identifier for the warranty claim
+                Documents = task.WarrantyClaim?.Documents?.Select(doc => new WarrantyDocument
+                {
+                    DocumentType = doc.DocumentType,
+                    DocumentName = doc.DocumentName,
+                    DocumentUrl = doc.DocumentUrl // Assuming DocumentUrl is a property in WarrantyClaimDocument
+                }).ToList() ?? new List<WarrantyDocument>()
+
             };
         }
         public async Task<GetDetailtRepairTaskForMechanic> GetDetailtRepairTaskForMechanicByIdAsync(Guid taskId, string type)
@@ -872,57 +883,140 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 }
             });
         }
-        public async Task<Guid> FillInWarrantyTask(FillInWarrantyTask request)
+        public async Task<Guid> FillInWarrantyTask(FillInWarrantyTask request, List<WarrantyClaimDocument> documents)
         {
-            // Get the task with its warranty claim
-            var task = await _context.Tasks
-                .Include(t => t.WarrantyClaim)
-                    .ThenInclude(wc => wc.DeviceWarranty)
-                .FirstOrDefaultAsync(t => t.Id == request.TaskId && !t.IsDeleted);
+            var executionStrategy = _context.Database.CreateExecutionStrategy();
 
-            if (task == null)
-                throw new Exception("Task not found.");
-
-            if (task.WarrantyClaim == null)
-                throw new Exception("Warranty claim not found for this task.");
-
-            // Update warranty claim details
-            var warrantyClaim = task.WarrantyClaim;
-            warrantyClaim.ExpectedReturnDate = request.WarrantyTime;
-            warrantyClaim.Resolution = request.Resolution;
-            warrantyClaim.ContractNumber = request.ContractNumber;
-            warrantyClaim.ClaimStatus = Status.InProgress;
-            warrantyClaim.ModifiedDate = DateTime.UtcNow;
-
-            // Create return task for collecting the device from warranty
-            var returnTask = new Tasks
+            return await executionStrategy.ExecuteAsync(async () =>
             {
-                Id = Guid.NewGuid(),
-                TaskName = $"Nhận thiết bị từ bảo hành - {warrantyClaim.ClaimNumber}",
-                TaskType = TaskType.WarrantyReturn,
-                TaskDescription = $"Collect device from warranty provider for claim: {warrantyClaim.ClaimNumber}. Expected return date: {warrantyClaim.ExpectedReturnDate:dd/MM/yyyy}",
-                StartTime = warrantyClaim.ExpectedReturnDate,
-                ExpectedTime = warrantyClaim.ExpectedReturnDate?.AddHours(2),
-                Status = Status.Pending,
-                Priority = Domain.Enum.Priority.Medium,
-                OrderIndex = 4,
-                AssigneeId = task.AssigneeId, // Assign to same technician
-                WarrantyClaimId = warrantyClaim.Id,
-                CreatedDate = DateTime.UtcNow,
-                IsDeleted = false
-            };
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    // Get the task with its warranty claim
+                    var task = await _context.Tasks
+                        .Include(t => t.WarrantyClaim)
+                            .ThenInclude(wc => wc.DeviceWarranty)
+                        .FirstOrDefaultAsync(t => t.Id == request.TaskId && !t.IsDeleted);
 
-            // Add return task to context
-            await _context.Tasks.AddAsync(returnTask);
+                    if (task == null)
+                        throw new Exception("Task not found.");
 
-            // Update warranty claim with return task ID
-            warrantyClaim.ReturnTaskId = returnTask.Id;
+                    if (task.WarrantyClaim == null)
+                        throw new Exception("Warranty claim not found for this task.");
 
-            // Update entities
-            //_context.Tasks.Update(task);
-            _context.WarrantyClaims.Update(warrantyClaim);
-            await _context.SaveChangesAsync();
-            return task.Id;
+                    // Update warranty claim details
+                    var warrantyClaim = task.WarrantyClaim;
+                    warrantyClaim.ExpectedReturnDate = request.ExpectedReturnDate;
+                    warrantyClaim.Resolution = request.Resolution;
+                    warrantyClaim.ContractNumber = request.ContractNumber;
+                    warrantyClaim.WarrantyNotes = request.WarrantyNotes;
+                    warrantyClaim.ClaimAmount = request.ClaimAmount;
+                    warrantyClaim.ClaimStatus = request.ClaimStatus ?? Status.InProgress;
+                    warrantyClaim.ModifiedDate = TimeHelper.GetHoChiMinhTime();
+
+                    // Add documents
+                    foreach (var document in documents)
+                    {
+                        document.WarrantyClaimId = warrantyClaim.Id;
+                        await _context.WarrantyClaimDocuments.AddAsync(document);
+                    }
+
+                    // Create return task if requested
+                    if (request.CreateReturnTaskNow)
+                    {
+                        var returnTask = new Tasks
+                        {
+                            Id = Guid.NewGuid(),
+                            TaskName = $"Nhận thiết bị từ bảo hành - {warrantyClaim.ClaimNumber}",
+                            TaskType = TaskType.WarrantyReturn,
+                            TaskDescription = $"Nhận thiết bị từ nhà cung cấp bảo hành cho yêu cầu: {warrantyClaim.ClaimNumber}. Ngày dự kiến trả: {request.ExpectedReturnDate?.ToString("dd/MM/yyyy") ?? "N/A"}",
+                            StartTime = request.ReturnTaskStartTime!.Value,
+                            ExpectedTime = request.ReturnTaskStartTime!.Value.AddHours(2),
+                            Status = task.AssigneeId == null ? Status.Suggested : Status.Pending,
+                            Priority = Priority.Medium,
+                            AssigneeId = task.AssigneeId,
+                            WarrantyClaimId = warrantyClaim.Id,
+                            TaskGroupId = task.TaskGroupId,
+                            OrderIndex = task.OrderIndex + 1,
+                            CreatedDate = TimeHelper.GetHoChiMinhTime(),
+                            CreatedBy = task.CreatedBy,
+                            IsUninstall = false,
+                            IsDeleted = false
+                        };
+
+                        await _context.Tasks.AddAsync(returnTask);
+                        warrantyClaim.ReturnTaskId = returnTask.Id;
+                    }
+
+                    // Update entities
+                    _context.WarrantyClaims.Update(warrantyClaim);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return task.Id;
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            });
+        }
+        public async Task UpdateWarrantyClaimAsync(UpdateWarrantyClaimRequest request, List<WarrantyClaimDocument> documents, Guid userId)
+        {
+            var executionStrategy = _context.Database.CreateExecutionStrategy();
+
+            await executionStrategy.ExecuteAsync(async () =>
+            {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    // Get the warranty claim
+                    var warrantyClaim = await _context.WarrantyClaims
+                        .Include(wc => wc.ReturnTask)
+                        .FirstOrDefaultAsync(wc => wc.Id == request.WarrantyClaimId && !wc.IsDeleted);
+
+                    if (warrantyClaim == null)
+                        throw new Exception("Warranty claim not found.");
+
+                    // Update warranty claim details
+                    warrantyClaim.ExpectedReturnDate = request.ExpectedReturnDate ?? warrantyClaim.ExpectedReturnDate;
+                    warrantyClaim.Resolution = request.Resolution ?? warrantyClaim.Resolution;
+                    warrantyClaim.WarrantyNotes = request.WarrantyNotes ?? warrantyClaim.WarrantyNotes;
+                    warrantyClaim.ClaimAmount = request.ClaimAmount ?? warrantyClaim.ClaimAmount;
+                    warrantyClaim.ClaimStatus = request.ClaimStatus ?? warrantyClaim.ClaimStatus;
+                    warrantyClaim.ModifiedDate = TimeHelper.GetHoChiMinhTime();
+                    warrantyClaim.ModifiedBy = userId;
+
+                    // Update associated return task, if it exists
+                    if (warrantyClaim.ReturnTask != null && request.ExpectedReturnDate.HasValue)
+                    {
+                        var returnTask = warrantyClaim.ReturnTask;
+                        returnTask.TaskDescription = $"Nhận thiết bị từ nhà cung cấp bảo hành cho yêu cầu: {warrantyClaim.ClaimNumber}. Ngày dự kiến trả: {request.ExpectedReturnDate.Value:dd/MM/yyyy}";
+                        returnTask.StartTime = request.ExpectedReturnDate.Value;
+                        returnTask.ExpectedTime = request.ExpectedReturnDate.Value.AddHours(2);
+                        returnTask.ModifiedDate = TimeHelper.GetHoChiMinhTime();
+                        returnTask.ModifiedBy = userId;
+                        _context.Tasks.Update(returnTask);
+                    }
+
+                    // Add documents
+                    foreach (var document in documents)
+                    {
+                        await _context.WarrantyClaimDocuments.AddAsync(document);
+                    }
+
+                    // Update warranty claim
+                    _context.WarrantyClaims.Update(warrantyClaim);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            });
         }
         public async Task<Guid> CreateRepairTask(CreateRepairTaskRequest request, Guid userId)
         {
@@ -1558,7 +1652,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             // Return true if no such task exists OR all are completed
             return !tasksOfType.Any() || tasksOfType.All(t => t.Status == Status.Completed);
         }
-
         public async Task<(List<GetSingleTaskResponse> Tasks, int TotalCount)> GetAllSingleTasksAsync(string? taskType, string? status, string? priority, string? order, int pageNumber, int pageSize)
         {
             var query = _context.Tasks
@@ -1614,6 +1707,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     AssigneeId = t.AssigneeId,
                     CreatedDate = t.CreatedDate,
                     ModifiedDate = t.ModifiedDate,
+                    IsUninstallDevice = t.IsUninstall ?? false, // Include uninstall device status
                     RequestId = _context.Requests
                         .Where(r => r.ReportId != null &&
                                    _context.Reports.Any(rep => rep.Id == r.ReportId &&
@@ -1625,7 +1719,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             return (tasks, totalCount);
         }
-
         public async Task<(List<GetGroupTaskResponse> Groups, int TotalCount)> GetAllGroupTasksAsync(int pageNumber, int pageSize)
         {
             var query = _context.TaskGroups
@@ -1664,7 +1757,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                             EndTime = t.EndTime,
                             AssigneeName = t.Assignee.FullName,
                             AssigneeId = t.AssigneeId,
-                            CreatedDate = t.CreatedDate
+                            CreatedDate = t.CreatedDate,
+                            IsUninstallDevice = t.IsUninstall ?? false // Include uninstall device status
                         })
                         .ToList()
                 })
@@ -1672,7 +1766,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             return (groups, totalCount);
         }
-
         public async Task<(List<GetGroupTaskResponse> Groups, int TotalCount)> GetGroupTasksByRequestIdAsync(Guid requestId, int pageNumber, int pageSize)
         {
             var query = _context.TaskGroups
@@ -1741,6 +1834,107 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Where(t => t.TaskGroupId == taskGroupId && !t.IsDeleted && t.Status == Status.Suggested)
                 .OrderBy(t => t.OrderIndex)
                 .ToListAsync();
+        }
+
+
+        public async Task<Guid> UpdateUninstallDeviceInTask(Guid taskId, Guid mechanicId)
+        {
+            var task = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == taskId);
+            if (task == null)
+            {
+                // return something if task doesn't exist
+                return Guid.Empty;
+            }
+
+            // If part of a group, mark all tasks in that group as IsUninstall = true
+            if (task.TaskGroupId.HasValue)
+            {
+                var tasksInGroup = await _context.Tasks
+                    .Where(t => t.TaskGroupId == task.TaskGroupId)
+                    .ToListAsync();
+
+                foreach (var groupedTask in tasksInGroup)
+                {
+                    groupedTask.IsUninstall = true;
+                }
+
+                _context.Tasks.UpdateRange(tasksInGroup);
+                await _context.SaveChangesAsync();
+            }
+
+            return taskId;
+        }
+
+        public async Task<List<Tasks>> GetTasksByWarrantyClaimIdAsync(Guid warrantyClaimId, TaskType taskType)
+        {
+            return await _context.Tasks
+                .Where(t => t.WarrantyClaimId == warrantyClaimId && t.TaskType == taskType && !t.IsDeleted)
+                .ToListAsync();
+        }
+
+        public async Task<WarrantyClaim> GetWarrantyClaimAsync(Guid warrantyClaimId)
+        {
+            return await _context.WarrantyClaims
+                .Include(wc => wc.SubmittedByTask)
+                .FirstOrDefaultAsync(wc => wc.Id == warrantyClaimId && !wc.IsDeleted);
+        }
+
+        public async Task<Guid> CreateWarrantyReturnTask(CreateWarrantyReturnTaskRequest request, Guid userId, Guid taskGroupId, int orderIndex)
+        {
+            var executionStrategy = _context.Database.CreateExecutionStrategy();
+
+            return await executionStrategy.ExecuteAsync(async () =>
+            {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    // Get warranty claim to retrieve claim number and other details
+                    var warrantyClaim = await _context.WarrantyClaims
+                        .FirstOrDefaultAsync(wc => wc.Id == request.WarrantyClaimId && !wc.IsDeleted);
+                    if (warrantyClaim == null)
+                    {
+                        throw new Exception("Warranty claim not found.");
+                    }
+
+                    // Determine start time based on IsEarlyReturn
+                    var startTime = request.IsEarlyReturn
+                        ? TimeHelper.GetHoChiMinhTime() // Start now if early return
+                        : request.ActualReturnDate; // Start on actual return date
+
+                    // Create the warranty return task
+                    var task = new Tasks
+                    {
+                        Id = Guid.NewGuid(),
+                        TaskName = $"Nhận thiết bị từ bảo hành - {warrantyClaim.ClaimNumber}",
+                        TaskType = TaskType.WarrantyReturn,
+                        TaskDescription = $"Nhận thiết bị từ nhà cung cấp bảo hành cho yêu cầu: {warrantyClaim.ClaimNumber}. Ngày trả thực tế: {request.ActualReturnDate:dd/MM/yyyy}",
+                        StartTime = startTime,
+                        ExpectedTime = (startTime ?? DateTime.UtcNow).AddHours(5), // Default 2 hours for warranty return
+                        Status = request.AssigneeId == null ? Status.Suggested : Status.Pending,
+                        Priority = Domain.Enum.Priority.Medium,
+                        AssigneeId = request.AssigneeId,
+                        WarrantyClaimId = request.WarrantyClaimId,
+                        TaskGroupId = taskGroupId,
+                        OrderIndex = orderIndex,
+                        CreatedDate = TimeHelper.GetHoChiMinhTime(),
+                        CreatedBy = userId,
+                        IsUninstall = false,
+                        IsDeleted = false
+                    };
+
+                    await _context.Tasks.AddAsync(task);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return task.Id;
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            });
+
         }
     }
 }

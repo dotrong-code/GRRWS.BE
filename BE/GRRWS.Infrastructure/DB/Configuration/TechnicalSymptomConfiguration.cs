@@ -409,6 +409,17 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     OccurrenceCount = 17,
                     CreatedDate = DateTime.UtcNow,
                     ModifiedDate = DateTime.UtcNow
+                },
+                new TechnicalSymptom
+                {
+                    Id = Guid.Parse("e8e8e8e8-e8e8-e8e8-e8e8-e8e8e8e8e8e8"),
+                    SymptomCode = "CAN_BAO_HANH",
+                    Name = "Cần bảo hành",
+                    Description = "Thiết bị cần được đem đi bảo hành.",
+                    IsCommon = true,
+                    OccurrenceCount = 5,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
                 }
             );
         }
