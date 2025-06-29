@@ -87,19 +87,26 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .ThenInclude(ri => ri.Images)
                 .Where(r => r.DeviceId == id).ToListAsync();
         }
-        public async Task<(List<Request> Items, int TotalCount)> GetRequestByUserIdAsync(Guid userId, int pageNumber, int pageSize, string? search, string? searchType)
+        public async Task<(List<Request> Items, int TotalCount)> GetRequestByUserIdAsync(
+    Guid userId,
+    int pageNumber,
+    int pageSize,
+    string? search,
+    string? searchType)
         {
+            // 1. Fetch all matching requests (no pagination in the DB query)
             var query = _context.Requests
                 .Include(r => r.Device)
-                .ThenInclude(d => d.Position)
-                .ThenInclude(p => p.Zone)
-                .ThenInclude(z => z.Area)
+                    .ThenInclude(d => d.Position)
+                    .ThenInclude(p => p.Zone)
+                    .ThenInclude(z => z.Area)
                 .Include(r => r.RequestIssues)
-                .ThenInclude(ri => ri.Issue)
+                    .ThenInclude(ri => ri.Issue)
                 .Include(r => r.RequestIssues)
-                .ThenInclude(ri => ri.Images)
+                    .ThenInclude(ri => ri.Images)
                 .Where(r => r.RequestedById == userId && !r.IsDeleted);
 
+            // 2. Apply filters
             if (!string.IsNullOrWhiteSpace(search))
             {
                 search = search.Trim();
@@ -107,9 +114,9 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 {
                     if (Enum.TryParse<Status>(search, true, out var status))
                     {
+                        // If status == InProgress, include Approved
                         if (status == Status.InProgress)
                         {
-                            // Include both InProgress and Approved statuses
                             query = query.Where(r => r.Status == Status.InProgress || r.Status == Status.Approved);
                         }
                         else
@@ -119,23 +126,45 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     }
                     else
                     {
-                        query = query.Where(r => false); // Return empty if status is invalid
+                        // Invalid status => no results
+                        query = query.Where(r => false);
                     }
                 }
-                else // Default to title search (for searchType == "title" or invalid/unspecified)
+                else
                 {
-                    query = query.Where(r => r.RequestTitle != null && r.RequestTitle.ToLower().Contains(search.ToLower()));
+                    // Default to title search
+                    query = query.Where(r =>
+                        r.RequestTitle != null &&
+                        r.RequestTitle.ToLower().Contains(search.ToLower()));
                 }
             }
 
-            var totalCount = await query.CountAsync();
-            var items = await query
-                .OrderByDescending(r => r.CreatedDate)
+            // 3. Get all results
+            var allRequests = await query.ToListAsync();
+
+            // 4. Group in memory by ZoneName (null => "Unknown Zone"), sort requests by CreatedDate desc
+            var groupedByZone = allRequests
+                .GroupBy(r => r.Device?.Position?.Zone?.ZoneName ?? "Unknown Zone")
+                .Select(g => g.OrderByDescending(r => r.CreatedDate).ToList())
+                .ToList();
+
+            // 5. Flatten groups in alphabetical order of zone or any custom ordering
+            //    If you want zone name ordering, do .OrderBy(g => g.Key).  If you want to keep them 
+            //    in the order they appear, skip re-ordering. Here we just concatenate in the existing grouping order.
+            var flatList = new List<Request>();
+            foreach (var group in groupedByZone)
+            {
+                flatList.AddRange(group);
+            }
+
+            // 6. Now apply pagination on the flat list
+            var totalCount = flatList.Count;
+            var pagedRequests = flatList
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
+                .ToList();
 
-            return (items, totalCount);
+            return (pagedRequests, totalCount);
         }
         public async Task UpdateRequestAsync(Request request, List<Guid> newIssueIds)
         {

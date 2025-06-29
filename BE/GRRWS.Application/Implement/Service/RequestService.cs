@@ -49,15 +49,30 @@ namespace GRRWS.Application.Implement.Service
             };
             return Result.SuccessWithObject(response);
         }
-        public async Task<Result> GetRequestByUserIdAsync(Guid userId, int pageNumber, int pageSize, string? search, string? searchType)
+        public async Task<Result> GetRequestByUserIdAsync(
+        Guid userId,
+        int pageNumber,
+        int pageSize,
+        string? search,
+        string? searchType)
         {
-            var (requests, totalCount) = await _requestRepository.GetRequestByUserIdAsync(userId, pageNumber, pageSize, search, searchType);
+            // 1. Call the updated repository method
+            var (requests, totalCount) = await _requestRepository.GetRequestByUserIdAsync(
+                userId,
+                pageNumber,
+                pageSize,
+                search,
+                searchType);
+
+            // 2. Map to DTOs
             var dtos = new List<RequestDTO>();
-            foreach (var r in requests.Where(r => !r.IsDeleted).OrderByDescending(r => r.CreatedDate))
+            foreach (var r in requests.Where(r => !r.IsDeleted))
             {
                 var dto = await MapRequestToDTOAsync(r);
                 dtos.Add(dto);
             }
+
+            // 3. Return flat, paginated list as usual
             var response = new PagedResponse<RequestDTO>
             {
                 Data = dtos,
@@ -278,7 +293,7 @@ namespace GRRWS.Application.Implement.Service
             return Result.SuccessWithObject(issues);
         }
 
-        public async Task<Result> CancelRequestAsync(Infrastructure.DTOs.RequestDTO.CreateRequestFormDTO.CancelRequestDTO dto,Guid userId)
+        public async Task<Result> CancelRequestAsync(Infrastructure.DTOs.RequestDTO.CreateRequestFormDTO.CancelRequestDTO dto, Guid userId)
         {
             var r = await _requestRepository.GetByIdAsync(dto.RequestId);
             if (r == null || r.IsDeleted)
@@ -402,7 +417,7 @@ namespace GRRWS.Application.Implement.Service
             var notificationRequestForHOT = new NotificationRequest
             {
                 SenderId = userId,
-                Role = 2, // 0 for HOT
+                Role = 2, // HOT
                 ReceiverId = null,
                 Title = "Yêu cầu mới đã được tạo",
                 Body = $"Yêu cầu cho thiết bị {getDevice.DeviceName} đã được tạo.",
