@@ -224,6 +224,7 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "RequestIssue status updated successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        // Endpoint to bulk create random requests for testing purposes
         [HttpPost("bulk-random")]
         [Authorize]
         public async Task<IResult> BulkCreateRandomRequests([FromQuery] int count = 5)
