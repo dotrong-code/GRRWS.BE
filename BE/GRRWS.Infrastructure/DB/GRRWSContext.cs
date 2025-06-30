@@ -970,6 +970,12 @@ namespace GRRWS.Infrastructure.DB
                         .WithMany()
                         .HasForeignKey(nr => nr.ReceiverId)
                         .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<RequestMachineReplacement>()
+    .HasOne(r => r.Task)
+    .WithOne(t => t.RequestMachineReplacement)
+    .HasForeignKey<RequestMachineReplacement>(r => r.TaskId)
+    .OnDelete(DeleteBehavior.SetNull);
+
 
             #endregion
             #region Table Mappings

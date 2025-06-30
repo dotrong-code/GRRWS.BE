@@ -480,11 +480,11 @@ namespace GRRWS.Application.Implement.Service
             dynamic data = result.Object;
 
             Guid taskGroupId = data.taskGroupId;
-            var createSchedulingResult = await CreateMechanicScheduleForWarranty(taskGroupId);
-            if (createSchedulingResult.IsFailure)
-            {
-                return Result.SuccessWithObject(new { Message = $"Report created successfully but failed to auto-assign tasks!.{createSchedulingResult.Error.Description}", ReportId = report.Id });
-            }
+            //var createSchedulingResult = await CreateMechanicScheduleForWarranty(taskGroupId);
+            //if (createSchedulingResult.IsFailure)
+            //{
+            //    return Result.SuccessWithObject(new { Message = $"Report created successfully but failed to auto-assign tasks!.{createSchedulingResult.Error.Description}", ReportId = report.Id });
+            //}
 
 
             return Result.SuccessWithObject(new { Message = "Report created successfully with IssueSymtoms!", ReportId = report.Id });
@@ -542,14 +542,14 @@ namespace GRRWS.Application.Implement.Service
                 {
                     return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", $"Request not found for the provided {reportId}."));
                 }
-                var currentTime = DateTime.Now;
-                var availableMechanics = await _unit.UserRepository.GetRecommendedMechanicsAsync(currentTime, 1, 10);
+                //var currentTime = DateTime.Now;
+                //var availableMechanics = await _unit.UserRepository.GetRecommendedMechanicsAsync(currentTime, 1, 10);
 
-                if (!availableMechanics.Any())
-                {
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", $"No more mechanic available."));
-                }
-
+                //if (!availableMechanics.Any())
+                //{
+                //    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", $"No more mechanic available."));
+                //}
+                var availableMechanics = await _unit.UserRepository.GetUsersByRole(3);
                 var primaryMechanic = availableMechanics.First(); // Best available mechanic
                 var secondaryMechanic = availableMechanics.Count > 1 ? availableMechanics[1] : primaryMechanic;
 
@@ -559,7 +559,7 @@ namespace GRRWS.Application.Implement.Service
                 var warrantyRequest = new CreateWarrantyTaskRequest
                 {
                     RequestId = requestId,
-                    AssigneeId = primaryMechanic.MechanicId, // Will be assigned later through auto-assignment
+                    AssigneeId = primaryMechanic.Id, // Will be assigned later through auto-assignment
                     DeviceWarrantyId = deviceWarrantyId,
                     TechnicalIssueIds = technicalSymptomIds,
 
@@ -579,9 +579,9 @@ namespace GRRWS.Application.Implement.Service
                 var installRequest = new CreateInstallTaskRequest
                 {
                     RequestId = requestId,
-                    AssigneeId = secondaryMechanic.MechanicId, // Will be assigned later through auto-assignment
+                    AssigneeId = secondaryMechanic.Id, // Will be assigned later through auto-assignment
                     TaskGroupId = taskGroupId,
-                    NewDeviceId = newDeviceId,
+                    //NewDeviceId = newDeviceId,
                 };
                 var installResult = await _taskService.CreateInstallTask(installRequest, createdByUserId);
                 if (installResult.IsFailure)

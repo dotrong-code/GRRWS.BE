@@ -262,5 +262,14 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Where(d => d.PositionId == positionId && !d.IsDeleted)
                 .ToListAsync();
         }
+
+        public async Task<List<Device>> GetDevicesByMachineIdAsync(Guid machineId)
+        {
+            var devices = await _context.Devices
+                .Include(d => d.Machine)
+                .Where(d => d.MachineId == machineId && !d.IsDeleted)
+                .ToListAsync();
+            return devices;
+        }
     }
 }

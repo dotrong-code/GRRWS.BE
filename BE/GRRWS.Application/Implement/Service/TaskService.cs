@@ -8,6 +8,7 @@ using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
 using GRRWS.Infrastructure.DTOs.Firebase.AddImage;
+using GRRWS.Infrastructure.DTOs.Firebase.GetImage;
 using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.DTOs.Task;
@@ -225,7 +226,10 @@ namespace GRRWS.Application.Implement.Service
                 var requestInfo = await _unitOfWork.TaskRepository.GetRequestInfoAsync(request.RequestId);
                 if (requestInfo == null)
                     return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found."));
-
+                var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(requestInfo.DeviceId);
+                var deviceByMachine = await _unitOfWork.DeviceRepository.GetDevicesByMachineIdAsync(device.MachineId ?? Guid.Empty);
+                var replaceDeviceId = deviceByMachine.FirstOrDefault(d => d.Id != device.Id && d.Status == DeviceStatus.Active)?.Id;
+                request.NewDeviceId = replaceDeviceId;
                 var deviceInfo = request.NewDeviceId.HasValue
                     ? await _unitOfWork.TaskRepository.GetDeviceInfoAsync(request.NewDeviceId.Value)
                     : "Unknown Device";
@@ -252,7 +256,17 @@ namespace GRRWS.Application.Implement.Service
                 }
 
                 var taskId = await _unitOfWork.TaskRepository.CreateInstallTaskWithGroup(request, userId, taskGroupId, orderIndex);
-
+                _unitOfWork.ClearChangeTracker();
+                var requestMachine = await RequestReplaceMachineForInstall(request.RequestId, taskId, replaceDeviceId);
+                if (requestMachine.IsFailure)
+                {
+                    return Result.SuccessWithObject(new
+                    {
+                        Message = $"Install task created successfully! But fail to create request machine{requestMachine.Error.Description}",
+                        TaskId = taskId,
+                        TaskGroupId = taskGroupId
+                    });
+                }
                 return Result.SuccessWithObject(new
                 {
                     Message = "Install task created successfully!",
@@ -265,7 +279,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Error", ex.Message));
             }
         }
-        public async Task<Result> FillInWarrantyTask(FillInWarrantyTask request,Guid UserID)
+        public async Task<Result> FillInWarrantyTask(FillInWarrantyTask request, Guid UserID)
         {
             // Prepare documents for upload
             var documents = new List<WarrantyClaimDocument>();
@@ -285,7 +299,7 @@ namespace GRRWS.Application.Implement.Service
                         var uploadResult = await _unitOfWork.FirebaseRepository.UploadImageAsync(imageRequest);
                         if (!uploadResult.Success)
                         {
-                            return Result.Failure(Infrastructure.DTOs.Common.Error.Failure($"Failed to upload document","Failed"));
+                            return Result.Failure(Infrastructure.DTOs.Common.Error.Failure($"Failed to upload document", "Failed"));
                         }
 
                         var document = new WarrantyClaimDocument
@@ -307,7 +321,7 @@ namespace GRRWS.Application.Implement.Service
             }
             try
             {
-                var taskId = await _unitOfWork.TaskRepository.FillInWarrantyTask(request,documents);
+                var taskId = await _unitOfWork.TaskRepository.FillInWarrantyTask(request, documents);
                 return Result.SuccessWithObject(new
                 {
                     Message = "Warranty task information filled successfully!",
@@ -321,7 +335,7 @@ namespace GRRWS.Application.Implement.Service
         }
         public async Task<Result> UpdateWarrantyClaim(UpdateWarrantyClaimRequest request, Guid userId)
         {
-            
+
 
             // Validate user existence
             var userCheck = await _checkIsExist.User(userId);
@@ -377,7 +391,7 @@ namespace GRRWS.Application.Implement.Service
         }
         public async Task<Result> CreateWarrantyReturnTask(CreateWarrantyReturnTaskRequest request, Guid userId)
         {
-            
+
 
             // Validate user existence
             var userCheck = await _checkIsExist.User(userId);
@@ -435,7 +449,7 @@ namespace GRRWS.Application.Implement.Service
 
                 // Update WarrantyClaim
                 warrantyClaim.ActualReturnDate = actualReturnDate;
-                warrantyClaim.WarrantyNotes = request.WarrantyNotes ?? warrantyClaim.WarrantyNotes;         
+                warrantyClaim.WarrantyNotes = request.WarrantyNotes ?? warrantyClaim.WarrantyNotes;
                 warrantyClaim.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                 warrantyClaim.ModifiedBy = userId;
                 warrantyClaim.ReturnTaskId = taskId;
@@ -456,10 +470,10 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Error", ex.Message));
             }
         }
-
         public async Task<Result> GetGetDetailWarrantyTaskForMechanicByIdAsync(Guid taskId)
         {
             var task = await _unitOfWork.TaskRepository.GetGetDetailWarrantyTaskForMechanicByIdAsync(taskId, TaskType.WarrantySubmission);
+            task.Documents = await MapDocsWithImagesAsync(task.Documents);
             if (task == null)
             {
                 return Result.Failure(TaskErrorMessage.TaskNotExist());
@@ -469,6 +483,7 @@ namespace GRRWS.Application.Implement.Service
         public async Task<Result> GetGetDetailWarrantyReturnTaskForMechanicByIdAsync(Guid taskId)
         {
             var task = await _unitOfWork.TaskRepository.GetGetDetailWarrantyTaskForMechanicByIdAsync(taskId, TaskType.WarrantyReturn);
+            task.Documents = await MapDocsWithImagesAsync(task.Documents);
             if (task == null)
             {
                 return Result.Failure(TaskErrorMessage.TaskNotExist());
@@ -641,7 +656,6 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", ex.Message));
             }
         }
-
         public async Task<Result> UpdateUninstallDeviceInTask(Guid taskId, Guid mechanicId)
         {
             var checkTask = await _checkIsExist.Task(taskId);
@@ -852,7 +866,6 @@ namespace GRRWS.Application.Implement.Service
         #endregion
         #region private methods
         // You can add any private methods here if needed for internal logic
-
         private async Task<TaskType> GetExistingGroupTypeAsync(Guid taskGroupId)
         {
             var taskGroup = await _unitOfWork.TaskGroupRepository.GetByIdAsync(taskGroupId);
@@ -1154,6 +1167,78 @@ namespace GRRWS.Application.Implement.Service
             {
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("RetrievalError", $"Failed to retrieve suggested tasks: {ex.Message}", 0));
             }
+        }
+
+        private async Task<Result> RequestReplaceMachineForInstall(Guid requestId, Guid taskId, Guid? replaceDeviceId)
+        {
+
+            var request = await _unitOfWork.RequestRepository.GetRequestByIdAsync(requestId);
+            var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(request.DeviceId);
+            var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
+
+            var requestMachineReplacement = new RequestMachineReplacement
+            {
+                Id = Guid.NewGuid(),
+                CreatedDate = TimeHelper.GetHoChiMinhTime(),
+                ModifiedDate = TimeHelper.GetHoChiMinhTime(),
+                RequestedById = request.RequestedById,
+                OldDeviceId = device.Id,
+                MachineId = device.MachineId ?? null,
+                RequestCode = $"RM-{TimeHelper.GetHoChiMinhTime():yyyyMMddHHmmss}",
+                Status = MachineReplacementStatus.Pending,
+                TaskId = taskId,
+                NewDeviceId = replaceDeviceId,
+                AssigneeId = task.AssigneeId,
+
+            };
+            if (requestMachineReplacement.MachineId == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("ValidationError", "Device does not have a machine model."));
+            }
+            await _unitOfWork.RequestMachineReplacementRepository.CreateAsync(requestMachineReplacement);
+            await _unitOfWork.SaveChangesAsync();
+            return Result.SuccessWithObject(new
+            {
+                Message = "Machine replacement request created successfully!",
+                RequestMachineId = requestMachineReplacement.Id,
+                RequestCode = requestMachineReplacement.RequestCode,
+                CreatedDate = requestMachineReplacement.CreatedDate
+            });
+        }
+
+
+        private async Task<List<WarrantyDocument>> MapDocsWithImagesAsync(ICollection<WarrantyDocument> documents)
+        {
+            if (documents == null || !documents.Any())
+            {
+                return new List<WarrantyDocument>();
+            }
+
+            var updatedDocs = new List<WarrantyDocument>();
+            foreach (var doc in documents)
+            {
+                var updatedDoc = new WarrantyDocument
+                {
+                    DocumentType = doc.DocumentType,
+                    DocumentName = doc.DocumentName,
+                    DocumentUrl = doc.DocumentUrl // Default to original URL
+                };
+
+                if (!string.IsNullOrEmpty(doc.DocumentUrl))
+                {
+                    var getImageRequest = new GetImageRequest(doc.DocumentUrl);
+                    var imageResult = await _unitOfWork.FirebaseRepository.GetImageAsync(getImageRequest);
+                    if (imageResult.Success && !string.IsNullOrEmpty(imageResult.ImageUrl))
+                    {
+                        updatedDoc.DocumentUrl = imageResult.ImageUrl; // Update with Firebase URL
+                    }
+                    // If image fetch fails, keep the original DocumentUrl
+                }
+
+                updatedDocs.Add(updatedDoc);
+            }
+
+            return updatedDocs;
         }
         #endregion
     }
