@@ -10,6 +10,7 @@ namespace GRRWS.Application.Interface.IService
     string? status = null,
     string? sortBy = null,
     bool isAscending = true);
+        public Task<Result> ConfirmTakenDevice(Guid requestMachineId, Guid userId);
 
 
 

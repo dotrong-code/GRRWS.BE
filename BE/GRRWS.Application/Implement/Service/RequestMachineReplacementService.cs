@@ -1,5 +1,6 @@
 ﻿using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
+using GRRWS.Domain.Common;
 using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.Interfaces;
@@ -12,6 +13,39 @@ namespace GRRWS.Application.Implement.Service
         public RequestMachineReplacementService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
+        }
+
+        public async Task<Result> ConfirmTakenDevice(Guid requestMachineId, Guid userId)
+        {
+            var requestMachine = await _unitOfWork.RequestMachineReplacementRepository.GetByIdAsync(requestMachineId);
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+            if (user.Role == 4)
+            {
+                requestMachine.StokkKeeperConfirm = true;
+            }
+            if (user.Role == 3)
+            {
+                requestMachine.AssigneeConfirm = true;
+            }
+            if (requestMachine.StokkKeeperConfirm && requestMachine.AssigneeConfirm)
+            {
+                requestMachine.Status = Domain.Enum.MachineReplacementStatus.Completed;
+                requestMachine.CompletedDate = TimeHelper.GetHoChiMinhTime();
+            }
+            else
+            {
+                requestMachine.Status = Domain.Enum.MachineReplacementStatus.Pending;
+            }
+            await _unitOfWork.RequestMachineReplacementRepository.UpdateAsync(requestMachine);
+            await _unitOfWork.SaveChangesAsync();
+            return Result.SuccessWithObject(new
+            {
+                RequestMachineId = requestMachine.Id,
+                AssigneeConfirm = requestMachine.AssigneeConfirm,
+                StokkKeeperConfirm = requestMachine.StokkKeeperConfirm,
+                Status = requestMachine.Status.ToString(),
+            });
+
         }
 
         public async Task<Result> GetAllAsync(

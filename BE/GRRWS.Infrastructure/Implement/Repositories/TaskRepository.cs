@@ -1619,7 +1619,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             //    _context.MechanicShifts.Update(getMechanicShift);
             //}
 
-
             // Update status based on current status
             switch (task.Status)
             {
