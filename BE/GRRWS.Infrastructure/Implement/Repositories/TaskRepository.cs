@@ -1,6 +1,7 @@
 ﻿using GRRWS.Domain.Entities;
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
+using GRRWS.Infrastructure.Common.StringHelper;
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.DTOs.Task;
@@ -1532,14 +1533,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         .Include(r => r.Device)
                         .Include(r => r.Report)
                         .Where(r => r.Id == request.RequestId)
-                        .Select(r => new
-                        {
-                            r.ReportId,
-                            DeviceId = r.Device.Id,
-                            DeviceName = r.Device.DeviceName,
-                            DeviceCode = r.Device.DeviceCode,
-                            r.Report.Location
-                        })
                         .FirstOrDefaultAsync();
 
                     if (requestInfo == null)
@@ -1559,16 +1552,17 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                             deviceInfo = $"{replacementDevice.DeviceName} ({replacementDevice.DeviceCode})";
                         }
                     }
-
                     // Create the install task
+                    var taskName = TaskString.GetInstallTaskName(requestInfo.Device.Position.Zone.Area.AreaCode, requestInfo.Device.Position.Zone.ZoneCode, requestInfo.Device.Position.Index.ToString());
+                    var taskDescrtiption = TaskString.GetTaskDescription(requestInfo.Device.Position.Zone.Area.AreaName, requestInfo.Device.Position.Zone.ZoneName, requestInfo.Device.Position.Index.ToString());
                     var task = new Tasks
                     {
                         Id = Guid.NewGuid(),
-                        TaskName = $"Lắp đặt máy - {deviceInfo}",
+                        TaskName = taskName,
                         TaskType = TaskType.Installation,
-                        TaskDescription = $"Lặp đặt máy {deviceInfo} tại vị trí: {requestInfo.Location}",
+                        TaskDescription = taskDescrtiption,
                         StartTime = request.StartDate ?? TimeHelper.GetHoChiMinhTime(),
-                        ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(3), // Default 3 hours for installation
+                        ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(2), // Default 3 hours for installation
                         Status = request.AssigneeId == null ? Status.Suggested : Status.Pending,
                         Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,

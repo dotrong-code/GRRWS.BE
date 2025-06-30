@@ -26,10 +26,12 @@ namespace GRRWS.Domain.Entities
         public User? Assignee { get; set; }
         public WarrantyClaim? WarrantyClaim { get; set; }
         public TaskGroup? TaskGroup { get; set; } // Group this task belongs to
+
         public ICollection<ErrorDetail> ErrorDetails { get; set; }
         public ICollection<RepairSparepart>? RepairSpareparts { get; set; }
         public ICollection<TechnicalSymptomReport>? TechnicalSymptomReports { get; set; }
         public ICollection<MechanicShift>? MechanicShifts { get; set; }
+        public ICollection<RequestMachineReplacement>? RequestMachineReplacements { get; set; }
         #endregion
     }
 }
