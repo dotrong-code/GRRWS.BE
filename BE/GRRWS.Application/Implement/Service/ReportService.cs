@@ -373,8 +373,8 @@ namespace GRRWS.Application.Implement.Service
             }
             else
             {
-                dto.TechnicalSymtomIds = new List<Guid> { Guid.Parse("A1A1A1A1-1111-1111-1111-111111111111") };
-                allSymtomIds.Add(Guid.Parse("A1A1A1A1-1111-1111-1111-111111111111"));
+                dto.TechnicalSymtomIds = new List<Guid> { Guid.Parse("e8e8e8e8-e8e8-e8e8-e8e8-e8e8e8e8e8e8") };
+                allSymtomIds.Add(Guid.Parse("e8e8e8e8-e8e8-e8e8-e8e8-e8e8e8e8e8e8"));
 
             }
             // Kiểm tra IssueSymtomMappings
