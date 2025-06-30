@@ -1,13 +1,15 @@
-﻿    namespace GRRWS.Domain.Entities
-    {
-        public abstract class BaseEntity
-        {
+﻿using GRRWS.Domain.Common;
 
-            public Guid Id { get; set; } = Guid.NewGuid();
-            public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
-            public Guid? CreatedBy { get; set; }
-            public DateTime? ModifiedDate { get; set; }
-            public Guid? ModifiedBy { get; set; }
-            public bool IsDeleted { get; set; } = false;
-        }
+namespace GRRWS.Domain.Entities
+{
+    public abstract class BaseEntity
+    {
+
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public DateTime CreatedDate { get; set; } = TimeHelper.GetHoChiMinhTime();
+        public Guid? CreatedBy { get; set; }
+        public DateTime? ModifiedDate { get; set; } = TimeHelper.GetHoChiMinhTime();
+        public Guid? ModifiedBy { get; set; }
+        public bool IsDeleted { get; set; } = false;
     }
+}

@@ -8,6 +8,7 @@ using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
 using GRRWS.Infrastructure.DTOs.Firebase.AddImage;
+using GRRWS.Infrastructure.DTOs.Firebase.GetImage;
 using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.DTOs.Task;
@@ -225,7 +226,10 @@ namespace GRRWS.Application.Implement.Service
                 var requestInfo = await _unitOfWork.TaskRepository.GetRequestInfoAsync(request.RequestId);
                 if (requestInfo == null)
                     return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found."));
-
+                var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(requestInfo.DeviceId);
+                var deviceByMachine = await _unitOfWork.DeviceRepository.GetDevicesByMachineIdAsync(device.MachineId ?? Guid.Empty);
+                var replaceDeviceId = deviceByMachine.FirstOrDefault(d => d.Id != device.Id && d.Status == DeviceStatus.Active)?.Id;
+                request.NewDeviceId = replaceDeviceId;
                 var deviceInfo = request.NewDeviceId.HasValue
                     ? await _unitOfWork.TaskRepository.GetDeviceInfoAsync(request.NewDeviceId.Value)
                     : "Unknown Device";
@@ -253,7 +257,7 @@ namespace GRRWS.Application.Implement.Service
 
                 var taskId = await _unitOfWork.TaskRepository.CreateInstallTaskWithGroup(request, userId, taskGroupId, orderIndex);
                 _unitOfWork.ClearChangeTracker();
-                var requestMachine = await RequestReplaceMachineForInstall(request.RequestId, taskId);
+                var requestMachine = await RequestReplaceMachineForInstall(request.RequestId, taskId, replaceDeviceId);
                 if (requestMachine.IsFailure)
                 {
                     return Result.SuccessWithObject(new
@@ -469,6 +473,7 @@ namespace GRRWS.Application.Implement.Service
         public async Task<Result> GetGetDetailWarrantyTaskForMechanicByIdAsync(Guid taskId)
         {
             var task = await _unitOfWork.TaskRepository.GetGetDetailWarrantyTaskForMechanicByIdAsync(taskId, TaskType.WarrantySubmission);
+            task.Documents = await MapDocsWithImagesAsync(task.Documents);
             if (task == null)
             {
                 return Result.Failure(TaskErrorMessage.TaskNotExist());
@@ -478,6 +483,7 @@ namespace GRRWS.Application.Implement.Service
         public async Task<Result> GetGetDetailWarrantyReturnTaskForMechanicByIdAsync(Guid taskId)
         {
             var task = await _unitOfWork.TaskRepository.GetGetDetailWarrantyTaskForMechanicByIdAsync(taskId, TaskType.WarrantyReturn);
+            task.Documents = await MapDocsWithImagesAsync(task.Documents);
             if (task == null)
             {
                 return Result.Failure(TaskErrorMessage.TaskNotExist());
@@ -1163,25 +1169,26 @@ namespace GRRWS.Application.Implement.Service
             }
         }
 
-        private async Task<Result> RequestReplaceMachineForInstall(Guid requestId, Guid taskId)
+        private async Task<Result> RequestReplaceMachineForInstall(Guid requestId, Guid taskId, Guid? replaceDeviceId)
         {
 
             var request = await _unitOfWork.RequestRepository.GetRequestByIdAsync(requestId);
             var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(request.DeviceId);
-            var deviceByMachine = await _unitOfWork.DeviceRepository.GetDevicesByMachineIdAsync(device.MachineId ?? Guid.Empty);
-            var replaceDeviceId = deviceByMachine.FirstOrDefault(d => d.Id != device.Id && d.Status == DeviceStatus.Active)?.Id;
+            var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
+
             var requestMachineReplacement = new RequestMachineReplacement
             {
                 Id = Guid.NewGuid(),
-                CreatedDate = DateTime.UtcNow,
-                ModifiedDate = DateTime.UtcNow,
+                CreatedDate = TimeHelper.GetHoChiMinhTime(),
+                ModifiedDate = TimeHelper.GetHoChiMinhTime(),
                 RequestedById = request.RequestedById,
                 OldDeviceId = device.Id,
                 MachineId = device.MachineId ?? null,
-                RequestCode = $"RM-{DateTime.UtcNow:yyyyMMddHHmmss}",
+                RequestCode = $"RM-{TimeHelper.GetHoChiMinhTime():yyyyMMddHHmmss}",
                 Status = MachineReplacementStatus.Pending,
                 TaskId = taskId,
-                NewDeviceId = replaceDeviceId
+                NewDeviceId = replaceDeviceId,
+                AssigneeId = task.AssigneeId,
 
             };
             if (requestMachineReplacement.MachineId == null)
@@ -1200,7 +1207,39 @@ namespace GRRWS.Application.Implement.Service
         }
 
 
+        private async Task<List<WarrantyDocument>> MapDocsWithImagesAsync(ICollection<WarrantyDocument> documents)
+        {
+            if (documents == null || !documents.Any())
+            {
+                return new List<WarrantyDocument>();
+            }
 
+            var updatedDocs = new List<WarrantyDocument>();
+            foreach (var doc in documents)
+            {
+                var updatedDoc = new WarrantyDocument
+                {
+                    DocumentType = doc.DocumentType,
+                    DocumentName = doc.DocumentName,
+                    DocumentUrl = doc.DocumentUrl // Default to original URL
+                };
+
+                if (!string.IsNullOrEmpty(doc.DocumentUrl))
+                {
+                    var getImageRequest = new GetImageRequest(doc.DocumentUrl);
+                    var imageResult = await _unitOfWork.FirebaseRepository.GetImageAsync(getImageRequest);
+                    if (imageResult.Success && !string.IsNullOrEmpty(imageResult.ImageUrl))
+                    {
+                        updatedDoc.DocumentUrl = imageResult.ImageUrl; // Update with Firebase URL
+                    }
+                    // If image fetch fails, keep the original DocumentUrl
+                }
+
+                updatedDocs.Add(updatedDoc);
+            }
+
+            return updatedDocs;
+        }
         #endregion
     }
 }

@@ -31,7 +31,7 @@ namespace GRRWS.Domain.Entities
         public ICollection<RepairSparepart>? RepairSpareparts { get; set; }
         public ICollection<TechnicalSymptomReport>? TechnicalSymptomReports { get; set; }
         public ICollection<MechanicShift>? MechanicShifts { get; set; }
-        public ICollection<RequestMachineReplacement>? RequestMachineReplacements { get; set; }
+        public RequestMachineReplacement? RequestMachineReplacement { get; set; }
         #endregion
     }
 }

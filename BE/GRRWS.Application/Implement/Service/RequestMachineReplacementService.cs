@@ -27,14 +27,39 @@ namespace GRRWS.Application.Implement.Service
                 status,
                 sortBy,
                 isAscending);
-            var response = new PagedResponse<RequestMachineReplacement>
+            var dtos = new List<Infrastructure.DTOs.RequestMachineReplacement.GetAll>();
+            foreach (var r in items.Where(r => !r.IsDeleted).OrderByDescending(r => r.CreatedDate))
             {
-                Data = items,
+                var dto = await MapRequestMachine(r);
+                dtos.Add(dto);
+            }
+            var response = new PagedResponse<Infrastructure.DTOs.RequestMachineReplacement.GetAll>
+            {
+                Data = dtos,
                 TotalCount = totalCount,
                 PageNumber = pageNumber,
                 PageSize = pageSize
             };
             return Result.SuccessWithObject(response);
         }
+
+
+        private async Task<Infrastructure.DTOs.RequestMachineReplacement.GetAll> MapRequestMachine(RequestMachineReplacement data)
+        {
+            return new Infrastructure.DTOs.RequestMachineReplacement.GetAll
+            {
+                Title = $"Yêu cầu máy thuộc {data.Machine.MachineName}",
+                Description = $"Hệ thống gợi ý thiết bị {data.NewDevice.DeviceName}",
+                Id = data.Id,
+                RequestDate = data.RequestDate,
+                AssigneeId = data.AssigneeId,
+                AssigneeName = data.Assignee.FullName,
+                OldDeviceId = data.OldDeviceId,
+                NewDeviceId = data.NewDeviceId,
+                MachineId = data.MachineId,
+                Status = data.Status.ToString()
+            };
+        }
+
     }
 }

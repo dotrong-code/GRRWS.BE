@@ -28,7 +28,7 @@ namespace GRRWS.Domain.Entities
         public Device OldDevice { get; set; }
         public Device? NewDevice { get; set; }
         public Machine Machine { get; set; }
-        public Task? Task { get; set; } // Optional task liên quan đến yêu cầu này
+        public Tasks? Task { get; set; } // Optional task liên quan đến yêu cầu này
         public ErrorDetail? ErrorDetail { get; set; }
     }
 }

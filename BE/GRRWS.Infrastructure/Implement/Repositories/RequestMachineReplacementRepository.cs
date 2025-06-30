@@ -26,7 +26,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Include(r => r.Machine)
                 .Include(r => r.Assignee)
                 .Include(r => r.ApprovedBy)
-                .Include(r => r.RequestedBy)
                 .Where(r => !r.IsDeleted)
                 .AsQueryable();
 

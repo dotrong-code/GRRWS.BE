@@ -562,6 +562,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         {
             var task = await _context.Tasks
                 .Include(t => t.Assignee)
+                .Include(rrm => rrm.RequestMachineReplacement)
                 .Include(t => t.TaskGroup)
                 .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == TaskType.Installation)
                 .FirstOrDefaultAsync();
@@ -604,7 +605,12 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 DeviceName = deviceInfo?.DeviceName ?? "Unknown Device",
                 DeviceCode = deviceInfo?.DeviceCode ?? "N/A",
                 Location = deviceInfo?.Location ?? "Location not available",
-                TaskGroupName = task.TaskGroup?.GroupName
+                TaskGroupName = task.TaskGroup?.GroupName,
+                NewDeviceId = task.RequestMachineReplacement?.NewDeviceId ?? Guid.Empty,
+                IsUninstall = task.IsUninstall ?? false, // True if this is an uninstall task, false if it's an install task
+                AssigneeConfirm = task.RequestMachineReplacement?.AssigneeConfirm ?? false, // True if the mechanic has confirmed the task, false otherwise
+                StockKeeperConfirm = task.RequestMachineReplacement?.StokkKeeperConfirm ?? false // True if the stock keeper has confirmed the task, false otherwise
+
             };
         }
         public async Task<Guid> CreateWarrantyTask(CreateWarrantyTaskRequest request, Guid userId)
@@ -800,16 +806,25 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
                     await _context.WarrantyClaims.AddAsync(warrantyClaim);
                     await _context.SaveChangesAsync(); // Save WarrantyClaim first
-
+                    var requestInfo = await _context.Requests
+                        .Include(r => r.Device)
+                            .ThenInclude(d => d.Position)
+                                .ThenInclude(p => p.Zone)
+                                    .ThenInclude(z => z.Area)
+                        .Include(r => r.Report)
+                        .Where(r => r.Id == request.RequestId)
+                        .FirstOrDefaultAsync();
+                    var taskName = TaskString.GetWarrantyTaskName(requestInfo.Device.Position.Zone.Area.AreaCode ?? "Null", requestInfo.Device.Position.Zone.ZoneCode ?? "Null", requestInfo.Device.Position.Index.ToString() ?? "NULL");
+                    var taskDescrtiption = TaskString.GetTaskDescription(requestInfo.Device.Position.Zone.Area.AreaName ?? "Null", requestInfo.Device.Position.Zone.ZoneName ?? "Null", requestInfo.Device.Position.Index.ToString() ?? "NULL");
                     // Create the warranty submission task
                     var task = new Tasks
                     {
                         Id = Guid.NewGuid(),
-                        TaskName = $"Đưa thiết bị đi bảo hành - {claimNumber}",
+                        TaskName = taskName,
                         TaskType = TaskType.WarrantySubmission,
-                        TaskDescription = $"Mang thiết bị đi bảo hành với cái triệu chứng:{issueDescription}",
+                        TaskDescription = taskDescrtiption,
                         StartTime = request.StartDate,
-                        ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(5),
+                        ExpectedTime = (request.StartDate ?? TimeHelper.GetHoChiMinhTime()).AddHours(5),
                         Status = request.AssigneeId == null ? Status.Suggested : Status.Pending,
                         Priority = Domain.Enum.Priority.High,
                         AssigneeId = request.AssigneeId,
@@ -1531,6 +1546,9 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     // Get request and device information
                     var requestInfo = await _context.Requests
                         .Include(r => r.Device)
+                            .ThenInclude(d => d.Position)
+                                .ThenInclude(p => p.Zone)
+                                    .ThenInclude(z => z.Area)
                         .Include(r => r.Report)
                         .Where(r => r.Id == request.RequestId)
                         .FirstOrDefaultAsync();
@@ -1553,8 +1571,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         }
                     }
                     // Create the install task
-                    var taskName = TaskString.GetInstallTaskName(requestInfo.Device.Position.Zone.Area.AreaCode, requestInfo.Device.Position.Zone.ZoneCode, requestInfo.Device.Position.Index.ToString());
-                    var taskDescrtiption = TaskString.GetTaskDescription(requestInfo.Device.Position.Zone.Area.AreaName, requestInfo.Device.Position.Zone.ZoneName, requestInfo.Device.Position.Index.ToString());
+                    var taskName = TaskString.GetInstallTaskName(requestInfo.Device.Position.Zone.Area.AreaCode ?? "Null", requestInfo.Device.Position.Zone.ZoneCode ?? "Null", requestInfo.Device.Position.Index.ToString() ?? "NULL");
+                    var taskDescrtiption = TaskString.GetTaskDescription(requestInfo.Device.Position.Zone.Area.AreaName ?? "Null", requestInfo.Device.Position.Zone.ZoneName ?? "Null", requestInfo.Device.Position.Index.ToString() ?? "NULL");
                     var task = new Tasks
                     {
                         Id = Guid.NewGuid(),
@@ -1562,7 +1580,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         TaskType = TaskType.Installation,
                         TaskDescription = taskDescrtiption,
                         StartTime = request.StartDate ?? TimeHelper.GetHoChiMinhTime(),
-                        ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(2), // Default 3 hours for installation
+                        ExpectedTime = (request.StartDate ?? TimeHelper.GetHoChiMinhTime()).AddHours(2), // Default 3 hours for installation
                         Status = request.AssigneeId == null ? Status.Suggested : Status.Pending,
                         Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,
