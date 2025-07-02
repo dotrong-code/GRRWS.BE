@@ -18,8 +18,6 @@ namespace GRRWS.Application.Implement.Service
 {
     public class ImportService : IImportService
     {
-       
-       
         public async Task<Result> ImportAsync<TEntity>(Stream excelStream, IGenericRepository<TEntity> repository) where TEntity : class, new()
         {
             var errors = new List<Infrastructure.DTOs.Common.Error>();
@@ -28,7 +26,7 @@ namespace GRRWS.Application.Implement.Service
             // Ensure the stream is readable
             if (!excelStream.CanRead)
             {
-                return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("Cannot read the provided Excel file stream.", "Can not ready"));
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("Cannot read the provided Excel file stream.", "Can not read"));
             }
 
             // Register encoding provider for ExcelDataReader
@@ -47,6 +45,12 @@ namespace GRRWS.Application.Implement.Service
                 for (int i = 0; i < reader.FieldCount; i++)
                 {
                     columnNames.Add(reader.GetString(i)?.Trim() ?? string.Empty);
+                }
+
+                // Check if Id column exists in the Excel file
+                if (!columnNames.Contains("Id"))
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("Excel file must contain an 'Id' column.", "missing_id"));
                 }
 
                 int rowNumber = 1; // Start from row 2 (after header)
@@ -116,6 +120,11 @@ namespace GRRWS.Application.Implement.Service
 
                                 property.SetValue(entity, convertedValue);
                             }
+                            else if (property.Name == "Id")
+                            {
+                                // Id is required and must be provided in the Excel file
+                                throw new FormatException("Id column cannot be empty.");
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -127,10 +136,9 @@ namespace GRRWS.Application.Implement.Service
 
                     if (!hasError)
                     {
-                        // Set default values for BaseEntity
+                        // Set default values for BaseEntity (excluding Id)
                         if (entity is BaseEntity baseEntity)
                         {
-                            baseEntity.Id = Guid.NewGuid();
                             baseEntity.CreatedDate = DateTime.UtcNow;
                             baseEntity.IsDeleted = false;
                         }
@@ -157,7 +165,7 @@ namespace GRRWS.Application.Implement.Service
             }
             catch (Exception ex)
             {
-                return Result.Failure(Infrastructure.DTOs.Common.Error.Validation($"Failed to save entities to database: {ex.Message}", "Cannot  save entities"));
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Validation($"Failed to save entities to database: {ex.Message}", "Cannot save entities"));
             }
         }
     }
