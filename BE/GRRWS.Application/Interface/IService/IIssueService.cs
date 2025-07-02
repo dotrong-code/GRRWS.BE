@@ -1,4 +1,5 @@
 ﻿using GRRWS.Application.Common.Result;
+using Microsoft.AspNetCore.Http;
 
 namespace GRRWS.Application.Interface.IService
 {
@@ -6,5 +7,6 @@ namespace GRRWS.Application.Interface.IService
     {
         Task<Result> GetIssueSuggestionsAsync(string query, int maxResults);
         Task<Result> GetIssueByIdAsync(Guid id);
+        Task<Result> ImportIssuesAsync(IFormFile file);
     }
 }

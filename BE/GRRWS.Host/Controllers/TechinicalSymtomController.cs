@@ -31,5 +31,13 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved recommended symtoms!")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [HttpPost("import")]
+        public async Task<IResult> ImportTechnicalSymptom(IFormFile file)
+        {
+            var result = await _technicalSymtomService.ImportTechnicalSymtomsAsync(file);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Technical symptoms imported successfully!")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }

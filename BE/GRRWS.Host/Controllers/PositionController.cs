@@ -1,4 +1,5 @@
 ﻿using GRRWS.Application.Common.Result;
+using GRRWS.Application.Implement.Service;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.DTOs.Position;
 using Microsoft.AspNetCore.Authorization;
@@ -62,6 +63,14 @@ namespace GRRWS.Host.Controllers
             var result = await _positionService.DeletePositionAsync(id);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Position deleted successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpPost("import")]
+        public async Task<IResult> ImportPosition(IFormFile file)
+        {
+            var result = await _positionService.ImportPositionsAsync(file);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Positions imported successfully!")
                 : ResultExtensions.ToProblemDetails(result);
         }
     }
