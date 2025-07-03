@@ -2,6 +2,7 @@
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.DTOs.Common;
+using GRRWS.Infrastructure.DTOs.RequestMachineReplacement;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -41,6 +42,26 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Device confirmed as taken successfully")
                 : ResultExtensions.ToProblemDetails(result);
 
+        }
+        [Authorize]
+        [HttpPut("confirm-had-device/{requestMachineId}")]
+        public async Task<IResult> ConfirmHadDevice(Guid requestMachineId)
+        {
+            CurrentUserObject currentUser = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _requestMachineReplacementService.ConfirmHadDevice(requestMachineId, currentUser.UserId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Device confirmed as had successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [Authorize]
+        [HttpPut]
+        public async Task<IResult> UpdateRequestMachineReplacement([FromBody] UpdateRMR updateRMR)
+        {
+            CurrentUserObject currentUser = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _requestMachineReplacementService.UpdateRequestMachineReplacement(updateRMR);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Request Machine Replacement updated successfully")
+                : ResultExtensions.ToProblemDetails(result);
         }
     }
 }
