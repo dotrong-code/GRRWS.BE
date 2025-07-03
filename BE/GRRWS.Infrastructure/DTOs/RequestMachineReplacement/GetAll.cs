@@ -7,7 +7,7 @@
         public Guid Id { get; set; }
         public DateTime RequestDate { get; set; } = DateTime.UtcNow;
         public Guid? AssigneeId { get; set; } // Người thực hiện (kỹ thuật viên)
-        public string AssigneeName { get; set; }
+        public string? AssigneeName { get; set; }
         public Guid OldDeviceId { get; set; } // Device cũ cần thay thế
         public Guid? NewDeviceId { get; set; } // Device mới thay    (nullable nếu chưa chọn)
         public Guid? MachineId { get; set; } // Model (Machine) của Device cần thay thế

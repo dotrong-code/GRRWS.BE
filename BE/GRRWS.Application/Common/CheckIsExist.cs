@@ -74,6 +74,18 @@ namespace GRRWS.Application.Common
                 ? Common.Result.Result.Success()
                 : Common.Result.Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Task does not exist."));
         }
+        public async Task<Common.Result.Result> RequestMachine(Guid? requestMachineId, bool allowNull = false)
+        {
+            if (!requestMachineId.HasValue)
+                return allowNull
+                    ? Common.Result.Result.Success()
+                    : Common.Result.Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Invalid", "Task ID is required."));
+
+            var exists = await _unitOfWork.RequestMachineReplacementRepository.IsExistAsync(requestMachineId);
+            return exists
+                ? Common.Result.Result.Success()
+                : Common.Result.Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "Task does not exist."));
+        }
 
         // Add more methods here if needed (e.g., Device, SparePart, etc.)
     }
