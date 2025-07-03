@@ -609,7 +609,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 NewDeviceId = task.RequestMachineReplacement?.NewDeviceId ?? Guid.Empty,
                 IsUninstall = task.IsUninstall ?? false, // True if this is an uninstall task, false if it's an install task
                 AssigneeConfirm = task.RequestMachineReplacement?.AssigneeConfirm ?? false, // True if the mechanic has confirmed the task, false otherwise
-                StockKeeperConfirm = task.RequestMachineReplacement?.StokkKeeperConfirm ?? false // True if the stock keeper has confirmed the task, false otherwise
+                StockKeeperConfirm = task.RequestMachineReplacement?.StokkKeeperConfirm ?? false, // True if the stock keeper has confirmed the task, false otherwise
+                RequestMachineId = task.RequestMachineReplacement?.Id ?? Guid.Empty // ID of the request machine, if applicable
 
             };
         }
@@ -1581,7 +1582,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         TaskDescription = taskDescrtiption,
                         StartTime = request.StartDate ?? TimeHelper.GetHoChiMinhTime(),
                         ExpectedTime = (request.StartDate ?? TimeHelper.GetHoChiMinhTime()).AddHours(2), // Default 3 hours for installation
-                        Status = request.AssigneeId == null ? Status.Suggested : Status.Pending,
+                        Status = request.AssigneeId == null ? Status.WaitingForConfirmation : Status.Pending,
                         Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,
                         TaskGroupId = taskGroupId,

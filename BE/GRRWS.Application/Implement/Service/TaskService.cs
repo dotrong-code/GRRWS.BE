@@ -1174,7 +1174,7 @@ namespace GRRWS.Application.Implement.Service
 
             var request = await _unitOfWork.RequestRepository.GetRequestByIdAsync(requestId);
             var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(request.DeviceId);
-            var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
+            //var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
 
             var requestMachineReplacement = new RequestMachineReplacement
             {
@@ -1184,11 +1184,11 @@ namespace GRRWS.Application.Implement.Service
                 RequestedById = request.RequestedById,
                 OldDeviceId = device.Id,
                 MachineId = device.MachineId ?? null,
-                RequestCode = $"RM-{TimeHelper.GetHoChiMinhTime():yyyyMMddHHmmss}",
+                RequestCode = $"Yêu cầu máy thay thế-{TimeHelper.GetHoChiMinhTime():yyyyMMddHHmmss}",
                 Status = MachineReplacementStatus.Pending,
                 TaskId = taskId,
                 NewDeviceId = replaceDeviceId,
-                AssigneeId = task.AssigneeId,
+                //AssigneeId = task.AssigneeId,
 
             };
             if (requestMachineReplacement.MachineId == null)
@@ -1205,7 +1205,6 @@ namespace GRRWS.Application.Implement.Service
                 CreatedDate = requestMachineReplacement.CreatedDate
             });
         }
-
 
         private async Task<List<WarrantyDocument>> MapDocsWithImagesAsync(ICollection<WarrantyDocument> documents)
         {
