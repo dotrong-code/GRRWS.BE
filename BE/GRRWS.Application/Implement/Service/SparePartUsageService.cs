@@ -531,7 +531,7 @@ namespace GRRWS.Application.Implement.Service
                     if (allTaken && requestUsage.Status != SparePartRequestStatus.Cancelled)
                     {
                         requestUsage.Status = SparePartRequestStatus.Delivered;
-                        requestUsage.ConfirmedDate = DateTime.UtcNow;
+                        requestUsage.ConfirmedDate = TimeHelper.GetHoChiMinhTime();
                         await _unitOfWork.RequestTakeSparePartUsageRepository.UpdateAsync(requestUsage);
                     }
                 }
@@ -577,7 +577,7 @@ namespace GRRWS.Application.Implement.Service
 
             if (newStatus == SparePartRequestStatus.Confirmed || newStatus == SparePartRequestStatus.Delivered)
             {
-                requestUsage.ConfirmedDate = DateTime.UtcNow;
+                requestUsage.ConfirmedDate = TimeHelper.GetHoChiMinhTime();
                 requestUsage.ConfirmedById = request.ConfirmedById ?? requestUsage.ConfirmedById;
             }
 
@@ -596,7 +596,7 @@ namespace GRRWS.Application.Implement.Service
             if (request.SparePartIds == null || !request.SparePartIds.Any())
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", "At least one SparePart ID is required"));
 
-            if (request.ExpectedAvailabilityDate <= DateTime.UtcNow)
+            if (request.ExpectedAvailabilityDate <= TimeHelper.GetHoChiMinhTime())
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", "ExpectedAvailabilityDate must be in the future"));
 
             var requestUsage = await _unitOfWork.RequestTakeSparePartUsageRepository.GetByIdIncludeSparePartUsagesAsync(request.RequestTakeSparePartUsageId);

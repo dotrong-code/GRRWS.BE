@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using GRRWS.Infrastructure.DTOs.Notification;
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.DTOs.Common.Message;
+using GRRWS.Infrastructure.Common;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -299,7 +300,7 @@ namespace GRRWS.Application.Implement.Service
                         message = "Push token registered successfully",
                         userId = userId,
                         platform = platform.ToLower(),
-                        registeredAt = DateTime.UtcNow
+                        registeredAt = TimeHelper.GetHoChiMinhTime()
                     });
                 }
 
@@ -324,7 +325,7 @@ namespace GRRWS.Application.Implement.Service
                 Channel = request.Channel,
                 Data = request.Data != null ? JsonSerializer.Serialize(request.Data) : null,
                 Priority = request.Priority,
-                CreatedDate = DateTime.UtcNow,
+                CreatedDate = TimeHelper.GetHoChiMinhTime(),
                 Enabled = true
             };
 
@@ -337,7 +338,7 @@ namespace GRRWS.Application.Implement.Service
                 NotificationId = notification.Id,
                 ReceiverId = userId,
                 IsRead = false,
-                CreatedDate = DateTime.UtcNow
+                CreatedDate = TimeHelper.GetHoChiMinhTime()
             }).ToList();
 
             await _unitOfWork.NotificationRepository.AddNotificationReceiversAsync(notificationReceivers);
@@ -355,7 +356,7 @@ namespace GRRWS.Application.Implement.Service
                 body = request.Body,
                 type = request.Type.ToString(),
                 data = request.Data,
-                timestamp = DateTime.UtcNow
+                timestamp = TimeHelper.GetHoChiMinhTime()
             };
 
             foreach (var userId in recipientUserIds)

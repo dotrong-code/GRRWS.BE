@@ -86,11 +86,11 @@ namespace GRRWS.Application.Implement.Service
                     var errorSpareparts = await _unitOfWork.ErrorSparepartRepository.GetByErrorGuidelineIdAsync(guideline.Id);
                     if (errorSpareparts != null && errorSpareparts.Any())
                     {
-                        var requestCode = $"REQ-{DateTime.UtcNow.Ticks}-{Guid.NewGuid().ToString().Substring(0, 8)}";
+                        var requestCode = $"REQ-{TimeHelper.GetHoChiMinhTime().Ticks}-{Guid.NewGuid().ToString().Substring(0, 8)}";
                         var newRequest = new RequestTakeSparePartUsage
                         {
                             RequestCode = requestCode,
-                            RequestDate = DateTime.UtcNow,
+                            RequestDate = TimeHelper.GetHoChiMinhTime(),
                             Status = Domain.Enum.SparePartRequestStatus.Unconfirmed,
                             SparePartUsages = errorSpareparts.Select(sp => new SparePartUsage
                             {
@@ -207,7 +207,7 @@ namespace GRRWS.Application.Implement.Service
                 }
 
                 // Get available mechanics using the existing recommendation system
-                var currentTime = DateTime.Now;
+                var currentTime = TimeHelper.GetHoChiMinhTime();
                 var availableMechanics = await _unitOfWork.UserRepository.GetRecommendedMechanicsAsync(currentTime, 1, 10);
 
                 if (!availableMechanics.Any())
@@ -225,7 +225,7 @@ namespace GRRWS.Application.Implement.Service
                     {
                         task.AssigneeId = mechanicId;
                         task.Status = Status.Pending;
-                        task.ModifiedDate = DateTime.Now;
+                        task.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                         task.ExpectedTime = bestMechanic.ExpectedTime;
 
                         await _unitOfWork.TaskRepository.UpdateAsync(task);
@@ -305,7 +305,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "ErrorDetail not found"));
 
             // errorDetail.IsDeleted = true;
-            // errorDetail.ModifiedDate = DateTime.UtcNow;
+            // errorDetail.ModifiedDate = TimeHelper.GetHoChiMinhTime();
 
             await _unitOfWork.ErrorDetailRepository.UpdateAsync(errorDetail);
             await _unitOfWork.SaveChangesAsync();
@@ -368,12 +368,12 @@ namespace GRRWS.Application.Implement.Service
             }
 
             // 6.2 T?o m?i RequestTakeSparePartUsage
-            var requestCode = $"REQ-{DateTime.UtcNow.Ticks}";
+            var requestCode = $"REQ-{TimeHelper.GetHoChiMinhTime().Ticks}";
             var newRequest = new RequestTakeSparePartUsage
             {
                 Id = Guid.NewGuid(),
                 RequestCode = requestCode,
-                RequestDate = DateTime.UtcNow,
+                RequestDate = TimeHelper.GetHoChiMinhTime(),
                 Status = Domain.Enum.SparePartRequestStatus.Unconfirmed,
                 SparePartUsages = new List<SparePartUsage>(),
 

@@ -4,6 +4,7 @@ using GRRWS.Application.Interface.IService;
 using GRRWS.Application.Interfaces;
 using GRRWS.Domain.Entities;
 using GRRWS.Domain.Enum;
+using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.Firebase.AddImage;
 using GRRWS.Infrastructure.DTOs.Firebase.GetImage;
@@ -160,7 +161,7 @@ namespace GRRWS.Application.Implement.Service
                 //Description = dto.Description,
                 //Status = dto.Status,
                 //CreatedBy = dto.CreatedBy,
-                CreatedDate = DateTime.UtcNow,
+                CreatedDate = TimeHelper.GetHoChiMinhTime(),
                 //DueDate = dto.DueDate,
                 //Priority = dto.Priority,
                 IsDeleted = false,
@@ -191,7 +192,7 @@ namespace GRRWS.Application.Implement.Service
                 DueDate = dto.DueDate,
                 //Priority = Enum.TryParse<Priority>(dto.Priority, out var priority) ? priority : Priority.Low,
                 ModifiedBy = dto.ModifiedBy,
-                ModifiedDate = DateTime.UtcNow
+                ModifiedDate = TimeHelper.GetHoChiMinhTime()
             };
 
             await _requestRepository.UpdateRequestAsync(updatedRequest, dto.IssueIds);
@@ -206,7 +207,7 @@ namespace GRRWS.Application.Implement.Service
 
             r.IsDeleted = true;
             //r.Status = "Delete";
-            r.ModifiedDate = DateTime.UtcNow;
+            r.ModifiedDate = TimeHelper.GetHoChiMinhTime();
             await _requestRepository.UpdateAsync(r);
 
             return Result.SuccessWithObject(new { Message = "Request canceled successfully!" });
@@ -303,7 +304,7 @@ namespace GRRWS.Application.Implement.Service
 
             r.Status = Status.Cancelled;
             r.RejectionReason = "Yêu cầu đã bị hủy với lý do: " + dto.Reason;
-            r.ModifiedDate = DateTime.UtcNow;
+            r.ModifiedDate = TimeHelper.GetHoChiMinhTime();
             r.ModifiedBy = userId;
             await _requestRepository.UpdateAsync(r);
 
@@ -364,8 +365,8 @@ namespace GRRWS.Application.Implement.Service
                 Description = DescriptionHelper.GenerateRequestDescription(getDevice.DeviceName),
                 Status = Status.Pending, // Use enum value
                 RequestedById = userId,
-                CreatedDate = DateTime.UtcNow,
-                DueDate = DateTime.UtcNow.AddDays(7),
+                CreatedDate = TimeHelper.GetHoChiMinhTime(),
+                DueDate = TimeHelper.GetHoChiMinhTime().AddDays(7),
                 Priority = Priority.Low, // Use enum value
                 IsDeleted = false,
                 RequestIssues = (dto.IssueIds ?? new List<Guid>()).Select(issueId => new RequestIssue
@@ -403,7 +404,7 @@ namespace GRRWS.Application.Implement.Service
                                 ImageUrl = uploadResult.FilePath,
                                 Type = imageFile.ContentType ?? "image/jpeg",
                                 RequestIssueId = requestIssue.Id,
-                                CreatedDate = DateTime.UtcNow,
+                                CreatedDate = TimeHelper.GetHoChiMinhTime(),
                                 IsDeleted = false
                             });
                         }

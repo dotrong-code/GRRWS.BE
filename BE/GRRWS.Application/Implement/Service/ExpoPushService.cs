@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using GRRWS.Infrastructure.DTOs.Common.Message;
+using GRRWS.Infrastructure.Common;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -103,7 +104,7 @@ namespace GRRWS.Application.Implement.Service
 
                 if (existingToken != null)
                 {
-                    existingToken.LastUsed = DateTime.UtcNow;
+                    existingToken.LastUsed = TimeHelper.GetHoChiMinhTime();
                     existingToken.IsActive = true;
                     existingToken.Platform = platform;
                     
@@ -118,8 +119,8 @@ namespace GRRWS.Application.Implement.Service
                         Token = token,
                         Platform = platform,
                         IsActive = true,
-                        LastUsed = DateTime.UtcNow,
-                        CreatedDate = DateTime.UtcNow
+                        LastUsed = TimeHelper.GetHoChiMinhTime(),
+                        CreatedDate = TimeHelper.GetHoChiMinhTime()
                     };
 
                     await _unitOfWork.PushTokenRepository.AddAsync(pushToken);

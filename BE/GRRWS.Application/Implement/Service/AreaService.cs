@@ -44,7 +44,7 @@ namespace GRRWS.Application.Implement.Service
             {
                 Id = Guid.NewGuid(),
                 AreaName = request.AreaName,
-                CreatedDate = DateTime.UtcNow
+                CreatedDate = TimeHelper.GetHoChiMinhTime()
             };
 
             await _unitOfWork.AreaRepository.CreateAsync(area);
@@ -108,7 +108,7 @@ namespace GRRWS.Application.Implement.Service
             }
 
             area.AreaName = request.AreaName;
-            area.ModifiedDate = DateTime.UtcNow;
+            area.ModifiedDate = TimeHelper.GetHoChiMinhTime();
 
             await _unitOfWork.AreaRepository.UpdateAsync(area);
             return Result.SuccessWithObject(area);
