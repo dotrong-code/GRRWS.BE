@@ -449,6 +449,79 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Where(u => u.AreaId == areaId && !u.IsDeleted)
                 .ToListAsync();
         }
+
+        Task<bool> IUserRepository.EmailExistsAsync(string email)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<bool> IUserRepository.IdExistsAsync(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<bool> IUserRepository.UserNameExistsAsync(string userName)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<User> IUserRepository.GetUserByEmailAndPasswordAsync(string email, string password)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<(List<GetUserResponse> Users, int TotalCount)> IUserRepository.GetAllUsersAsync(string? fullName, string? email, string? phoneNumber, DateTime? dateOfBirth, int? role, int pageNumber, int pageSize)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<User> IUserRepository.GetUserByIdAsync(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<int> IUserRepository.DeleteUserAsync(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<List<User>> IUserRepository.GetUsers()
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<List<User>> IUserRepository.GetUsersByRole(int role)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<List<User>> IUserRepository.GetUsersByIdsBySearchNameAsync(List<Guid> ids, string? searchName)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<List<GetMechanicRecommendation>> IUserRepository.GetRecommendedMechanicsAsync(DateTime currentTime, int pageIndex, int pageSize)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<List<Guid>> IUserRepository.GetAllUserIdsAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<List<User>> IUserRepository.GetUsersByAreaIdAsync(Guid areaId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<List<User>> GetMechanicsWithoutTask()
+        {
+            var mechanics = await _context.Users
+                .Where(u => u.Role == 3 && !u.IsDeleted && !u.Tasks.Any(t => t.Status != GRRWS.Domain.Enum.Status.Completed))
+                .ToListAsync();
+            return mechanics;
+        }
     }
 }
 

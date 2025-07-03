@@ -3,6 +3,8 @@
     public class GetTaskForMechanic
     {
         public Guid TaskId { get; set; }
+        public Guid TaskGroupId { get; set; }
+        public int OrderIndex { get; set; }
         public string TaskName { get; set; }
         public string TaskDescription { get; set; }
         public string TaskType { get; set; }

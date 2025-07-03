@@ -11,7 +11,7 @@ namespace GRRWS.Infrastructure.DTOs.Task.Warranty
         public string? ContractNumber { get; set; } // Warranty contract number
         public decimal? ClaimAmount { get; set; } // Repair cost, if applicable
         public string? WarrantyNotes { get; set; } // Additional notes
-        public Status? ClaimStatus { get; set; } // Status of the claim
+        public WarrantyClaimStatus? ClaimStatus { get; set; } // Status of the claim
         public bool CreateReturnTaskNow { get; set; } // Whether to create a return task immediately
         public DateTime? ReturnTaskStartTime { get; set; } // Start time for the return task, if created
         public List<IFormFile> DocumentFiles { get; set; } = new(); // Photos or documents (e.g., appointment slip)

@@ -29,7 +29,7 @@ namespace GRRWS.Application.Implement.Service
 
             var requestMachine = await _unitOfWork.RequestMachineReplacementRepository.GetByIdAsync(requestMachineId);
             var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
-            var mechanics = await _unitOfWork.UserRepository.GetUsersByRole(3);
+            var mechanics = await _unitOfWork.UserRepository.GetMechanicsWithoutTask();
             var primaryMechanic = mechanics.FirstOrDefault().Id;
             requestMachine.Status = Domain.Enum.MachineReplacementStatus.InProgress;
             requestMachine.ModifiedBy = userId;
@@ -37,7 +37,7 @@ namespace GRRWS.Application.Implement.Service
             var task = await _unitOfWork.TaskRepository.GetByIdAsync(requestMachine.TaskId ?? Guid.Empty);
             task.AssigneeId = primaryMechanic;
             task.Status = Status.Pending;
-
+            await UpdateForInstalledDeviceInfor(requestMachine.OldDeviceId, (Guid)requestMachine.NewDeviceId);
 
             _unitOfWork.TaskRepository.Update(task);
             _unitOfWork.RequestMachineReplacementRepository.Update(requestMachine);
@@ -51,7 +51,6 @@ namespace GRRWS.Application.Implement.Service
             });
 
         }
-
         public async Task<Result> ConfirmTakenDevice(Guid requestMachineId, Guid userId)
         {
             var requestMachine = await _unitOfWork.RequestMachineReplacementRepository.GetByIdAsync(requestMachineId);
@@ -68,11 +67,15 @@ namespace GRRWS.Application.Implement.Service
             {
                 requestMachine.Status = Domain.Enum.MachineReplacementStatus.Completed;
                 requestMachine.CompletedDate = TimeHelper.GetHoChiMinhTime();
+
+
             }
             else
             {
                 requestMachine.Status = Domain.Enum.MachineReplacementStatus.InProgress;
             }
+
+
             await _unitOfWork.RequestMachineReplacementRepository.UpdateAsync(requestMachine);
             await _unitOfWork.SaveChangesAsync();
             return Result.SuccessWithObject(new
@@ -84,7 +87,6 @@ namespace GRRWS.Application.Implement.Service
             });
 
         }
-
         public async Task<Result> CreateRequestMachineReplacementAsync(Guid requestId, Guid requestUserId)
         {
             try
@@ -133,7 +135,6 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("InternalServerError", $"An error occurred while creating the machine replacement request: {e.Message}"));
             }
         }
-
         public async Task<Result> GetAllAsync(
     int pageNumber,
     int pageSize,
@@ -162,7 +163,6 @@ namespace GRRWS.Application.Implement.Service
             };
             return Result.SuccessWithObject(response);
         }
-
         public async Task<Result> UpdateRequestMachineReplacement(UpdateRMR updateRMR)
         {
             try
@@ -177,6 +177,8 @@ namespace GRRWS.Application.Implement.Service
                 requestMachine.Notes = updateRMR.Notes;
                 requestMachine.NewDeviceId = updateRMR.DeviceId;
                 requestMachine.ModifiedDate = TimeHelper.GetHoChiMinhTime();
+                await UpdateForInstalledDeviceInfor(requestMachine.OldDeviceId, (Guid)requestMachine.NewDeviceId);
+
                 _unitOfWork.RequestMachineReplacementRepository.Update(requestMachine);
                 _unitOfWork.SaveChangesAsync().Wait();
                 return Result.SuccessWithObject(new
@@ -191,7 +193,6 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("InternalServerError", $"An error occurred while updating the request machine replacement: {e.Message}"));
             }
         }
-
         private async Task<Infrastructure.DTOs.RequestMachineReplacement.GetAll> MapRequestMachine(RequestMachineReplacement data)
         {
             return new Infrastructure.DTOs.RequestMachineReplacement.GetAll
@@ -208,6 +209,14 @@ namespace GRRWS.Application.Implement.Service
                 Status = data.Status.ToString()
             };
         }
-
+        private async Task UpdateForInstalledDeviceInfor(Guid oldeDeviceId, Guid newDeviceId)
+        {
+            var newDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(newDeviceId);
+            var oldDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(oldeDeviceId);
+            newDevice.InstallationDate = TimeHelper.GetHoChiMinhTime();
+            newDevice.Status = DeviceStatus.InUse;
+            newDevice.PositionId = oldDevice.PositionId; // Giữ nguyên vị trí của thiết bị cũ
+            _unitOfWork.DeviceRepository.Update(newDevice);
+        }
     }
 }
