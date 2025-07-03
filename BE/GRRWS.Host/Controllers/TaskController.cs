@@ -94,7 +94,6 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Warranty claim updated successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
         [Authorize]
         [HttpPost("warranty-task/return")]
         public async Task<IResult> CreateWarrantyReturnTask([FromBody] CreateWarrantyReturnTaskRequest request)
@@ -105,7 +104,6 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Warranty return task created successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
         [HttpGet("warranty-task-submit/{taskId}")]
         public async Task<IResult> GetWarrantySubmitTaskDetails(Guid taskId)
         {
@@ -238,7 +236,6 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Task groups retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
         [HttpPost("apply-suggested-group-assignments/{taskGroupId}")]
         public async Task<IResult> ApplySuggestedTaskGroupAssignments(Guid taskGroupId)
         {
@@ -248,7 +245,6 @@ namespace GRRWS.Host.Controllers
             : ResultExtensions.ToProblemDetails(result);
 
         }
-
         [HttpPost("apply-suggested-assignment")]
         public async Task<IResult> ApplySuggestedTaskAssignment([FromBody] ApplySuggestedTaskAssignmentRequest request)
         {
@@ -258,7 +254,6 @@ namespace GRRWS.Host.Controllers
             ? ResultExtensions.ToSuccessDetails(result, "Task groups retrieved successfully")
             : ResultExtensions.ToProblemDetails(result);
         }
-
         [HttpGet("suggested-tasks/{taskGroupId}")]
         public async Task<IResult> GetSuggestedTasksByTaskGroup(Guid taskGroupId)
         {
@@ -268,7 +263,6 @@ namespace GRRWS.Host.Controllers
             ? ResultExtensions.ToSuccessDetails(result, "Task groups retrieved successfully")
             : ResultExtensions.ToProblemDetails(result);
         }
-
         [HttpPut("uninstall-device/{taskId}")]
         public async Task<IResult> UpdateUninstallDeviceInTask(Guid taskId)
         {
@@ -276,6 +270,15 @@ namespace GRRWS.Host.Controllers
             var result = await _taskService.UpdateUninstallDeviceInTask(taskId, c.UserId);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Uninstall device updated successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+        [HttpPut("reinstall-old-device/{taskId}")]
+        public async Task<IResult> ReInstallOldDevice(Guid taskId)
+        {
+            var result = await _taskService.ReInstallOldDevice(taskId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Reinstall old device successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
 

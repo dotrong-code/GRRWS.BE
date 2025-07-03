@@ -52,7 +52,6 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> ApplySuggestedTaskAssignmentAsync(Guid taskId, Guid? mechanicId = null);
         Task<Result> GetSuggestedTasksByTaskGroupIdAsync(Guid taskGroupId);
 
-
-
+        Task<Result> ReInstallOldDevice(Guid taskId);
     }
 }

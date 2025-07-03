@@ -14,12 +14,10 @@ namespace GRRWS.Domain.Entities
         public DateTime? ExpectedTime { get; set; }
         public DateTime? EndTime { get; set; }
         public Guid? AssigneeId { get; set; }
-
         public bool? IsUninstall { get; set; }
         public DateTime? DeviceReturnTime { get; set; } // Time device is returned
         public string? DeviceCondition { get; set; } // Condition after repair
         public string? ReportNotes { get; set; }
-
         public Guid? WarrantyClaimId { get; set; }
         public Guid? TaskGroupId { get; set; } // Grouping tasks together
         #region relationships
@@ -32,6 +30,7 @@ namespace GRRWS.Domain.Entities
         public ICollection<TechnicalSymptomReport>? TechnicalSymptomReports { get; set; }
         public ICollection<MechanicShift>? MechanicShifts { get; set; }
         public RequestMachineReplacement? RequestMachineReplacement { get; set; }
+
         #endregion
     }
 }
