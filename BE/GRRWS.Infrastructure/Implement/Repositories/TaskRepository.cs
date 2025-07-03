@@ -1,6 +1,7 @@
 ﻿using GRRWS.Domain.Entities;
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
+using GRRWS.Infrastructure.Common.StringHelper;
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.DTOs.Task;
@@ -561,6 +562,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         {
             var task = await _context.Tasks
                 .Include(t => t.Assignee)
+                .Include(rrm => rrm.RequestMachineReplacement)
                 .Include(t => t.TaskGroup)
                 .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == TaskType.Installation)
                 .FirstOrDefaultAsync();
@@ -603,7 +605,13 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 DeviceName = deviceInfo?.DeviceName ?? "Unknown Device",
                 DeviceCode = deviceInfo?.DeviceCode ?? "N/A",
                 Location = deviceInfo?.Location ?? "Location not available",
-                TaskGroupName = task.TaskGroup?.GroupName
+                TaskGroupName = task.TaskGroup?.GroupName,
+                NewDeviceId = task.RequestMachineReplacement?.NewDeviceId ?? Guid.Empty,
+                IsUninstall = task.IsUninstall ?? false, // True if this is an uninstall task, false if it's an install task
+                AssigneeConfirm = task.RequestMachineReplacement?.AssigneeConfirm ?? false, // True if the mechanic has confirmed the task, false otherwise
+                StockKeeperConfirm = task.RequestMachineReplacement?.StokkKeeperConfirm ?? false, // True if the stock keeper has confirmed the task, false otherwise
+                RequestMachineId = task.RequestMachineReplacement?.Id ?? Guid.Empty // ID of the request machine, if applicable
+
             };
         }
         public async Task<Guid> CreateWarrantyTask(CreateWarrantyTaskRequest request, Guid userId)
@@ -799,16 +807,25 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
                     await _context.WarrantyClaims.AddAsync(warrantyClaim);
                     await _context.SaveChangesAsync(); // Save WarrantyClaim first
-
+                    var requestInfo = await _context.Requests
+                        .Include(r => r.Device)
+                            .ThenInclude(d => d.Position)
+                                .ThenInclude(p => p.Zone)
+                                    .ThenInclude(z => z.Area)
+                        .Include(r => r.Report)
+                        .Where(r => r.Id == request.RequestId)
+                        .FirstOrDefaultAsync();
+                    var taskName = TaskString.GetWarrantyTaskName(requestInfo.Device.Position.Zone.Area.AreaCode ?? "Null", requestInfo.Device.Position.Zone.ZoneCode ?? "Null", requestInfo.Device.Position.Index.ToString() ?? "NULL");
+                    var taskDescrtiption = TaskString.GetTaskDescription(requestInfo.Device.Position.Zone.Area.AreaName ?? "Null", requestInfo.Device.Position.Zone.ZoneName ?? "Null", requestInfo.Device.Position.Index.ToString() ?? "NULL");
                     // Create the warranty submission task
                     var task = new Tasks
                     {
                         Id = Guid.NewGuid(),
-                        TaskName = $"Đưa thiết bị đi bảo hành - {claimNumber}",
+                        TaskName = taskName,
                         TaskType = TaskType.WarrantySubmission,
-                        TaskDescription = $"Mang thiết bị đi bảo hành với cái triệu chứng:{issueDescription}",
+                        TaskDescription = taskDescrtiption,
                         StartTime = request.StartDate,
-                        ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(5),
+                        ExpectedTime = (request.StartDate ?? TimeHelper.GetHoChiMinhTime()).AddHours(5),
                         Status = request.AssigneeId == null ? Status.Suggested : Status.Pending,
                         Priority = Domain.Enum.Priority.High,
                         AssigneeId = request.AssigneeId,
@@ -1530,16 +1547,11 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     // Get request and device information
                     var requestInfo = await _context.Requests
                         .Include(r => r.Device)
+                            .ThenInclude(d => d.Position)
+                                .ThenInclude(p => p.Zone)
+                                    .ThenInclude(z => z.Area)
                         .Include(r => r.Report)
                         .Where(r => r.Id == request.RequestId)
-                        .Select(r => new
-                        {
-                            r.ReportId,
-                            DeviceId = r.Device.Id,
-                            DeviceName = r.Device.DeviceName,
-                            DeviceCode = r.Device.DeviceCode,
-                            r.Report.Location
-                        })
                         .FirstOrDefaultAsync();
 
                     if (requestInfo == null)
@@ -1559,17 +1571,18 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                             deviceInfo = $"{replacementDevice.DeviceName} ({replacementDevice.DeviceCode})";
                         }
                     }
-
                     // Create the install task
+                    var taskName = TaskString.GetInstallTaskName(requestInfo.Device.Position.Zone.Area.AreaCode ?? "Null", requestInfo.Device.Position.Zone.ZoneCode ?? "Null", requestInfo.Device.Position.Index.ToString() ?? "NULL");
+                    var taskDescrtiption = TaskString.GetTaskDescription(requestInfo.Device.Position.Zone.Area.AreaName ?? "Null", requestInfo.Device.Position.Zone.ZoneName ?? "Null", requestInfo.Device.Position.Index.ToString() ?? "NULL");
                     var task = new Tasks
                     {
                         Id = Guid.NewGuid(),
-                        TaskName = $"Lắp đặt máy - {deviceInfo}",
+                        TaskName = taskName,
                         TaskType = TaskType.Installation,
-                        TaskDescription = $"Lặp đặt máy {deviceInfo} tại vị trí: {requestInfo.Location}",
+                        TaskDescription = taskDescrtiption,
                         StartTime = request.StartDate ?? TimeHelper.GetHoChiMinhTime(),
-                        ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(3), // Default 3 hours for installation
-                        Status = request.AssigneeId == null ? Status.Suggested : Status.Pending,
+                        ExpectedTime = (request.StartDate ?? TimeHelper.GetHoChiMinhTime()).AddHours(2), // Default 3 hours for installation
+                        Status = request.AssigneeId == null ? Status.WaitingForConfirmation : Status.Pending,
                         Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,
                         TaskGroupId = taskGroupId,
@@ -1606,7 +1619,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             //    getMechanicShift.IsAvailable = true;
             //    _context.MechanicShifts.Update(getMechanicShift);
             //}
-
 
             // Update status based on current status
             switch (task.Status)
@@ -1766,6 +1778,58 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             return (groups, totalCount);
         }
+
+
+        public async Task<(List<GetGroupTaskResponse> Groups, int TotalCount)> GetAllGroupTasksByMechanicIdAsync(int pageNumber, int pageSize, Guid mechanicId)
+        {
+            var query = _context.TaskGroups
+                .Where(tg => !tg.IsDeleted && tg.Tasks.Any(t => !t.IsDeleted && t.AssigneeId == mechanicId)) // FILTER by mechanicId
+                .Include(tg => tg.Tasks.Where(t => !t.IsDeleted && t.AssigneeId == mechanicId)) // Include only tasks for this mechanic
+                    .ThenInclude(t => t.Assignee)
+                .Include(tg => tg.Report)
+                    .ThenInclude(r => r.Request)
+                .OrderByDescending(tg => tg.CreatedDate);
+
+            var totalCount = await query.CountAsync();
+
+            var groups = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(tg => new GetGroupTaskResponse
+                {
+                    TaskGroupId = tg.Id,
+                    GroupName = tg.GroupName,
+                    GroupType = tg.GroupType.ToString(),
+                    CreatedDate = tg.CreatedDate,
+                    RequestId = tg.Report.Request.Id,
+                    Tasks = tg.Tasks
+                        .Where(t => t.AssigneeId == mechanicId) // again filter inside projection
+                        .OrderBy(t => t.OrderIndex)
+                        .Select(t => new TaskInGroupResponse
+                        {
+                            TaskId = t.Id,
+                            TaskName = t.TaskName,
+                            TaskDescription = t.TaskDescription,
+                            TaskType = t.TaskType.ToString(),
+                            Priority = t.Priority.ToString(),
+                            Status = t.Status.ToString(),
+                            OrderIndex = t.OrderIndex ?? 0,
+                            StartTime = t.StartTime,
+                            ExpectedTime = t.ExpectedTime,
+                            EndTime = t.EndTime,
+                            AssigneeName = t.Assignee.FullName,
+                            AssigneeId = t.AssigneeId,
+                            CreatedDate = t.CreatedDate,
+                            IsUninstallDevice = t.IsUninstall ?? false
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+
+            return (groups, totalCount);
+        }
+
+
         public async Task<(List<GetGroupTaskResponse> Groups, int TotalCount)> GetGroupTasksByRequestIdAsync(Guid requestId, int pageNumber, int pageSize)
         {
             var query = _context.TaskGroups

@@ -1,5 +1,6 @@
 ﻿using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
+using GRRWS.Application.Implement.Service;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.User.Create;
@@ -97,5 +98,13 @@ namespace GRRWS.Host.Controllers
         //       ? ResultExtensions.ToSuccessDetails(result, "All roles retrieved successfully")
         //       : ResultExtensions.ToProblemDetails(result);
         //}
+        [HttpPost("import")]
+        public async Task<IResult> ImportUser(IFormFile file)
+        {
+            var result = await _userService.ImportUsersAsync(file);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Users imported successfully!")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }

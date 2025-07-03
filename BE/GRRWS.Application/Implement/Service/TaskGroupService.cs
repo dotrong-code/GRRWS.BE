@@ -27,7 +27,9 @@ namespace GRRWS.Application.Implement.Service
                 Id = Guid.NewGuid(),
                 GroupType = groupType,
                 GroupName = $"{groupType} Group - {deviceName} - {TimeHelper.GetHoChiMinhTime():yyyy-MM-dd HH:mm}",
+
                 CreatedDate = TimeHelper.GetHoChiMinhTime(),
+
                 ReportId = reportId,
                 CreatedBy = userId,
                 IsDeleted = false

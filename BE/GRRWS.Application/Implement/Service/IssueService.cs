@@ -1,9 +1,12 @@
 ﻿using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
+using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
+using Error = GRRWS.Infrastructure.DTOs.Common.Error;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -11,11 +14,12 @@ namespace GRRWS.Application.Implement.Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMemoryCache _cache;
-
-        public IssueService(IUnitOfWork unitOfWork, IMemoryCache cache)
+                private readonly IImportService _importService;
+        public IssueService(IUnitOfWork unitOfWork, IMemoryCache cache, IImportService importService)
         {
             _unitOfWork = unitOfWork;
             _cache = cache;
+            _importService = importService;
         }
 
         public async Task<Result> GetIssueSuggestionsAsync(string query, int maxResults)
@@ -62,6 +66,15 @@ namespace GRRWS.Application.Implement.Service
                 Name = issue.DisplayName
             };
             return Result.SuccessWithObject(issueDto);
+        }
+        public async Task<Result> ImportIssuesAsync(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return Result.Failure(GRRWS.Infrastructure.DTOs.Common.Error.Validation("Excel file is empty or invalid.", "empty"));
+            }
+
+            return await _importService.ImportAsync<Issue>(file.OpenReadStream(), _unitOfWork.IssueRepository);
         }
     }
 }

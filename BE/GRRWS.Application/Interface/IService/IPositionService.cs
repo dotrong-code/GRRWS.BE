@@ -1,10 +1,11 @@
-﻿using System;
+﻿using GRRWS.Application.Common.Result;
+using GRRWS.Infrastructure.DTOs.Position;
+using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using GRRWS.Application.Common.Result;
-using GRRWS.Infrastructure.DTOs.Position;
 
 namespace GRRWS.Application.Interface.IService
 {
@@ -15,5 +16,6 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetAllPositionsAsync(Guid? zoneId, int pageNumber, int pageSize);
         Task<Result> UpdatePositionAsync(UpdatePositionRequest request);
         Task<Result> DeletePositionAsync(Guid id);
+        Task<Result> ImportPositionsAsync(IFormFile file);
     }
 }

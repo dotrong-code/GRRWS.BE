@@ -88,7 +88,7 @@ namespace GRRWS.Host.Controllers
         public async Task<IResult> UpdateWarrantyClaim([FromForm] UpdateWarrantyClaimRequest request)
         {
             CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
-            
+
             var result = await _taskService.UpdateWarrantyClaim(request, c.UserId);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Warranty claim updated successfully")
@@ -209,6 +209,16 @@ namespace GRRWS.Host.Controllers
         public async Task<IResult> GetAllGroupTasks([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             var result = await _taskService.GetAllGroupTasksAsync(pageNumber, pageSize);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Task groups retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [Authorize]
+        [HttpGet("groups/mechanic")]
+        public async Task<IResult> GetAllGroupTasksByMechanicIdAsync([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _taskService.GetAllGroupTasksByMechanicIdAsync(pageNumber, pageSize, c.UserId);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Task groups retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);

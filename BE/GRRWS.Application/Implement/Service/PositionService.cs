@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentValidation;
+﻿using FluentValidation;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
@@ -12,6 +7,12 @@ using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
 using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.Position;
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -20,12 +21,13 @@ namespace GRRWS.Application.Implement.Service
         private readonly UnitOfWork _unitOfWork;
         private readonly IValidator<CreatePositionRequest> _createPositionValidator;
         private readonly IValidator<UpdatePositionRequest> _updatePositionValidator;
-
-        public PositionService(UnitOfWork unitOfWork, IValidator<CreatePositionRequest> createPositionValidator, IValidator<UpdatePositionRequest> updatePositionValidator)
+        private readonly IImportService _importService;
+        public PositionService(UnitOfWork unitOfWork, IValidator<CreatePositionRequest> createPositionValidator, IValidator<UpdatePositionRequest> updatePositionValidator, IImportService importService)
         {
             _unitOfWork = unitOfWork;
             _createPositionValidator = createPositionValidator;
             _updatePositionValidator = updatePositionValidator;
+            _importService = importService;
         }
 
         public async Task<Result> CreatePositionAsync(CreatePositionRequest request)
@@ -129,6 +131,15 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(PositionErrorMessage.PositionDeleteFailed());
             }
             return Result.SuccessWithObject(result);
+        }
+        public async Task<Result> ImportPositionsAsync(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return Result.Failure(GRRWS.Infrastructure.DTOs.Common.Error.Validation("Excel file is empty or invalid.", "empty"));
+            }
+
+            return await _importService.ImportAsync<Position>(file.OpenReadStream(), _unitOfWork.PositionRepository);
         }
     }
 }

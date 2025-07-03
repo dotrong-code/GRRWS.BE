@@ -52,6 +52,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         // Add to ITaskRepository interface
         Task<(List<GetSingleTaskResponse> Tasks, int TotalCount)> GetAllSingleTasksAsync(string? taskType, string? status, string? priority, string? order, int pageNumber, int pageSize);
         Task<(List<GetGroupTaskResponse> Groups, int TotalCount)> GetAllGroupTasksAsync(int pageNumber, int pageSize);
+        Task<(List<GetGroupTaskResponse> Groups, int TotalCount)> GetAllGroupTasksByMechanicIdAsync(int pageNumber, int pageSize, Guid mechanicId);
         Task<(List<GetGroupTaskResponse> Groups, int TotalCount)> GetGroupTasksByRequestIdAsync(Guid requestId, int pageNumber, int pageSize);
 
 

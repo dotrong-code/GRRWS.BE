@@ -17,7 +17,7 @@ namespace GRRWS.Application.Common
             string positionCode = $"P{positionIndex:D2}";
 
 
-            return $"{areaCode}-{zoneCode}-{positionCode}-{devideCode}";
+            return $"Yêu cầu kiểm tra {areaCode}-{zoneCode}-{positionCode}-{devideCode}";
         }
         public static string GenerateReportTitle(string areaCode, string zoneCode, int positionIndex, string devideCode)
         {

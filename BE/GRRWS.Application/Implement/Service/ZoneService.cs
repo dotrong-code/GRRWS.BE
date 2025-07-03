@@ -9,6 +9,7 @@ using GRRWS.Infrastructure.DTOs.Device;
 using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.Position;
 using GRRWS.Infrastructure.DTOs.Zone;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,12 +23,13 @@ namespace GRRWS.Application.Implement.Service
         private readonly UnitOfWork _unitOfWork;
         private readonly IValidator<CreateZoneRequest> _createZoneValidator;
         private readonly IValidator<UpdateZoneRequest> _updateZoneValidator;
-
-        public ZoneService(UnitOfWork unitOfWork, IValidator<CreateZoneRequest> createZoneValidator, IValidator<UpdateZoneRequest> updateZoneValidator)
+        private readonly IImportService _importService;
+        public ZoneService(UnitOfWork unitOfWork, IValidator<CreateZoneRequest> createZoneValidator, IValidator<UpdateZoneRequest> updateZoneValidator, IImportService importService)
         {
             _unitOfWork = unitOfWork;
             _createZoneValidator = createZoneValidator;
             _updateZoneValidator = updateZoneValidator;
+            _importService = importService;
         }
 
         public async Task<Result> CreateZoneAsync(CreateZoneRequest request)
@@ -180,6 +182,15 @@ namespace GRRWS.Application.Implement.Service
             };
 
             return Result.SuccessWithObject(response);
+        }
+        public async Task<Result> ImportZonesAsync(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return Result.Failure(GRRWS.Infrastructure.DTOs.Common.Error.Validation("Excel file is empty or invalid.", "empty"));
+            }
+
+            return await _importService.ImportAsync<Zone>(file.OpenReadStream(), _unitOfWork.ZoneRepository);
         }
     }
 }

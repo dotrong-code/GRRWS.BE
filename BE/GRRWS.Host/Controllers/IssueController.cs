@@ -1,4 +1,5 @@
 ﻿using GRRWS.Application.Common.Result;
+using GRRWS.Application.Implement.Service;
 using GRRWS.Application.Interface.IService;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,6 +29,14 @@ namespace GRRWS.Host.Controllers
             var result = await _issueService.GetIssueByIdAsync(criticalIssueId);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpPost("import")]
+        public async Task<IResult> ImportIssue(IFormFile file)
+        {
+            var result = await _issueService.ImportIssuesAsync(file);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Issues imported successfully!")
                 : ResultExtensions.ToProblemDetails(result);
         }
     }

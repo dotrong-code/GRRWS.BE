@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
+using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
@@ -9,6 +10,8 @@ using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.User.Create;
 using GRRWS.Infrastructure.DTOs.User.Get;
 using GRRWS.Infrastructure.DTOs.User.Update;
+using Microsoft.AspNetCore.Http;
+using Error = GRRWS.Infrastructure.DTOs.Common.Error;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -18,12 +21,14 @@ namespace GRRWS.Application.Implement.Service
         private readonly IValidator<UpdateUserRequest> _updateUserValidator;
         private readonly IValidator<CreateUserRequest> _createUserValidator;
         private readonly IFirebaseService _firebaseService;
-        public UserService(UnitOfWork unitOfWork, IValidator<UpdateUserRequest> updateUserValidator, IFirebaseService firebaseService, IValidator<CreateUserRequest> createUserValidator)
+        private readonly IImportService _importService;
+        public UserService(UnitOfWork unitOfWork, IValidator<UpdateUserRequest> updateUserValidator, IFirebaseService firebaseService, IValidator<CreateUserRequest> createUserValidator, IImportService importService  )
         {
             _unitOfWork = unitOfWork;
             _updateUserValidator = updateUserValidator;
             _firebaseService = firebaseService;
             _createUserValidator = createUserValidator;
+            _importService = importService;
         }
 
         public async Task<Result> DeleteUserAsync(Guid id)
@@ -221,6 +226,15 @@ namespace GRRWS.Application.Implement.Service
             }
 
             return Result.SuccessWithObject(user);
+        }
+        public async Task<Result> ImportUsersAsync(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return Result.Failure(GRRWS.Infrastructure.DTOs.Common.Error.Validation("Excel file is empty or invalid.", "empty"));
+            }
+
+            return await _importService.ImportAsync<User>(file.OpenReadStream(), _unitOfWork.UserRepository);
         }
     }
 }
