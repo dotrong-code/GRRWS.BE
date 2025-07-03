@@ -2,6 +2,7 @@
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
+using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.MechanicShift;
 using GRRWS.Infrastructure.Interfaces;
 using Microsoft.Extensions.Logging;
