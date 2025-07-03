@@ -716,13 +716,15 @@ namespace GRRWS.Application.Implement.Service
             var checkTask = await _checkIsExist.Task(taskId);
             if (!checkTask.IsSuccess) return checkTask;
             var returnTask = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
-            var warrantyClaim = await _unitOfWork.WarrantyClaimRepository.GetWarrantyClaimWithTasksAsync((Guid)returnTask.WarrantyClaimId);
-            var submitTask = await _unitOfWork.TaskRepository.GetTaskByIdAsync(warrantyClaim.SubmissionTask.Id);
-            var requestMachine = await _unitOfWork.RequestMachineReplacementRepository.GetByIdAsync(submitTask.RequestMachineReplacement.Id);
+            var tasks = await _unitOfWork.TaskRepository.GetAllTasksAsync();
+            var installTask = tasks.FirstOrDefault(t => t.TaskType == TaskType.Installation && t.TaskGroupId == returnTask.TaskGroupId);
+
+            var requestMachine = await _unitOfWork.RequestMachineReplacementRepository.GetByIdAsync(installTask.RequestMachineReplacement.Id);
             var oldDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(requestMachine.OldDeviceId);
             oldDevice.Status = DeviceStatus.InUse;
             oldDevice.ModifiedDate = TimeHelper.GetHoChiMinhTime();
             await _unitOfWork.DeviceRepository.UpdateAsync(oldDevice);
+            _unitOfWork.ClearChangeTracker();
             var newDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync((Guid)requestMachine.NewDeviceId);
             newDevice.Status = DeviceStatus.Active;
             newDevice.ModifiedDate = TimeHelper.GetHoChiMinhTime();

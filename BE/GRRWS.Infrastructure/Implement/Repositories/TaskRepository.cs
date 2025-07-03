@@ -114,6 +114,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Include(t => t.Assignee)
                 .Include(t => t.ErrorDetails).ThenInclude(ed => ed.Error)
                 .Include(t => t.RepairSpareparts).ThenInclude(rs => rs.Sparepart)
+                .Include(t => t.RequestMachineReplacement)
                 .ToListAsync();
         }
         public async Task<Tasks> GetTaskByIdAsync(Guid id)
