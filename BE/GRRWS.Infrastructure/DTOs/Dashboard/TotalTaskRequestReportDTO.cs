@@ -8,7 +8,7 @@ namespace GRRWS.Infrastructure.DTOs.Dashboard
 {
     public class TotalTaskRequestReportDTO
     {
-        public int TotalTasks { get; set; }
+        public int TotalMachines { get; set; }
         public int TotalRequests { get; set; }
         public int TotalReports { get; set; }
     }
