@@ -1,10 +1,11 @@
-﻿using System;
+﻿using GRRWS.Application.Common.Result;
+using GRRWS.Infrastructure.DTOs.DeviceWarranty;
+using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using GRRWS.Application.Common.Result;
-using GRRWS.Infrastructure.DTOs.DeviceWarranty;
 
 namespace GRRWS.Application.Interface.IService
 {
@@ -18,6 +19,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetDeviceWarrantyHistoryAsync(Guid deviceId);
 
         Task<Result> GetWarrantyStatusAsync(Guid deviceId);
-        Task<Result> GetAllWarrantiesByDeviceIdAsync(Guid deviceId); 
+        Task<Result> GetAllWarrantiesByDeviceIdAsync(Guid deviceId);
+        Task<Result> ImportDeviceWarrantysAsync(IFormFile file);
     }
 }

@@ -8,6 +8,7 @@ using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
 using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.Zone;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,12 +22,13 @@ namespace GRRWS.Application.Implement.Service
         private readonly UnitOfWork _unitOfWork;
         private readonly IValidator<CreateAreaRequest> _createAreaValidator;
         private readonly IValidator<UpdateAreaRequest> _updateAreaValidator;
-
-        public AreaService(UnitOfWork unitOfWork, IValidator<CreateAreaRequest> createAreaValidator, IValidator<UpdateAreaRequest> updateAreaValidator)
+        private readonly IImportService _importService;
+        public AreaService(UnitOfWork unitOfWork, IValidator<CreateAreaRequest> createAreaValidator, IValidator<UpdateAreaRequest> updateAreaValidator, IImportService importService)
         {
             _unitOfWork = unitOfWork;
             _createAreaValidator = createAreaValidator;
             _updateAreaValidator = updateAreaValidator;
+            _importService = importService;
         }
 
         public async Task<Result> CreateAreaAsync(CreateAreaRequest request)
@@ -148,6 +150,15 @@ namespace GRRWS.Application.Implement.Service
             };
 
             return Result.SuccessWithObject(response);
+        }
+        public async Task<Result> ImportAreasAsync(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return Result.Failure(GRRWS.Infrastructure.DTOs.Common.Error.Validation("Excel file is empty or invalid.", "empty"));
+            }
+
+            return await _importService.ImportAsync<Area>(file.OpenReadStream(), _unitOfWork.AreaRepository);
         }
     }
 }

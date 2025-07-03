@@ -6,6 +6,7 @@ using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.DTOs.Sparepart;
 using GRRWS.Infrastructure.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace GRRWS.Application.Implement.Service
@@ -14,10 +15,12 @@ namespace GRRWS.Application.Implement.Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMemoryCache _cache;
-        public ErrorService(IUnitOfWork unitOfWork, IMemoryCache cache)
+        private readonly IImportService _importService;
+        public ErrorService(IUnitOfWork unitOfWork, IMemoryCache cache, IImportService importService)
         {
             _unitOfWork = unitOfWork;
             _cache = cache;
+            _importService = importService;
         }
         public async Task<Result> GetErrorSuggestionsAsync(string query, int maxResults)
         {
@@ -121,6 +124,14 @@ namespace GRRWS.Application.Implement.Service
             //return Result.SuccessWithObject(spareparts);
             return  null;
         }
+        public async Task<Result> ImportErrorsAsync(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return Result.Failure(GRRWS.Infrastructure.DTOs.Common.Error.Validation("Excel file is empty or invalid.", "empty"));
+            }
 
+            return await _importService.ImportAsync<Domain.Entities.Error>(file.OpenReadStream(), _unitOfWork.ErrorRepository);
+        }
     }
 }

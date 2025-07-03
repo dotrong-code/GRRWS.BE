@@ -11,10 +11,12 @@ namespace GRRWS.Host.Controllers
     public class AreaController : ControllerBase
     {
         private readonly IAreaService _areaService;
+        private readonly IImportService _importService;
 
-        public AreaController(IAreaService areaService)
+        public AreaController(IAreaService areaService, IImportService importService)
         {
             _areaService = areaService;
+            _importService = importService;
         }
 
         
@@ -76,6 +78,15 @@ namespace GRRWS.Host.Controllers
             var result = await _areaService.GetZonesByAreaAsync(areaId, pageNumber, pageSize);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Zones retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
+        [HttpPost("import")]
+        public async Task<IResult> ImportArea(IFormFile file)
+        {
+            var result = await _areaService.ImportAreasAsync(file);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Areas imported successfully!")
                 : ResultExtensions.ToProblemDetails(result);
         }
     }

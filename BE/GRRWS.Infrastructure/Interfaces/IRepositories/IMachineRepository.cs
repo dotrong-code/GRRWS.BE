@@ -1,4 +1,5 @@
 ﻿using GRRWS.Domain.Entities;
+using GRRWS.Infrastructure.DTOs.Machine;
 using GRRWS.Infrastructure.Interfaces.IRepositories.IGeneric;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,8 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
     public interface IMachineRepository : IGenericRepository<Machine>
     {
         Task<(List<Machine> Items, int TotalCount)> GetAllActiveMachinesAsync(int pageNumber, int pageSize);
+        Task<(List<GetMachineResponse> Machines, int TotalCount)> GetAllMachinesAsync(
+            string? machineName, string? machineCode, int pageNumber, int pageSize);
     }
 }
 
