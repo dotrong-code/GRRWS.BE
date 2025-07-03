@@ -1,5 +1,8 @@
 ﻿using GRRWS.Domain.Entities;
+using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.DB;
+using GRRWS.Infrastructure.DTOs.Device;
+using GRRWS.Infrastructure.DTOs.Machine;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
 using Microsoft.EntityFrameworkCore;
@@ -28,5 +31,47 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             return (items, totalCount);
         }
+        public async Task<(List<GetMachineResponse> Machines, int TotalCount)> GetAllMachinesAsync(
+            string? machineName, string? machineCode, int pageNumber, int pageSize)
+        {
+            var query = _context.Machines.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(machineName))
+                query = query.Where(m => m.MachineName.Contains(machineName));
+
+            if (!string.IsNullOrWhiteSpace(machineCode))
+                query = query.Where(m => m.MachineCode.Contains(machineCode));
+
+            query = query.Where(m => !m.IsDeleted).Include(m => m.Devices);
+
+            int totalCount = await query.CountAsync();
+
+            var machines = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(m => new GetMachineResponse
+                {
+                    Id = m.Id,
+                    MachineName = m.MachineName,
+                    MachineCode = m.MachineCode,
+                    Manufacturer = m.Manufacturer,
+                    Model = m.Model,
+                    Description = m.Description,
+                    Status = m.Status,
+                    ReleaseDate = m.ReleaseDate,
+                    Specifications = m.Specifications,
+                    PhotoUrl = m.PhotoUrl,
+                    CreatedDate = m.CreatedDate,
+                    CreatedBy = m.CreatedBy,
+                    ModifiedDate = m.ModifiedDate,
+                    ModifiedBy = m.ModifiedBy,
+                    IsDeleted = m.IsDeleted,
+                    DeviceIds = m.Devices != null ? m.Devices.Select(d => d.Id).ToList() : new List<Guid>()
+                })
+                .ToListAsync();
+
+            return (machines, totalCount);
+        }
+
     }
 }

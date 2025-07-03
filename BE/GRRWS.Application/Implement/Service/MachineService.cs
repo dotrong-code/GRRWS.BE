@@ -2,6 +2,8 @@
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.Common;
+using GRRWS.Infrastructure.DTOs.Machine;
+using GRRWS.Infrastructure.DTOs.Paging;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -32,6 +34,40 @@ namespace GRRWS.Application.Implement.Service
             return await _importService.ImportAsync<Machine>(file.OpenReadStream(), _unitOfWork.MachineRepository);
         }
 
-       
+        public async Task<Result> GetAllMachinesAsync(string? machineName, string? machineCode, int pageNumber, int pageSize)
+        {
+            var (machines, totalCount) = await _unitOfWork.MachineRepository.GetAllMachinesAsync(machineName, machineCode, pageNumber, pageSize);
+
+            var machineResponses = machines.Select(m => new GetMachineResponse
+            {
+                Id = m.Id,
+                MachineName = m.MachineName,
+                MachineCode = m.MachineCode,
+                Manufacturer = m.Manufacturer,
+                Model = m.Model,
+                Description = m.Description,
+                Status = m.Status,
+                ReleaseDate = m.ReleaseDate,
+                Specifications = m.Specifications,
+                PhotoUrl = m.PhotoUrl,
+                CreatedDate = m.CreatedDate,
+                CreatedBy = m.CreatedBy,
+                ModifiedDate = m.ModifiedDate,
+                ModifiedBy = m.ModifiedBy,
+                IsDeleted = m.IsDeleted,
+                DeviceIds = m.DeviceIds
+            }).ToList();
+
+            var response = new PagedResponse<GetMachineResponse>
+            {
+                Data = machineResponses,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            return Result.SuccessWithObject(response);
+        }
+
     }
 }
