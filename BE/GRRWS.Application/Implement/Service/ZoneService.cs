@@ -48,7 +48,7 @@ namespace GRRWS.Application.Implement.Service
                 Id = Guid.NewGuid(),
                 ZoneName = request.ZoneName,
                 AreaId = request.AreaId,
-                CreatedDate = DateTime.UtcNow
+                CreatedDate = TimeHelper.GetHoChiMinhTime()
             };
 
             await _unitOfWork.ZoneRepository.CreateAsync(zone);
@@ -117,7 +117,7 @@ namespace GRRWS.Application.Implement.Service
 
             zone.ZoneName = request.ZoneName;
             zone.AreaId = request.AreaId;
-            zone.ModifiedDate = DateTime.UtcNow;
+            zone.ModifiedDate = TimeHelper.GetHoChiMinhTime();
 
             await _unitOfWork.ZoneRepository.UpdateAsync(zone);
             return Result.SuccessWithObject(zone);

@@ -9,6 +9,7 @@ using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DTOs.WarrantyDetail;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
 using GRRWS.Infrastructure.Interfaces;
+using GRRWS.Infrastructure.Common;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -51,7 +52,7 @@ namespace GRRWS.Application.Implement.Service
                 RequestId = dto.RequestId,
 
                 Location = dto.Location,
-                CreatedDate = DateTime.UtcNow
+                CreatedDate = TimeHelper.GetHoChiMinhTime()
             };
 
             // Tạo WarrantyDetail

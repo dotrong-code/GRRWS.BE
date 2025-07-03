@@ -50,7 +50,7 @@ namespace GRRWS.Application.Implement.Service
                     return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", $"Error fix progress with ID {progressId} not found"));
                 progress.IsCompleted = request.IsCompleted;
                 if (request.IsCompleted)
-                    progress.CompletedAt = DateTime.UtcNow;
+                    progress.CompletedAt = TimeHelper.GetHoChiMinhTime();
                 progressToUpdate.Add(progress);
             }
 

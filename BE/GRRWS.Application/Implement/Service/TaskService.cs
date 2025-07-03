@@ -531,7 +531,7 @@ namespace GRRWS.Application.Implement.Service
             {
                 Message = "Task status updated successfully!",
                 TaskId = taskId,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = TimeHelper.GetHoChiMinhTime()
             });
         }
         // Add to TaskService implementation
@@ -752,7 +752,7 @@ namespace GRRWS.Application.Implement.Service
             //task.TaskType = request.TaskType;
             task.ExpectedTime = request.ExpectedTime;
             task.AssigneeId = request.AssigneeId;
-            task.ModifiedDate = DateTime.UtcNow;
+            task.ModifiedDate = TimeHelper.GetHoChiMinhTime();
 
             await _unitOfWork.TaskRepository.UpdateAsync(task);
             await _unitOfWork.SaveChangesAsync();
@@ -765,7 +765,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(TaskErrorMessage.TaskNotExist());
 
             task.IsDeleted = true;
-            task.ModifiedDate = DateTime.UtcNow;
+            task.ModifiedDate = TimeHelper.GetHoChiMinhTime();
 
             await _unitOfWork.TaskRepository.UpdateAsync(task);
             await _unitOfWork.SaveChangesAsync();
@@ -814,7 +814,7 @@ namespace GRRWS.Application.Implement.Service
             if (task.DeviceReturnTime.HasValue)
                 return Result.Failure(TaskErrorMessage.ReportAlreadyCreated());
 
-            task.EndTime = DateTime.UtcNow;
+            task.EndTime = TimeHelper.GetHoChiMinhTime();
             task.DeviceReturnTime = request.DeviceReturnTime;
             task.DeviceCondition = request.DeviceCondition;
             task.ReportNotes = request.ReportNotes;
@@ -934,7 +934,7 @@ namespace GRRWS.Application.Implement.Service
         //    {
         //        _logger.LogInformation("Fetching recommended mechanics for current time");
 
-        //        var now = DateTime.Now;
+        //        var now = TimeHelper.GetHoChiMinhTime();
 
         //        var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(now);
 
@@ -975,7 +975,7 @@ namespace GRRWS.Application.Implement.Service
             {
                 _logger.LogInformation("Fetching recommended mechanics for current time");
 
-                var now = DateTime.Now;
+                var now = TimeHelper.GetHoChiMinhTime();
 
                 var recommendations = await _unitOfWork.UserRepository.GetRecommendedMechanicsAsync(now, pageIndex, pageSize);
 
@@ -1001,7 +1001,7 @@ namespace GRRWS.Application.Implement.Service
                 }
 
                 // Get current shift for assignment
-                var currentTime = DateTime.Now;
+                var currentTime = TimeHelper.GetHoChiMinhTime();
                 var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(currentTime);
                 if (currentShift == null)
                 {
@@ -1040,7 +1040,7 @@ namespace GRRWS.Application.Implement.Service
                 {
                     uninstallTask.AssigneeId = uninstallWarrantyMechanicId;
                     uninstallTask.Status = Status.Pending;
-                    uninstallTask.ModifiedDate = DateTime.Now;
+                    uninstallTask.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                     uninstallTask.ExpectedTime = primaryMechanic.ExpectedTime;
                     await _unitOfWork.TaskRepository.UpdateAsync(uninstallTask);
 
@@ -1054,7 +1054,7 @@ namespace GRRWS.Application.Implement.Service
                 {
                     warrantyTask.AssigneeId = uninstallWarrantyMechanicId;
                     warrantyTask.Status = Status.Pending;
-                    warrantyTask.ModifiedDate = DateTime.Now;
+                    warrantyTask.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                     warrantyTask.ExpectedTime = primaryMechanic.ExpectedTime;
                     await _unitOfWork.TaskRepository.UpdateAsync(warrantyTask);
 
@@ -1069,7 +1069,7 @@ namespace GRRWS.Application.Implement.Service
                 {
                     installTask.AssigneeId = installMechanicId;
                     installTask.Status = Status.Pending;
-                    installTask.ModifiedDate = DateTime.Now;
+                    installTask.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                     installTask.ExpectedTime = secondaryMechanic.ExpectedTime;
                     await _unitOfWork.TaskRepository.UpdateAsync(installTask);
 
@@ -1123,7 +1123,7 @@ namespace GRRWS.Application.Implement.Service
                     }
 
                     // Check if mechanic is available at the current time
-                    var currentTime = DateTime.Now;
+                    var currentTime = TimeHelper.GetHoChiMinhTime();
                     var mechanicShift = await _unitOfWork.MechanicShiftRepository.GetCurrentShiftAsync(mechanicId.Value, currentTime);
                     if (mechanicShift != null && !mechanicShift.IsAvailable)
                     {
@@ -1135,7 +1135,7 @@ namespace GRRWS.Application.Implement.Service
                 else
                 {
                     // Auto assignment - get best available mechanic
-                    var currentTime = DateTime.Now;
+                    var currentTime = TimeHelper.GetHoChiMinhTime();
                     var availableMechanics = await _unitOfWork.UserRepository.GetRecommendedMechanicsAsync(currentTime, 1, 1);
 
                     if (!availableMechanics.Any())
@@ -1149,7 +1149,7 @@ namespace GRRWS.Application.Implement.Service
                 // Apply the assignment
                 task.AssigneeId = assignedMechanicId;
                 task.Status = Status.Pending;
-                task.ModifiedDate = DateTime.Now;
+                task.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                 await _unitOfWork.TaskRepository.UpdateAsync(task);
 
                 // Create mechanic shift for the task
