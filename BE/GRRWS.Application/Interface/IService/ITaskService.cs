@@ -45,6 +45,7 @@ namespace GRRWS.Application.Interface.IService
 
         Task<Result> GetAllSingleTasksAsync(GetAllSingleTasksRequest request);
         Task<Result> GetAllGroupTasksAsync(int pageNumber, int pageSize);
+        Task<Result> GetAllGroupTasksByMechanicIdAsync(int pageNumber, int pageSize, Guid mechanicId);
         Task<Result> GetGroupTasksByRequestIdAsync(GetTasksByRequestIdRequest request);
         Task<Result> GetMechanicRecommendationAsync(int pageSize, int pageIndex);
         Task<Result> ApplySuggestedTaskGroupAssignmentsAsync(Guid taskGroupId);

@@ -1778,6 +1778,58 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             return (groups, totalCount);
         }
+
+
+        public async Task<(List<GetGroupTaskResponse> Groups, int TotalCount)> GetAllGroupTasksByMechanicIdAsync(int pageNumber, int pageSize, Guid mechanicId)
+        {
+            var query = _context.TaskGroups
+                .Where(tg => !tg.IsDeleted && tg.Tasks.Any(t => !t.IsDeleted && t.AssigneeId == mechanicId)) // FILTER by mechanicId
+                .Include(tg => tg.Tasks.Where(t => !t.IsDeleted && t.AssigneeId == mechanicId)) // Include only tasks for this mechanic
+                    .ThenInclude(t => t.Assignee)
+                .Include(tg => tg.Report)
+                    .ThenInclude(r => r.Request)
+                .OrderByDescending(tg => tg.CreatedDate);
+
+            var totalCount = await query.CountAsync();
+
+            var groups = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(tg => new GetGroupTaskResponse
+                {
+                    TaskGroupId = tg.Id,
+                    GroupName = tg.GroupName,
+                    GroupType = tg.GroupType.ToString(),
+                    CreatedDate = tg.CreatedDate,
+                    RequestId = tg.Report.Request.Id,
+                    Tasks = tg.Tasks
+                        .Where(t => t.AssigneeId == mechanicId) // again filter inside projection
+                        .OrderBy(t => t.OrderIndex)
+                        .Select(t => new TaskInGroupResponse
+                        {
+                            TaskId = t.Id,
+                            TaskName = t.TaskName,
+                            TaskDescription = t.TaskDescription,
+                            TaskType = t.TaskType.ToString(),
+                            Priority = t.Priority.ToString(),
+                            Status = t.Status.ToString(),
+                            OrderIndex = t.OrderIndex ?? 0,
+                            StartTime = t.StartTime,
+                            ExpectedTime = t.ExpectedTime,
+                            EndTime = t.EndTime,
+                            AssigneeName = t.Assignee.FullName,
+                            AssigneeId = t.AssigneeId,
+                            CreatedDate = t.CreatedDate,
+                            IsUninstallDevice = t.IsUninstall ?? false
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+
+            return (groups, totalCount);
+        }
+
+
         public async Task<(List<GetGroupTaskResponse> Groups, int TotalCount)> GetGroupTasksByRequestIdAsync(Guid requestId, int pageNumber, int pageSize)
         {
             var query = _context.TaskGroups

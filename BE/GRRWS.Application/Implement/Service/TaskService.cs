@@ -613,6 +613,39 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", ex.Message));
             }
         }
+        public async Task<Result> GetAllGroupTasksByMechanicIdAsync(int pageNumber, int pageSize, Guid mechanicId)
+        {
+            if (pageNumber <= 0)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("ValidationError", "Page number must be greater than 0"));
+            }
+
+            if (pageSize <= 0 || pageSize > 100)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("ValidationError", "Page size must be between 1 and 100"));
+            }
+
+            try
+            {
+                var (groups, totalCount) = await _unitOfWork.TaskRepository.GetAllGroupTasksByMechanicIdAsync(pageNumber, pageSize, mechanicId);
+
+
+
+                var response = new PagedResponse<GetGroupTaskResponse>
+                {
+                    Data = groups,
+                    TotalCount = totalCount,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                };
+
+                return Result.SuccessWithObject(response);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", ex.Message));
+            }
+        }
         public async Task<Result> GetGroupTasksByRequestIdAsync(GetTasksByRequestIdRequest request)
         {
             var validator = new GetTasksByRequestIdValidator();
