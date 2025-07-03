@@ -1,4 +1,5 @@
 ﻿using GRRWS.Application.Common.Result;
+using GRRWS.Application.Implement.Service;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.DTOs.Zone;
 using Microsoft.AspNetCore.Authorization;
@@ -74,6 +75,14 @@ namespace GRRWS.Host.Controllers
             var result = await _zoneService.GetPositionsAndDevicesByZoneAsync(zoneId, pageNumber, pageSize);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Positions and devices retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpPost("import")]
+        public async Task<IResult> ImportZone(IFormFile file)
+        {
+            var result = await _zoneService.ImportZonesAsync(file);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Zones imported successfully!")
                 : ResultExtensions.ToProblemDetails(result);
         }
     }

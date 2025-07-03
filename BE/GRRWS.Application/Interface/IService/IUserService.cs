@@ -1,6 +1,7 @@
 ﻿using GRRWS.Application.Common.Result;
 using GRRWS.Infrastructure.DTOs.User.Create;
 using GRRWS.Infrastructure.DTOs.User.Update;
+using Microsoft.AspNetCore.Http;
 
 namespace GRRWS.Application.Interface.IService
 {
@@ -21,5 +22,6 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetUsersByRole(int role);
         Task<Result> AddUserAsync(CreateUserRequest createUserRequest);
         //Task<Result> GetAllRolesAsync();
+        Task<Result> ImportUsersAsync(IFormFile file);
     }
 }

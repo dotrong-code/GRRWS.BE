@@ -1,4 +1,5 @@
 ﻿using GRRWS.Application.Common.Result;
+using GRRWS.Application.Implement.Service;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using Microsoft.AspNetCore.Mvc;
@@ -52,6 +53,14 @@ namespace GRRWS.Host.Controllers
             var result = await _errorService.GetListOfSparepartByErrorAsync(errorIds);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved spare parts for the errors")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpPost("import")]
+        public async Task<IResult> ImportDevice(IFormFile file)
+        {
+            var result = await _errorService.ImportErrorsAsync(file);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Errors imported successfully!")
                 : ResultExtensions.ToProblemDetails(result);
         }
     }

@@ -1,5 +1,6 @@
 ﻿using GRRWS.Application.Common.Result;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
+using Microsoft.AspNetCore.Http;
 
 namespace GRRWS.Application.Interface.IService
 {
@@ -12,5 +13,6 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetSparepartsByErrorIdAsync(Guid errorId);
         Task<Result> GetErrorsByReportIdWithoutTaskAsync(Guid reportId);
         Task<Result> GetListOfSparepartByErrorAsync(List<Guid> errorIds);
+        Task<Result> ImportErrorsAsync(IFormFile file);
     }
 }

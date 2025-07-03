@@ -1,10 +1,11 @@
-﻿using System;
+﻿using GRRWS.Application.Common.Result;
+using GRRWS.Infrastructure.DTOs.Zone;
+using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using GRRWS.Application.Common.Result;
-using GRRWS.Infrastructure.DTOs.Zone;
 
 namespace GRRWS.Application.Interface.IService
 {
@@ -16,5 +17,6 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> UpdateZoneAsync(UpdateZoneRequest request);
         Task<Result> DeleteZoneAsync(Guid id);
         Task<Result> GetPositionsAndDevicesByZoneAsync(Guid zoneId, int pageNumber, int pageSize);
+        Task<Result> ImportZonesAsync(IFormFile file);
     }
 }

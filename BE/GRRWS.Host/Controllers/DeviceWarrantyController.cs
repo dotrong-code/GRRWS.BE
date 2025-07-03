@@ -1,4 +1,5 @@
 ﻿using GRRWS.Application.Common.Result;
+using GRRWS.Application.Implement.Service;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.DTOs.DeviceWarranty;
 using Microsoft.AspNetCore.Authorization;
@@ -81,6 +82,14 @@ namespace GRRWS.Host.Controllers
             var result = await _deviceWarrantyService.GetAllWarrantiesByDeviceIdAsync(deviceId);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Warranties retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpPost("import")]
+        public async Task<IResult> ImportDeviceWarranty(IFormFile file)
+        {
+            var result = await _deviceWarrantyService.ImportDeviceWarrantysAsync(file);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Device warranties imported successfully!")
                 : ResultExtensions.ToProblemDetails(result);
         }
     }

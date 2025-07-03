@@ -10,7 +10,7 @@ namespace GRRWS.Application.Interface.IService
 {
     public interface IMachineService
     {
-        
         Task<Result> ImportMachinesAsync(IFormFile file);
+        Task<Result> GetAllMachinesAsync(string? machineName = null, string? machineCode = null, int pageNumber = 1, int pageSize = 10);
     }
 }

@@ -23,7 +23,18 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Machines imported successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [HttpGet("search")]
+        public async Task<IResult> GetAllMachines(
+    [FromQuery] string? machineName = null,
+    [FromQuery] string? machineCode = null,
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10)
+        {
+            var result = await _machineService.GetAllMachinesAsync(machineName, machineCode, pageNumber, pageSize);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Devices retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
 
-        
     }
 }

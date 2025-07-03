@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentValidation;
+﻿using FluentValidation;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
@@ -13,6 +8,12 @@ using GRRWS.Infrastructure.DTOs.Common.Message;
 using GRRWS.Infrastructure.DTOs.Device;
 using GRRWS.Infrastructure.DTOs.DeviceWarranty;
 using GRRWS.Infrastructure.DTOs.Paging;
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -21,12 +22,13 @@ namespace GRRWS.Application.Implement.Service
         private readonly UnitOfWork _unitOfWork;
         private readonly IValidator<CreateDeviceWarrantyRequest> _createDeviceWarrantyValidator;
         private readonly IValidator<UpdateDeviceWarrantyRequest> _updateDeviceWarrantyValidator;
-
-        public DeviceWarrantyService(UnitOfWork unitOfWork, IValidator<CreateDeviceWarrantyRequest> createDeviceWarrantyValidator, IValidator<UpdateDeviceWarrantyRequest> updateDeviceWarrantyValidator)
+        private readonly IImportService _importService;
+        public DeviceWarrantyService(UnitOfWork unitOfWork, IValidator<CreateDeviceWarrantyRequest> createDeviceWarrantyValidator, IValidator<UpdateDeviceWarrantyRequest> updateDeviceWarrantyValidator, IImportService importService)
         {
             _unitOfWork = unitOfWork;
             _createDeviceWarrantyValidator = createDeviceWarrantyValidator;
             _updateDeviceWarrantyValidator = updateDeviceWarrantyValidator;
+            _importService = importService;
         }
 
         public async Task<Result> CreateDeviceWarrantyAsync(CreateDeviceWarrantyRequest request)
@@ -253,6 +255,15 @@ namespace GRRWS.Application.Implement.Service
             }).ToList();
 
             return Result.SuccessWithObject(historyDTOs);
+        }
+        public async Task<Result> ImportDeviceWarrantysAsync(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return Result.Failure(GRRWS.Infrastructure.DTOs.Common.Error.Validation("Excel file is empty or invalid.", "empty"));
+            }
+
+            return await _importService.ImportAsync<DeviceWarranty>(file.OpenReadStream(), _unitOfWork.DeviceWarrantyRepository);
         }
     }
 }
