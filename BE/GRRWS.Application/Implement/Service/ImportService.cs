@@ -5,6 +5,7 @@ using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
 using GRRWS.Domain.Enum;
+using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.Interfaces.IRepositories.IGeneric;
 using Microsoft.AspNetCore.Http;
@@ -139,7 +140,7 @@ namespace GRRWS.Application.Implement.Service
                         // Set default values for BaseEntity (excluding Id)
                         if (entity is BaseEntity baseEntity)
                         {
-                            baseEntity.CreatedDate = DateTime.UtcNow;
+                            baseEntity.CreatedDate = TimeHelper.GetHoChiMinhTime();
                             baseEntity.IsDeleted = false;
                         }
                         entities.Add(entity);

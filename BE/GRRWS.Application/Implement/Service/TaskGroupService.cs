@@ -26,8 +26,8 @@ namespace GRRWS.Application.Implement.Service
             {
                 Id = Guid.NewGuid(),
                 GroupType = groupType,
-                GroupName = $"{groupType} Group - {deviceName} - {DateTime.UtcNow:yyyy-MM-dd HH:mm}",
-                CreatedDate = DateTime.UtcNow,
+                GroupName = $"{groupType} Group - {deviceName} - {TimeHelper.GetHoChiMinhTime():yyyy-MM-dd HH:mm}",
+                CreatedDate = TimeHelper.GetHoChiMinhTime(),
                 ReportId = reportId,
                 CreatedBy = userId,
                 IsDeleted = false
@@ -81,7 +81,7 @@ namespace GRRWS.Application.Implement.Service
             foreach (var task in existingTasks.Where(t => t.OrderIndex >= fromOrderIndex))
             {
                 task.OrderIndex += 1;
-                task.ModifiedDate = DateTime.UtcNow;
+                task.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                 task.ModifiedBy = userId;
             }
 

@@ -28,13 +28,13 @@ namespace GRRWS.Application.Implement.Service
         {
             if (mechanicId == Guid.Empty || taskId == Guid.Empty)
             {
-                _logger.LogError("Invalid mechanicId or taskId provided at {Time}", DateTime.Now);
+                _logger.LogError("Invalid mechanicId or taskId provided at {Time}", TimeHelper.GetHoChiMinhTime());
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Invalid Input", "Mechanic ID and Task ID cannot be empty."));
             }
             var createdMechanicShift = await _unitOfWork.MechanicShiftRepository.CreateMechanicShift(mechanicId, taskId);
             if (!createdMechanicShift)
             {
-                _logger.LogError("Failed to create mechanic shift for task {TaskId} at {Time}", taskId, DateTime.Now);
+                _logger.LogError("Failed to create mechanic shift for task {TaskId} at {Time}", taskId, TimeHelper.GetHoChiMinhTime());
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", "Failed to create mechanic shift for the task."));
             }
             return Result.SuccessWithObject(new
@@ -46,13 +46,13 @@ namespace GRRWS.Application.Implement.Service
         {
             if (mechanicShiftId == Guid.Empty)
             {
-                _logger.LogError("Invalid mechanicShiftId provided at {Time}", DateTime.Now);
+                _logger.LogError("Invalid mechanicShiftId provided at {Time}", TimeHelper.GetHoChiMinhTime());
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Invalid Input", "Mechanic Shift ID cannot be empty."));
             }
             var updated = await _unitOfWork.MechanicShiftRepository.UpdateMechanicShiftAvailableAsync(mechanicShiftId);
             if (!updated)
             {
-                _logger.LogError("Failed to update mechanic shift status for ID {MechanicShiftId} at {Time}", mechanicShiftId, DateTime.Now);
+                _logger.LogError("Failed to update mechanic shift status for ID {MechanicShiftId} at {Time}", mechanicShiftId, TimeHelper.GetHoChiMinhTime());
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", "Failed to update mechanic shift status."));
             }
             return Result.SuccessWithObject(new

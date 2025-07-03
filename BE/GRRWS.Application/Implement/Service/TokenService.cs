@@ -41,7 +41,7 @@ namespace GRRWS.Application.Implement.Service
             new Claim(ClaimTypes.Email, currentUserObject.Email),
             new Claim("userId", currentUserObject.UserId.ToString())  // UserId to string to avoid type conflicts
         }),
-                Expires = DateTime.UtcNow.AddMinutes(180),
+                Expires = TimeHelper.GetHoChiMinhTime().AddMinutes(180),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKeyBytes), SecurityAlgorithms.HmacSha256Signature),
                 Issuer = _configuration["Jwt:Issuer"],
                 Audience = _configuration["Jwt:Audience"]

@@ -143,7 +143,7 @@ namespace GRRWS.Application.Implement.Service
             sparepart.StockQuantity = dto.StockQuantity;
             sparepart.IsAvailable = dto.StockQuantity > 0;
             sparepart.ExpectedAvailabilityDate = dto.StockQuantity > 0 ? null : sparepart.ExpectedAvailabilityDate;
-            sparepart.ModifiedDate = DateTime.UtcNow;
+            sparepart.ModifiedDate = TimeHelper.GetHoChiMinhTime();
 
             await _unit.SparepartRepository.UpdateAsync(sparepart);
             await _unit.SaveChangesAsync();

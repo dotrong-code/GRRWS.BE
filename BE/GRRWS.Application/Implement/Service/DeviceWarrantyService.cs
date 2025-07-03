@@ -60,7 +60,7 @@ namespace GRRWS.Application.Implement.Service
                 SparePartCode = request.SparePartCode,
                 SparePartName = request.SparePartName,
                 DeviceId = request.DeviceId,
-                CreatedDate = DateTime.UtcNow
+                CreatedDate = TimeHelper.GetHoChiMinhTime()
             };
 
             await _unitOfWork.DeviceWarrantyRepository.CreateAsync(deviceWarranty);
@@ -166,7 +166,7 @@ namespace GRRWS.Application.Implement.Service
             deviceWarranty.SparePartCode = request.SparePartCode;
             deviceWarranty.SparePartName = request.SparePartName;
             deviceWarranty.DeviceId = request.DeviceId;
-            deviceWarranty.ModifiedDate = DateTime.UtcNow;
+            deviceWarranty.ModifiedDate = TimeHelper.GetHoChiMinhTime();
 
             await _unitOfWork.DeviceWarrantyRepository.UpdateAsync(deviceWarranty);
             return Result.SuccessWithObject(deviceWarranty);
@@ -209,9 +209,9 @@ namespace GRRWS.Application.Implement.Service
                 Cost = warranty?.Cost,
                 DocumentUrl = warranty?.DocumentUrl,
                 DaysRemaining = warranty != null
-                    ? (int)(warranty.WarrantyEndDate!.Value.Date - DateTime.UtcNow.Date).TotalDays
+                    ? (int)(warranty.WarrantyEndDate!.Value.Date - TimeHelper.GetHoChiMinhTime().Date).TotalDays
                     : null,
-                LowDayWarning = warranty != null && (warranty.WarrantyEndDate!.Value.Date - DateTime.UtcNow.Date).TotalDays <= 10
+                LowDayWarning = warranty != null && (warranty.WarrantyEndDate!.Value.Date - TimeHelper.GetHoChiMinhTime().Date).TotalDays <= 10
             };
 
             return Result.SuccessWithObject(response);

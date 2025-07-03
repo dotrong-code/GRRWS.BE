@@ -21,6 +21,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using GRRWS.Infrastructure.DTOs.User.Register;
 using GRRWS.Infrastructure.DTOs.Firebase.AddImage;
+using GRRWS.Infrastructure.Common;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -222,7 +223,7 @@ namespace GRRWS.Application.Implement.Service
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(expirationMinutes),
+                expires: TimeHelper.GetHoChiMinhTime().AddMinutes(expirationMinutes),
                 signingCredentials: credentials);
 
 

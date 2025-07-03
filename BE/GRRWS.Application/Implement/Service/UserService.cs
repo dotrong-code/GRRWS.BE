@@ -178,7 +178,7 @@ namespace GRRWS.Application.Implement.Service
             user.PhoneNumber = request.PhoneNumber;
             user.DateOfBirth = request.DateOfBirth;
             user.Role = request.Role;
-            user.ModifiedDate = DateTime.UtcNow;
+            user.ModifiedDate = TimeHelper.GetHoChiMinhTime();
 
             var updateResult = await _unitOfWork.UserRepository.UpdateAsync(user);
             if (updateResult == 0)
@@ -211,7 +211,7 @@ namespace GRRWS.Application.Implement.Service
                 DateOfBirth = request.DateOfBirth,
                 ProfilePictureUrl = request?.ProfilePictureUrl,
                 Role = request.Role,
-                CreatedDate = DateTime.UtcNow
+                CreatedDate = TimeHelper.GetHoChiMinhTime()
             };
 
             var result = await _unitOfWork.UserRepository.CreateAsync(user);

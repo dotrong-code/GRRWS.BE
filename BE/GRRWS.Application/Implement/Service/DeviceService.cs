@@ -76,7 +76,7 @@ public class DeviceService : IDeviceService
             Supplier = request.Supplier,
             MachineId = request.MachineId,
             PositionId = request.PositionId,
-            CreatedDate = DateTime.UtcNow
+            CreatedDate = TimeHelper.GetHoChiMinhTime()
         };
 
         await _unitOfWork.DeviceRepository.CreateAsync(device);
@@ -202,7 +202,7 @@ public class DeviceService : IDeviceService
         device.Supplier = request.Supplier;
         device.MachineId = request.MachineId;
         device.PositionId = request.PositionId;
-        device.ModifiedDate = DateTime.UtcNow;
+        device.ModifiedDate = TimeHelper.GetHoChiMinhTime();
 
         await _unitOfWork.DeviceRepository.UpdateAsync(device);
         return Result.SuccessWithObject(device);
@@ -287,9 +287,9 @@ public class DeviceService : IDeviceService
             Cost = warranty?.Cost,
             DocumentUrl = warranty?.DocumentUrl,
             DaysRemaining = warranty != null
-                ? (int)(warranty.WarrantyEndDate!.Value.Date - DateTime.UtcNow.Date).TotalDays
+                ? (int)(warranty.WarrantyEndDate!.Value.Date - TimeHelper.GetHoChiMinhTime().Date).TotalDays
                 : null,
-            LowDayWarning = warranty != null && (warranty.WarrantyEndDate!.Value.Date - DateTime.UtcNow.Date).TotalDays <= 10
+            LowDayWarning = warranty != null && (warranty.WarrantyEndDate!.Value.Date - TimeHelper.GetHoChiMinhTime().Date).TotalDays <= 10
         };
 
         return Result.SuccessWithObject(response);

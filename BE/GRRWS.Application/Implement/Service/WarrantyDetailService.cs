@@ -51,7 +51,7 @@ namespace GRRWS.Application.Implement.Service
                 RequestId = dto.RequestId,
 
                 Location = dto.Location,
-                CreatedDate = DateTime.UtcNow
+                CreatedDate = TimeHelper.GetHoChiMinhTime()
             };
 
             // Tạo WarrantyDetail

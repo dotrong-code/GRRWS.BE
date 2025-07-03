@@ -1,6 +1,7 @@
 ﻿using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
 using GRRWS.Domain.Enum;
+using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.Mechanic;
 using GRRWS.Infrastructure.Interfaces;
 
@@ -29,7 +30,7 @@ namespace GRRWS.Application.Implement.Service
                 performance = new MechanicPerformance
                 {
                     MechanicId = mechanicId,
-                    LastPerformanceUpdate = DateTime.Now
+                    LastPerformanceUpdate = TimeHelper.GetHoChiMinhTime()
                 };
                 await _unit.MechanicPerformanceRepository.CreateOrUpdateAsync(performance);
                 await _unit.SaveChangesAsync();
@@ -194,7 +195,7 @@ namespace GRRWS.Application.Implement.Service
             {
                 performanceHistory.RequiredRework = true;
                 performanceHistory.Notes = $"Rework required: {reason}";
-                performanceHistory.ModifiedDate = DateTime.Now;
+                performanceHistory.ModifiedDate = TimeHelper.GetHoChiMinhTime();
 
                 await _unit.MechanicPerformanceHistoryRepository.UpdateAsync(performanceHistory);
 
@@ -203,7 +204,7 @@ namespace GRRWS.Application.Implement.Service
                 if (performance != null)
                 {
                     performance.TasksRequiredRework++;
-                    performance.LastPerformanceUpdate = DateTime.Now;
+                    performance.LastPerformanceUpdate = TimeHelper.GetHoChiMinhTime();
                     await _unit.MechanicPerformanceRepository.UpdateAsync(performance);
                 }
 
@@ -220,8 +221,8 @@ namespace GRRWS.Application.Implement.Service
                 MechanicId = mechanicId,
                 TaskId = task.Id,
                 TaskType = (TaskType)task.TaskType,
-                TaskStartTime = task.StartTime ?? DateTime.Now,
-                TaskEndTime = task.EndTime ?? DateTime.Now,
+                TaskStartTime = task.StartTime ?? TimeHelper.GetHoChiMinhTime(),
+                TaskEndTime = task.EndTime ?? TimeHelper.GetHoChiMinhTime(),
                 TaskExpectedTime = task.ExpectedTime,
                 ActualDurationMinutes = metrics.ActualDuration,
                 ExpectedDurationMinutes = task.ExpectedTime.HasValue && task.StartTime.HasValue
@@ -231,8 +232,8 @@ namespace GRRWS.Application.Implement.Service
                 TimeVarianceMinutes = metrics.TimeVariance,
                 QualityScore = metrics.QualityScore,
                 RequiredRework = false,
-                RecordedDate = DateTime.Now,
-                CreatedDate = DateTime.Now
+                RecordedDate = TimeHelper.GetHoChiMinhTime(),
+                CreatedDate = TimeHelper.GetHoChiMinhTime()
             };
 
             await _unit.MechanicPerformanceHistoryRepository.CreateAsync(historyRecord);
@@ -248,7 +249,7 @@ namespace GRRWS.Application.Implement.Service
                 {
                     Id = Guid.NewGuid(),
                     MechanicId = mechanicId,
-                    CreatedDate = DateTime.Now
+                    CreatedDate = TimeHelper.GetHoChiMinhTime()
                 };
             }
 
@@ -267,8 +268,8 @@ namespace GRRWS.Application.Implement.Service
 
             // Recalculate efficiency rating
             performance.EfficiencyRating = CalculateEfficiencyRating(performance);
-            performance.LastPerformanceUpdate = DateTime.Now;
-            performance.ModifiedDate = DateTime.Now;
+            performance.LastPerformanceUpdate = TimeHelper.GetHoChiMinhTime();
+            performance.ModifiedDate = TimeHelper.GetHoChiMinhTime();
 
             await _unit.MechanicPerformanceRepository.CreateOrUpdateAsync(performance);
         }
@@ -467,7 +468,7 @@ namespace GRRWS.Application.Implement.Service
 
         private async Task<CurrentShiftInfo?> GetCurrentShiftInfoAsync(Guid mechanicId)
         {
-            var now = DateTime.Now;
+            var now = TimeHelper.GetHoChiMinhTime();
             var currentShift = await _unit.MechanicShiftRepository.GetCurrentShiftAsync(mechanicId, now);
 
             if (currentShift?.Shift == null)

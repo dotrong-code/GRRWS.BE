@@ -5,6 +5,7 @@ using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
 
 using GRRWS.Domain.Enum;
+using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.DTOs.ErrorDetail;
 
 using GRRWS.Infrastructure.DTOs.Report;
@@ -78,7 +79,7 @@ namespace GRRWS.Application.Implement.Service
 
             var report = _mapper.Map<Report>(dto);
             report.Id = Guid.NewGuid();
-            report.CreatedDate = DateTime.Now;
+            report.CreatedDate = TimeHelper.GetHoChiMinhTime();
             report.Location = createLocation;
 
             if (dto.ErrorIds != null && dto.ErrorIds.Any())
@@ -150,7 +151,7 @@ namespace GRRWS.Application.Implement.Service
 
             var report = _mapper.Map<Report>(dto);
             report.Id = Guid.NewGuid();
-            report.CreatedDate = DateTime.Now;
+            report.CreatedDate = TimeHelper.GetHoChiMinhTime();
             report.Location = createLocation;
 
             if (dto.TechnicalSymtomIds != null && dto.TechnicalSymtomIds.Any())
@@ -196,7 +197,7 @@ namespace GRRWS.Application.Implement.Service
             var report = await _unit.ReportRepository.GetByIdAsync(id);
             if (report == null) return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Report not found.", 0));
             report.IsDeleted = true;
-            report.ModifiedDate = DateTime.Now;
+            report.ModifiedDate = TimeHelper.GetHoChiMinhTime();
             await _unit.ReportRepository.UpdateAsync(report);
             return Result.SuccessWithObject(new { Message = "Report canceled successfully!" });
         }
@@ -285,7 +286,7 @@ namespace GRRWS.Application.Implement.Service
                 Id = Guid.NewGuid(),
                 RequestId = dto.RequestId,
                 Location = createLocation,
-                CreatedDate = DateTime.Now
+                CreatedDate = TimeHelper.GetHoChiMinhTime()
             };
 
             // Tạo ErrorDetails
@@ -415,7 +416,7 @@ namespace GRRWS.Application.Implement.Service
                 Id = Guid.NewGuid(),
                 RequestId = dto.RequestId,
                 Location = createLocation,
-                CreatedDate = DateTime.Now
+                CreatedDate = TimeHelper.GetHoChiMinhTime()
             };
 
             // Tạo TechnicalSymptomReports
@@ -542,7 +543,7 @@ namespace GRRWS.Application.Implement.Service
                 {
                     return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", $"Request not found for the provided {reportId}."));
                 }
-                var currentTime = DateTime.Now;
+                var currentTime = TimeHelper.GetHoChiMinhTime();
                 var availableMechanics = await _unit.UserRepository.GetRecommendedMechanicsAsync(currentTime, 1, 10);
 
                 if (!availableMechanics.Any())
@@ -618,7 +619,7 @@ namespace GRRWS.Application.Implement.Service
                 }
 
                 // Get current shift for assignment
-                var currentTime = DateTime.Now;
+                var currentTime = TimeHelper.GetHoChiMinhTime();
                 var currentShift = await _unit.ShiftRepository.GetCurrentShiftAsync(currentTime);
                 if (currentShift == null)
                 {
@@ -657,7 +658,7 @@ namespace GRRWS.Application.Implement.Service
                 {
                     uninstallTask.AssigneeId = uninstallWarrantyMechanicId;
                     uninstallTask.Status = Status.Pending;
-                    uninstallTask.ModifiedDate = DateTime.Now;
+                    uninstallTask.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                     uninstallTask.ExpectedTime = primaryMechanic.ExpectedTime;
                     await _unit.TaskRepository.UpdateAsync(uninstallTask);
 
@@ -671,7 +672,7 @@ namespace GRRWS.Application.Implement.Service
                 {
                     warrantyTask.AssigneeId = uninstallWarrantyMechanicId;
                     warrantyTask.Status = Status.Pending;
-                    warrantyTask.ModifiedDate = DateTime.Now;
+                    warrantyTask.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                     warrantyTask.ExpectedTime = primaryMechanic.ExpectedTime;
                     await _unit.TaskRepository.UpdateAsync(warrantyTask);
 
@@ -686,7 +687,7 @@ namespace GRRWS.Application.Implement.Service
                 {
                     installTask.AssigneeId = installMechanicId;
                     installTask.Status = Status.Pending;
-                    installTask.ModifiedDate = DateTime.Now;
+                    installTask.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                     installTask.ExpectedTime = secondaryMechanic.ExpectedTime;
                     await _unit.TaskRepository.UpdateAsync(installTask);
 
@@ -729,7 +730,7 @@ namespace GRRWS.Application.Implement.Service
                 }
 
                 // Get available mechanics using the existing recommendation system
-                var currentTime = DateTime.Now;
+                var currentTime = TimeHelper.GetHoChiMinhTime();
                 var availableMechanics = await _unit.UserRepository.GetRecommendedMechanicsAsync(currentTime, 1, 10);
 
                 if (!availableMechanics.Any())
@@ -753,7 +754,7 @@ namespace GRRWS.Application.Implement.Service
                 if (uninstallTask != null && !uninstallTask.AssigneeId.HasValue)
                 {
                     uninstallTask.AssigneeId = uninstallWarrantyMechanicId;
-                    uninstallTask.ModifiedDate = DateTime.Now;
+                    uninstallTask.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                     uninstallTask.ExpectedTime = primaryMechanic.ExpectedTime;
                     await _unit.TaskRepository.UpdateAsync(uninstallTask);
 
@@ -764,7 +765,7 @@ namespace GRRWS.Application.Implement.Service
                 if (warrantyTask != null && !warrantyTask.AssigneeId.HasValue)
                 {
                     warrantyTask.AssigneeId = uninstallWarrantyMechanicId;
-                    warrantyTask.ModifiedDate = DateTime.Now;
+                    warrantyTask.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                     warrantyTask.ExpectedTime = primaryMechanic.ExpectedTime;
                     await _unit.TaskRepository.UpdateAsync(warrantyTask);
 
@@ -776,7 +777,7 @@ namespace GRRWS.Application.Implement.Service
                 if (installTask != null && !installTask.AssigneeId.HasValue)
                 {
                     installTask.AssigneeId = installMechanicId;
-                    installTask.ModifiedDate = DateTime.Now;
+                    installTask.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                     installTask.ExpectedTime = secondaryMechanic.ExpectedTime;
                     await _unit.TaskRepository.UpdateAsync(installTask);
 
