@@ -129,6 +129,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IMechanicShiftService, MechanicShiftService>();
             services.AddTransient<IWarrantyClaimService, WarrantyClaimService>();
             services.AddTransient<IRequestMachineReplacementService, RequestMachineReplacementService>();
+            services.AddTransient<IOcrService, OcrService>();
 
 
 
