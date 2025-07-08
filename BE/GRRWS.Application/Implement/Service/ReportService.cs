@@ -993,7 +993,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.SuccessWithObject(new
                 {
                     Message = "Repair task group created successfully!",
-                    taskGroupId = taskGroupId,
+                    
                     RepairTaskId = repairTaskId
                 });
             }
