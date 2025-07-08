@@ -1,23 +1,14 @@
 ﻿using FluentValidation;
 using GRRWS.Application.Common.Result;
-using GRRWS.Application.Implement.Service;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
-using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
 using GRRWS.Infrastructure.DTOs.Device;
 using GRRWS.Infrastructure.DTOs.History;
-using GRRWS.Infrastructure.DTOs.Import;
 using GRRWS.Infrastructure.DTOs.Paging;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 public class DeviceService : IDeviceService
 {
@@ -263,7 +254,7 @@ public class DeviceService : IDeviceService
 
     public async Task<Result> GetWarrantyStatusAsync(Guid deviceId)
     {
-        var device = await _unitOfWork.DeviceRepository.    GetByIdAsync(deviceId);
+        var device = await _unitOfWork.DeviceRepository.GetByIdAsync(deviceId);
         if (device == null)
         {
             return Result.Failure(DeviceErrorMessage.DeviceNotExist());
@@ -407,5 +398,6 @@ public class DeviceService : IDeviceService
 
         return Result.SuccessWithObject(response);
     }
+
 
 }

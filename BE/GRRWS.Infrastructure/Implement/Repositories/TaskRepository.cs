@@ -114,6 +114,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Include(t => t.Assignee)
                 .Include(t => t.ErrorDetails).ThenInclude(ed => ed.Error)
                 .Include(t => t.RepairSpareparts).ThenInclude(rs => rs.Sparepart)
+                .Include(t => t.RequestMachineReplacement)
                 .ToListAsync();
         }
         public async Task<Tasks> GetTaskByIdAsync(Guid id)
@@ -122,6 +123,9 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Include(t => t.Assignee)
                 .Include(t => t.ErrorDetails).ThenInclude(ed => ed.Error)
                 .Include(t => t.RepairSpareparts).ThenInclude(rs => rs.Sparepart)
+                .Include(t => t.RequestMachineReplacement)
+                .Include(t => t.WarrantyClaim)
+                    .ThenInclude(wc => wc.DeviceWarranty)
                 .FirstOrDefaultAsync(t => t.Id == id);
         }
         public async Task CreateTaskAsync(Tasks task, Guid reportId, List<Guid> errorIds, List<Guid> sparepartIds)
@@ -316,7 +320,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 })
                 .FirstOrDefaultAsync();
         }
-
         public async Task<string> GetDeviceInfoAsync(Guid deviceId)
         {
             var device = await _context.Devices
@@ -331,7 +334,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             var query = _context.Tasks
                 .Where(t => t.AssigneeId == mechanicId && !t.IsDeleted);
 
-            // Apply filters
+            // Filters
             if (!string.IsNullOrEmpty(request.TaskType) && Enum.TryParse<TaskType>(request.TaskType, true, out var parsedTaskType))
             {
                 query = query.Where(t => t.TaskType == parsedTaskType);
@@ -346,36 +349,47 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             {
                 query = query.Where(t => t.Priority == parsedPriority);
             }
+
             if (!string.IsNullOrEmpty(request.Order) && Enum.TryParse<SearchOrder>(request.Order, true, out var parsedOrder))
             {
                 query = parsedOrder switch
                 {
-                    //SearchOrder.Ascending => query.OrderBy(t => t.),      // A-Z
-                    //SearchOrder.Descending => query.OrderByDescending(t => t.SomeTextField), // Z-A
-                    SearchOrder.Latest => query.OrderByDescending(t => t.CreatedDate), // newest first
-                    SearchOrder.Oldest => query.OrderBy(t => t.CreatedDate),           // oldest first
-                    _ => query.OrderByDescending(t => t.CreatedDate)                   // default
+                    SearchOrder.Latest => query.OrderByDescending(t => t.CreatedDate),
+                    SearchOrder.Oldest => query.OrderBy(t => t.CreatedDate),
+                    _ => query.OrderByDescending(t => t.CreatedDate)
                 };
             }
 
             var totalCount = await query.CountAsync();
+
             var tasks = await query
-                .Skip((request.PageNumber - 1) * request.PageSize)
-                .Take(request.PageSize)
                 .Select(t => new GetTaskForMechanic
                 {
                     TaskId = t.Id,
                     TaskName = t.TaskName,
                     TaskDescription = t.TaskDescription,
                     TaskType = t.TaskType.ToString(),
-                    Priority = t.Priority.ToString(), // Convert enum to string
+                    Priority = t.Priority.ToString(),
                     Status = t.Status.ToString(),
-                    CreateDate = t.CreatedDate// Convert enum to string
-
+                    CreateDate = t.CreatedDate,
+                    OrderIndex = t.OrderIndex ?? 0,
+                    TaskGroupId = t.TaskGroupId ?? Guid.Empty,
                 })
                 .ToListAsync();
 
-            return tasks;
+            // Group and sort in-memory
+            var grouped = tasks
+                .GroupBy(t => t.TaskGroupId)
+                .SelectMany(g => g.OrderBy(t => t.OrderIndex))
+                .ToList();
+
+            // Apply paging AFTER grouping & ordering
+            var paged = grouped
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToList();
+
+            return paged;
         }
         public async Task<GetDetailWarrantyTaskForMechanic> GetGetDetailWarrantyTaskForMechanicByIdAsync(Guid taskId, TaskType type)
         {
@@ -671,7 +685,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     {
                         Id = Guid.NewGuid(),
                         ClaimNumber = claimNumber,
-                        ClaimStatus = Status.Pending,
+                        ClaimStatus = WarrantyClaimStatus.Pending,
                         IssueDescription = issueDescription,
                         DeviceWarrantyId = (Guid)request.DeviceWarrantyId,
                         CreatedByUserId = userId,
@@ -796,7 +810,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     {
                         Id = Guid.NewGuid(),
                         ClaimNumber = claimNumber,
-                        ClaimStatus = Status.Pending,
+                        ClaimStatus = WarrantyClaimStatus.Pending,
                         IssueDescription = issueDescription,
                         DeviceWarrantyId = (Guid)request.DeviceWarrantyId,
                         CreatedByUserId = userId,
@@ -807,6 +821,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
                     await _context.WarrantyClaims.AddAsync(warrantyClaim);
                     await _context.SaveChangesAsync(); // Save WarrantyClaim first
+
                     var requestInfo = await _context.Requests
                         .Include(r => r.Device)
                             .ThenInclude(d => d.Position)
@@ -815,6 +830,9 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         .Include(r => r.Report)
                         .Where(r => r.Id == request.RequestId)
                         .FirstOrDefaultAsync();
+
+                    requestInfo.Device.Status = DeviceStatus.InWarranty;
+
                     var taskName = TaskString.GetWarrantyTaskName(requestInfo.Device.Position.Zone.Area.AreaCode ?? "Null", requestInfo.Device.Position.Zone.ZoneCode ?? "Null", requestInfo.Device.Position.Index.ToString() ?? "NULL");
                     var taskDescrtiption = TaskString.GetTaskDescription(requestInfo.Device.Position.Zone.Area.AreaName ?? "Null", requestInfo.Device.Position.Zone.ZoneName ?? "Null", requestInfo.Device.Position.Index.ToString() ?? "NULL");
                     // Create the warranty submission task
@@ -884,6 +902,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         }
                     }
 
+
+
                     await _context.SaveChangesAsync(); // Save Tasks and updated WarrantyClaim
                     await transaction.CommitAsync();
 
@@ -928,7 +948,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     warrantyClaim.ContractNumber = request.ContractNumber;
                     warrantyClaim.WarrantyNotes = request.WarrantyNotes;
                     warrantyClaim.ClaimAmount = request.ClaimAmount;
-                    warrantyClaim.ClaimStatus = request.ClaimStatus ?? Status.InProgress;
+                    warrantyClaim.ClaimStatus = request.ClaimStatus ?? WarrantyClaimStatus.InProgress;
                     warrantyClaim.ModifiedDate = TimeHelper.GetHoChiMinhTime();
 
                     // Add documents

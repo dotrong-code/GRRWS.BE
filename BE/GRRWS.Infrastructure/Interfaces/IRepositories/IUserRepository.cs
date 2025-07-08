@@ -28,5 +28,6 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<List<GetMechanicRecommendation>> GetRecommendedMechanicsAsync(DateTime currentTime, int pageIndex, int pageSize);
         Task<List<Guid>> GetAllUserIdsAsync();
         Task<List<User>> GetUsersByAreaIdAsync(Guid areaId);
+        Task<List<User>> GetMechanicsWithoutTask();
     }
 }

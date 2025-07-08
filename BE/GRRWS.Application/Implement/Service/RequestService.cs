@@ -422,7 +422,7 @@ namespace GRRWS.Application.Implement.Service
                 SenderId = userId,
                 Role = 2, // HOT
                 ReceiverId = null,
-                Title = "Yêu cầu mới đã được tạo",
+                Title = "Yêu cầu mới",
                 Body = $"Yêu cầu cho thiết bị {getDevice.DeviceName} đã được tạo.",
                 Type = NotificationType.RequestCreated,
                 Channel = NotificationChannel.Both,

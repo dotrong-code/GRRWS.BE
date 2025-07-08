@@ -392,7 +392,6 @@ namespace GRRWS.Application.Implement.Service
         public async Task<Result> CreateWarrantyReturnTask(CreateWarrantyReturnTaskRequest request, Guid userId)
         {
 
-
             // Validate user existence
             var userCheck = await _checkIsExist.User(userId);
             if (!userCheck.IsSuccess) return userCheck;
@@ -524,9 +523,14 @@ namespace GRRWS.Application.Implement.Service
             if (!taskCheck.IsSuccess) return taskCheck;
             var userCheck = await _checkIsExist.User(userId);
             if (!userCheck.IsSuccess) return userCheck;
+
+
             var isUpdated = await _unitOfWork.TaskRepository.UpdateTaskStatusAsync(taskId, userId);
             if (!isUpdated)
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Fail", "Task status could not be updated."));
+            _unitOfWork.ClearChangeTracker();
+            var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
+
             return Result.SuccessWithObject(new
             {
                 Message = "Task status updated successfully!",
@@ -707,6 +711,36 @@ namespace GRRWS.Application.Implement.Service
                 UpdatedAt = TimeHelper.GetHoChiMinhTime()
             });
         }
+        public async Task<Result> ReInstallOldDevice(Guid taskId)
+        {
+            var checkTask = await _checkIsExist.Task(taskId);
+            if (!checkTask.IsSuccess) return checkTask;
+            var returnTask = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
+            var tasks = await _unitOfWork.TaskRepository.GetAllTasksAsync();
+            var installTask = tasks.FirstOrDefault(t => t.TaskType == TaskType.Installation && t.TaskGroupId == returnTask.TaskGroupId);
+
+            var requestMachine = await _unitOfWork.RequestMachineReplacementRepository.GetByIdAsync(installTask.RequestMachineReplacement.Id);
+            var oldDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(requestMachine.OldDeviceId);
+            oldDevice.Status = DeviceStatus.InUse;
+            oldDevice.ModifiedDate = TimeHelper.GetHoChiMinhTime();
+            await _unitOfWork.DeviceRepository.UpdateAsync(oldDevice);
+            _unitOfWork.ClearChangeTracker();
+            var newDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync((Guid)requestMachine.NewDeviceId);
+            newDevice.Status = DeviceStatus.Active;
+            newDevice.ModifiedDate = TimeHelper.GetHoChiMinhTime();
+            await _unitOfWork.DeviceRepository.UpdateAsync(newDevice);
+
+            await _unitOfWork.SaveChangesAsync();
+            return Result.SuccessWithObject(new
+            {
+                Message = "Old device reinstalled successfully!",
+                TaskId = taskId,
+                RequestMachineId = requestMachine.Id,
+                UpdatedAt = TimeHelper.GetHoChiMinhTime()
+            });
+        }
+
+
 
         #endregion
         #region old methods
@@ -896,6 +930,7 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.SuccessWithObject(dto);
         }
+
         #endregion
         #region private methods
         // You can add any private methods here if needed for internal logic
@@ -1271,6 +1306,18 @@ namespace GRRWS.Application.Implement.Service
             }
 
             return updatedDocs;
+        }
+
+
+
+
+        private async Task UpdateForWarrantyDeviceInfor(Guid taskId)
+        {
+            var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
+            var oldDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync((Guid)task.RequestMachineReplacement.OldDeviceId);
+            oldDevice.Status = DeviceStatus.InWarranty;
+            _unitOfWork.DeviceRepository.Update(oldDevice);
+            await _unitOfWork.SaveChangesAsync();
         }
         #endregion
     }

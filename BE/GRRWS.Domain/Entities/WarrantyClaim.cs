@@ -5,7 +5,7 @@ namespace GRRWS.Domain.Entities
     public class WarrantyClaim : BaseEntity
     {
         public string? ClaimNumber { get; set; }
-        public Status ClaimStatus { get; set; } // Submitted, Approved, InProgress, Completed, Rejected
+        public WarrantyClaimStatus ClaimStatus { get; set; } // Submitted, Approved, InProgress, Completed, Rejected
         public DateTime? ExpectedReturnDate { get; set; }
         public DateTime? ActualReturnDate { get; set; }
         public string? Resolution { get; set; }

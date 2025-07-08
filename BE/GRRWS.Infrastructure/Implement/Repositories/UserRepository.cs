@@ -449,6 +449,16 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Where(u => u.AreaId == areaId && !u.IsDeleted)
                 .ToListAsync();
         }
+
+
+
+        public async Task<List<User>> GetMechanicsWithoutTask()
+        {
+            var mechanics = await _context.Users
+                .Where(u => u.Role == 3 && !u.IsDeleted && !u.Tasks.Any(t => t.Status != GRRWS.Domain.Enum.Status.Completed))
+                .ToListAsync();
+            return mechanics;
+        }
     }
 }
 

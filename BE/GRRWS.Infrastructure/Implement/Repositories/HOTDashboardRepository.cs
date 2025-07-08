@@ -218,9 +218,19 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         }
         public async Task<TaskStatisticsDTO> GetTaskStatisticsAsync()
         {
-            var totalTasks = await _context.Tasks.Where(t => !t.IsDeleted && (t.TaskType == TaskType.WarrantySubmission || t.TaskType == TaskType.Repair || t.TaskType == TaskType.Replacement)).CountAsync();
+            var totalTasks = await _context.Tasks.Where(t => !t.IsDeleted).CountAsync();
 
-            var totalWarrantyTasks = await _context.Tasks.Where(t => !t.IsDeleted && t.TaskType == TaskType.WarrantySubmission).CountAsync();
+            var totalWarrantyTasks = await _context.Tasks.Where(t => !t.IsDeleted && t.TaskType == TaskType.Warranty).CountAsync();
+
+            var totalWarrantySubmissionTasks = await _context.Tasks.Where(t => !t.IsDeleted && t.TaskType == TaskType.WarrantySubmission).CountAsync();
+
+            var totalWarrantyReturnTasks = await _context.Tasks.Where(t => !t.IsDeleted && t.TaskType == TaskType.WarrantyReturn).CountAsync();
+
+            var totalUninstallationTasks = await _context.Tasks.Where(t => !t.IsDeleted && t.TaskType == TaskType.Uninstallation).CountAsync();
+
+            var totalInstallationTasks = await _context.Tasks.Where(t => !t.IsDeleted && t.TaskType == TaskType.Installation).CountAsync();
+
+            var totalStorageReturnTasks = await _context.Tasks.Where(t => !t.IsDeleted && t.TaskType == TaskType.StorageReturn).CountAsync();
 
             var totalRepairTasks = await _context.Tasks.Where(t => !t.IsDeleted && t.TaskType == TaskType.Repair).CountAsync();
 
@@ -229,17 +239,31 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             var totalPendingTasks = await _context.Tasks.Where(t => !t.IsDeleted && t.Status == Status.Pending).CountAsync();
 
             var totalCompletedTasks = await _context.Tasks.Where(t => !t.IsDeleted && t.Status == Status.Completed).CountAsync();
+
+            var totalInProgressTasks = await _context.Tasks.Where(t => !t.IsDeleted && t.Status == Status.InProgress).CountAsync();
+
             return new TaskStatisticsDTO
             {
                 TotalTasks = totalTasks,
                 TotalPendingTasks = totalPendingTasks,
                 TotalCompletedTasks = totalCompletedTasks,
+                TotalInProgressTasks = totalInProgressTasks,
                 TotalWarrantyTasks = totalWarrantyTasks,
+                TotalWarrantySubmissionTasks = totalWarrantySubmissionTasks,
+                TotalWarrantyReturnTasks = totalWarrantyReturnTasks,
+                TotalUninstallationTasks = totalUninstallationTasks,
+                TotalInstallationTasks = totalInstallationTasks,
+                TotalStorageReturnTasks = totalStorageReturnTasks,
                 TotalRepairTasks = totalRepairTasks,
                 TotalReplaceTasks = totalReplaceTasks,
                 WarrantyTasksPercentage = totalTasks > 0 ? Math.Round((double)totalWarrantyTasks / totalTasks * 100, 2) : 0,
                 RepairTasksPercentage = totalTasks > 0 ? Math.Round((double)totalRepairTasks / totalTasks * 100, 2) : 0,
-                ReplaceTasksPercentage = totalTasks > 0 ? Math.Round((double)totalReplaceTasks / totalTasks * 100, 2) : 0
+                ReplaceTasksPercentage = totalTasks > 0 ? Math.Round((double)totalReplaceTasks / totalTasks * 100, 2) : 0,
+                WarrantyReturnTasksPercentage = totalTasks > 0 ? Math.Round((double)totalWarrantyReturnTasks / totalTasks * 100, 2) : 0,
+                WarrantySubmissionTasksPercentage = totalTasks > 0 ? Math.Round((double)totalWarrantySubmissionTasks / totalTasks * 100, 2) : 0,
+                UninstallationTasksPercentage = totalTasks > 0 ? Math.Round((double)totalUninstallationTasks / totalTasks * 100, 2) : 0,
+                InstallationTasksPercentage = totalTasks > 0 ? Math.Round((double)totalInstallationTasks / totalTasks * 100, 2) : 0,
+                StorageReturnTasksPercentage = totalTasks > 0 ? Math.Round((double)totalStorageReturnTasks / totalTasks * 100, 2) : 0
             };
         }
         public async Task<DeviceStatisticsDTO> GetDeviceStatisticsAsync()
@@ -278,12 +302,12 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         }
         public async Task<TotalTaskRequestReportDTO> GetTotalTaskRequestReportAsync()
         {
-            var totalTasks = await _context.Tasks.CountAsync(t => !t.IsDeleted);
+            var totalMachines = await _context.Machines.CountAsync(t => !t.IsDeleted);
             var totalRequests = await _context.Requests.CountAsync(r => !r.IsDeleted);
             var totalReports = await _context.Reports.CountAsync(r => !r.IsDeleted);
             return new TotalTaskRequestReportDTO
             {
-                TotalTasks = totalTasks,
+                TotalMachines = totalMachines,
                 TotalRequests = totalRequests,
                 TotalReports = totalReports
             };

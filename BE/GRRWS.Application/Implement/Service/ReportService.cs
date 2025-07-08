@@ -554,7 +554,7 @@ namespace GRRWS.Application.Implement.Service
                 //{
                 //    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", $"No more mechanic available."));
                 //}
-                var availableMechanics = await _unit.UserRepository.GetUsersByRole(3);
+                var availableMechanics = await _unit.UserRepository.GetMechanicsWithoutTask();
                 var primaryMechanic = availableMechanics.First(); // Best available mechanic
                 //var secondaryMechanic = availableMechanics.Count > 1 ? availableMechanics[1] : primaryMechanic;
 
@@ -717,9 +717,6 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("AssignmentError", $"Failed to apply suggested assignments: {ex.Message}", 0));
             }
         }
-
-
-
         private async Task AutoAssignedTask(Guid taskGroupId)
         {
             try
