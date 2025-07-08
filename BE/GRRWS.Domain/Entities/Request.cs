@@ -9,6 +9,7 @@ namespace GRRWS.Domain.Entities
         public string? RequestTitle { get; set; }
         public string? Description { get; set; }
         public Status Status { get; set; }
+        public bool IsSovled { get; set; } // Indicates if the request has been solved
         public DateTime? DueDate { get; set; }
         public Priority Priority { get; set; }
         public string? RejectionReason { get; set; }

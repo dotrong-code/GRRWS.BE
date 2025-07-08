@@ -740,8 +740,6 @@ namespace GRRWS.Application.Implement.Service
             });
         }
 
-
-
         #endregion
         #region old methods
         public async Task<Result> GetTasksByReportIdAsync(Guid reportId)

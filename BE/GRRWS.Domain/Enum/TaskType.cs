@@ -2,13 +2,13 @@
 {
     public enum TaskType
     {
-        Warranty,
-        Repair,
-        Replacement,
-        WarrantySubmission,
-        WarrantyReturn,
+        Warranty,// Dùng cho task group
+        Repair,// Dùng cho task group
+        Replacement,// Dùng cho task group
+        WarrantySubmission, //Dùng cho task bên trong Warranty task group
+        WarrantyReturn, // Dùng cho task bên trong Warranty task group
         Uninstallation,
-        Installation,
+        Installation,// Dùng cho task bên trong task Group
         StorageReturn,
     }
 }
