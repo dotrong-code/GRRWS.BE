@@ -2,15 +2,17 @@
 {
     public enum Status
     {
-        Pending = 0, // Request is pending approval or action
-        Approved = 1, // Request has been approved
-        Rejected = 2, // Request has been rejected
-        InProgress = 3, // Work is currently being done on the request
+        Pending = 0, // Khi mới tạo yêu cầu, chưa có hành động nào
+        Approved = 1, // Chưa dùng đến, có thể dùng trong tương lai
+        Rejected = 2, // Xử lý yêu cầu tại chỗ, không cần thực hiện thêm hành động nào hoặc từ chối yêu cầu
+        InProgress = 3, // Khi yêu cầu đang được xử lý hoặc thực hiện (sau khi tạo report)
         Completed = 4, // Work on the request has been completed
         Cancelled = 5, // Request has been cancelled
         OnHold = 6, // Work on the request is temporarily paused
-        Suggested = 7, // Request has been suggested for future consideration
-        WaitingForConfirmation = 8, // Request is waiting for confirmation from the user or another party
+
+        Suggested = 7, // Trạng thái task đã được hệ thống gợi ý mechanic (dùng cho khi tạo task)
+        WaitingForConfirmation = 8, // Trạng thái task đang được chờ stockkeepr xác nhận (dùng cho khi tạo task)
+
     }
 }
 //[EnumDataType(typeof(Status))]
