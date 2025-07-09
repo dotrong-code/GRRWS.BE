@@ -96,10 +96,10 @@ namespace GRRWS.Host.Controllers
         }
         [Authorize]
         [HttpPost("warranty-task/return")]
-        public async Task<IResult> CreateWarrantyReturnTask([FromBody] CreateWarrantyReturnTaskRequest request)
+        public async Task<IResult> CreateWarrantyReturnTask([FromBody] CreateWarrantyReturnTaskRequest request, Guid reportId)
         {
             CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
-            var result = await _taskService.CreateWarrantyReturnTask(request, c.UserId);
+            var result = await _taskService.CreateWarrantyReturnTask(request, c.UserId, reportId);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Warranty return task created successfully")
                 : ResultExtensions.ToProblemDetails(result);

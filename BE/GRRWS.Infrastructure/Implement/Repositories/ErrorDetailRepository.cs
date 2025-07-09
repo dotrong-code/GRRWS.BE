@@ -44,5 +44,10 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     .ThenInclude(efp => efp.ErrorFixStep)
                 .FirstOrDefaultAsync(ed => ed.Id == id && !ed.IsDeleted);
         }
+        public async Task<ErrorDetail> GetByRequestTakeSparePartUsageIdAsync(Guid requestTakeSparePartUsageId)
+        {
+            return await _context.ErrorDetails
+                .FirstOrDefaultAsync(ed => ed.RequestTakeSparePartUsageId == requestTakeSparePartUsageId);
+        }
     }
 }

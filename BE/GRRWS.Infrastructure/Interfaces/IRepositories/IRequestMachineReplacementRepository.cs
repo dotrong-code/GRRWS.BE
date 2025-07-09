@@ -11,5 +11,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
     string? status = null,
     string? sortBy = null,
     bool isAscending = true);
+        Task<RequestMachineReplacement> GetByTaskGroupIdAsync(Guid taskGroupId);
     }
+
 }
