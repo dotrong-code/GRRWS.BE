@@ -526,6 +526,7 @@ namespace GRRWS.Application.Implement.Service
                         CreatedBy = userId,
                         RequestedById = userId,
                         CreatedDate = TimeHelper.GetHoChiMinhTime(),
+                        TaskId = taskId,
                         IsDeleted = false
                     };
                     await _unitOfWork.RequestMachineReplacementRepository.CreateAsync(requestMachineReturn);

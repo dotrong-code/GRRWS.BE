@@ -20,6 +20,7 @@
         public bool IsUninstallDevice { get; set; } // Indicates if the device needs to be uninstalled
         public Guid? WarrantyClaimId { get; set; } // Unique identifier for the warranty claim
         public Guid? RequestMachineId { get; set; } // ID of the request machine, if applicable
+        public string? RequestMachineDescription { get; set; } // Description of the request machine
         public List<WarrantyDocument>? Documents { get; set; } // List of documents related to the warranty claim
     }
 

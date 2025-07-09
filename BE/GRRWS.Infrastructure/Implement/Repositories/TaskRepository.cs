@@ -403,6 +403,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     .ThenInclude(u => u.CreatedByUser)
                 .Include(t => t.WarrantyClaim)
                     .ThenInclude(dc => dc.Documents)
+                .Include(t => t.RequestMachineReplacement)
                 .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == type)
                 .FirstOrDefaultAsync();
 
@@ -441,6 +442,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 WarrantyClaimId = task.WarrantyClaim?.Id, // Unique identifier for the warranty claim
                 IsInstall = task.IsInstall ?? false, // True if this is an install task, false if it's an uninstall task
                 RequestMachineId = task.RequestMachineReplacement?.Id ?? Guid.Empty,
+                RequestMachineDescription = task.RequestMachineReplacement?.Notes ?? null, // Assuming Reason is a property in RequestMachineReplacement
                 Documents = task.WarrantyClaim?.Documents?.Select(doc => new WarrantyDocument
                 {
                     DocumentType = doc.DocumentType,
@@ -628,7 +630,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 IsInstall = task.IsInstall ?? false, // 
                 AssigneeConfirm = task.RequestMachineReplacement?.AssigneeConfirm ?? false, // True if the mechanic has confirmed the task, false otherwise
                 StockKeeperConfirm = task.RequestMachineReplacement?.StokkKeeperConfirm ?? false, // True if the stock keeper has confirmed the task, false otherwise
-                RequestMachineId = task.RequestMachineReplacement?.Id ?? Guid.Empty // ID of the request machine, if applicable
+                RequestMachineId = task.RequestMachineReplacement?.Id ?? Guid.Empty, // ID of the request machine, if applicable
+                RequestMachineDescription = task.RequestMachineReplacement?.Notes ?? null // Description of the request machine
 
             };
         }
