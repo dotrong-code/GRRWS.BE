@@ -6,6 +6,7 @@ using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
+using GRRWS.Infrastructure.Common.StringHelper;
 using GRRWS.Infrastructure.DTOs.Common.Message;
 using GRRWS.Infrastructure.DTOs.Firebase.AddImage;
 using GRRWS.Infrastructure.DTOs.Firebase.GetImage;
@@ -531,7 +532,7 @@ namespace GRRWS.Application.Implement.Service
                     return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "No available mechanics found."));
                 }
                 var primaryMechanic = availableMechanics.First();
-               
+
 
                 // Create Installation Task for the returned warranty device
                 var installRequest = new CreateInstallTaskRequest
@@ -603,6 +604,26 @@ namespace GRRWS.Application.Implement.Service
                 }
 
                 await _unitOfWork.SaveChangesAsync();
+
+
+                if (request.IsWarrantyFailed)
+                {
+                    _unitOfWork.ClearChangeTracker(); // Clear change tracker to avoid tracking WarrantyClaim changes
+                    var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(warrantyClaim.DeviceWarranty.DeviceId);
+
+                    var requestMachineReturn = new RequestMachineReplacement
+                    {
+                        Id = Guid.NewGuid(),
+                        RequestCode = RequestReplaceMachineString.ReturnDeviceToStockKeeper(device.DeviceName),
+                        OldDeviceId = device.Id,
+                        Notes = RequestReplaceMachineString.NoteWarrantyReturnFailed(),
+                        CreatedBy = userId,
+                        CreatedDate = TimeHelper.GetHoChiMinhTime(),
+                        IsDeleted = false
+                    };
+                    await _unitOfWork.RequestMachineReplacementRepository.CreateAsync(requestMachineReturn);
+                    await _unitOfWork.SaveChangesAsync();
+                }
 
                 return Result.SuccessWithObject(new
                 {
@@ -689,6 +710,43 @@ namespace GRRWS.Application.Implement.Service
                 UpdatedAt = TimeHelper.GetHoChiMinhTime()
             });
         }
+        public async Task<Result> UpdateIsInstallDevice(Guid taskId)
+        {
+            var taskCheck = await _checkIsExist.Task(taskId);
+            if (!taskCheck.IsSuccess) return taskCheck;
+            var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
+            task.IsInstall = true;
+            if (task.TaskType == TaskType.WarrantyReturn)
+            {
+                var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(task.WarrantyClaim.DeviceWarranty.DeviceId);
+                var tempDevice = await _unitOfWork.DeviceRepository.GetDeviceByLocation(device.Position.Zone.Area.Id, device.Position.Zone.Id, device.PositionId ?? new Guid());
+                tempDevice.Status = DeviceStatus.Active;
+                tempDevice.PositionId = null;
+                var requestMachine = new RequestMachineReplacement
+                {
+                    Id = Guid.NewGuid(),
+                    RequestCode = RequestReplaceMachineString.ReturnDeviceToStockKeeper(tempDevice.DeviceName),
+                    OldDeviceId = tempDevice.Id,
+                    Notes = RequestReplaceMachineString.NoteWarrantyReturnSuccess(),
+                    CreatedBy = task.CreatedBy,
+                    CreatedDate = TimeHelper.GetHoChiMinhTime(),
+                    RequestedById = task.CreatedBy ?? new Guid(),
+                    IsDeleted = false
+                };
+                await _unitOfWork.DeviceRepository.UpdateAsync(tempDevice);
+                await _unitOfWork.RequestMachineReplacementRepository.CreateAsync(requestMachine);
+            }
+            await _unitOfWork.TaskRepository.UpdateAsync(task);
+            await _unitOfWork.SaveChangesAsync();
+            return Result.SuccessWithObject(new
+            {
+                Message = "Task updated successfully!",
+                TaskId = taskId,
+                UpdatedAt = TimeHelper.GetHoChiMinhTime()
+            });
+
+        }
+
         // Add to TaskService implementation
         public async Task<Result> GetAllSingleTasksAsync(GetAllSingleTasksRequest request)
         {
@@ -891,6 +949,7 @@ namespace GRRWS.Application.Implement.Service
             });
         }
 
+
         public async Task<Result> CreateStockReturnTask(CreateStockReturnTaskRequest request, Guid userId)
         {
             // Validate request
@@ -953,6 +1012,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Error", ex.Message));
             }
         }
+
 
         #endregion
         #region old methods
@@ -1540,6 +1600,10 @@ namespace GRRWS.Application.Implement.Service
             _unitOfWork.DeviceRepository.Update(oldDevice);
             await _unitOfWork.SaveChangesAsync();
         }
+
+        //private async Task RequestStorageReturn()
+
+
         #endregion
     }
 }
