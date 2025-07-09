@@ -628,7 +628,6 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 IsInstall = task.IsInstall ?? false, // 
                 AssigneeConfirm = task.RequestMachineReplacement?.AssigneeConfirm ?? false, // True if the mechanic has confirmed the task, false otherwise
                 StockKeeperConfirm = task.RequestMachineReplacement?.StokkKeeperConfirm ?? false, // True if the stock keeper has confirmed the task, false otherwise
-                IsInstall = task.IsInstall ?? false, // True if this is an install task, false if it's an uninstall task
                 RequestMachineId = task.RequestMachineReplacement?.Id ?? Guid.Empty // ID of the request machine, if applicable
 
             };
@@ -1976,6 +1975,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         {
             return await _context.WarrantyClaims
                 .Include(wc => wc.SubmittedByTask)
+                .Include(wc => wc.DeviceWarranty)
                 .FirstOrDefaultAsync(wc => wc.Id == warrantyClaimId && !wc.IsDeleted);
         }
         public async Task<Guid> CreateStockReturnTaskWithGroup(CreateStockReturnTaskRequest request, Guid userId, Guid taskGroupId, int orderIndex)

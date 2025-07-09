@@ -12,6 +12,5 @@ namespace GRRWS.Infrastructure.DTOs.Task.Get
         public bool StockKeeperConfirm { get; set; } // True if the stock keeper has confirmed the task, false otherwise
         public Guid NewDeviceId { get; set; } // ID of the new device to be installed
         public Guid? RequestMachineId { get; set; } // ID of the request machine, if applicable
-        public bool IsInstall { get; set; } // True if this is an install task, false if it's an uninstall task
     }
 }

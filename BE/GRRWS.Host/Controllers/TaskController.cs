@@ -96,10 +96,10 @@ namespace GRRWS.Host.Controllers
         }
         [Authorize]
         [HttpPost("warranty-task/return")]
-        public async Task<IResult> CreateWarrantyReturnTask([FromBody] CreateWarrantyReturnTaskRequest request, Guid reportId)
+        public async Task<IResult> CreateWarrantyReturnTask([FromBody] CreateWarrantyReturnTaskRequest request)
         {
             CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
-            var result = await _taskService.CreateWarrantyReturnTask(request, c.UserId, reportId);
+            var result = await _taskService.CreateWarrantyReturnTask(request, c.UserId);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Warranty return task created successfully")
                 : ResultExtensions.ToProblemDetails(result);
@@ -282,7 +282,7 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
-        [HttpPut("is-install-device/{taskId}")]
+        [HttpPut("is-install-device")]
         public async Task<IResult> UpdateIsInstallDevice(Guid taskId, Guid? NewDeviceId)
         {
             var result = await _taskService.UpdateIsInstallDevice(taskId, NewDeviceId);
