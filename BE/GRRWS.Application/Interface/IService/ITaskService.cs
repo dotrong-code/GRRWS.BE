@@ -31,7 +31,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> CreateRepairTask(CreateRepairTaskRequest request, Guid userId);
         #endregion
         Task<Result> UpdateTaskStatusAsync(Guid taskId, Guid userId);
-        Task<Result> UpdateIsInstallDevice(Guid taskId);
+        Task<Result> UpdateIsInstallDevice(Guid taskId, Guid? NewDeviceId);
         Task<Result> FillInWarrantyTask(FillInWarrantyTask request, Guid userId);
         Task<Result> UpdateWarrantyClaim(UpdateWarrantyClaimRequest request, Guid userId);
         Task<Result> CreateWarrantyReturnTask(CreateWarrantyReturnTaskRequest request, Guid userId, Guid reportId);

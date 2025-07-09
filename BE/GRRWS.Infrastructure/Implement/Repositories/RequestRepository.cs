@@ -368,5 +368,16 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 })
                 .ToListAsync();
         }
+
+        public async Task<Request> GetByTaskIdAsync(Guid taskId)
+        {
+            return await _context.Requests
+                .Where(r => !r.IsDeleted &&
+                            _context.ErrorDetails.Any(ed => ed.TaskId == taskId &&
+                                                          ed.ReportId == r.Id &&
+                                                          !ed.IsDeleted))
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+        }
     }
 }

@@ -127,6 +127,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Include(t => t.WarrantyClaim)
                     .ThenInclude(wc => wc.DeviceWarranty)
                 .FirstOrDefaultAsync(t => t.Id == id);
+
         }
         public async Task CreateTaskAsync(Tasks task, Guid reportId, List<Guid> errorIds, List<Guid> sparepartIds)
         {
@@ -622,6 +623,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 TaskGroupName = task.TaskGroup?.GroupName,
                 NewDeviceId = task.RequestMachineReplacement?.NewDeviceId ?? Guid.Empty,
                 IsUninstall = task.IsUninstall ?? false, // True if this is an uninstall task, false if it's an install task
+                IsInstall = task.IsInstall ?? false, // 
                 AssigneeConfirm = task.RequestMachineReplacement?.AssigneeConfirm ?? false, // True if the mechanic has confirmed the task, false otherwise
                 StockKeeperConfirm = task.RequestMachineReplacement?.StokkKeeperConfirm ?? false, // True if the stock keeper has confirmed the task, false otherwise
                 RequestMachineId = task.RequestMachineReplacement?.Id ?? Guid.Empty // ID of the request machine, if applicable
