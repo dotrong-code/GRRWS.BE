@@ -197,8 +197,8 @@ namespace GRRWS.Application.Implement.Service
         {
             return new Infrastructure.DTOs.RequestMachineReplacement.GetAll
             {
-                Title = $"Yêu cầu máy thuộc {data.Machine.MachineName}",
-                Description = $"Hệ thống gợi ý thiết bị {data.NewDevice.DeviceName}",
+                Title = data.RequestCode,
+                Description = data.Notes,
                 Id = data.Id,
                 RequestDate = data.RequestDate,
                 AssigneeId = data.AssigneeId,
