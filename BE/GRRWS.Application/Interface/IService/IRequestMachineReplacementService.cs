@@ -15,6 +15,7 @@ namespace GRRWS.Application.Interface.IService
         public Task<Result> CreateRequestMachineReplacementAsync(Guid requestId, Guid requestUserId);
         public Task<Result> ConfirmHadDevice(Guid requestMachineId, Guid userId);
         public Task<Result> UpdateRequestMachineReplacement(UpdateRMR updateRMR);
+        public Task<Result> CreateStockReturnRequestAsync(Guid requestId, Guid deviceId, Guid userId);
 
 
     }

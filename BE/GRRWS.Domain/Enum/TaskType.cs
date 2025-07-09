@@ -10,5 +10,6 @@
         Uninstallation,
         Installation,
         StorageReturn,
+        StockReturn
     }
 }

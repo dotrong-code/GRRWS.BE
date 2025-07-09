@@ -579,6 +579,43 @@ namespace GRRWS.Application.Implement.Service
             {
                 requestUsage.ConfirmedDate = TimeHelper.GetHoChiMinhTime();
                 requestUsage.ConfirmedById = request.ConfirmedById ?? requestUsage.ConfirmedById;
+                if (newStatus == SparePartRequestStatus.Confirmed && requestUsage.AssigneeId == null)
+                {
+                    var mechanics = await _unitOfWork.UserRepository.GetMechanicsWithoutTask();
+                    if (mechanics == null || !mechanics.Any())
+                    {
+                        // Cập nhật trạng thái mà không gán AssigneeId
+                        requestUsage.Notes = request.Notes ?? requestUsage.Notes;
+                        await _unitOfWork.RequestTakeSparePartUsageRepository.UpdateAsync(requestUsage);
+                        await _unitOfWork.SaveChangesAsync();
+                        return Result.SuccessWithObject(new
+                        {
+                            Message = "Không có nhân viên rảnh để assign, nhưng request đã được cập nhật trạng thái thành Confirmed.",
+                            RequestTakeSparePartUsageId = requestUsage.Id
+                        });
+                    }
+
+                    var primaryMechanic = mechanics.First().Id;
+                    requestUsage.AssigneeId = primaryMechanic;
+                    requestUsage.Notes = request.Notes ?? requestUsage.Notes;
+                    // Update AssigneeId and Status for related Task
+                    // Find related Task via ErrorDetail
+                    var errorDetail = await _unitOfWork.ErrorDetailRepository.GetByRequestTakeSparePartUsageIdAsync(requestUsage.Id);
+                    if (errorDetail != null && errorDetail.TaskId.HasValue)
+                    {
+                        var task = await _unitOfWork.TaskRepository.GetByIdAsync(errorDetail.TaskId.Value);
+                        if (task != null)
+                        {
+                            task.AssigneeId = primaryMechanic;
+                            task.Status = Status.Pending;
+                            _unitOfWork.TaskRepository.Update(task);
+                        }                        
+                    }
+                }
+            }
+            else
+            {
+                requestUsage.Notes = request.Notes ?? requestUsage.Notes;
             }
 
             requestUsage.Notes = request.Notes ?? requestUsage.Notes;

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DocumentFormat.OpenXml.Office2010.CustomUI;
 using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
@@ -368,7 +369,7 @@ namespace GRRWS.Application.Implement.Service
             }
 
             dynamic data = taskGroupResult.Object;
-            Guid taskGroupId = data.taskGroupId;
+            Guid TaskGroupId = data.TaskGroupId;
 
             // Lưu tất cả thay đổi
             await _unit.SaveChangesAsync();
@@ -377,7 +378,7 @@ namespace GRRWS.Application.Implement.Service
             {
                 Message = $"Report created successfully for {dto.ActionType} with IssueErrors!",
                 ReportId = report.Id,
-                TaskGroupId = taskGroupId
+                TaskGroupId = TaskGroupId 
             });
         }
         public async Task<Result> CreateReportWithIssueSymtomAsync(ReportCreateWithIssueSymtomDTO dto)
@@ -866,18 +867,6 @@ namespace GRRWS.Application.Implement.Service
                     ));
                 }
 
-                // Tìm thợ máy khả dụng, tương tự CreateWarrantyTaskGroup
-                var availableMechanics = await _unit.UserRepository.GetMechanicsWithoutTask();
-                if (!availableMechanics.Any())
-                {
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
-                        "NotFound", "No available mechanics found."
-                    ));
-                }
-
-                var primaryMechanic = availableMechanics.First();
-                
-
                 // Tạo Task Group, tương tự CreateWarrantyTaskGroup
                 
                 
@@ -887,8 +876,7 @@ namespace GRRWS.Application.Implement.Service
                 var installRequest = new CreateInstallTaskRequest
                 {
                     RequestId = requestId,
-                    AssigneeId = primaryMechanic.Id,
-                    
+                   
                     
                 };
                 var installResult = await _taskService.CreateInstallTask(installRequest, createdByUserId);
@@ -899,19 +887,9 @@ namespace GRRWS.Application.Implement.Service
                     ));
                 }
                 dynamic installData = installResult.Object;
-                Guid installTaskId = installData.TaskId;
+                Guid TaskGroupId = installData.TaskGroupId;
 
-                // Tạo Request Machine Replacement
-                var requestMachine = await _requestMachineReplacementService.CreateRequestMachineReplacementAsync(requestId, createdByUserId);
-                if (requestMachine.IsFailure)
-                {
-                    return Result.SuccessWithObject(new
-                    {
-                        Message = $"Task group created successfully but failed to create RequestMachineReplacement: {requestMachine.Error.Description}",
-                        
-                        InstallTaskId = installTaskId
-                    });
-                }
+                
 
                 // Lưu tất cả thay đổi
                 await _unit.SaveChangesAsync();
@@ -919,7 +897,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.SuccessWithObject(new
                 {
                     Message = "Replacement task group created successfully!",
-                    InstallTaskId = installTaskId
+                    TaskGroupId = TaskGroupId
                 });
             }
             catch (Exception ex)
@@ -960,25 +938,20 @@ namespace GRRWS.Application.Implement.Service
                 }
 
                
-
-                // Tìm thợ máy khả dụng
-                var availableMechanics = await _unit.UserRepository.GetMechanicsWithoutTask();
-                if (!availableMechanics.Any())
+                // Chuyển đổi ErrorIds thành ErrorGuidelineIds
+                var guidelineIds = await _unit.ErrorGuidelineRepository.GetGuidelineIdsByErrorIdsAsync(errorIds);
+                if (!guidelineIds.Any())
                 {
+                    
                     return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
-                        "NotFound", "No available mechanics found."
+                        "NotFound", $"No error guidelines found for the provided error IDs: {string.Join(", ", errorIds)}."
                     ));
                 }
-
-                var primaryMechanic = availableMechanics.First();
-
                 // Tạo Repair Task
                 var repairRequest = new CreateRepairTaskRequest
                 {
                     RequestId = requestId,
-                    AssigneeId = primaryMechanic.Id,
-
-                    ErrorGuidelineIds = errorIds // Gán các ErrorIds để xác định lỗi cần sửa
+                    ErrorGuidelineIds = guidelineIds // Gán các ErrorIds để xác định lỗi cần sửa
                 };
                 var repairResult = await _taskService.CreateRepairTask(repairRequest, createdByUserId);
                 if (repairResult.IsFailure)
@@ -989,12 +962,13 @@ namespace GRRWS.Application.Implement.Service
                 }
                 dynamic repairData = repairResult.Object;
                 Guid repairTaskId = repairData.TaskId;
-
+                Guid taskGroupId = repairData.TaskGroupId;
+                _unit.ClearChangeTracker();
                 return Result.SuccessWithObject(new
                 {
                     Message = "Repair task group created successfully!",
-                    
-                    RepairTaskId = repairTaskId
+
+                    TaskGroupId = taskGroupId
                 });
             }
             catch (Exception ex)
