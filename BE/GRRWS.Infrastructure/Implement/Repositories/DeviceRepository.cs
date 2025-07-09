@@ -281,6 +281,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 query = query.Where(d => d.Position.ZoneId == zoneId);
             if (positionId != Guid.Empty)
                 query = query.Where(d => d.PositionId == positionId);
+            query = query.Where(d => d.Status == DeviceStatus.InUse && !d.IsDeleted);
             return await query.FirstOrDefaultAsync();
         }
     }

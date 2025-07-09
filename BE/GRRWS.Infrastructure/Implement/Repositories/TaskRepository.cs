@@ -832,6 +832,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         .FirstOrDefaultAsync();
 
                     requestInfo.Device.Status = DeviceStatus.InWarranty;
+                    var device = _context.Devices.Update(requestInfo.Device);
 
                     var taskName = TaskString.GetWarrantyTaskName(requestInfo.Device.Position.Zone.Area.AreaCode ?? "Null", requestInfo.Device.Position.Zone.ZoneCode ?? "Null", requestInfo.Device.Position.Index.ToString() ?? "NULL");
                     var taskDescrtiption = TaskString.GetTaskDescription(requestInfo.Device.Position.Zone.Area.AreaName ?? "Null", requestInfo.Device.Position.Zone.ZoneName ?? "Null", requestInfo.Device.Position.Index.ToString() ?? "NULL");
