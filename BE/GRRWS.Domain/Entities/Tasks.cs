@@ -15,6 +15,7 @@ namespace GRRWS.Domain.Entities
         public DateTime? EndTime { get; set; }
         public Guid? AssigneeId { get; set; }
         public bool? IsUninstall { get; set; }
+        public bool? IsInstall { get; set; }
         public DateTime? DeviceReturnTime { get; set; } // Time device is returned
         public string? DeviceCondition { get; set; } // Condition after repair
         public string? ReportNotes { get; set; }

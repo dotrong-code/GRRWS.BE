@@ -127,6 +127,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Include(t => t.WarrantyClaim)
                     .ThenInclude(wc => wc.DeviceWarranty)
                 .FirstOrDefaultAsync(t => t.Id == id);
+
         }
         public async Task CreateTaskAsync(Tasks task, Guid reportId, List<Guid> errorIds, List<Guid> sparepartIds)
         {
@@ -438,6 +439,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 HotNumber = task.WarrantyClaim?.CreatedByUser?.PhoneNumber, // Assuming CreatedByUser has PhoneNumber property
                 IsUninstallDevice = task.IsUninstall ?? false, // Assuming IsUninstall is a property in Tasks
                 WarrantyClaimId = task.WarrantyClaim?.Id, // Unique identifier for the warranty claim
+                IsInstall = task.IsInstall ?? false, // True if this is an install task, false if it's an uninstall task
+                RequestMachineId = task.RequestMachineReplacement?.Id ?? Guid.Empty,
                 Documents = task.WarrantyClaim?.Documents?.Select(doc => new WarrantyDocument
                 {
                     DocumentType = doc.DocumentType,
@@ -622,6 +625,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 TaskGroupName = task.TaskGroup?.GroupName,
                 NewDeviceId = task.RequestMachineReplacement?.NewDeviceId ?? Guid.Empty,
                 IsUninstall = task.IsUninstall ?? false, // True if this is an uninstall task, false if it's an install task
+                IsInstall = task.IsInstall ?? false, // 
                 AssigneeConfirm = task.RequestMachineReplacement?.AssigneeConfirm ?? false, // True if the mechanic has confirmed the task, false otherwise
                 StockKeeperConfirm = task.RequestMachineReplacement?.StokkKeeperConfirm ?? false, // True if the stock keeper has confirmed the task, false otherwise
                 RequestMachineId = task.RequestMachineReplacement?.Id ?? Guid.Empty // ID of the request machine, if applicable
@@ -832,6 +836,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         .FirstOrDefaultAsync();
 
                     requestInfo.Device.Status = DeviceStatus.InWarranty;
+                    var device = _context.Devices.Update(requestInfo.Device);
 
                     var taskName = TaskString.GetWarrantyTaskName(requestInfo.Device.Position.Zone.Area.AreaCode ?? "Null", requestInfo.Device.Position.Zone.ZoneCode ?? "Null", requestInfo.Device.Position.Index.ToString() ?? "NULL");
                     var taskDescrtiption = TaskString.GetTaskDescription(requestInfo.Device.Position.Zone.Area.AreaName ?? "Null", requestInfo.Device.Position.Zone.ZoneName ?? "Null", requestInfo.Device.Position.Index.ToString() ?? "NULL");
@@ -1970,6 +1975,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         {
             return await _context.WarrantyClaims
                 .Include(wc => wc.SubmittedByTask)
+                .Include(wc => wc.DeviceWarranty)
                 .FirstOrDefaultAsync(wc => wc.Id == warrantyClaimId && !wc.IsDeleted);
         }
         public async Task<Guid> CreateStockReturnTaskWithGroup(CreateStockReturnTaskRequest request, Guid userId, Guid taskGroupId, int orderIndex)

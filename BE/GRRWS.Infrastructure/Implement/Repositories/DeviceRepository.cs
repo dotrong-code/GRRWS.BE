@@ -271,5 +271,18 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .ToListAsync();
             return devices;
         }
+
+        public async Task<Device> GetDeviceByLocation(Guid areaId, Guid zoneId, Guid positionId)
+        {
+            var query = _context.Devices.AsQueryable();
+            if (areaId != Guid.Empty)
+                query = query.Where(d => d.Position.Zone.AreaId == areaId);
+            if (zoneId != Guid.Empty)
+                query = query.Where(d => d.Position.ZoneId == zoneId);
+            if (positionId != Guid.Empty)
+                query = query.Where(d => d.PositionId == positionId);
+            query = query.Where(d => d.Status == DeviceStatus.InUse && !d.IsDeleted);
+            return await query.FirstOrDefaultAsync();
+        }
     }
 }

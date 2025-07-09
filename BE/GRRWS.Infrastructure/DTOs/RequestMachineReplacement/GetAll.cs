@@ -1,11 +1,13 @@
-﻿namespace GRRWS.Infrastructure.DTOs.RequestMachineReplacement
+﻿using GRRWS.Domain.Common;
+
+namespace GRRWS.Infrastructure.DTOs.RequestMachineReplacement
 {
     public class GetAll
     {
         public string Title { get; set; } // Tiêu đề yêu cầu
         public string Description { get; set; }
         public Guid Id { get; set; }
-        public DateTime RequestDate { get; set; } = DateTime.UtcNow;
+        public DateTime RequestDate { get; set; } = TimeHelper.GetHoChiMinhTime();
         public Guid? AssigneeId { get; set; } // Người thực hiện (kỹ thuật viên)
         public string? AssigneeName { get; set; }
         public Guid OldDeviceId { get; set; } // Device cũ cần thay thế
