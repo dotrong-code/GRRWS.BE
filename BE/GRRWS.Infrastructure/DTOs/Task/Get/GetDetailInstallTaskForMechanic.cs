@@ -7,6 +7,7 @@ namespace GRRWS.Infrastructure.DTOs.Task.Get
         public string Location { get; set; }
         public string? TaskGroupName { get; set; }
         public bool IsUninstall { get; set; } // True if this is an uninstall task, false if it's an install task
+        public bool IsInstall { get; set; } // True if this is an uninstall task, false if it's an install task
         public bool AssigneeConfirm { get; set; } // True if the mechanic has confirmed the task, false otherwise
         public bool StockKeeperConfirm { get; set; } // True if the stock keeper has confirmed the task, false otherwise
         public Guid NewDeviceId { get; set; } // ID of the new device to be installed

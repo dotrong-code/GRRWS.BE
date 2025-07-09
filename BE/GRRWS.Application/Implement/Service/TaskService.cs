@@ -710,7 +710,7 @@ namespace GRRWS.Application.Implement.Service
                 UpdatedAt = TimeHelper.GetHoChiMinhTime()
             });
         }
-        public async Task<Result> UpdateIsInstallDevice(Guid taskId)
+        public async Task<Result> UpdateIsInstallDevice(Guid taskId, Guid? deviceId = null)
         {
             var taskCheck = await _checkIsExist.Task(taskId);
             if (!taskCheck.IsSuccess) return taskCheck;
@@ -734,18 +734,87 @@ namespace GRRWS.Application.Implement.Service
                     IsDeleted = false
                 };
                 await _unitOfWork.DeviceRepository.UpdateAsync(tempDevice);
+                _unitOfWork.ClearChangeTracker();
                 await _unitOfWork.RequestMachineReplacementRepository.CreateAsync(requestMachine);
+                _unitOfWork.ClearChangeTracker();
+            }
+            if (task.TaskType != TaskType.WarrantyReturn && deviceId.HasValue)
+            {
+                var requestMachine = await _unitOfWork.RequestMachineReplacementRepository.GetByTaskIdAsync(taskId);
+                if (requestMachine != null)
+                {
+                    // Get the old device's PositionId
+                    var oldDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(requestMachine.OldDeviceId);
+                    if (oldDevice == null)
+                    {
+                        
+                        return Result.SuccessWithObject(new
+                        {
+                            Message = "Old device not found for the specified RequestMachineReplacement.",
+                            TaskId = taskId,
+                            UpdatedAt = TimeHelper.GetHoChiMinhTime()
+                        });
+                    }
+
+                    // Update the new device's PositionId to match the old device's PositionId
+                    var newDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(deviceId.Value);
+                    if (newDevice == null)
+                    {
+                        
+                        return Result.SuccessWithObject(new
+                        {
+                            Message = "New device not found for the specified deviceId.",
+                            TaskId = taskId,
+                            UpdatedAt = TimeHelper.GetHoChiMinhTime()
+                        });
+                    }
+                    newDevice.PositionId = oldDevice.PositionId;
+                    newDevice.ModifiedDate = TimeHelper.GetHoChiMinhTime();
+
+                    // Update RequestMachineReplacement
+                    requestMachine.NewDeviceId = deviceId.Value;
+                    requestMachine.Notes = "Updated with new replacement device due to non-functional device.";
+                    requestMachine.ModifiedDate = TimeHelper.GetHoChiMinhTime();
+
+                    await _unitOfWork.DeviceRepository.UpdateAsync(newDevice);
+                    _unitOfWork.ClearChangeTracker();
+                    await _unitOfWork.RequestMachineReplacementRepository.UpdateAsync(requestMachine);
+                    _unitOfWork.ClearChangeTracker();
+                }
+                else
+                {
+                    
+                    return Result.SuccessWithObject(new
+                    {
+                        Message = "No RequestMachineReplacement found for the specified taskId.",
+                        TaskId = taskId,
+                        UpdatedAt = TimeHelper.GetHoChiMinhTime()
+                    });
+                }
             }
             await _unitOfWork.TaskRepository.UpdateAsync(task);
             await _unitOfWork.SaveChangesAsync();
+            _unitOfWork.ClearChangeTracker();
+
+            var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(taskId);
+            if (request != null)
+            {
+                request.IsSovled = true;
+                request.ModifiedDate = TimeHelper.GetHoChiMinhTime();
+                _unitOfWork.ClearChangeTracker();
+                await _unitOfWork.RequestRepository.UpdateAsync(request);
+                
+                await _unitOfWork.SaveChangesAsync();
+                _unitOfWork.ClearChangeTracker();
+            }
             return Result.SuccessWithObject(new
             {
                 Message = "Task updated successfully!",
                 TaskId = taskId,
                 UpdatedAt = TimeHelper.GetHoChiMinhTime()
             });
-
         }
+
 
         // Add to TaskService implementation
         public async Task<Result> GetAllSingleTasksAsync(GetAllSingleTasksRequest request)
