@@ -10,5 +10,6 @@
         Uninstallation,
         Installation,// Dùng cho task bên trong task Group
         StorageReturn,
+        StockReturn
     }
 }

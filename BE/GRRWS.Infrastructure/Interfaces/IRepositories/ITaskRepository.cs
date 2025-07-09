@@ -70,6 +70,6 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<List<Tasks>> GetTasksByWarrantyClaimIdAsync(Guid warrantyClaimId, TaskType taskType);
         Task<WarrantyClaim> GetWarrantyClaimAsync(Guid warrantyClaimId);
         Task<Guid> CreateWarrantyReturnTask(CreateWarrantyReturnTaskRequest request, Guid userId, Guid taskGroupId, int orderIndex);
-
+        Task<Guid> CreateStockReturnTaskWithGroup(CreateStockReturnTaskRequest request, Guid userId, Guid taskGroupId, int orderIndex);
     }
 }

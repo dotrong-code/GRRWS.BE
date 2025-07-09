@@ -20,5 +20,11 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Where(es => es.ErrorGuidelineId == errorGuidelineId)
                 .ToListAsync();
         }
+        public async Task<List<ErrorSparepart>> GetByErrorGuidelineIdsAsync(IEnumerable<Guid> guidelineIds)
+        {
+            return await _context.ErrorSpareparts
+                .Where(es => guidelineIds.Contains(es.ErrorGuidelineId))
+                .ToListAsync();
+        }
     }
 }

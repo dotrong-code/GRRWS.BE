@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GRRWS.Domain.Enum;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,7 @@ namespace GRRWS.Infrastructure.DTOs.Report
         public string Location { get; set; }
         public List<Guid> ErrorIds { get; set; } // Errors độc lập
         public Dictionary<Guid, List<Guid>> IssueErrorMappings { get; set; } // IssueId -> List<ErrorId>
+        public ActionType ActionType { get; set; } // Thêm trường ActionType để phân biệt Replacement hay Repair
     }
     public class ReportCreateWithIssueSymtomDTO
     {

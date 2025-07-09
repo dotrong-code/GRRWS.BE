@@ -678,7 +678,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         await _context.Database.OpenConnectionAsync();
                         claimCount = (int)await command.ExecuteScalarAsync();
                     }
-                    claimNumber = $"WC-{DateTime.UtcNow:yyyyMM}-{(claimCount + 1):D3}";
+                    claimNumber = $"WC-{TimeHelper.GetHoChiMinhTime():yyyyMM}-{(claimCount + 1):D3}";
 
                     // Create warranty claim (without SubmittedByTaskId)
                     var warrantyClaim = new WarrantyClaim
@@ -689,7 +689,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         IssueDescription = issueDescription,
                         DeviceWarrantyId = (Guid)request.DeviceWarrantyId,
                         CreatedByUserId = userId,
-                        CreatedDate = DateTime.UtcNow,
+                        CreatedDate = TimeHelper.GetHoChiMinhTime(),
                         IsDeleted = false,
                         SubmittedByTaskId = null // Explicitly null to avoid circular dependency
                     };
@@ -706,12 +706,12 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         TaskDescription = $"Mang thiết bị đi bảo hành với cái triệu chứng:{issueDescription}",
                         StartTime = request.StartDate,
                         // Fix for CS1061: Ensure null-coalescing operator is used to handle nullable DateTime
-                        ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(5),
+                        ExpectedTime = (request.StartDate ?? TimeHelper.GetHoChiMinhTime()).AddHours(5),
                         Status = Status.Pending,
                         Priority = Domain.Enum.Priority.High,
                         AssigneeId = request.AssigneeId,
                         WarrantyClaimId = warrantyClaim.Id,
-                        CreatedDate = DateTime.UtcNow,
+                        CreatedDate = TimeHelper.GetHoChiMinhTime(),
                         IsDeleted = false
                     };
                     await _context.Tasks.AddAsync(task);
@@ -803,7 +803,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         await _context.Database.OpenConnectionAsync();
                         claimCount = (int)await command.ExecuteScalarAsync();
                     }
-                    claimNumber = $"WC-{DateTime.UtcNow:yyyyMM}-{(claimCount + 1):D3}";
+                    claimNumber = $"WC-{TimeHelper.GetHoChiMinhTime():yyyyMM}-{(claimCount + 1):D3}";
 
                     // Create warranty claim (without SubmittedByTaskId)
                     var warrantyClaim = new WarrantyClaim
@@ -1112,7 +1112,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         Status = Status.Pending,
                         Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,
-                        CreatedDate = DateTime.UtcNow,
+                        CreatedDate = TimeHelper.GetHoChiMinhTime(),
                         IsDeleted = false
                     };
 
@@ -1141,19 +1141,19 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                             {
                                 // Generate request code
                                 var requestCount = await _context.RequestTakeSparePartUsages.CountAsync();
-                                var requestCode = $"REQ-{DateTime.UtcNow:yyyyMM}-{(requestCount + 1):D3}";
+                                var requestCode = $"REQ-{TimeHelper.GetHoChiMinhTime():yyyyMM}-{(requestCount + 1):D3}";
 
                                 // Create RequestTakeSparePartUsage
                                 var requestTakeSparePartUsage = new RequestTakeSparePartUsage
                                 {
                                     Id = Guid.NewGuid(),
                                     RequestCode = requestCode,
-                                    RequestDate = DateTime.UtcNow,
+                                    RequestDate = TimeHelper.GetHoChiMinhTime(),
                                     RequestedById = userId,
                                     AssigneeId = request.AssigneeId,
                                     Status = SparePartRequestStatus.Unconfirmed,
                                     Notes = $"Auto-generated for repair task: {task.TaskName}",
-                                    CreatedDate = DateTime.UtcNow,
+                                    CreatedDate = TimeHelper.GetHoChiMinhTime(),
                                     IsDeleted = false
                                 };
 
@@ -1167,7 +1167,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                                     QuantityUsed = egsp.QuantityNeeded ?? 1, // Default to 1 if not specified
                                     IsTakenFromStock = false,
                                     RequestTakeSparePartUsageId = requestTakeSparePartUsage.Id,
-                                    CreatedDate = DateTime.UtcNow,
+                                    CreatedDate = TimeHelper.GetHoChiMinhTime(),
                                     IsDeleted = false
                                 }).ToList();
 
@@ -1188,7 +1188,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                                     ErrorDetailId = errorDetail.Id,
                                     ErrorFixStepId = step.Id,
                                     IsCompleted = false,
-                                    CreatedDate = DateTime.UtcNow,
+                                    CreatedDate = TimeHelper.GetHoChiMinhTime(),
                                     IsDeleted = false
                                 }).ToList();
 
@@ -1211,6 +1211,15 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         }
         public async Task<Guid> CreateRepairTaskWithGroup(CreateRepairTaskRequest request, Guid userId, Guid? taskGroupId, int orderIndex)
         {
+            var guidelineIds = request.ErrorGuidelineIds;
+            var guidelines = await _context.ErrorGuidelines
+                .Where(eg => guidelineIds.Contains(eg.Id))
+                .ToListAsync();
+
+            if (!guidelines.Any())
+            {
+                throw new Exception($"No error guidelines found for provided IDs: {string.Join(", ", guidelineIds)}");
+            }
             var executionStrategy = _context.Database.CreateExecutionStrategy();
 
             return await executionStrategy.ExecuteAsync(async () =>
@@ -1233,6 +1242,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         .Include(eg => eg.ErrorFixSteps)
                         .Include(eg => eg.Error)
                         .Where(eg => request.ErrorGuidelineIds.Contains(eg.Id))
+                        .AsSplitQuery()
                         .ToListAsync();
 
                     if (!errorGuidelines.Any())
@@ -1261,14 +1271,14 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         TaskName = $"Sửa máy - {requestInfo.DeviceName}",
                         TaskType = TaskType.Repair,
                         TaskDescription = $"Sửa lỗi: {string.Join(", ", errorGuidelines.Select(eg => eg.Error?.Name ?? "Unknown"))}",
-                        StartTime = request.StartDate,
-                        ExpectedTime = request.StartDate.Add(totalExpectedTime),
+                        StartTime = TimeHelper.GetHoChiMinhTime(),
+                        ExpectedTime = (TimeHelper.GetHoChiMinhTime()).AddHours(2),
                         Status = request.AssigneeId == null ? Status.Suggested : Status.Pending,
                         Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,
                         TaskGroupId = taskGroupId,
                         OrderIndex = orderIndex,
-                        CreatedDate = DateTime.UtcNow,
+                        CreatedDate = TimeHelper.GetHoChiMinhTime(),
                         CreatedBy = userId,
                         IsDeleted = false
                     };
@@ -1298,19 +1308,19 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                             {
                                 // Generate request code
                                 var requestCount = await _context.RequestTakeSparePartUsages.CountAsync();
-                                var requestCode = $"REQ-{DateTime.UtcNow:yyyyMM}-{(requestCount + 1):D3}";
+                                var requestCode = $"REQ-{TimeHelper.GetHoChiMinhTime():yyyyMM}-{(requestCount + 1):D3}";
 
                                 // Create RequestTakeSparePartUsage
                                 var requestTakeSparePartUsage = new RequestTakeSparePartUsage
                                 {
                                     Id = Guid.NewGuid(),
                                     RequestCode = requestCode,
-                                    RequestDate = DateTime.UtcNow,
+                                    RequestDate = TimeHelper.GetHoChiMinhTime(),
                                     RequestedById = userId,
                                     AssigneeId = request.AssigneeId,
                                     Status = SparePartRequestStatus.Unconfirmed,
                                     Notes = $"Auto-generated for repair task: {task.TaskName}",
-                                    CreatedDate = DateTime.UtcNow,
+                                    CreatedDate = TimeHelper.GetHoChiMinhTime(),
                                     IsDeleted = false
                                 };
 
@@ -1324,7 +1334,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                                     QuantityUsed = egsp.QuantityNeeded ?? 1, // Default to 1 if not specified
                                     IsTakenFromStock = false,
                                     RequestTakeSparePartUsageId = requestTakeSparePartUsage.Id,
-                                    CreatedDate = DateTime.UtcNow,
+                                    CreatedDate = TimeHelper.GetHoChiMinhTime(),
                                     IsDeleted = false
                                 }).ToList();
 
@@ -1345,7 +1355,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                                     ErrorDetailId = errorDetail.Id,
                                     ErrorFixStepId = step.Id,
                                     IsCompleted = false,
-                                    CreatedDate = DateTime.UtcNow,
+                                    CreatedDate = TimeHelper.GetHoChiMinhTime(),
                                     IsDeleted = false
                                 }).ToList();
 
@@ -1400,13 +1410,13 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         TaskName = $"Tháo máy - {requestInfo.DeviceName}",
                         TaskType = TaskType.Uninstallation,
                         TaskDescription = $"Tháo thiết bị {requestInfo.DeviceName} ({requestInfo.DeviceCode}) tại vị trí: {requestInfo.Location}",
-                        StartTime = request.StartDate ?? DateTime.UtcNow,
-                        ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(2), // Default 2 hours for uninstallation
+                        StartTime = request.StartDate ?? TimeHelper.GetHoChiMinhTime(),
+                        ExpectedTime = (request.StartDate ?? TimeHelper.GetHoChiMinhTime()).AddHours(2), // Default 2 hours for uninstallation
                         Status = Status.Pending,
                         Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,
                         TaskGroupId = request.TaskGroupId,
-                        CreatedDate = DateTime.UtcNow,
+                        CreatedDate = TimeHelper.GetHoChiMinhTime(),
                         CreatedBy = userId,
                         IsDeleted = false
                     };
@@ -1458,14 +1468,14 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         TaskName = $"Tháo máy - {requestInfo.DeviceName}",
                         TaskType = TaskType.Uninstallation,
                         TaskDescription = $"Tháo thiết bị {requestInfo.DeviceName} ({requestInfo.DeviceCode}) tại vị trí: {requestInfo.Location}",
-                        StartTime = request.StartDate ?? DateTime.UtcNow,
-                        ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(2), // Default 2 hours for uninstallation
+                        StartTime = request.StartDate ?? TimeHelper.GetHoChiMinhTime(),
+                        ExpectedTime = (request.StartDate ?? TimeHelper.GetHoChiMinhTime()).AddHours(2), // Default 2 hours for uninstallation
                         Status = request.AssigneeId == null ? Status.Suggested : Status.Pending,
                         Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,
                         TaskGroupId = taskGroupId,
                         OrderIndex = orderIndex,
-                        CreatedDate = DateTime.UtcNow,
+                        CreatedDate = TimeHelper.GetHoChiMinhTime(),
                         CreatedBy = userId,
                         IsDeleted = false
                     };
@@ -1533,7 +1543,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         TaskType = TaskType.Installation,
                         TaskDescription = $"Lặp đặt máy {deviceInfo} tại vị trí: {requestInfo.Location}",
                         StartTime = request.StartDate ?? TimeHelper.GetHoChiMinhTime(),
-                        ExpectedTime = (request.StartDate ?? DateTime.UtcNow).AddHours(3), // Default 3 hours for installation
+                        ExpectedTime = (request.StartDate ?? TimeHelper.GetHoChiMinhTime()).AddHours(3), // Default 3 hours for installation
                         Status = Status.Pending,
                         Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,
@@ -1645,11 +1655,11 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             {
                 case Status.Pending:
                     task.Status = Status.InProgress;
-                    task.StartTime = DateTime.UtcNow; // Set actual start time
+                    task.StartTime = TimeHelper.GetHoChiMinhTime(); // Set actual start time
                     break;
                 case Status.InProgress:
                     task.Status = Status.Completed;
-                    task.EndTime = DateTime.UtcNow;
+                    task.EndTime = TimeHelper.GetHoChiMinhTime();
                     // Set actual end time
                     break;
                 default:
@@ -1658,7 +1668,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             }
 
             // Update modification details
-            task.ModifiedDate = DateTime.UtcNow;
+            task.ModifiedDate = TimeHelper.GetHoChiMinhTime();
             task.ModifiedBy = userId;
 
             _context.Tasks.Update(task);
@@ -1962,7 +1972,81 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Include(wc => wc.SubmittedByTask)
                 .FirstOrDefaultAsync(wc => wc.Id == warrantyClaimId && !wc.IsDeleted);
         }
+        public async Task<Guid> CreateStockReturnTaskWithGroup(CreateStockReturnTaskRequest request, Guid userId, Guid taskGroupId, int orderIndex)
+        {
+            var executionStrategy = _context.Database.CreateExecutionStrategy();
 
+            return await executionStrategy.ExecuteAsync(async () =>
+            {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    // Get request and device information
+                    var requestInfo = await _context.Requests
+                        .Include(r => r.Device)
+                        .Include(r => r.Report)
+                        .Where(r => r.Id == request.RequestId)
+                        .Select(r => new
+                        {
+                            r.ReportId,
+                            DeviceId = r.Device.Id,
+                            DeviceName = r.Device.DeviceName,
+                            DeviceCode = r.Device.DeviceCode,
+                            r.Report.Location
+                        })
+                        .FirstOrDefaultAsync();
+
+                    if (requestInfo == null)
+                        throw new Exception("No request found.");
+
+                    // Get device information for the stock return device
+                    string deviceInfo = "Máy không xác định";
+                    if (request.DeviceId.HasValue)
+                    {
+                        var returnDevice = await _context.Devices
+                            .Where(d => d.Id == request.DeviceId.Value)
+                            .Select(d => new { d.Id, d.DeviceName, d.DeviceCode })
+                            .FirstOrDefaultAsync();
+
+                        if (returnDevice != null)
+                        {
+                            deviceInfo = $"{returnDevice.DeviceName} ({returnDevice.DeviceCode})";
+                        }
+                    }
+
+                    // Create the stock return task
+                    var task = new Tasks
+                    {
+                        Id = Guid.NewGuid(),
+                        TaskName = $"Trả máy về kho - {deviceInfo}",
+                        TaskType = TaskType.StockReturn,
+                        TaskDescription = $"Trả thiết bị {deviceInfo} về kho từ yêu cầu: {request.RequestId}",
+                        StartTime = TimeHelper.GetHoChiMinhTime(),
+                        ExpectedTime = TimeHelper.GetHoChiMinhTime().AddHours(2), // Default 2 hours for stock return
+                        Status = request.AssigneeId == null ? Status.Suggested : Status.Pending,
+                        Priority = Domain.Enum.Priority.Medium,
+                        AssigneeId = request.AssigneeId,
+                        TaskGroupId = taskGroupId,
+                        OrderIndex = orderIndex,
+                        CreatedDate = TimeHelper.GetHoChiMinhTime(),
+                        CreatedBy = userId,
+                        IsUninstall = false,
+                        IsDeleted = false
+                    };
+
+                    await _context.Tasks.AddAsync(task);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return task.Id;
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            });
+        }
         public async Task<Guid> CreateWarrantyReturnTask(CreateWarrantyReturnTaskRequest request, Guid userId, Guid taskGroupId, int orderIndex)
         {
             var executionStrategy = _context.Database.CreateExecutionStrategy();
@@ -1993,7 +2077,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         TaskType = TaskType.WarrantyReturn,
                         TaskDescription = $"Nhận thiết bị từ nhà cung cấp bảo hành cho yêu cầu: {warrantyClaim.ClaimNumber}. Ngày trả thực tế: {request.ActualReturnDate:dd/MM/yyyy}",
                         StartTime = startTime,
-                        ExpectedTime = (startTime ?? DateTime.UtcNow).AddHours(5), // Default 2 hours for warranty return
+                        ExpectedTime = (startTime ?? TimeHelper.GetHoChiMinhTime()).AddHours(5), // Default 2 hours for warranty return
                         Status = request.AssigneeId == null ? Status.Suggested : Status.Pending,
                         Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,
@@ -2017,6 +2101,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     await transaction.RollbackAsync();
                     throw;
                 }
+
             });
 
         }
