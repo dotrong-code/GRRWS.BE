@@ -438,6 +438,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 HotNumber = task.WarrantyClaim?.CreatedByUser?.PhoneNumber, // Assuming CreatedByUser has PhoneNumber property
                 IsUninstallDevice = task.IsUninstall ?? false, // Assuming IsUninstall is a property in Tasks
                 WarrantyClaimId = task.WarrantyClaim?.Id, // Unique identifier for the warranty claim
+                IsInstall = task.IsInstall ?? false, // True if this is an install task, false if it's an uninstall task
+                RequestMachineId = task.RequestMachineReplacement?.Id ?? Guid.Empty,
                 Documents = task.WarrantyClaim?.Documents?.Select(doc => new WarrantyDocument
                 {
                     DocumentType = doc.DocumentType,
@@ -624,6 +626,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 IsUninstall = task.IsUninstall ?? false, // True if this is an uninstall task, false if it's an install task
                 AssigneeConfirm = task.RequestMachineReplacement?.AssigneeConfirm ?? false, // True if the mechanic has confirmed the task, false otherwise
                 StockKeeperConfirm = task.RequestMachineReplacement?.StokkKeeperConfirm ?? false, // True if the stock keeper has confirmed the task, false otherwise
+                IsInstall = task.IsInstall ?? false, // True if this is an install task, false if it's an uninstall task
                 RequestMachineId = task.RequestMachineReplacement?.Id ?? Guid.Empty // ID of the request machine, if applicable
 
             };

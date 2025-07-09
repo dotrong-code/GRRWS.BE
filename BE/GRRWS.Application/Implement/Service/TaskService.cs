@@ -301,7 +301,7 @@ namespace GRRWS.Application.Implement.Service
 
                 var taskId = await _unitOfWork.TaskRepository.CreateInstallTaskWithGroup(request, userId, taskGroupId, orderIndex);
                 _unitOfWork.ClearChangeTracker();
-                var requestMachine = await RequestReplaceMachineForInstall(request.RequestId, taskId, replaceDeviceId);
+                var requestMachine = await RequestReplaceMachineForInstall(request.RequestId, taskId, replaceDeviceId, device);
                 if (requestMachine.IsFailure)
                 {
                     return Result.SuccessWithObject(new
@@ -1509,7 +1509,7 @@ namespace GRRWS.Application.Implement.Service
             }
         }
 
-        private async Task<Result> RequestReplaceMachineForInstall(Guid requestId, Guid taskId, Guid? replaceDeviceId)
+        private async Task<Result> RequestReplaceMachineForInstall(Guid requestId, Guid taskId, Guid? replaceDeviceId, Device oldeDeivce)
         {
             var request = await _unitOfWork.RequestRepository.GetRequestByIdAsync(requestId);
             if (request == null)
@@ -1534,7 +1534,8 @@ namespace GRRWS.Application.Implement.Service
                 RequestedById = request.RequestedById,
                 OldDeviceId = oldDevice.Id,
                 MachineId = oldDevice.MachineId,
-                RequestCode = $"Yêu cầu máy thay thế-{TimeHelper.GetHoChiMinhTime():yyyyMMddHHmmss}",
+                RequestCode = RequestReplaceMachineString.RequesReplaceMachine(oldDevice.Position.Zone.Area.AreaName, oldDevice.Position.Zone.ZoneName, oldDevice.Position.Index),
+                Notes = RequestReplaceMachineString.RequesReplaceMachineNote(newDeviceName: newDevice.DeviceName, oldDeviceName: oldeDeivce.DeviceName),
                 Status = MachineReplacementStatus.Pending,
                 TaskId = taskId,
                 NewDeviceId = replaceDeviceId
