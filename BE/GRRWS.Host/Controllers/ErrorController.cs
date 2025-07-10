@@ -1,6 +1,7 @@
 ﻿using GRRWS.Application.Common.Result;
 using GRRWS.Application.Implement.Service;
 using GRRWS.Application.Interface.IService;
+using GRRWS.Infrastructure.DTOs.ErrorDTO;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,6 +30,22 @@ namespace GRRWS.Host.Controllers
             var result = await _errorService.GetRecommendedErrorsAsync(dto);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved recommended errors")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpGet("all")]
+        public async Task<IResult> GetAllErrors(int pageNumber = 1, int pageSize = 10, string? searchByName = null)
+        {
+            var result = await _errorService.GetAllErrorsAsync(pageNumber, pageSize, searchByName);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved all errors")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpGet("{id}")]
+        public async Task<IResult> GetById(Guid id)
+        {
+            var result = await _errorService.GetByIdAsync(id);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Successfully retrieved error by ID")
                 : ResultExtensions.ToProblemDetails(result);
         }
         [HttpGet("spare-parts")]
@@ -61,6 +78,22 @@ namespace GRRWS.Host.Controllers
             var result = await _errorService.ImportErrorsAsync(file);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Errors imported successfully!")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpPut("update")]
+        public async Task<IResult> UpdateError([FromBody] UpdateErrorDTO updateErrorDTO)
+        {
+            var result = await _errorService.UpdateErrorAsync(updateErrorDTO);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Error updated successfully!")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpDelete("{id}")]
+        public async Task<IResult> DeleteErrors(Guid id)
+        {
+            var result = await _errorService.DeleteErrorsAsync(id);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Error deleted successfully!")
                 : ResultExtensions.ToProblemDetails(result);
         }
     }

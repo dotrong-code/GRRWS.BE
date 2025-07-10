@@ -3,11 +3,14 @@ using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DTOs.Common;
+using GRRWS.Infrastructure.DTOs.ErrorDTO;
+using GRRWS.Infrastructure.DTOs.IssueDTO;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.DTOs.Sparepart;
 using GRRWS.Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
+using Error = GRRWS.Infrastructure.DTOs.Common.Error;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -132,6 +135,72 @@ namespace GRRWS.Application.Implement.Service
             }
 
             return await _importService.ImportAsync<Domain.Entities.Error>(file.OpenReadStream(), _unitOfWork.ErrorRepository);
+        }
+        public async Task<Result> GetAllErrorsAsync(int pageNumber, int pageSize, string? searchByName)
+        {
+            var errors = await _unitOfWork.ErrorRepository.GetAllErrorsAsync(pageNumber, pageSize, searchByName);
+            if (errors == null || !errors.Any())
+                return Result.Failure(Error.NotFound("NoErrorsFound", "No errors found."));
+            return Result.SuccessWithObject(errors);
+        }
+        public async Task<Result> UpdateErrorAsync(UpdateErrorDTO updateErrorDTO)
+        {
+            if (updateErrorDTO == null)
+            {
+                return Result.Failure(Error.Validation("InvalidUpdateData", "Update data cannot be null."));
+            }
+
+            var currentErrors = await _unitOfWork.ErrorRepository.GetAllAsync();
+
+            var currentError = currentErrors.FirstOrDefault(i => i.Id == updateErrorDTO.Id);
+            if (currentError == null)
+            {
+                return Result.Failure(Error.Validation("ErrorNotFound", "Error not found."));
+            }
+
+            if (!string.IsNullOrEmpty(updateErrorDTO.ErrorCode))
+            {
+                var duplicateError = currentErrors.FirstOrDefault(i => i.ErrorCode == updateErrorDTO.ErrorCode && i.Id != updateErrorDTO.Id);
+                if (duplicateError != null)
+                {
+                    return Result.Failure(Error.Validation("DuplicateErrorCode", "The ErrorCode already exists."));
+                }
+            }
+
+            var isUpdated = await _unitOfWork.ErrorRepository.UpdateErrorAsync(updateErrorDTO);
+            if (!isUpdated)
+            {
+                return Result.Failure(Error.Validation("UpdateFailed", "Failed to update the error."));
+            }
+            return Result.SuccessWithObject("Error updated successfully!");
+        }
+        public async Task<Result> DeleteErrorsAsync(Guid id)
+        {
+            var isDeleted = await _unitOfWork.ErrorRepository.DeleteAsync(id);
+            if (!isDeleted)
+            {
+                return Result.Failure(Error.Validation("DeleteFailed", "Failed to delete the error."));
+            }
+            return Result.SuccessWithObject("Error deleted successfully!");
+        }
+        public async Task<Result> GetByIdAsync(Guid id)
+        {
+            var getError = await _unitOfWork.ErrorRepository.GetByIdAsync(id);
+            if (getError == null)
+            {
+                return Result.Failure(Error.NotFound("ErrorNotFound", "Error not found."));
+            }
+            var error = new ErrorDTO
+            {
+                Name = getError.Name,
+                ErrorCode = getError.ErrorCode,
+                Description = getError.Description,
+                OccurrenceCount = getError.OccurrenceCount,
+                IsCommon = getError.IsCommon,
+                EstimatedRepairTime = getError.EstimatedRepairTime,
+                Severity = getError.Severity
+            };
+            return Result.SuccessWithObject(error);
         }
     }
 }
