@@ -1,6 +1,7 @@
 ﻿using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.Common;
+using GRRWS.Infrastructure.DTOs.IssueDTO;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
 using Microsoft.EntityFrameworkCore;
@@ -71,8 +72,59 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             _context.Issues.Update(issue);
             await Task.CompletedTask;
         }
+        public async Task<List<IssueDTO>> GetAllIssuesAsync(int pageNumber, int pageSize, string? searchByName)
+        {
+            var query = _context.Issues
+                .Where(i => !i.IsDeleted);
 
+            if (!string.IsNullOrEmpty(searchByName))
+            {
+                query = query.Where(i => i.DisplayName != null && i.DisplayName.Contains(searchByName));
+            }
+
+            var issues = await query
+                .Select(i => new IssueDTO
+                {
+                    IssueKey = i.IssueKey,
+                    DisplayName = i.DisplayName,
+                    Description = i.Description,
+                    IsCommon = i.IsCommon,
+                    OccurrenceCount = i.OccurrenceCount
+                })
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return issues;
+        }
+        public async Task<bool> UpdateIssueAsync(UpdateIssueDTO updateIssueDto)
+        {
+            var issue = await _context.Issues.FindAsync(updateIssueDto.Id);
+            if (issue == null)
+            {
+                return false;
+            }
+
+            issue.IssueKey = updateIssueDto.IssueKey;
+            issue.DisplayName = updateIssueDto.DisplayName;
+            issue.Description = updateIssueDto.Description;
+            issue.IsCommon = updateIssueDto.IsCommon;
+            _context.Issues.Update(issue);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        public async Task<bool> DeleteAsync(Guid id)
+        {
+            var issue = await _context.Issues.FindAsync(id);
+            if (issue == null)
+            {
+                return false;
+            }
+            issue.IsDeleted = true;
+            _context.Issues.Update(issue);
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
-
 }
 
