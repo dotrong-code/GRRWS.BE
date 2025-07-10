@@ -1,6 +1,8 @@
 ﻿using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.Common;
+using GRRWS.Infrastructure.DTOs.ErrorDTO;
+using GRRWS.Infrastructure.DTOs.IssueDTO;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 
 using GRRWS.Infrastructure.DTOs.Sparepart;
@@ -120,6 +122,70 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
         //    return result;
         //}
+        public async Task<Domain.Entities.Error> GetByIdAsync(Guid id)
+        {
+            return await _context.Errors
+                .Include(e => e.ErrorDetails)
+                .Include(i => i.IssueErrors)
+                .FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
+        }
+        public async Task<List<ErrorDTO>> GetAllErrorsAsync(int pageNumber, int pageSize, string? searchByName)
+        {
+            var query = _context.Errors
+                .Where(i => !i.IsDeleted);
 
+            if (!string.IsNullOrEmpty(searchByName))
+            {
+                query = query.Where(i => i.Name != null && i.Name.Contains(searchByName));
+            }
+
+            var errors = await query
+                .Select(i => new ErrorDTO
+                {
+                    ErrorCode = i.ErrorCode,
+                    Name = i.Name,
+                    Description = i.Description,
+                    EstimatedRepairTime = i.EstimatedRepairTime,
+                    IsCommon = i.IsCommon,
+                    OccurrenceCount = i.OccurrenceCount,
+                    Severity = i.Severity
+                })
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return errors;
+        }
+        public async Task<bool> UpdateErrorAsync(UpdateErrorDTO updateErrorDto)
+        {
+            var error = await _context.Errors.FindAsync(updateErrorDto.Id);
+            if (error == null)
+            {
+                return false;
+            }
+
+            error.ErrorCode = updateErrorDto.ErrorCode;
+            error.Name = updateErrorDto.Name;
+            error.Description = updateErrorDto.Description;
+            error.EstimatedRepairTime = updateErrorDto.EstimatedRepairTime;
+            error.OccurrenceCount = updateErrorDto.OccurrenceCount;
+            error.IsCommon = updateErrorDto.IsCommon;
+            error.Severity = updateErrorDto.Severity;
+            _context.Errors.Update(error);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        public async Task<bool> DeleteAsync(Guid id)
+        {
+            var error = await _context.Errors.FindAsync(id);
+            if (error == null)
+            {
+                return false;
+            }
+            error.IsDeleted = true;
+            _context.Errors.Update(error);
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }
