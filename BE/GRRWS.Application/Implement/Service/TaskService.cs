@@ -3,6 +3,7 @@ using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Common.Validator.Task;
 using GRRWS.Application.Interface.IService;
+using GRRWS.Application.Interfaces;
 using GRRWS.Domain.Entities;
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
@@ -10,6 +11,7 @@ using GRRWS.Infrastructure.Common.StringHelper;
 using GRRWS.Infrastructure.DTOs.Common.Message;
 using GRRWS.Infrastructure.DTOs.Firebase.AddImage;
 using GRRWS.Infrastructure.DTOs.Firebase.GetImage;
+using GRRWS.Infrastructure.DTOs.Notification;
 using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.DTOs.Task;
@@ -31,12 +33,14 @@ namespace GRRWS.Application.Implement.Service
         private readonly ILogger<TaskService> _logger;
         private readonly IMechanicShiftService _mechanicShiftService;
         private readonly IRequestMachineReplacementService _requestMachineReplacementService;
+        private readonly INotificationService _notificationService;
         public TaskService(UnitOfWork unitOfWork,
             ITaskGroupService taskGroupService,
             IValidator<StartTaskRequest> startTaskValidator,
             IValidator<CreateTaskReportRequest> createReportValidator,
             IRequestMachineReplacementService requestMachineReplacementService,
-            CheckIsExist checkIsExist, ILogger<TaskService> logger, IMechanicShiftService mechanicShiftService)
+            CheckIsExist checkIsExist, ILogger<TaskService> logger, IMechanicShiftService mechanicShiftService,
+            INotificationService notificationService)
         {
             _unitOfWork = unitOfWork;
             _taskGroupService = taskGroupService;
@@ -46,6 +50,7 @@ namespace GRRWS.Application.Implement.Service
             _logger = logger;
             _mechanicShiftService = mechanicShiftService;
             _requestMachineReplacementService = requestMachineReplacementService;
+            _notificationService = notificationService;
         }
 
         #region
@@ -608,6 +613,37 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Fail", "Task status could not be updated."));
             _unitOfWork.ClearChangeTracker();
             var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
+            // Only send notification if the task status is Completed
+            if (task.Status == Status.Completed)
+            {
+                var assignee = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+
+                // Notify Head of Technical (HOT) about completed task
+                var notificationCompletedTaskForHOT = new NotificationRequest
+                {
+                    SenderId = userId,
+                    Role = 2, // HOT
+                    ReceiverId = null,
+                    Title = "Hoàn thành công việc",
+                    Body = $"Công việc {task.TaskName ?? task.TaskType.ToString()} đã được hoàn thành bởi {assignee?.FullName ?? "Nhân viên"}.",
+                    Type = NotificationType.TaskCompleted,
+                    Channel = NotificationChannel.Both,
+                    Data = new
+                    {
+                        TaskId = task.Id,
+                        TaskName = task.TaskName,
+                        TaskType = task.TaskType.ToString(),
+                        TaskGroupId = task.TaskGroupId,
+                        CompletedBy = userId,
+                        CompletedByName = assignee?.FullName,
+                        CompletedDate = TimeHelper.GetHoChiMinhTime(),
+                        AssigneeId = task.AssigneeId
+                    },
+                    SaveToDatabase = true
+                };
+
+                await _notificationService.SendNotificationAsync(notificationCompletedTaskForHOT);
+            }
 
             return Result.SuccessWithObject(new
             {

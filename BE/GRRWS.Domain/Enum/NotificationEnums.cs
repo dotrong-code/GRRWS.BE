@@ -30,7 +30,8 @@ namespace GRRWS.Domain.Enum
         // Head of Technical (Trưởng bộ phận kỹ thuật)
         WarrantyCollectionReminder = 10, // Nhắc nhở thu hồi thiết bị từ trung tâm bảo hành
         WarrantyDelayUpdate = 11, // Cập nhật tình trạng trễ của thiết bị bảo hành
-        EquipmentReturnedIssue = 12, // Thông báo thiết bị trả về từ bảo hành bị lỗi
+        EquipmentReturnedIssue = 12, // Thông báo thiết bị trả về từ bảo hành bị lỗi,,,,,
+        TaskCompleted = 18, // Thông báo công việc đã hoàn thành
     }
 
 
