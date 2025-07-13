@@ -16,22 +16,20 @@ namespace GRRWS.Domain.Entities
         public Guid? AssigneeId { get; set; }
         public bool? IsUninstall { get; set; }
         public bool? IsInstall { get; set; }
-        public DateTime? DeviceReturnTime { get; set; } // Time device is returned
-        public string? DeviceCondition { get; set; } // Condition after repair
+        public bool? IsDeviceReturned { get; set; } = false; // Thêm trường xác nhận trả máy hư về kho
         public string? ReportNotes { get; set; }
         public Guid? WarrantyClaimId { get; set; }
         public Guid? TaskGroupId { get; set; } // Grouping tasks together
+
         #region relationships
         public User? Assignee { get; set; }
         public WarrantyClaim? WarrantyClaim { get; set; }
         public TaskGroup? TaskGroup { get; set; } // Group this task belongs to
-
         public ICollection<ErrorDetail> ErrorDetails { get; set; }
         public ICollection<RepairSparepart>? RepairSpareparts { get; set; }
         public ICollection<TechnicalSymptomReport>? TechnicalSymptomReports { get; set; }
         public ICollection<MechanicShift>? MechanicShifts { get; set; }
         public RequestMachineReplacement? RequestMachineReplacement { get; set; }
-
         #endregion
     }
 }
