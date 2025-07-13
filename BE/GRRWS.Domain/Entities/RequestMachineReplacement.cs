@@ -21,6 +21,11 @@ namespace GRRWS.Domain.Entities
         public bool AssigneeConfirm { get; set; } = false; // Thiết bị đã được lấy chưa (true nếu đã lấy, false nếu chưa)
         public bool StokkKeeperConfirm { get; set; } = false; // Xác nhận của thủ kho (true nếu đã xác nhận, false nếu chưa)
         public Guid? TaskId { get; set; } // Optional task liên quan đến yêu cầu này
+
+        public RequestMachineReplacementType RequestType { get; set; } = RequestMachineReplacementType.Replacement;
+
+
+
         // Navigation properties
         public User RequestedBy { get; set; }
         public User? Assignee { get; set; }

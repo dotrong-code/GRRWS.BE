@@ -89,7 +89,18 @@ namespace GRRWS.Application.Implement.Service
                 requestMachine.Status = Domain.Enum.MachineReplacementStatus.Completed;
                 requestMachine.CompletedDate = TimeHelper.GetHoChiMinhTime();
 
-
+                // Cập nhật task.Status nếu là yêu cầu StockReturn
+                if (requestMachine.RequestType == RequestMachineReplacementType.StockReturn && requestMachine.TaskId.HasValue)
+                {
+                    var task = await _unitOfWork.TaskRepository.GetByIdAsync(requestMachine.TaskId.Value);
+                    if (task != null)
+                    {   
+                        task.Status = Status.Completed;
+                        task.ModifiedDate = TimeHelper.GetHoChiMinhTime();
+                        await _unitOfWork.TaskRepository.UpdateAsync(task);
+                    }
+                    
+                }
             }
             else
             {
