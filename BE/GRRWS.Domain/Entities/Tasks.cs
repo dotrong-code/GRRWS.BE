@@ -16,7 +16,9 @@ namespace GRRWS.Domain.Entities
         public Guid? AssigneeId { get; set; }
         public bool? IsUninstall { get; set; }
         public bool? IsInstall { get; set; }
-        public bool? IsDeviceReturned { get; set; } = false; // Thêm trường xác nhận trả máy hư về kho
+        
+        public DateTime? DeviceReturnTime { get; set; } // Time device is returned
+        public string? DeviceCondition { get; set; } // Condition after repair
         public string? ReportNotes { get; set; }
         public Guid? WarrantyClaimId { get; set; }
         public Guid? TaskGroupId { get; set; } // Grouping tasks together
