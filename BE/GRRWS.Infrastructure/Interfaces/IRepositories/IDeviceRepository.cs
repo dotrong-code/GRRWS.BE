@@ -36,5 +36,6 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<List<Device>> GetDevicesByPositionIdAsync(Guid positionId);
         Task<List<Device>> GetDevicesByMachineIdAsync(Guid machineId);
         Task<Device> GetDeviceByLocation(Guid areaId, Guid zoneId, Guid positionId);
+        Task<Device> GetDeviceByPositionIdWithStatus(Guid positionId, DeviceStatus status);
     }
 }

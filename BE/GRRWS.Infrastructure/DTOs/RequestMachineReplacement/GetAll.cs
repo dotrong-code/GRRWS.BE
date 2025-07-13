@@ -14,5 +14,6 @@ namespace GRRWS.Infrastructure.DTOs.RequestMachineReplacement
         public Guid? NewDeviceId { get; set; } // Device mới thay    (nullable nếu chưa chọn)
         public Guid? MachineId { get; set; } // Model (Machine) của Device cần thay thế
         public string Status { get; set; } // Trạng thái (Pending, Approved, Rejected, Completed)
+        public string RequestType { get; set; } // Loại yêu cầu (Thay thế, Bảo hành, v.v.)
     }
 }

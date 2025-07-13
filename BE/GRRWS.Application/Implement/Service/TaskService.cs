@@ -524,7 +524,8 @@ namespace GRRWS.Application.Implement.Service
                     RequestedById = userId,
                     CreatedDate = TimeHelper.GetHoChiMinhTime(),
                     TaskId = taskId,
-                    IsDeleted = false
+                    IsDeleted = false,
+                    RequestType = RequestMachineReplacementType.StockReturn,
                 };
 
 
@@ -1047,60 +1048,172 @@ namespace GRRWS.Application.Implement.Service
 
         public async Task<Result> InstallDevice(Guid taskId, Guid deviceId)
         {
+            // Validate task exists
             var taskCheck = await _checkIsExist.Task(taskId);
-            if (!taskCheck.IsSuccess) return taskCheck;
+            if (!taskCheck.IsSuccess)
+                return taskCheck;
+
+            var task = await _unitOfWork.TaskRepository.GetByIdAsync(taskId);
+
+            // Validate device exists
             var deviceCheck = await _checkIsExist.Device(deviceId);
-            if (!deviceCheck.IsSuccess) return deviceCheck;
+            if (!deviceCheck.IsSuccess)
+                return deviceCheck;
 
+            var device = await _unitOfWork.DeviceRepository.GetByIdAsync(deviceId);
 
-            var task = await _unitOfWork.TaskRepository.GetByIdIncludedAsync(taskId, t => t.RequestMachineReplacement);
-            var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(task.Id);
-            var requestMachine = task.RequestMachineReplacement;
-            if (requestMachine == null)
+            try
             {
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "RequestMachineReplacement not found for the specified task."));
-            }
-            var oldDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(requestMachine.OldDeviceId);
-            if (oldDevice == null)
-            {
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Old device not found for the specified RequestMachineReplacement."));
-            }
-            var newDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(deviceId);
-            if (newDevice == null)
-            {
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "New device not found for the specified deviceId."));
-            }
-            // Update device status and position
-            if (newDevice.Id != deviceId)
-            {
-                var changeDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(deviceId);
-                if (changeDevice == null)
+                // Get request and machine replacement info if available
+                var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(taskId);
+                var requestMachine = request != null ?
+                    await _unitOfWork.RequestMachineReplacementRepository.GetByTaskIdAsync(taskId) : null;
+
+                // Check if this is a reinstallation of original device
+                var isReinstallOriginal = request.DeviceId == deviceId;
+
+                // Check if this is a new temporary device installation
+                var isTemporaryInstall = requestMachine != null &&
+                    requestMachine.NewDeviceId.HasValue &&
+                    requestMachine.NewDeviceId.Value == deviceId;
+
+                // Check if we're installing a different device than what was planned
+                var isDifferentDevice = requestMachine != null &&
+                    requestMachine.NewDeviceId.HasValue &&
+                    requestMachine.NewDeviceId.Value != deviceId &&
+                    (task.TaskType == TaskType.Installation);
+
+                // Case 1: Reinstalling original device
+                if (isReinstallOriginal)
                 {
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Change device not found."));
+                    _logger.LogInformation("Reinstalling original device {DeviceId} for task {TaskId}", deviceId, taskId);
+                    var tempDevice = await _unitOfWork.DeviceRepository.GetDeviceByPositionIdWithStatus((Guid)device.PositionId, DeviceStatus.InUse);
+                    _unitOfWork.ClearChangeTracker();
+                    // Update the device status and position
+                    if (request?.DeviceId != null)
+                    {
+                        device.Status = DeviceStatus.InUse;
+                        await _unitOfWork.DeviceRepository.UpdateAsync(device);
+                    }
+                    // Create a RequestMachineReplacement for StockReturn of the temporary device
+
+
+                    if (tempDevice != null)
+                    {
+                        // Create new RequestMachineReplacement for stock return
+                        var stockReturnRequest = new RequestMachineReplacement
+                        {
+                            RequestCode = RequestReplaceMachineString.ReturnDeviceToStockKeeper(tempDevice.DeviceName),
+                            OldDeviceId = tempDevice.Id, // The temp device to be returned
+                            RequestType = RequestMachineReplacementType.StockReturn,
+                            Status = MachineReplacementStatus.Pending,
+                            CreatedDate = TimeHelper.GetHoChiMinhTime(),
+                            RequestedById = task.CreatedBy ?? Guid.NewGuid(),
+                            AssigneeId = task.AssigneeId,
+                        };
+                        await _unitOfWork.RequestMachineReplacementRepository.CreateAsync(stockReturnRequest);
+
+                        // Update device status to pending stock return
+                        tempDevice.Status = DeviceStatus.Active;
+                        tempDevice.PositionId = null;
+                        _unitOfWork.ClearChangeTracker();
+                        await _unitOfWork.DeviceRepository.UpdateAsync(tempDevice);
+                    }
+                    // Update task status
+                    task.IsInstall = true;
+                    await _unitOfWork.TaskRepository.UpdateAsync(task);
                 }
-                changeDevice.Status = DeviceStatus.InUse;
-                changeDevice.PositionId = oldDevice.PositionId;
-                requestMachine.NewDeviceId = changeDevice.Id;
+                // Case 2: Installing temporary device
+                else if (isTemporaryInstall || task.TaskType == TaskType.Installation)
+                {
+                    _logger.LogInformation("Installing temporary/new device {DeviceId} for task {TaskId}", deviceId, taskId);
+                    var oldDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(requestMachine.OldDeviceId);
+                    // Install the new device
+                    if (request?.DeviceId != null)
+                    {
+                        // Update position with new device
+                        device.PositionId = oldDevice.PositionId;
+                        device.Status = DeviceStatus.InUse;
+                        await _unitOfWork.DeviceRepository.UpdateAsync(device);
+                    }
+                    // Update task status
+                    task.IsInstall = true;
+                    await _unitOfWork.TaskRepository.UpdateAsync(task);
+                }
+                // Case 3: Installing a different device than originally planned
+                else if (isDifferentDevice)
+                {
+                    _logger.LogInformation("Installing different device {DeviceId} than originally planned {PlannedDeviceId} for task {TaskId}",
+                        deviceId, requestMachine.NewDeviceId, taskId);
 
+
+                    // Update the request machine replacement record with the new device
+                    var originalNewDeviceId = requestMachine.NewDeviceId.Value;
+                    requestMachine.NewDeviceId = deviceId;
+                    await _unitOfWork.RequestMachineReplacementRepository.UpdateAsync(requestMachine);
+                    var oldDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(requestMachine.OldDeviceId);
+                    // Install the new device
+                    if (request?.DeviceId != null)
+                    {
+                        // Update position with new device
+                        device.PositionId = oldDevice.PositionId;
+                        device.Status = DeviceStatus.InUse;
+                        await _unitOfWork.DeviceRepository.UpdateAsync(device);
+                    }
+
+                    // Update task status
+                    task.IsInstall = true;
+                    await _unitOfWork.TaskRepository.UpdateAsync(task);
+                    request.IsSovled = true;
+                    request.ModifiedDate = TimeHelper.GetHoChiMinhTime();
+                    await _unitOfWork.RequestRepository.UpdateAsync(request);
+                }
+                // Case 4: Invalid installation scenario
+                else
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.Failure(
+                        "InvalidOperation",
+                        "The specified device cannot be installed for this task. Verify that it's either the original device or an approved replacement device."
+                    ));
+                }
+
+                await _unitOfWork.SaveChangesAsync();
+
+                // Send notification
+                //if (request != null && request.RequestedById.HasValue)
+                //{
+                //    var notificationContent = isReinstallOriginal
+                //        ? "Your original device has been reinstalled after maintenance"
+                //        : isDifferentDevice
+                //            ? "A different replacement device has been installed than originally planned"
+                //            : "A temporary device has been installed while your device is under maintenance";
+
+                //    await _notificationService.SendNotificationAsync(new CreateNotificationRequest
+                //    {
+                //        Title = "Device Installation",
+                //        Content = notificationContent,
+                //        UserId = request.RequestedById.Value,
+                //        DataType = "Task",
+                //        DataId = task.Id.ToString()
+                //    });
+                //}
+
+                return Result.SuccessWithObject(new
+                {
+                    Message = isReinstallOriginal
+                        ? "Original device reinstalled successfully and stock return request created"
+                        : isDifferentDevice
+                            ? "Different replacement device installed successfully"
+                            : "Device installed successfully",
+                    TaskId = taskId,
+                    DeviceId = deviceId
+                });
             }
-            else
+            catch (Exception ex)
             {
-                newDevice.Status = DeviceStatus.InUse;
-                newDevice.PositionId = oldDevice.PositionId;
+                _logger.LogError(ex, "Error installing device {DeviceId} for task {TaskId}", deviceId, taskId);
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", $"Failed to install device: {ex.Message}"));
             }
-
-
-
-
-
-
-
-            return Result.SuccessWithObject(new
-            {
-                Message = "Device installation updated successfully!",
-                TaskId = taskId,
-                UpdatedAt = TimeHelper.GetHoChiMinhTime()
-            });
         }
 
         #endregion
@@ -1300,13 +1413,6 @@ namespace GRRWS.Application.Implement.Service
             var taskGroup = await _unitOfWork.TaskGroupRepository.GetByIdAsync(taskGroupId);
             return taskGroup?.GroupType ?? TaskType.Replacement;
         }
-        private static bool ShouldUpdateExistingTasks(TaskType groupType, TaskType taskType)
-        {
-            // This method is no longer needed since we handle the logic directly in CreateUninstallTask
-            // But keeping it for backward compatibility if used elsewhere
-            return (groupType == TaskType.Warranty && taskType == TaskType.Uninstallation) ||
-                   (groupType == TaskType.Repair && taskType == TaskType.Uninstallation);
-        }
         public Task<Result> GetDetailReplaceTaskForMechanicByIdAsync(Guid taskId, string type)
         {
             throw new NotImplementedException();
@@ -1315,47 +1421,6 @@ namespace GRRWS.Application.Implement.Service
         {
             return await _unitOfWork.TaskRepository.IsTaskCompletedInReqestAsync(requestId, taskType);
         }
-        //public async Task<Result> GetMechanicRecommendationAsync(int pageSize, int pageIndex)
-        //{
-        //    if (pageSize <= 0 || pageSize > 100)
-        //    {
-        //        return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("ValidationError", "Page size must be between 1 and 100"));
-        //    }
-        //    if (pageIndex < 0)
-        //    {
-        //        return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("ValidationError", "Page index must be 0 or greater"));
-        //    }
-
-        //    try
-        //    {
-        //        _logger.LogInformation("Fetching recommended mechanics for current time");
-
-        //        var now = TimeHelper.GetHoChiMinhTime();
-
-        //        var currentShift = await _unitOfWork.ShiftRepository.GetCurrentShiftAsync(now);
-
-        //        if (currentShift == null)
-        //        {
-        //            _logger.LogWarning("No shift found for current time");
-        //            return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "No shift is active at the current time."));
-        //        }
-
-        //        var recommendations = await _unitOfWork.UserRepository.GetRecommendedMechanicsAsync(now, currentShift.Id, pageIndex, pageSize);
-
-        //        if (!recommendations.Any())
-        //        {
-        //            _logger.LogWarning("No available mechanics found for shift {ShiftId} on {Date}", currentShift.Id, now.Date);
-        //            return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "No available mechanics found for the current shift."));
-        //        }
-
-        //        return Result.SuccessWithObject(recommendations);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Error fetching recommended mechanics for current time");
-        //        return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "An error occurred while fetching mechanic recommendations.", 0));
-        //    }
-        //}
         public async Task<Result> GetMechanicRecommendationAsync(int pageSize, int pageIndex)
         {
             if (pageSize <= 0 || pageSize > 100)
@@ -1627,7 +1692,8 @@ namespace GRRWS.Application.Implement.Service
                 Notes = RequestReplaceMachineString.RequesReplaceMachineNote(newDeviceName: newDevice.DeviceName, oldDeviceName: oldeDeivce.DeviceName),
                 Status = MachineReplacementStatus.Pending,
                 TaskId = taskId,
-                NewDeviceId = replaceDeviceId
+                NewDeviceId = replaceDeviceId,
+                RequestType = RequestMachineReplacementType.Replacement,
             };
 
             if (!requestMachineReplacement.MachineId.HasValue)
@@ -1678,9 +1744,6 @@ namespace GRRWS.Application.Implement.Service
 
             return updatedDocs;
         }
-
-
-
 
         private async Task UpdateForWarrantyDeviceInfor(Guid taskId)
         {

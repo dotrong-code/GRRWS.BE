@@ -6,6 +6,7 @@
         {
             return $"Trả thiết bị về kho-{deviceName}";
         }
+
         public static string RequesReplaceMachine(string areaName, string zoneName, int positionIndex)
         {
             return $"Yêu cầu thay thế thiết bị-{areaName}/{zoneName}/{positionIndex}";

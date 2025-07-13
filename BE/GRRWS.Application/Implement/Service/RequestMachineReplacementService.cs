@@ -60,7 +60,7 @@ namespace GRRWS.Application.Implement.Service
 
             await UpdateForInstalledDeviceInfor(requestMachine.OldDeviceId, (Guid)requestMachine.NewDeviceId);
 
-            
+
             _unitOfWork.RequestMachineReplacementRepository.Update(requestMachine);
             await _unitOfWork.SaveChangesAsync();
             return Result.SuccessWithObject(new
@@ -94,12 +94,12 @@ namespace GRRWS.Application.Implement.Service
                 {
                     var task = await _unitOfWork.TaskRepository.GetByIdAsync(requestMachine.TaskId.Value);
                     if (task != null)
-                    {   
+                    {
                         task.Status = Status.Completed;
                         task.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                         await _unitOfWork.TaskRepository.UpdateAsync(task);
                     }
-                    
+
                 }
             }
             else
@@ -238,7 +238,8 @@ namespace GRRWS.Application.Implement.Service
                 OldDeviceId = data.OldDeviceId,
                 NewDeviceId = data.NewDeviceId,
                 MachineId = data.MachineId,
-                Status = data.Status.ToString()
+                Status = data.Status.ToString(),
+                RequestType = data.RequestType.ToString(),
             };
         }
         private async Task UpdateForInstalledDeviceInfor(Guid oldeDeviceId, Guid newDeviceId)
