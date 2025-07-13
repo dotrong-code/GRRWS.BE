@@ -1642,6 +1642,78 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 }
             });
         }
+
+        public async Task<Guid> CreateReInstallTaskWithGroup(CreateInstallTaskRequest request, int orderIndex)
+        {
+            var executionStrategy = _context.Database.CreateExecutionStrategy();
+
+            return await executionStrategy.ExecuteAsync(async () =>
+            {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    // Get request and device information
+                    var requestInfo = await _context.Requests
+                        .Include(r => r.Device)
+                            .ThenInclude(d => d.Position)
+                                .ThenInclude(p => p.Zone)
+                                    .ThenInclude(z => z.Area)
+                        .Include(r => r.Report)
+                        .Where(r => r.Id == request.RequestId)
+                        .FirstOrDefaultAsync();
+
+                    if (requestInfo == null)
+                        throw new Exception("No request found.");
+
+                    // Get replacement device information if provided
+                    string deviceInfo = "Máy không xác định";
+                    if (request.NewDeviceId.HasValue)
+                    {
+                        var replacementDevice = await _context.Devices
+                            .Where(d => d.Id == request.NewDeviceId.Value)
+                            .Select(d => new { d.Id, d.DeviceName, d.DeviceCode })
+                            .FirstOrDefaultAsync();
+
+                        if (replacementDevice != null)
+                        {
+                            deviceInfo = $"{replacementDevice.DeviceName} ({replacementDevice.DeviceCode})";
+                        }
+                    }
+                    // Create the install task
+                    var taskName = TaskString.GetReInstallTaskName(requestInfo.Device.Position.Zone.Area.AreaCode ?? "Null", requestInfo.Device.Position.Zone.ZoneCode ?? "Null", requestInfo.Device.Position.Index.ToString() ?? "NULL");
+                    var taskDescrtiption = TaskString.GetReInstallTaskDescription(requestInfo.Device.Position.Zone.Area.AreaName ?? "Null", requestInfo.Device.Position.Zone.ZoneName ?? "Null", requestInfo.Device.Position.Index.ToString() ?? "NULL");
+                    var task = new Tasks
+                    {
+                        Id = Guid.NewGuid(),
+                        TaskName = taskName,
+                        TaskType = TaskType.Installation,
+                        TaskDescription = taskDescrtiption,
+                        StartTime = request.StartDate ?? TimeHelper.GetHoChiMinhTime(),
+                        ExpectedTime = (request.StartDate ?? TimeHelper.GetHoChiMinhTime()).AddHours(1),
+                        Status = request.AssigneeId == null ? Status.WaitingForConfirmation : Status.Pending,
+                        Priority = Domain.Enum.Priority.Medium,
+                        AssigneeId = request.AssigneeId,
+                        TaskGroupId = request.TaskGroupId,
+                        OrderIndex = orderIndex,
+                        CreatedDate = TimeHelper.GetHoChiMinhTime(),
+                        IsUninstall = false,
+                        IsDeleted = false,
+                        IsInstall = false
+                    };
+                    await _context.Tasks.AddAsync(task);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return task.Id;
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            });
+        }
+
+
         public async Task<bool> UpdateTaskStatusAsync(Guid taskId, Guid userId)
         {
             var task = await _context.Tasks

@@ -20,7 +20,15 @@
         }
         public static string NoteWarrantyReturnSuccess()
         {
-            return "Thiết bị bảo hành thành công, đem trả thiết bị thay thế";
+            return "Thiết bị bảo hành thành công";
         }
+        public static string WarrantyReturnReceive(string deviceName)
+        {
+            return $"Nhận thiết bị đã bảo hành về kho-{deviceName}";
+        }
+
+
+
+
     }
 }

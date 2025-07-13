@@ -93,7 +93,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories.Generic
         {
             return await _context.Set<T>().FindAsync(code);
         }
-        public async Task<T> GetByIdAsync(Guid id, params Expression<Func<T, object>>[] includes)
+        public async Task<T> GetByIdIncludedAsync(Guid id, params Expression<Func<T, object>>[] includes)
         {
             IQueryable<T> query = _context.Set<T>();
             foreach (var include in includes)
