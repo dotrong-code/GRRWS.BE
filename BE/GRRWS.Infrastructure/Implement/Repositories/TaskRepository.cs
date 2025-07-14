@@ -611,7 +611,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             return new GetDetailInstallTaskForMechanic
             {
                 TaskId = task.Id,
-                DeviceId = deviceInfo?.DeviceId ?? Guid.Empty,
+                DeviceId = task.RequestMachineReplacement.OldDeviceId,
                 TaskType = task.TaskType.ToString(),
                 TaskName = task.TaskName,
                 TaskDescription = task.TaskDescription,
