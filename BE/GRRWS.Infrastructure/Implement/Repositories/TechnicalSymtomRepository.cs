@@ -1,6 +1,7 @@
 ﻿using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.Common;
+using GRRWS.Infrastructure.DTOs.ErrorDTO;
 using GRRWS.Infrastructure.DTOs.TechnicalSymtom;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
@@ -66,6 +67,67 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .ToListAsync();
 
             return symtoms;
+        }
+        public async Task<TechnicalSymptom> GetByIdAsync(Guid id)
+        {
+            return await _context.TechnicalSymptoms
+                .Include(e => e.IssueTechnicalSymptoms)
+                .Include(i => i.TechnicalSymptomReports)
+                .FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
+        }
+        public async Task<List<TechnicalSymptomViewDTO>> GetAllTechnicalSymptomsAsync(int pageNumber, int pageSize, string? searchByName)
+        {
+            var query = _context.TechnicalSymptoms
+                .Where(i => !i.IsDeleted);
+
+            if (!string.IsNullOrEmpty(searchByName))
+            {
+                query = query.Where(i => i.Name != null && i.Name.Contains(searchByName));
+            }
+
+            var technicalSymptoms = await query
+                .Select(i => new TechnicalSymptomViewDTO
+                {
+                    SymptomCode = i.SymptomCode,
+                    Name = i.Name,
+                    Description = i.Description,
+                    IsCommon = i.IsCommon,
+                    OccurrenceCount = i.OccurrenceCount
+                })
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return technicalSymptoms;
+        }
+        public async Task<bool> UpdateTechnicalSymptomAsync(TechnicalSymptomUpdateDTO updateTechnicalSymptomDto)
+        {
+            var technicalSymptom = await _context.TechnicalSymptoms.FindAsync(updateTechnicalSymptomDto.Id);
+            if (technicalSymptom == null)
+            {
+                return false;
+            }
+
+            technicalSymptom.SymptomCode = updateTechnicalSymptomDto.SymptomCode;
+            technicalSymptom.Name = updateTechnicalSymptomDto.Name;
+            technicalSymptom.Description = updateTechnicalSymptomDto.Description;
+            technicalSymptom.IsCommon = updateTechnicalSymptomDto.IsCommon;
+            technicalSymptom.OccurrenceCount = updateTechnicalSymptomDto.OccurrenceCount;
+            _context.TechnicalSymptoms.Update(technicalSymptom);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        public async Task<bool> DeleteAsync(Guid id)
+        {
+            var technicalSymptom = await _context.TechnicalSymptoms.FindAsync(id);
+            if (technicalSymptom == null)
+            {
+                return false;
+            }
+            technicalSymptom.IsDeleted = true;
+            _context.TechnicalSymptoms.Update(technicalSymptom);
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }
