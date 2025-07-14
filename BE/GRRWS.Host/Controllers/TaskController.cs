@@ -283,9 +283,9 @@ namespace GRRWS.Host.Controllers
         }
 
         [HttpPut("is-install-device")]
-        public async Task<IResult> UpdateIsInstallDevice(Guid taskId, Guid? NewDeviceId)
+        public async Task<IResult> UpdateIsInstallDevice(Guid taskId, Guid deviceId)
         {
-            var result = await _taskService.UpdateIsInstallDevice(taskId, NewDeviceId);
+            var result = await _taskService.InstallDevice(taskId, deviceId);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Is install device updated successfully")
                 : ResultExtensions.ToProblemDetails(result);

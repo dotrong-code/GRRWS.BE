@@ -6,6 +6,7 @@
         {
             return $"Trả thiết bị về kho-{deviceName}";
         }
+
         public static string RequesReplaceMachine(string areaName, string zoneName, int positionIndex)
         {
             return $"Yêu cầu thay thế thiết bị-{areaName}/{zoneName}/{positionIndex}";
@@ -20,7 +21,15 @@
         }
         public static string NoteWarrantyReturnSuccess()
         {
-            return "Thiết bị bảo hành thành công, đem trả thiết bị thay thế";
+            return "Thiết bị bảo hành thành công";
         }
+        public static string WarrantyReturnReceive(string deviceName)
+        {
+            return $"Nhận thiết bị đã bảo hành về kho-{deviceName}";
+        }
+
+
+
+
     }
 }

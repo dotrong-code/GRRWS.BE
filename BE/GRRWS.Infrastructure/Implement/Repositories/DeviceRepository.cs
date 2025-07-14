@@ -284,5 +284,10 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             query = query.Where(d => d.Status == DeviceStatus.InUse && !d.IsDeleted);
             return await query.FirstOrDefaultAsync();
         }
+        public async Task<Device> GetDeviceByPositionIdWithStatus(Guid positionId, DeviceStatus status)
+        {
+            var device = await _context.Devices.FirstOrDefaultAsync(d => d.PositionId == positionId && d.Status == status);
+            return device;
+        }
     }
 }

@@ -43,6 +43,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<Guid> CreateWarrantyTaskWithGroup(CreateWarrantyTaskRequest request, Guid userId, Guid taskGroupId, int orderIndex);
         Task<Guid> CreateUninstallTaskWithGroup(CreateUninstallTaskRequest request, Guid userId, Guid taskGroupId, int orderIndex);
         Task<Guid> CreateInstallTaskWithGroup(CreateInstallTaskRequest request, Guid userId, Guid taskGroupId, int orderIndex);
+        Task<Guid> CreateReInstallTaskWithGroup(CreateInstallTaskRequest request, int orderIndex);
         Task<Guid> CreateRepairTaskWithGroup(CreateRepairTaskRequest request, Guid userId, Guid? taskGroupId, int orderIndex);
 
         Task<Guid> UpdateUninstallDeviceInTask(Guid taskId, Guid mechanicId);
