@@ -34,5 +34,21 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Include(eg => eg.ErrorSpareparts)
                 .FirstOrDefaultAsync(); // Assuming you want the first one
         }
+        public async Task<List<ErrorGuideline>> GetErrorGuidelinesAsync(IEnumerable<Guid> guidelineIds)
+        {
+            return await _context.ErrorGuidelines
+                .Where(eg => guidelineIds.Contains(eg.Id))
+                .Include(eg => eg.ErrorFixSteps)
+                .Include(eg => eg.ErrorSpareparts)
+                .ToListAsync();
+        }
+        public async Task<List<Guid>> GetGuidelineIdsByErrorIdsAsync(IEnumerable<Guid> errorIds)
+        {
+            return await _context.ErrorGuidelines
+                .Where(eg => errorIds.Contains(eg.ErrorId) && !eg.IsDeleted)
+                .Select(eg => eg.Id)
+                .ToListAsync();
+        }
+        
     }
 }

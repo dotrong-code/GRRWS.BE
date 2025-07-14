@@ -3,12 +3,15 @@ using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Common.Validator.Task;
 using GRRWS.Application.Interface.IService;
+using GRRWS.Application.Interfaces;
 using GRRWS.Domain.Entities;
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
+using GRRWS.Infrastructure.Common.StringHelper;
 using GRRWS.Infrastructure.DTOs.Common.Message;
 using GRRWS.Infrastructure.DTOs.Firebase.AddImage;
 using GRRWS.Infrastructure.DTOs.Firebase.GetImage;
+using GRRWS.Infrastructure.DTOs.Notification;
 using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.DTOs.Task;
@@ -29,11 +32,15 @@ namespace GRRWS.Application.Implement.Service
         private readonly CheckIsExist _checkIsExist;
         private readonly ILogger<TaskService> _logger;
         private readonly IMechanicShiftService _mechanicShiftService;
+        private readonly IRequestMachineReplacementService _requestMachineReplacementService;
+        private readonly INotificationService _notificationService;
         public TaskService(UnitOfWork unitOfWork,
             ITaskGroupService taskGroupService,
             IValidator<StartTaskRequest> startTaskValidator,
             IValidator<CreateTaskReportRequest> createReportValidator,
-            CheckIsExist checkIsExist, ILogger<TaskService> logger, IMechanicShiftService mechanicShiftService)
+            IRequestMachineReplacementService requestMachineReplacementService,
+            CheckIsExist checkIsExist, ILogger<TaskService> logger, IMechanicShiftService mechanicShiftService,
+            INotificationService notificationService)
         {
             _unitOfWork = unitOfWork;
             _taskGroupService = taskGroupService;
@@ -42,6 +49,8 @@ namespace GRRWS.Application.Implement.Service
             _checkIsExist = checkIsExist;
             _logger = logger;
             _mechanicShiftService = mechanicShiftService;
+            _requestMachineReplacementService = requestMachineReplacementService;
+            _notificationService = notificationService;
         }
 
         #region
@@ -89,8 +98,10 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Error", ex.Message));
             }
         }
+        // In TaskService.CreateRepairTask
         public async Task<Result> CreateRepairTask(CreateRepairTaskRequest request, Guid userId)
         {
+            // Existing validations
             var requestCheck = await _checkIsExist.Request(request.RequestId);
             if (!requestCheck.IsSuccess) return requestCheck;
 
@@ -99,6 +110,19 @@ namespace GRRWS.Application.Implement.Service
 
             var assigneeCheck = await _checkIsExist.User(request.AssigneeId, allowNull: true);
             if (!assigneeCheck.IsSuccess) return assigneeCheck;
+
+            // Add validation for ErrorGuidelineIds
+            var guidelineIds = request.ErrorGuidelineIds; // Assuming request contains ErrorGuidelineIds
+            if (guidelineIds != null && guidelineIds.Any())
+            {
+                var validGuidelines = await _unitOfWork.ErrorGuidelineRepository.GetErrorGuidelinesAsync(guidelineIds);
+                if (!validGuidelines.Any() || validGuidelines.Count != guidelineIds.Count)
+                {
+                    _logger.LogWarning("Invalid or missing ErrorGuidelineIds: {ErrorGuidelineIds}", string.Join(", ", guidelineIds));
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "One or more error guidelines not found."));
+                }
+            }
+
             var isTaskProcessing = await IsTaskCompletedInRequestAsync(request.RequestId, TaskType.Repair);
             if (!isTaskProcessing)
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Conflict", "A repair task is already being processed for this request."));
@@ -109,18 +133,42 @@ namespace GRRWS.Application.Implement.Service
                 if (requestInfo == null)
                     return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found."));
 
-                // Always create new repair task group
                 var taskGroupId = await _taskGroupService.CreateOrGetTaskGroupAsync(
-                    null, // Always null to force creation
-                    TaskType.Repair,
-                    requestInfo.DeviceName,
-                    requestInfo.ReportId, // Use ReportId from RequestInfo
-                    userId);
+                    null, TaskType.Repair, requestInfo.DeviceName, requestInfo.ReportId, userId);
 
-                var orderIndex = 1; // First task in new repair group
-
+                var orderIndex = 1;
                 var taskId = await _unitOfWork.TaskRepository.CreateRepairTaskWithGroup(request, userId, taskGroupId, orderIndex);
 
+                if (taskId == Guid.Empty)
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Failure", "Failed to create repair task."));
+                // Check if ErrorGuidelines require spare parts
+                bool requiresSpareParts = false;
+                if (guidelineIds != null && guidelineIds.Any())
+                {
+                    var errorSpareParts = await _unitOfWork.ErrorSparepartRepository.GetByErrorGuidelineIdsAsync(guidelineIds);
+                    requiresSpareParts = errorSpareParts.Any();
+                }
+                if (!requiresSpareParts && request.AssigneeId == null)
+                {
+                    var mechanics = await _unitOfWork.UserRepository.GetMechanicsWithoutTask();
+                    if (mechanics == null || !mechanics.Any())
+                    {
+                        _logger.LogWarning("No available mechanics to assign for task: {TaskId}", taskId);
+                        return Result.SuccessWithObject(new
+                        {
+                            Message = "Repair task created successfully, but no available mechanics to assign.",
+                            TaskId = taskId,
+                            TaskGroupId = taskGroupId
+                        });
+                    }
+
+                    var primaryMechanic = mechanics.First().Id;
+                    var task = await _unitOfWork.TaskRepository.GetByIdAsync(taskId);
+                    task.AssigneeId = primaryMechanic;
+                    task.Status = Status.Pending;
+                    _unitOfWork.TaskRepository.Update(task);
+                    await _unitOfWork.SaveChangesAsync();
+                }
                 return Result.SuccessWithObject(new
                 {
                     Message = "Repair task created successfully!",
@@ -130,7 +178,8 @@ namespace GRRWS.Application.Implement.Service
             }
             catch (Exception ex)
             {
-                return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Error", ex.Message));
+                _logger.LogError(ex, "Error creating repair task for RequestId: {RequestId}, UserId: {UserId}", request.RequestId, userId);
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", $"Failed to create repair task: {ex.Message}"));
             }
         }
         public async Task<Result> CreateUninstallTask(CreateUninstallTaskRequest request, Guid userId)
@@ -257,7 +306,7 @@ namespace GRRWS.Application.Implement.Service
 
                 var taskId = await _unitOfWork.TaskRepository.CreateInstallTaskWithGroup(request, userId, taskGroupId, orderIndex);
                 _unitOfWork.ClearChangeTracker();
-                var requestMachine = await RequestReplaceMachineForInstall(request.RequestId, taskId, replaceDeviceId);
+                var requestMachine = await RequestReplaceMachineForInstall(request.RequestId, taskId, replaceDeviceId, device);
                 if (requestMachine.IsFailure)
                 {
                     return Result.SuccessWithObject(new
@@ -391,7 +440,6 @@ namespace GRRWS.Application.Implement.Service
         }
         public async Task<Result> CreateWarrantyReturnTask(CreateWarrantyReturnTaskRequest request, Guid userId)
         {
-
             // Validate user existence
             var userCheck = await _checkIsExist.User(userId);
             if (!userCheck.IsSuccess) return userCheck;
@@ -399,6 +447,10 @@ namespace GRRWS.Application.Implement.Service
             // Validate assignee existence (if provided)
             var assigneeCheck = await _checkIsExist.User(request.AssigneeId, allowNull: true);
             if (!assigneeCheck.IsSuccess) return assigneeCheck;
+
+
+            // Validate request
+
 
             // Check if a warranty return task already exists for this claim
             var existingReturnTask = await _unitOfWork.TaskRepository.GetTasksByWarrantyClaimIdAsync(request.WarrantyClaimId, TaskType.WarrantyReturn);
@@ -435,37 +487,68 @@ namespace GRRWS.Application.Implement.Service
                     return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "No associated warranty submission task or task group found."));
                 }
 
+                // Verify that the task group belongs to the provided report
+                var taskGroup = await _unitOfWork.TaskGroupRepository.GetByIdAsync(submissionTask.TaskGroupId.Value);
+                if (taskGroup == null)
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("ValidationError", "The warranty submission task's task group does not belong to the provided report."));
+                }
+
                 var taskGroupId = submissionTask.TaskGroupId.Value;
                 var orderIndex = await _taskGroupService.GetNextOrderIndexAsync(taskGroupId, TaskType.WarrantyReturn);
 
                 // Determine ActualReturnDate for WarrantyClaim update
                 DateTime actualReturnDate = request.IsEarlyReturn
-                    ? request.ActualReturnDate.Value // Use provided ActualReturnDate for early return
-                    : (request.ActualReturnDate ?? warrantyClaim.ExpectedReturnDate ?? TimeHelper.GetHoChiMinhTime()); // Fallback to ExpectedReturnDate or current time
-
+                    ? request.ActualReturnDate.Value
+                    : (request.ActualReturnDate ?? warrantyClaim.ExpectedReturnDate ?? TimeHelper.GetHoChiMinhTime());
                 // Create the warranty return task
                 var taskId = await _unitOfWork.TaskRepository.CreateWarrantyReturnTask(request, userId, taskGroupId, orderIndex);
-
                 // Update WarrantyClaim
                 warrantyClaim.ActualReturnDate = actualReturnDate;
                 warrantyClaim.WarrantyNotes = request.WarrantyNotes ?? warrantyClaim.WarrantyNotes;
                 warrantyClaim.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                 warrantyClaim.ModifiedBy = userId;
                 warrantyClaim.ReturnTaskId = taskId;
-
                 await _unitOfWork.WarrantyClaimRepository.UpdateAsync(warrantyClaim);
-                await _unitOfWork.SaveChangesAsync();
+                // Get RequestMachineReplacement to find OldDeviceId and NewDeviceId
+                var requestMachine = await _unitOfWork.RequestMachineReplacementRepository.GetByTaskGroupIdAsync(taskGroupId);
+                if (requestMachine == null)
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "No associated machine replacement request found."));
+                }
+                // Find available mechanics
+                if (request.IsWarrantyFailed)
+                {
+                    _unitOfWork.ClearChangeTracker(); // Clear change tracker to avoid tracking WarrantyClaim changes
+                    var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(warrantyClaim.DeviceWarranty.DeviceId);
+
+                    var requestMachineReturn = new RequestMachineReplacement
+                    {
+                        Id = Guid.NewGuid(),
+                        RequestCode = RequestReplaceMachineString.ReturnDeviceToStockKeeper(device.DeviceName),
+                        OldDeviceId = device.Id,
+                        Notes = RequestReplaceMachineString.NoteWarrantyReturnFailed(),
+                        CreatedBy = userId,
+                        RequestedById = userId,
+                        CreatedDate = TimeHelper.GetHoChiMinhTime(),
+                        TaskId = taskId,
+                        IsDeleted = false
+                    };
+                    await _unitOfWork.RequestMachineReplacementRepository.CreateAsync(requestMachineReturn);
+                    await _unitOfWork.SaveChangesAsync();
+                }
 
                 return Result.SuccessWithObject(new
                 {
-                    Message = "Warranty return task created successfully!",
+                    Message = "Warranty return task, installation task, and stock return task created successfully!",
                     TaskId = taskId,
-                    TaskGroupId = taskGroupId
+                    TaskGroupId = taskGroupId,
                 });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating warranty return task for WarrantyClaimId: {WarrantyClaimId}", request.WarrantyClaimId);
+
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Error", ex.Message));
             }
         }
@@ -530,6 +613,37 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Fail", "Task status could not be updated."));
             _unitOfWork.ClearChangeTracker();
             var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
+            // Only send notification if the task status is Completed
+            if (task.Status == Status.Completed)
+            {
+                var assignee = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+
+                // Notify Head of Technical (HOT) about completed task
+                var notificationCompletedTaskForHOT = new NotificationRequest
+                {
+                    SenderId = userId,
+                    Role = 2, // HOT
+                    ReceiverId = null,
+                    Title = "Hoàn thành công việc",
+                    Body = $"Công việc {task.TaskName ?? task.TaskType.ToString()} đã được hoàn thành bởi {assignee?.FullName ?? "Nhân viên"}.",
+                    Type = NotificationType.TaskCompleted,
+                    Channel = NotificationChannel.Both,
+                    Data = new
+                    {
+                        TaskId = task.Id,
+                        TaskName = task.TaskName,
+                        TaskType = task.TaskType.ToString(),
+                        TaskGroupId = task.TaskGroupId,
+                        CompletedBy = userId,
+                        CompletedByName = assignee?.FullName,
+                        CompletedDate = TimeHelper.GetHoChiMinhTime(),
+                        AssigneeId = task.AssigneeId
+                    },
+                    SaveToDatabase = true
+                };
+
+                await _notificationService.SendNotificationAsync(notificationCompletedTaskForHOT);
+            }
 
             return Result.SuccessWithObject(new
             {
@@ -538,6 +652,119 @@ namespace GRRWS.Application.Implement.Service
                 UpdatedAt = TimeHelper.GetHoChiMinhTime()
             });
         }
+        public async Task<Result> UpdateIsInstallDevice(Guid taskId, Guid? deviceId = null)
+        {
+            var taskCheck = await _checkIsExist.Task(taskId);
+            if (!taskCheck.IsSuccess) return taskCheck;
+
+            var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
+            task.IsInstall = true;
+            var requestMachine1 = await _unitOfWork.RequestMachineReplacementRepository.GetByTaskIdAsync(taskId);
+            var device1 = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(requestMachine1.OldDeviceId);
+            var tempDevice1 = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(requestMachine1.NewDeviceId ?? new Guid());
+            tempDevice1.PositionId = device1.PositionId;
+            await _unitOfWork.DeviceRepository.UpdateAsync(tempDevice1);
+            if (task.TaskType == TaskType.WarrantyReturn)
+            {
+                var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(task.WarrantyClaim.DeviceWarranty.DeviceId);
+                var tempDevice = await _unitOfWork.DeviceRepository.GetDeviceByLocation(
+                    device.Position.Zone.Area.Id,
+                    device.Position.Zone.Id,
+                    device.PositionId ?? Guid.Empty
+                );
+
+                tempDevice.Status = DeviceStatus.Active;
+                tempDevice.PositionId = null;
+
+                var requestMachine = new RequestMachineReplacement
+                {
+                    Id = Guid.NewGuid(),
+                    RequestCode = RequestReplaceMachineString.ReturnDeviceToStockKeeper(tempDevice.DeviceName),
+                    OldDeviceId = tempDevice.Id,
+                    Notes = RequestReplaceMachineString.NoteWarrantyReturnSuccess(),
+                    CreatedBy = task.CreatedBy,
+                    CreatedDate = TimeHelper.GetHoChiMinhTime(),
+                    RequestedById = task.CreatedBy ?? Guid.NewGuid(),
+                    AssigneeId = task.AssigneeId,
+                    IsDeleted = false
+                };
+
+                await _unitOfWork.DeviceRepository.UpdateAsync(tempDevice);
+                await _unitOfWork.RequestMachineReplacementRepository.CreateAsync(requestMachine);
+            }
+
+            if (task.TaskType != TaskType.WarrantyReturn && deviceId.HasValue)
+            {
+                var requestMachine = await _unitOfWork.RequestMachineReplacementRepository.GetByTaskIdAsync(taskId);
+                if (requestMachine != null)
+                {
+                    var oldDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(requestMachine.OldDeviceId);
+                    if (oldDevice == null)
+                    {
+                        return Result.SuccessWithObject(new
+                        {
+                            Message = "Old device not found for the specified RequestMachineReplacement.",
+                            TaskId = taskId,
+                            UpdatedAt = TimeHelper.GetHoChiMinhTime()
+                        });
+                    }
+
+                    var newDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(deviceId.Value);
+                    if (newDevice == null)
+                    {
+                        return Result.SuccessWithObject(new
+                        {
+                            Message = "New device not found for the specified deviceId.",
+                            TaskId = taskId,
+                            UpdatedAt = TimeHelper.GetHoChiMinhTime()
+                        });
+                    }
+
+                    newDevice.PositionId = oldDevice.PositionId;
+                    newDevice.ModifiedDate = TimeHelper.GetHoChiMinhTime();
+
+                    requestMachine.NewDeviceId = deviceId.Value;
+                    requestMachine.Notes = "Updated with new replacement device due to non-functional device.";
+                    requestMachine.ModifiedDate = TimeHelper.GetHoChiMinhTime();
+                    await _unitOfWork.RequestMachineReplacementRepository.UpdateAsync(requestMachine);
+                    await _unitOfWork.DeviceRepository.UpdateAsync(newDevice);
+
+                }
+                else
+                {
+                    return Result.SuccessWithObject(new
+                    {
+                        Message = "No RequestMachineReplacement found for the specified taskId.",
+                        TaskId = taskId,
+                        UpdatedAt = TimeHelper.GetHoChiMinhTime()
+                    });
+                }
+            }
+
+            await _unitOfWork.TaskRepository.UpdateAsync(task);
+
+            var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(taskId);
+            if (request != null)
+            {
+                request.IsSovled = true;
+                request.ModifiedDate = TimeHelper.GetHoChiMinhTime();
+                await _unitOfWork.RequestRepository.UpdateAsync(request);
+            }
+
+            // Save once for all changes
+            await _unitOfWork.SaveChangesAsync();
+            _unitOfWork.ClearChangeTracker();
+
+            return Result.SuccessWithObject(new
+            {
+                Message = "Task updated successfully!",
+                TaskId = taskId,
+                UpdatedAt = TimeHelper.GetHoChiMinhTime()
+            });
+        }
+
+
+
         // Add to TaskService implementation
         public async Task<Result> GetAllSingleTasksAsync(GetAllSingleTasksRequest request)
         {
@@ -739,6 +966,71 @@ namespace GRRWS.Application.Implement.Service
                 UpdatedAt = TimeHelper.GetHoChiMinhTime()
             });
         }
+
+
+        public async Task<Result> CreateStockReturnTask(CreateStockReturnTaskRequest request, Guid userId)
+        {
+            // Validate request
+            var requestCheck = await _checkIsExist.Request(request.RequestId);
+            if (!requestCheck.IsSuccess) return requestCheck;
+
+            var userCheck = await _checkIsExist.User(userId);
+            if (!userCheck.IsSuccess) return userCheck;
+
+            var assigneeCheck = await _checkIsExist.User(request.AssigneeId, allowNull: true);
+            if (!assigneeCheck.IsSuccess) return assigneeCheck;
+
+            var taskGroupCheck = await _checkIsExist.TaskGroup(request.TaskGroupId, allowNull: true);
+            if (!taskGroupCheck.IsSuccess) return taskGroupCheck;
+
+            var isTaskProcessing = await IsTaskCompletedInRequestAsync(request.RequestId, TaskType.StockReturn);
+            if (!isTaskProcessing)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Conflict", "A stock return task is already being processed for this request."));
+
+            try
+            {
+                var requestInfo = await _unitOfWork.TaskRepository.GetRequestInfoAsync(request.RequestId);
+                if (requestInfo == null)
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found."));
+
+                Guid taskGroupId;
+                int orderIndex;
+
+                if (request.TaskGroupId.HasValue)
+                {
+                    // Use existing task group
+                    taskGroupId = request.TaskGroupId.Value;
+                    orderIndex = await _taskGroupService.GetNextOrderIndexAsync(taskGroupId, TaskType.StockReturn);
+                }
+                else
+                {
+                    // Create new task group for stock return
+                    taskGroupId = await _taskGroupService.CreateOrGetTaskGroupAsync(
+                        null,
+                        TaskType.StockReturn,
+                        requestInfo.DeviceName,
+                        requestInfo.ReportId,
+                        userId);
+                    orderIndex = 1; // First task in new group
+                }
+
+                // Create stock return task
+                var taskId = await _unitOfWork.TaskRepository.CreateStockReturnTaskWithGroup(request, userId, taskGroupId, orderIndex);
+
+                return Result.SuccessWithObject(new
+                {
+                    Message = "Stock return task created successfully!",
+                    TaskId = taskId,
+                    TaskGroupId = taskGroupId
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating stock return task for RequestId: {RequestId}", request.RequestId);
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Error", ex.Message));
+            }
+        }
+
 
         #endregion
         #region old methods
@@ -1235,12 +1527,22 @@ namespace GRRWS.Application.Implement.Service
             }
         }
 
-        private async Task<Result> RequestReplaceMachineForInstall(Guid requestId, Guid taskId, Guid? replaceDeviceId)
+        private async Task<Result> RequestReplaceMachineForInstall(Guid requestId, Guid taskId, Guid? replaceDeviceId, Device oldeDeivce)
         {
-
             var request = await _unitOfWork.RequestRepository.GetRequestByIdAsync(requestId);
-            var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(request.DeviceId);
-            //var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
+            if (request == null)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found."));
+
+            var oldDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(request.DeviceId);
+            if (oldDevice == null)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Old device not found."));
+
+            if (!replaceDeviceId.HasValue)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "No replacement device specified."));
+
+            var newDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(replaceDeviceId.Value);
+            if (newDevice == null)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Replacement device not found."));
 
             var requestMachineReplacement = new RequestMachineReplacement
             {
@@ -1248,21 +1550,21 @@ namespace GRRWS.Application.Implement.Service
                 CreatedDate = TimeHelper.GetHoChiMinhTime(),
                 ModifiedDate = TimeHelper.GetHoChiMinhTime(),
                 RequestedById = request.RequestedById,
-                OldDeviceId = device.Id,
-                MachineId = device.MachineId ?? null,
-                RequestCode = $"Yêu cầu máy thay thế-{TimeHelper.GetHoChiMinhTime():yyyyMMddHHmmss}",
+                OldDeviceId = oldDevice.Id,
+                MachineId = oldDevice.MachineId,
+                RequestCode = RequestReplaceMachineString.RequesReplaceMachine(oldDevice.Position.Zone.Area.AreaName, oldDevice.Position.Zone.ZoneName, oldDevice.Position.Index),
+                Notes = RequestReplaceMachineString.RequesReplaceMachineNote(newDeviceName: newDevice.DeviceName, oldDeviceName: oldeDeivce.DeviceName),
                 Status = MachineReplacementStatus.Pending,
                 TaskId = taskId,
-                NewDeviceId = replaceDeviceId,
-                //AssigneeId = task.AssigneeId,
-
+                NewDeviceId = replaceDeviceId
             };
-            if (requestMachineReplacement.MachineId == null)
-            {
+
+            if (!requestMachineReplacement.MachineId.HasValue)
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("ValidationError", "Device does not have a machine model."));
-            }
+
             await _unitOfWork.RequestMachineReplacementRepository.CreateAsync(requestMachineReplacement);
             await _unitOfWork.SaveChangesAsync();
+
             return Result.SuccessWithObject(new
             {
                 Message = "Machine replacement request created successfully!",
@@ -1317,6 +1619,10 @@ namespace GRRWS.Application.Implement.Service
             _unitOfWork.DeviceRepository.Update(oldDevice);
             await _unitOfWork.SaveChangesAsync();
         }
+
+        //private async Task RequestStorageReturn()
+
+
         #endregion
     }
 }

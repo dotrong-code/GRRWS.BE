@@ -102,6 +102,7 @@ namespace GRRWS.Application.Implement.Service
                 RequestTitle = r.RequestTitle,
                 Description = r.Description,
                 Status = r.Status.ToString(),
+                IsSovled = r.IsSovled,
                 Priority = r.Priority.ToString(),
                 CreatedDate = r.CreatedDate,
                 CreatedBy = r.RequestedById,

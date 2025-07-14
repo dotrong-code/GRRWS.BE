@@ -372,7 +372,7 @@ namespace GRRWS.Infrastructure.DB
             modelBuilder.Entity<RequestMachineReplacement>()
                 .Property(rmr => rmr.RequestCode)
                 .IsRequired()
-                .HasMaxLength(50);
+                .HasMaxLength(200);
 
             modelBuilder.Entity<RequestMachineReplacement>()
                 .Property(rmr => rmr.Status)

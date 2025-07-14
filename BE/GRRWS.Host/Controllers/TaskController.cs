@@ -282,6 +282,14 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
+        [HttpPut("is-install-device")]
+        public async Task<IResult> UpdateIsInstallDevice(Guid taskId, Guid? NewDeviceId)
+        {
+            var result = await _taskService.UpdateIsInstallDevice(taskId, NewDeviceId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Is install device updated successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
 
     }
 }

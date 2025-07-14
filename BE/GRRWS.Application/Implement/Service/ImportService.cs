@@ -114,6 +114,25 @@ namespace GRRWS.Application.Implement.Service
                                     else
                                         throw new FormatException("Invalid decimal format.");
                                 }
+                                else if (propertyType == typeof(TimeSpan))
+                                {
+                                    var valueString = value.ToString();
+                                    if (TimeSpan.TryParse(valueString, out var timeSpan))
+                                    {
+                                        convertedValue = timeSpan;
+                                    }
+                                    else
+                                    {
+                                        if (double.TryParse(valueString, out var timeDouble))
+                                        {
+                                            convertedValue = TimeSpan.FromDays(timeDouble);
+                                        }
+                                        else
+                                        {
+                                            throw new FormatException("Invalid TimeSpan format.");
+                                        }
+                                    }
+                                }
                                 else
                                 {
                                     convertedValue = Convert.ChangeType(value, propertyType);

@@ -94,7 +94,25 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             return (items, totalCount);
         }
+        public async Task<RequestMachineReplacement> GetByTaskGroupIdAsync(Guid taskGroupId)
+        {
+            return await _context.RequestMachineReplacements
+                .Include(rm => rm.OldDevice)
+                .Include(rm => rm.NewDevice)
+                .Include(rm => rm.Machine)
+                .Include(rm => rm.Assignee)
+                .Where(rm => !rm.IsDeleted && rm.TaskId != null && _context.Tasks.Any(t => t.Id == rm.TaskId && t.TaskGroupId == taskGroupId && !t.IsDeleted))
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+        }
 
+        public async Task<RequestMachineReplacement> GetByTaskIdAsync(Guid taskId)
+        {
+            return await _context.RequestMachineReplacements
+                .Where(rm => !rm.IsDeleted && rm.TaskId == taskId)
+
+                .FirstOrDefaultAsync();
+        }
 
     }
 }

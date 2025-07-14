@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DocumentFormat.OpenXml.Office2010.CustomUI;
 using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
@@ -10,6 +11,7 @@ using GRRWS.Infrastructure.DTOs.ErrorDetail;
 
 using GRRWS.Infrastructure.DTOs.Report;
 using GRRWS.Infrastructure.DTOs.Task.ActionTask;
+using GRRWS.Infrastructure.DTOs.Task.Repair;
 using GRRWS.Infrastructure.DTOs.Task.Warranty;
 using GRRWS.Infrastructure.Interfaces;
 
@@ -226,6 +228,10 @@ namespace GRRWS.Application.Implement.Service
             if (dto.Priority < 0 || dto.Priority > 5)
                 return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Priority must be between 0 and 5.", 0));
 
+            // Kiểm tra ActionType
+            if (!Enum.IsDefined(typeof(ActionType), dto.ActionType))
+                return Result.Failure(new Infrastructure.DTOs.Common.Error("Error", "Invalid ActionType.", 0));
+
             // Lấy Request
             var request = await _unit.RequestRepository.GetRequestByIdAsync((Guid)dto.RequestId);
             if (request == null)
@@ -271,20 +277,25 @@ namespace GRRWS.Application.Implement.Service
             var createLocation = "";
             try
             {
-                createLocation = TitleHelper.GenerateReportTitle(request.Device.Position.Zone.Area.AreaCode, request.Device.Position.Zone.ZoneCode, request.Device.Position.Index, request.Device.DeviceCode);
+                createLocation = TitleHelper.GenerateReportTitle(
+                    request.Device.Position.Zone.Area.AreaCode,
+                    request.Device.Position.Zone.ZoneCode,
+                    request.Device.Position.Index,
+                    request.Device.DeviceCode);
             }
             catch (Exception)
             {
                 createLocation = "Create title fail";
             }
 
-            // Tạo Report (ánh xạ thủ công)
+            // Tạo Report
             var report = new Report
             {
                 Id = Guid.NewGuid(),
                 RequestId = dto.RequestId,
                 Location = createLocation,
-                CreatedDate = TimeHelper.GetHoChiMinhTime()
+                CreatedDate = TimeHelper.GetHoChiMinhTime(),
+                
             };
 
             // Tạo ErrorDetails
@@ -310,7 +321,7 @@ namespace GRRWS.Application.Implement.Service
                 foreach (var errorId in errorIds)
                 {
                     var existingIssueError = await _unit.IssueErrorRepository.GetByIssueAndErrorIdAsync(issueId, errorId);
-                    if (existingIssueError == null) // Only add if it doesn't exist
+                    if (existingIssueError == null)
                     {
                         issueErrors.Add(new IssueError
                         {
@@ -330,14 +341,45 @@ namespace GRRWS.Application.Implement.Service
             await _unit.ReportRepository.CreateAsync(report);
 
             // Cập nhật Request
-            var getRequest = await _unit.RequestRepository.GetRequestByIdAsync((Guid)report.RequestId);
-            getRequest.ReportId = report.Id;
-            getRequest.Status = Status.InProgress;
-            await _unit.RequestRepository.UpdateAsync(getRequest);
+            request.ReportId = report.Id;
+            request.Status = Status.InProgress;
+            await _unit.RequestRepository.UpdateAsync(request);
 
+            // Tạo Task Group dựa trên ActionType
+            var users = await _unit.UserRepository.GetUsersByRole(2); // Role 2: Mechanic
+            var systemUserId = users?.FirstOrDefault()?.Id ?? Guid.Parse("32222222-2222-2222-2222-222222222222");
+            Result taskGroupResult;
+
+            if (dto.ActionType == ActionType.Replacement)
+            {
+                taskGroupResult = await CreateReplacementTaskGroup(report.Id, allErrorIds.Distinct().ToList(), systemUserId);
+            }
+            else // ActionType.Repair
+            {
+                taskGroupResult = await CreateRepairTaskGroup(report.Id, allErrorIds.Distinct().ToList(), systemUserId);
+            }
+
+            if (taskGroupResult.IsFailure)
+            {
+                return Result.SuccessWithObject(new
+                {
+                    Message = $"Report created successfully but failed to create task group: {taskGroupResult.Error.Description}",
+                    ReportId = report.Id
+                });
+            }
+
+            dynamic data = taskGroupResult.Object;
+            Guid TaskGroupId = data.TaskGroupId;
+
+            // Lưu tất cả thay đổi
             await _unit.SaveChangesAsync();
 
-            return Result.SuccessWithObject(new { Message = "Report created successfully with IssueErrors!", ReportId = report.Id });
+            return Result.SuccessWithObject(new
+            {
+                Message = $"Report created successfully for {dto.ActionType} with IssueErrors!",
+                ReportId = report.Id,
+                TaskGroupId = TaskGroupId 
+            });
         }
         public async Task<Result> CreateReportWithIssueSymtomAsync(ReportCreateWithIssueSymtomDTO dto)
         {
@@ -796,7 +838,146 @@ namespace GRRWS.Application.Implement.Service
                 throw new InvalidOperationException($"Failed to auto-assign tasks: {ex.Message}", ex);
             }
         }
+        private async Task<Result> CreateReplacementTaskGroup(Guid reportId, List<Guid> errorIds, Guid createdByUserId)
+        {
+            try
+            {
+                _unit.ClearChangeTracker(); // Clear change tracker để tránh lỗi tracking
+                var report = await _unit.ReportRepository.GetByIdAsync(reportId);
+                if (report == null)
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
+                        "NotFound", $"Report not found for the provided {reportId}."
+                    ));
+                }
+                var requestId = report.RequestId ?? Guid.Empty;
+                if (requestId == Guid.Empty)
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
+                        "NotFound", $"Request not exist in this Report {reportId}."
+                    ));
+                }
 
+                // Get request to verify it exists and get device information
+                var request = await _unit.RequestRepository.GetRequestByIdAsync(requestId);
+                if (request == null)
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
+                        "NotFound", $"Request not found for the provided {reportId}."
+                    ));
+                }
+
+                // Tạo Task Group, tương tự CreateWarrantyTaskGroup
+                
+                
+                _unit.ClearChangeTracker();
+
+                // Tạo Installation Task
+                var installRequest = new CreateInstallTaskRequest
+                {
+                    RequestId = requestId,
+                   
+                    
+                };
+                var installResult = await _taskService.CreateInstallTask(installRequest, createdByUserId);
+                if (installResult.IsFailure)
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.Failure(
+                        "Failure", "Installation task creation failed."
+                    ));
+                }
+                dynamic installData = installResult.Object;
+                Guid TaskGroupId = installData.TaskGroupId;
+
+                
+
+                // Lưu tất cả thay đổi
+                await _unit.SaveChangesAsync();
+
+                return Result.SuccessWithObject(new
+                {
+                    Message = "Replacement task group created successfully!",
+                    TaskGroupId = TaskGroupId
+                });
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure(
+                    "InternalServerError", $"Failed to create replacement task group: {ex.Message}"
+                ));
+            }
+        }
+
+        private async Task<Result> CreateRepairTaskGroup(Guid reportId, List<Guid> errorIds, Guid createdByUserId)
+        {
+            try
+            {
+                _unit.ClearChangeTracker();
+                var report = await _unit.ReportRepository.GetByIdAsync(reportId);
+                if (report == null)
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
+                        "NotFound", $"Report not found for the provided {reportId}."
+                    ));
+                }
+                var requestId = report.RequestId ?? Guid.Empty;
+                if (requestId == Guid.Empty)
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
+                        "NotFound", $"Request not exist in this Report {reportId}."
+                    ));
+                }
+
+                // Get request to verify it exists and get device information
+                var request = await _unit.RequestRepository.GetRequestByIdAsync(requestId);
+                if (request == null)
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
+                        "NotFound", $"Request not found for the provided {reportId}."
+                    ));
+                }
+
+               
+                // Chuyển đổi ErrorIds thành ErrorGuidelineIds
+                var guidelineIds = await _unit.ErrorGuidelineRepository.GetGuidelineIdsByErrorIdsAsync(errorIds);
+                if (!guidelineIds.Any())
+                {
+                    
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
+                        "NotFound", $"No error guidelines found for the provided error IDs: {string.Join(", ", errorIds)}."
+                    ));
+                }
+                // Tạo Repair Task
+                var repairRequest = new CreateRepairTaskRequest
+                {
+                    RequestId = requestId,
+                    ErrorGuidelineIds = guidelineIds // Gán các ErrorIds để xác định lỗi cần sửa
+                };
+                var repairResult = await _taskService.CreateRepairTask(repairRequest, createdByUserId);
+                if (repairResult.IsFailure)
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.Failure(
+                        "Failure", "Repair task creation failed."
+                    ));
+                }
+                dynamic repairData = repairResult.Object;
+                Guid repairTaskId = repairData.TaskId;
+                Guid taskGroupId = repairData.TaskGroupId;
+                _unit.ClearChangeTracker();
+                return Result.SuccessWithObject(new
+                {
+                    Message = "Repair task group created successfully!",
+
+                    TaskGroupId = taskGroupId
+                });
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure(
+                    "InternalServerError", $"Failed to create repair task group: {ex.Message}"
+                ));
+            }
+        }
 
     }
 }

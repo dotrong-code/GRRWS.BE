@@ -28,18 +28,39 @@ namespace GRRWS.Application.Implement.Service
             if (!userCheck.IsSuccess) return userCheck;
 
             var requestMachine = await _unitOfWork.RequestMachineReplacementRepository.GetByIdAsync(requestMachineId);
-            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
-            var mechanics = await _unitOfWork.UserRepository.GetMechanicsWithoutTask();
-            var primaryMechanic = mechanics.FirstOrDefault().Id;
             requestMachine.Status = Domain.Enum.MachineReplacementStatus.InProgress;
-            requestMachine.ModifiedBy = userId;
-            requestMachine.AssigneeId = primaryMechanic;
-            var task = await _unitOfWork.TaskRepository.GetByIdAsync(requestMachine.TaskId ?? Guid.Empty);
-            task.AssigneeId = primaryMechanic;
-            task.Status = Status.Pending;
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+            if (requestMachine.AssigneeId == null)
+            {
+                var mechanics = await _unitOfWork.UserRepository.GetMechanicsWithoutTask();
+                if (mechanics == null || !mechanics.Any())
+                {
+                    // Cập nhật trạng thái mà không gán AssigneeId
+                    requestMachine.ModifiedBy = userId;
+                    _unitOfWork.RequestMachineReplacementRepository.Update(requestMachine);
+                    await _unitOfWork.SaveChangesAsync();
+                    return Result.SuccessWithObject(new
+                    {
+                        Message = "Không có nhân viên rảnh để assign, nhưng request đã được cập nhật trạng thái thành InProgress.",
+                        RequestMachineId = requestMachine.Id,
+                        TaskId = requestMachine.TaskId
+                    });
+                }
+
+                var primaryMechanic = mechanics.First().Id;
+                requestMachine.ModifiedBy = userId;
+                requestMachine.AssigneeId = primaryMechanic;
+                var task = await _unitOfWork.TaskRepository.GetByIdAsync(requestMachine.TaskId ?? Guid.Empty);
+                task.AssigneeId = primaryMechanic;
+                task.Status = Status.Pending;
+                _unitOfWork.TaskRepository.Update(task);
+            }
+
+
+
             await UpdateForInstalledDeviceInfor(requestMachine.OldDeviceId, (Guid)requestMachine.NewDeviceId);
 
-            _unitOfWork.TaskRepository.Update(task);
+            
             _unitOfWork.RequestMachineReplacementRepository.Update(requestMachine);
             await _unitOfWork.SaveChangesAsync();
             return Result.SuccessWithObject(new
@@ -197,8 +218,8 @@ namespace GRRWS.Application.Implement.Service
         {
             return new Infrastructure.DTOs.RequestMachineReplacement.GetAll
             {
-                Title = $"Yêu cầu máy thuộc {data.Machine.MachineName}",
-                Description = $"Hệ thống gợi ý thiết bị {data.NewDevice.DeviceName}",
+                Title = data.RequestCode,
+                Description = data.Notes,
                 Id = data.Id,
                 RequestDate = data.RequestDate,
                 AssigneeId = data.AssigneeId,
@@ -218,5 +239,54 @@ namespace GRRWS.Application.Implement.Service
             newDevice.PositionId = oldDevice.PositionId; // Giữ nguyên vị trí của thiết bị cũ
             _unitOfWork.DeviceRepository.Update(newDevice);
         }
+
+
+        public async Task<Result> CreateStockReturnRequestAsync(Guid requestId, Guid deviceId, Guid userId)
+        {
+            try
+            {
+                var requestCheck = await _checkIsExist.Request(requestId);
+                if (!requestCheck.IsSuccess) return requestCheck;
+                var userCheck = await _checkIsExist.User(userId);
+                if (!userCheck.IsSuccess) return userCheck;
+                var deviceCheck = await _checkIsExist.Device(deviceId);
+                if (!deviceCheck.IsSuccess) return deviceCheck;
+
+                var request = await _unitOfWork.RequestRepository.GetRequestByIdAsync(requestId);
+                var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(deviceId);
+
+                var requestMachineReplacement = new RequestMachineReplacement
+                {
+                    Id = Guid.NewGuid(),
+                    CreatedDate = TimeHelper.GetHoChiMinhTime(),
+                    ModifiedDate = TimeHelper.GetHoChiMinhTime(),
+                    RequestedById = userId,
+                    NewDeviceId = deviceId, // Máy thay thế cần trả về kho
+                    MachineId = device.MachineId ?? null,
+                    RequestCode = $"Yêu cầu trả máy-{TimeHelper.GetHoChiMinhTime():yyyyMMddHHmmss}",
+                    Status = MachineReplacementStatus.Pending
+                };
+
+                if (requestMachineReplacement.MachineId == null)
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("ValidationError", "Device does not have a machine model."));
+                }
+
+                await _unitOfWork.RequestMachineReplacementRepository.CreateAsync(requestMachineReplacement);
+                await _unitOfWork.SaveChangesAsync();
+
+                return Result.SuccessWithObject(new
+                {
+                    Message = "Stock return request created successfully!",
+                    RequestMachineId = requestMachineReplacement.Id,
+                    RequestCode = requestMachineReplacement.RequestCode
+                });
+            }
+            catch (Exception e)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("InternalServerError", $"An error occurred while creating the stock return request: {e.Message}"));
+            }
+        }
+
     }
 }
