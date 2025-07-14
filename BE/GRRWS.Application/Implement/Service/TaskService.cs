@@ -532,19 +532,19 @@ namespace GRRWS.Application.Implement.Service
                 await _unitOfWork.RequestMachineReplacementRepository.CreateAsync(requestMachineReturn);
                 await _unitOfWork.SaveChangesAsync();
                 _unitOfWork.ClearChangeTracker(); // Clear change tracker after saving changes
-                var report = await _unitOfWork.ReportRepository.GetByIdAsync(taskGroupId);
+                var primaryRequest = await _unitOfWork.RequestRepository.GetByTaskIdAsync(taskId);
 
                 if (request.IsReInstallOldDevice)
                 {
                     var installTask = new CreateInstallTaskRequest
                     {
-                        RequestId = requestMachineReturn.Id,
+                        RequestId = primaryRequest.Id,
                         AssigneeId = request.AssigneeId,
                         StartDate = TimeHelper.GetHoChiMinhTime(),
                         TaskGroupId = taskGroupId,
                         NewDeviceId = device.Id // Reinstall the old device
                     };
-                    var installTaskResult = await _unitOfWork.TaskRepository.CreateReInstallTaskWithGroup(installTask, 4);
+                    var installTaskResult = await _unitOfWork.TaskRepository.CreateReInstallTaskWithGroup(installTask, 5);
                     if (installTaskResult == Guid.Empty)
                     {
                         return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Failure", "Failed to create re-install task."));
