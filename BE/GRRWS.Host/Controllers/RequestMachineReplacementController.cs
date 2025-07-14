@@ -32,6 +32,14 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Request Machine Replacements retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [HttpGet("{id:guid}")]
+        public async Task<IResult> GetByIdAsync(Guid id)
+        {
+            var result = await _requestMachineReplacementService.GetByIdAsync(id);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Request Machine Replacements retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
         [Authorize]
         [HttpPut("confirm-taken-device/{requestMachineId}")]
         public async Task<IResult> ConfirmTakenDevice(Guid requestMachineId)

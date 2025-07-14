@@ -25,7 +25,7 @@
         }
         public static string WarrantyReturnReceive(string deviceName)
         {
-            return $"Nhận thiết bị đã bảo hành về kho-{deviceName}";
+            return $"Nhận thiết bị đã bảo hành-{deviceName}";
         }
 
 

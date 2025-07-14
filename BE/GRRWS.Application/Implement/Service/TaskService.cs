@@ -525,6 +525,7 @@ namespace GRRWS.Application.Implement.Service
                     CreatedDate = TimeHelper.GetHoChiMinhTime(),
                     TaskId = taskId,
                     IsDeleted = false,
+                    AssigneeId = request.AssigneeId,
                     RequestType = RequestMachineReplacementType.StockReturn,
                 };
 

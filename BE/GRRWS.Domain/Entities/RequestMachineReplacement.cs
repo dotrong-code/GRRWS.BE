@@ -1,11 +1,12 @@
-﻿using GRRWS.Domain.Enum;
+﻿using GRRWS.Domain.Common;
+using GRRWS.Domain.Enum;
 
 namespace GRRWS.Domain.Entities
 {
     public class RequestMachineReplacement : BaseEntity
     {
         public string RequestCode { get; set; } // Mã yêu cầu thay thế (unique)
-        public DateTime RequestDate { get; set; } = DateTime.UtcNow; // Ngày tạo yêu cầu
+        public DateTime RequestDate { get; set; } = TimeHelper.GetHoChiMinhTime(); // Ngày tạo yêu cầu
         public Guid RequestedById { get; set; } // Người yêu cầu
         public Guid? AssigneeId { get; set; } // Người thực hiện (kỹ thuật viên)
         public Guid OldDeviceId { get; set; } // Device cũ cần thay thế
