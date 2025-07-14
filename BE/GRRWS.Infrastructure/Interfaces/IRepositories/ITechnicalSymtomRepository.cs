@@ -15,5 +15,9 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<List<SuggestObject>> GetNotFoundTechnicalSymtomDisplayNamesAsync(IEnumerable<Guid> technicalSymtomIds);
         Task<List<SuggestObject>> GetSymtomSuggestionsAsync(string normalizedQuery, int maxResults);
         Task<List<TechnicalSymtomDTO>> GetSymtomsByIssueIdsAsync(List<Guid> issueIds);
+        Task<TechnicalSymptom> GetByIdAsync(Guid id);
+        Task<List<TechnicalSymptomViewDTO>> GetAllTechnicalSymptomsAsync(int pageNumber, int pageSize, string? searchByName);
+        Task<bool> UpdateTechnicalSymptomAsync(TechnicalSymptomUpdateDTO updateTechnicalSymptomDto);
+        Task<bool> DeleteAsync(Guid id);
     }
 }

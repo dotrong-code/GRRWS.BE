@@ -14,6 +14,9 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<(List<Machine> Items, int TotalCount)> GetAllActiveMachinesAsync(int pageNumber, int pageSize);
         Task<(List<GetMachineResponse> Machines, int TotalCount)> GetAllMachinesAsync(
             string? machineName, string? machineCode, int pageNumber, int pageSize);
+        Task<Machine> GetByIdAsync(Guid id);
+        Task<bool> UpdateMachineAsync(UpdateMachineRequest updateMachineDto);
+        Task<bool> DeleteAsync(Guid id);
     }
 }
 
