@@ -2,6 +2,7 @@
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.DTOs.Device;
+using GRRWS.Infrastructure.DTOs.ErrorDTO;
 using GRRWS.Infrastructure.DTOs.Machine;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
@@ -72,6 +73,45 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             return (machines, totalCount);
         }
+        public async Task<Machine> GetByIdAsync(Guid id)
+        {
+            return await _context.Machines
+                .Include(e => e.Devices)
+                .Include(i => i.MachineSpareparts)
+                .FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
+        }
+        public async Task<bool> UpdateMachineAsync(UpdateMachineRequest updateDto)
+        {
+            var machine = await _context.Machines.FindAsync(updateDto.Id);
+            if (machine == null)
+            {
+                return false;
+            }
 
+            machine.MachineName = updateDto.MachineName;
+            machine.MachineCode = updateDto.MachineCode;
+            machine.Manufacturer = updateDto.Manufacturer;
+            machine.Model = updateDto.Model;
+            machine.Description = updateDto.Description;
+            machine.Status = updateDto.Status;
+            machine.ReleaseDate = updateDto.ReleaseDate;
+            machine.Specifications = updateDto.Specifications;
+            machine.PhotoUrl = updateDto.PhotoUrl;
+            _context.Machines.Update(machine);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        public async Task<bool> DeleteAsync(Guid id)
+        {
+            var machine = await _context.Machines.FindAsync(id);
+            if (machine == null)
+            {
+                return false;
+            }
+            machine.IsDeleted = true;
+            _context.Machines.Update(machine);
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }
