@@ -1158,6 +1158,10 @@ namespace GRRWS.Application.Implement.Service
                     // Update task status
                     task.IsInstall = true;
                     await _unitOfWork.TaskRepository.UpdateAsync(task);
+                    _unitOfWork.ClearChangeTracker(); // Clear change tracker after updating task
+                    request.IsSovled = true;
+                    request.ModifiedDate = TimeHelper.GetHoChiMinhTime();
+                    await _unitOfWork.RequestRepository.UpdateAsync(request);
                 }
                 // Case 3: Installing a different device than originally planned
                 else if (isDifferentDevice)
