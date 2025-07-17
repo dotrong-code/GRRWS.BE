@@ -2,6 +2,7 @@
 using GRRWS.Infrastructure.DB;
 using GRRWS.Infrastructure.Implement.Repositories.Generic;
 using GRRWS.Infrastructure.Interfaces.IRepositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace GRRWS.Infrastructure.Implement.Repositories
 {
@@ -20,5 +21,15 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         {
             throw new NotImplementedException();
         }
+        public async Task<TaskGroup> GetByRequestIdAsync(Guid requestId)
+        {
+            return await _context.TaskGroups
+                .Include(tg => tg.Tasks)
+                    .ThenInclude(t => t.RequestMachineReplacement)
+                .Include(tg => tg.Tasks)
+                    .ThenInclude(t => t.WarrantyClaim)
+                .FirstOrDefaultAsync(tg => tg.Report.RequestId == requestId && !tg.IsDeleted);
+        }
+
     }
 }
