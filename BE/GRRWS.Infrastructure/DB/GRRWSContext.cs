@@ -969,8 +969,8 @@ namespace GRRWS.Infrastructure.DB
                         .OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<RequestMachineReplacement>()
     .HasOne(r => r.Task)
-    .WithOne(t => t.RequestMachineReplacement)
-    .HasForeignKey<RequestMachineReplacement>(r => r.TaskId)
+    .WithMany(t => t.RequestMachineReplacement)
+    .HasForeignKey(r => r.TaskId)
     .OnDelete(DeleteBehavior.SetNull);
 
 
