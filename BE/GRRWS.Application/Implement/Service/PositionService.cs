@@ -4,16 +4,10 @@ using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
-using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
 using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.Position;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -40,7 +34,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failures(errors);
             }
 
-            
+
 
             var position = new Position
             {
@@ -114,7 +108,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(PositionErrorMessage.PositionNotExist());
             }
 
-            
+
 
             position.Index = request.Index;
             position.ZoneId = request.ZoneId;
@@ -194,8 +188,8 @@ namespace GRRWS.Application.Implement.Service
                         var taskGroup = await _unitOfWork.TaskGroupRepository.GetByRequestIdAsync(request.Id);
                         var tasks = taskGroup != null ? await _unitOfWork.TaskRepository.GetTasksByTaskGroupIdAsync(taskGroup.Id) : new List<Tasks>();
                         var warrantyClaim = tasks.FirstOrDefault(t => t.WarrantyClaimId.HasValue)?.WarrantyClaim;
-                        var requestMachine = tasks.FirstOrDefault(t => t.RequestMachineReplacement != null)?.RequestMachineReplacement;
-
+                        var requestMachine = tasks.FirstOrDefault(t => t.TaskType == TaskType.Installation).RequestMachineReplacement;
+                        var stockOutMachine = requestMachine?.FirstOrDefault(rm => rm.RequestType == RequestMachineReplacementType.StockOut);
                         positionResponse.CurrentRequest = new CurrentRequestDetails
                         {
                             RequestId = request.Id,
@@ -203,25 +197,25 @@ namespace GRRWS.Application.Implement.Service
                             IsSolved = request.IsSovled,
                             ExpectedReturnDate = warrantyClaim?.ExpectedReturnDate,
                             Note = request.CompletedDetails ?? warrantyClaim?.WarrantyNotes ?? "No notes",
-                            OldDevice = requestMachine != null && requestMachine.OldDeviceId != null
+                            OldDevice = requestMachine != null && stockOutMachine.OldDeviceId != null
                                 ? new DeviceDetails
                                 {
-                                    Serial = requestMachine.OldDevice?.SerialNumber ?? "N/A",
-                                    Model = requestMachine.OldDevice?.Model ?? "N/A"
+                                    Serial = stockOutMachine.OldDevice?.SerialNumber ?? "N/A",
+                                    Model = stockOutMachine.OldDevice?.Model ?? "N/A"
                                 }
                                 : null,
-                            TemporaryDevice = requestMachine != null && requestMachine.NewDeviceId.HasValue
+                            TemporaryDevice = requestMachine != null && stockOutMachine.NewDeviceId.HasValue
                                 ? new DeviceDetails
                                 {
-                                    Serial = requestMachine.NewDevice?.SerialNumber ?? "N/A",
-                                    Model = requestMachine.NewDevice?.Model ?? "N/A"
+                                    Serial = stockOutMachine.NewDevice?.SerialNumber ?? "N/A",
+                                    Model = stockOutMachine.NewDevice?.Model ?? "N/A"
                                 }
                                 : null,
                             Handover = new HandoverDetails
                             {
-                                Staff = requestMachine?.Assignee?.FullName ?? "N/A",
+                                Staff = stockOutMachine?.Assignee?.FullName ?? "N/A",
                                 Status = requestMachine != null
-                                    ? (requestMachine.AssigneeConfirm && requestMachine.StokkKeeperConfirm ? "Delivered" : "Awaiting")
+                                    ? (stockOutMachine.AssigneeConfirm && stockOutMachine.StokkKeeperConfirm ? "Delivered" : "Awaiting")
                                     : "N/A"
                             }
                         };

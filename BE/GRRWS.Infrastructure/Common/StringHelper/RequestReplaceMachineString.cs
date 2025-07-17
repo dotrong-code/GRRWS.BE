@@ -27,7 +27,10 @@
         {
             return $"Nhận thiết bị đã bảo hành-{deviceName}";
         }
-
+        public static string StocOutRequest(string deviceName)
+        {
+            return $"Yêu cầu xuất kho thiết bị-{deviceName}";
+        }
 
 
 

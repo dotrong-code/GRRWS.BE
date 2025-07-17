@@ -601,7 +601,7 @@ namespace GRRWS.Application.Implement.Service
                     TaskId = taskId,
                     IsDeleted = false,
                     AssigneeId = request.AssigneeId,
-                    RequestType = RequestMachineReplacementType.StockReturn,
+                    RequestType = RequestMachineReplacementType.StockIn,
                 };
 
 
@@ -627,13 +627,13 @@ namespace GRRWS.Application.Implement.Service
                     }
                     var firstInstallTaskId = taskGroup.Tasks.FirstOrDefault(t => t.TaskType == TaskType.Installation && t.OrderIndex == 3)?.Id;
                     var firstInstallTask = await _unitOfWork.TaskRepository.GetByIdIncludedAsync(firstInstallTaskId.Value, t => t.RequestMachineReplacement);
-                    var tempDeviceInUse = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(firstInstallTask.RequestMachineReplacement.NewDeviceId.Value);
+                    var tempDeviceInUse = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(firstInstallTask.RequestMachineReplacement.FirstOrDefault().NewDeviceId.Value);
                     _unitOfWork.ClearChangeTracker(); // Clear change tracker after getting the device
                     var stockReturnRequest = new RequestMachineReplacement
                     {
                         RequestCode = RequestReplaceMachineString.ReturnDeviceToStockKeeper(tempDeviceInUse.DeviceName),
                         OldDeviceId = tempDeviceInUse.Id, // The temp device to be returned
-                        RequestType = RequestMachineReplacementType.StockReturn,
+                        RequestType = RequestMachineReplacementType.StockIn,
                         Status = MachineReplacementStatus.Pending,
                         CreatedDate = TimeHelper.GetHoChiMinhTime(),
                         NewDeviceId = device.Id,
@@ -642,7 +642,20 @@ namespace GRRWS.Application.Implement.Service
                         TaskId = installTaskResult
                     };
                     await _unitOfWork.RequestMachineReplacementRepository.CreateAsync(stockReturnRequest);
-
+                    _unitOfWork.ClearChangeTracker();
+                    var stockOutRequest = new RequestMachineReplacement
+                    {
+                        RequestCode = RequestReplaceMachineString.StocOutRequest(device.DeviceName),
+                        OldDeviceId = tempDeviceInUse.Id, // The temp device to be returned
+                        RequestType = RequestMachineReplacementType.StockOut,
+                        Status = MachineReplacementStatus.Pending,
+                        CreatedDate = TimeHelper.GetHoChiMinhTime(),
+                        NewDeviceId = device.Id,
+                        RequestedById = userId,
+                        AssigneeId = request.AssigneeId,
+                        TaskId = installTaskResult
+                    };
+                    await _unitOfWork.RequestMachineReplacementRepository.CreateAsync(stockOutRequest);
                     return Result.SuccessWithObject(new
                     {
                         Message = "Warranty return task, installation task, and stock return task created successfully!",
@@ -1057,7 +1070,7 @@ namespace GRRWS.Application.Implement.Service
             var tasks = await _unitOfWork.TaskRepository.GetAllTasksAsync();
             var installTask = tasks.FirstOrDefault(t => t.TaskType == TaskType.Installation && t.TaskGroupId == returnTask.TaskGroupId);
 
-            var requestMachine = await _unitOfWork.RequestMachineReplacementRepository.GetByIdAsync(installTask.RequestMachineReplacement.Id);
+            var requestMachine = await _unitOfWork.RequestMachineReplacementRepository.GetByIdAsync(installTask.RequestMachineReplacement.FirstOrDefault().Id);
             var oldDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(requestMachine.OldDeviceId);
             oldDevice.Status = DeviceStatus.InUse;
             oldDevice.ModifiedDate = TimeHelper.GetHoChiMinhTime();
@@ -1791,7 +1804,7 @@ namespace GRRWS.Application.Implement.Service
                 Status = MachineReplacementStatus.Pending,
                 TaskId = taskId,
                 NewDeviceId = replaceDeviceId,
-                RequestType = RequestMachineReplacementType.Replacement,
+                RequestType = RequestMachineReplacementType.StockOut,
             };
 
             if (!requestMachineReplacement.MachineId.HasValue)
@@ -1843,14 +1856,14 @@ namespace GRRWS.Application.Implement.Service
             return updatedDocs;
         }
 
-        private async Task UpdateForWarrantyDeviceInfor(Guid taskId)
-        {
-            var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
-            var oldDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync((Guid)task.RequestMachineReplacement.OldDeviceId);
-            oldDevice.Status = DeviceStatus.InWarranty;
-            _unitOfWork.DeviceRepository.Update(oldDevice);
-            await _unitOfWork.SaveChangesAsync();
-        }
+        //private async Task UpdateForWarrantyDeviceInfor(Guid taskId)
+        //{
+        //    var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
+        //    var oldDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync((Guid)task.RequestMachineReplacement.OldDeviceId);
+        //    oldDevice.Status = DeviceStatus.InWarranty;
+        //    _unitOfWork.DeviceRepository.Update(oldDevice);
+        //    await _unitOfWork.SaveChangesAsync();
+        //}
 
         //private async Task RequestStorageReturn()
 
