@@ -1,4 +1,5 @@
 ﻿using GRRWS.Application.Common.Result;
+using GRRWS.Infrastructure.DTOs.Machine;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -12,5 +13,8 @@ namespace GRRWS.Application.Interface.IService
     {
         Task<Result> ImportMachinesAsync(IFormFile file);
         Task<Result> GetAllMachinesAsync(string? machineName = null, string? machineCode = null, int pageNumber = 1, int pageSize = 10);
+        Task<Result> UpdateMachineAsync(UpdateMachineRequest updateDTO);
+        Task<Result> DeleteMachineAsync(Guid id);
+        Task<Result> GetByIdAsync(Guid id);
     }
 }

@@ -9,6 +9,7 @@ using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.Sparepart;
 using GRRWS.Infrastructure.DTOs.Supplier;
 using GRRWS.Infrastructure.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -21,11 +22,13 @@ namespace GRRWS.Application.Implement.Service
     {
         private readonly IUnitOfWork _unit;
         private readonly IFirebaseService _firebaseService;
+        private readonly IImportService _importService;
 
-        public SparepartService(IUnitOfWork unit, IFirebaseService firebaseService)
+        public SparepartService(IUnitOfWork unit, IFirebaseService firebaseService, IImportService importService)
         {
             _unit = unit;
             _firebaseService = firebaseService;
+            _importService = importService;
         }
 
         public async Task<Result> GetAllAsync(int pageNumber, int pageSize, string? searchSparepartName = null, string? searchCategory = null)
@@ -332,6 +335,15 @@ namespace GRRWS.Application.Implement.Service
                 MachineNames = sp.MachineSpareparts?.Select(ms => ms.Machine?.MachineName).ToList(),
                 ImgUrl = imgUrl
             };
+        }
+        public async Task<Result> ImportSparePartsAsync(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return Result.Failure(GRRWS.Infrastructure.DTOs.Common.Error.Validation("Excel file is empty or invalid.", "empty"));
+            }
+
+            return await _importService.ImportAsync<Sparepart>(file.OpenReadStream(), _unit.SparepartRepository);
         }
     }
 }

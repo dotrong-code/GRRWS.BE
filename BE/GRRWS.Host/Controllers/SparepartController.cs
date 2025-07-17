@@ -1,4 +1,5 @@
 ﻿using GRRWS.Application.Common.Result;
+using GRRWS.Application.Implement.Service;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.Sparepart;
@@ -152,6 +153,14 @@ namespace GRRWS.Host.Controllers
             var result = await _service.UpdateStockQuantityAsync(dto);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, $"Successfully updated stock quantity for sparepart with ID {dto.SparepartId}")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpPost("import")]
+        public async Task<IResult> ImportSparepart(IFormFile file)
+        {
+            var result = await _service.ImportSparePartsAsync(file);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Spareparts imported successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
     }

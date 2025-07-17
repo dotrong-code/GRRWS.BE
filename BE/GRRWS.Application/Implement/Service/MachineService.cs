@@ -2,6 +2,7 @@
 using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
 using GRRWS.Infrastructure.Common;
+using GRRWS.Infrastructure.DTOs.ErrorDTO;
 using GRRWS.Infrastructure.DTOs.Machine;
 using GRRWS.Infrastructure.DTOs.Paging;
 using Microsoft.AspNetCore.Http;
@@ -10,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Error = GRRWS.Infrastructure.DTOs.Common.Error;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -68,6 +70,56 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.SuccessWithObject(response);
         }
+        public async Task<Result> UpdateMachineAsync(UpdateMachineRequest updateDTO)
+        {
+            if (updateDTO == null)
+            {
+                return Result.Failure(Error.Validation("InvalidUpdateData", "Update data cannot be null."));
+            }
 
+            var isUpdated = await _unitOfWork.MachineRepository.UpdateMachineAsync(updateDTO);
+            if (!isUpdated)
+            {
+                return Result.Failure(Error.Validation("UpdateFailed", "Failed to update the machine."));
+            }
+            return Result.SuccessWithObject("Machine updated successfully!");
+        }
+        public async Task<Result> DeleteMachineAsync(Guid id)
+        {
+            var isDeleted = await _unitOfWork.MachineRepository.DeleteAsync(id);
+            if (!isDeleted)
+            {
+                return Result.Failure(Error.Validation("DeleteFailed", "Failed to delete the machine."));
+            }
+            return Result.SuccessWithObject("Machine deleted successfully!");
+        }
+        public async Task<Result> GetByIdAsync(Guid id)
+        {
+            var getMachine = await _unitOfWork.MachineRepository.GetByIdAsync(id);
+            if (getMachine == null)
+            {
+                return Result.Failure(Error.NotFound("MachineNotFound", "Machine not found."));
+            }
+            var machine = new GetMachineResponse
+            {
+                Id = getMachine.Id,
+                MachineName = getMachine.MachineName,
+                MachineCode = getMachine.MachineCode,
+                Manufacturer = getMachine.Manufacturer,
+                Model = getMachine.Model,
+                Description = getMachine.Description,
+                Status = getMachine.Status,
+                ReleaseDate = getMachine.ReleaseDate,
+                Specifications = getMachine.Specifications,
+                PhotoUrl = getMachine.PhotoUrl,
+                CreatedDate = getMachine.CreatedDate,
+                CreatedBy = getMachine.CreatedBy,
+                ModifiedDate = getMachine.ModifiedDate,
+                ModifiedBy = getMachine.ModifiedBy,
+                IsDeleted = getMachine.IsDeleted,
+                DeviceIds = getMachine.Devices != null ? getMachine.Devices.Select(d => d.Id).ToList() : new List<Guid>()
+            };
+            return Result.SuccessWithObject(machine);
+        }
     }
 }

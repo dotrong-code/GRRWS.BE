@@ -1,6 +1,7 @@
 ﻿using GRRWS.Application.Common.Result;
 using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.Sparepart;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Threading.Tasks;
 
@@ -21,5 +22,6 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> GetAllMachinesAsync(int pageNumber, int pageSize);
         Task<Result> GetAllSuppliersAsync(int pageNumber, int pageSize);
         Task<Result> UpdateStockQuantityAsync(UpdateSparepartStockQuantityRequest dto);
+        Task<Result> ImportSparePartsAsync(IFormFile file);
     }
 }

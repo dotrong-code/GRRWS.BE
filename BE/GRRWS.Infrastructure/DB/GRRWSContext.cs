@@ -380,9 +380,6 @@ namespace GRRWS.Infrastructure.DB
                 .HasConversion<string>();
 
             modelBuilder.Entity<RequestMachineReplacement>()
-                .HasIndex(rmr => rmr.RequestCode)
-                .IsUnique();
-            modelBuilder.Entity<RequestMachineReplacement>()
                 .HasOne(rmr => rmr.RequestedBy)
                 .WithMany()
                 .HasForeignKey(rmr => rmr.RequestedById)

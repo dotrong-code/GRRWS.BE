@@ -1,5 +1,6 @@
 ﻿using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
+using GRRWS.Infrastructure.DTOs.Machine;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GRRWS.Host.Controllers
@@ -35,6 +36,29 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Devices retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
+        [HttpGet("{id}")]
+        public async Task<IResult> GetById(Guid id)
+        {
+            var result = await _machineService.GetByIdAsync(id);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Machine retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpPut("update")]
+        public async Task<IResult> UpdateMachine([FromBody] UpdateMachineRequest updateDTO)
+        {
+            var result = await _machineService.UpdateMachineAsync(updateDTO);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Machine updated successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpDelete("delete/{id}")]
+        public async Task<IResult> DeleteMachine(Guid id)
+        {
+            var result = await _machineService.DeleteMachineAsync(id);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Machine deleted successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }

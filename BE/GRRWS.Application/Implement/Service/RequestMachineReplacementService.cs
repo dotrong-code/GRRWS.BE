@@ -90,17 +90,17 @@ namespace GRRWS.Application.Implement.Service
                 requestMachine.CompletedDate = TimeHelper.GetHoChiMinhTime();
 
                 // Cập nhật task.Status nếu là yêu cầu StockReturn
-                if (requestMachine.RequestType == RequestMachineReplacementType.StockReturn && requestMachine.TaskId.HasValue)
-                {
-                    var task = await _unitOfWork.TaskRepository.GetByIdAsync(requestMachine.TaskId.Value);
-                    if (task != null)
-                    {
-                        task.Status = Status.Completed;
-                        task.ModifiedDate = TimeHelper.GetHoChiMinhTime();
-                        await _unitOfWork.TaskRepository.UpdateAsync(task);
-                    }
+                //if (requestMachine.RequestType == RequestMachineReplacementType.StockReturn && requestMachine.TaskId.HasValue)
+                //{
+                //    var task = await _unitOfWork.TaskRepository.GetByIdAsync(requestMachine.TaskId.Value);
+                //    if (task != null)
+                //    {
+                //        task.Status = Status.Completed;
+                //        task.ModifiedDate = TimeHelper.GetHoChiMinhTime();
+                //        await _unitOfWork.TaskRepository.UpdateAsync(task);
+                //    }
 
-                }
+                //}
             }
             else
             {
@@ -240,6 +240,8 @@ namespace GRRWS.Application.Implement.Service
                 MachineId = data.MachineId,
                 Status = data.Status.ToString(),
                 RequestType = data.RequestType.ToString(),
+                AssigneeConfirm = data.AssigneeConfirm,
+                StokkKeeperConfirm = data.StokkKeeperConfirm
             };
         }
         private async Task UpdateForInstalledDeviceInfor(Guid oldeDeviceId, Guid newDeviceId)
@@ -300,5 +302,17 @@ namespace GRRWS.Application.Implement.Service
             }
         }
 
+        public async Task<Result> GetByIdAsync(Guid requestMachineId)
+        {
+            var requestCheck = await _checkIsExist.RequestMachine(requestMachineId);
+            if (!requestCheck.IsSuccess) return requestCheck;
+            var requestMachine = await _unitOfWork.RequestMachineReplacementRepository.GetByIdAsync(requestMachineId);
+            if (requestMachine == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request machine replacement not found."));
+            }
+            var dto = await MapRequestMachine(requestMachine);
+            return Result.SuccessWithObject(dto);
+        }
     }
 }
