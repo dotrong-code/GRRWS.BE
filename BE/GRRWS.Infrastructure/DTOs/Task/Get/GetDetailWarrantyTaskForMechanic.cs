@@ -22,6 +22,7 @@
         public Guid? RequestMachineId { get; set; } // ID of the request machine, if applicable
         public string? RequestMachineDescription { get; set; } // Description of the request machine
         public List<WarrantyDocument>? Documents { get; set; } // List of documents related to the warranty claim
+        public List<TaskConfirmationDTO>? TaskConfirmations { get; set; } // Added
     }
 
     public class WarrantyDocument

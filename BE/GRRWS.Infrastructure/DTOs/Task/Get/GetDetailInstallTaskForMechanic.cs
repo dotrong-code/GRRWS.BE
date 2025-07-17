@@ -14,5 +14,6 @@ namespace GRRWS.Infrastructure.DTOs.Task.Get
         public Guid NewDeviceId { get; set; } // ID of the new device to be installed
         public Guid? RequestMachineId { get; set; } // ID of the request machine, if applicable
         public string? RequestMachineDescription { get; set; } // Description of the request machine
+        public List<TaskConfirmationDTO>? TaskConfirmations { get; set; }
     }
 }
