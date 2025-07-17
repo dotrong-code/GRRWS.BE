@@ -98,6 +98,81 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Error", ex.Message));
             }
         }
+        public async Task<Result> ConfirmTask(Guid taskId, Guid mechanicId, TaskConfirmationDTO confirmation)
+        {
+            var checkTask = await _checkIsExist.Task(taskId);
+            if (!checkTask.IsSuccess) return checkTask;
+
+            var checkMechanic = await _checkIsExist.User(mechanicId);
+            if (!checkMechanic.IsSuccess) return checkMechanic;
+
+            // Validate confirmation type
+            var validConfirmationTypes = new[] { "WarrantySubmission", "Uninstall", "Install" };
+            if (!validConfirmationTypes.Contains(confirmation.ConfirmationType))
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Invalid", $"Confirmation type must be one of: {string.Join(", ", validConfirmationTypes)}."));
+
+            try
+            {
+                var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
+                if (task == null)
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Task not found."));
+
+                // Validate task type against confirmation type
+                if ((confirmation.ConfirmationType == "WarrantySubmission" && task.TaskType != TaskType.WarrantySubmission) ||
+                    (confirmation.ConfirmationType == "Uninstall" && task.TaskType != TaskType.Uninstallation) ||
+                    (confirmation.ConfirmationType == "Install" && task.TaskType != TaskType.Installation))
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Invalid", $"Confirmation type {confirmation.ConfirmationType} does not match task type {task.TaskType}."));
+                }
+
+                // Check if task is already signed
+                if (task.IsSigned == true)
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("AlreadySigned", "Task has already been signed."));
+
+                var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(taskId);
+                var device = request != null ? await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(request.DeviceId) : null;
+
+                var taskConfirmation = new TaskConfirmation
+                {
+                    Id = Guid.NewGuid(),
+                    TaskId = taskId,
+                    SignerId = confirmation.SignerId ?? mechanicId,
+                    SignerRole = confirmation.SignerRole,
+                    SignatureBase64 = confirmation.SignatureBase64,
+                    DeviceSerial = device?.DeviceCode,
+                    DeviceModel = device?.Machine?.MachineCode,
+                    DeviceCondition = confirmation.DeviceCondition,
+                    ConfirmationType = confirmation.ConfirmationType,
+                    Notes = confirmation.Notes,
+                    CreatedDate = TimeHelper.GetHoChiMinhTime(),
+                    CreatedBy = mechanicId
+                };
+
+                // Add confirmation to repository
+                await _unitOfWork.TaskConfirmationRepository.CreateAsync(taskConfirmation);
+
+                // Update task IsSigned field
+                task.IsSigned = true;
+                await _unitOfWork.TaskRepository.UpdateAsync(task);
+
+                // Save changes
+                await _unitOfWork.SaveChangesAsync();
+                _unitOfWork.ClearChangeTracker();
+
+                return Result.SuccessWithObject(new
+                {
+                    Message = $"{confirmation.ConfirmationType} task confirmed successfully!",
+                    TaskId = taskId,
+                    ConfirmationId = taskConfirmation.Id
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error confirming {ConfirmationType} for task {TaskId}: {Message}", confirmation.ConfirmationType, taskId, ex.Message);
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", $"Failed to confirm {confirmation.ConfirmationType}: {ex.Message}"));
+            }
+        }
+
         // In TaskService.CreateRepairTask
         public async Task<Result> CreateRepairTask(CreateRepairTaskRequest request, Guid userId)
         {

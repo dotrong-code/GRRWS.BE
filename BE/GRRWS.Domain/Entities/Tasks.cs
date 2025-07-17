@@ -16,6 +16,7 @@ namespace GRRWS.Domain.Entities
         public Guid? AssigneeId { get; set; }
         public bool? IsUninstall { get; set; }
         public bool? IsInstall { get; set; }
+        public bool? IsSigned { get; set; } = false;
         
         public DateTime? DeviceReturnTime { get; set; } // Time device is returned
         public string? DeviceCondition { get; set; } // Condition after repair
@@ -32,6 +33,8 @@ namespace GRRWS.Domain.Entities
         public ICollection<TechnicalSymptomReport>? TechnicalSymptomReports { get; set; }
         public ICollection<MechanicShift>? MechanicShifts { get; set; }
         public RequestMachineReplacement? RequestMachineReplacement { get; set; }
+        public ICollection<TaskConfirmation>? TaskConfirmations { get; set; } // Confirmations for this task
+
         #endregion
     }
 }

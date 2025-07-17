@@ -290,6 +290,16 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Is install device updated successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [Authorize]
+        [HttpPost("confirm-task")]
+        public async Task<IResult> ConfirmTask(Guid taskId, Guid mechanicId, [FromBody] TaskConfirmationDTO confirmation)
+        {
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _taskService.ConfirmTask(taskId, mechanicId, confirmation);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, $"{confirmation.ConfirmationType} task confirmed successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
 
     }
 }

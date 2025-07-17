@@ -179,6 +179,7 @@ namespace GRRWS.Host.Starup
 
             services.AddTransient<IHOTDashboardRepository, HOTDashboardRepository>();
             services.AddTransient<IRequestMachineReplacementRepository, RequestMachineReplacementRepository>();
+            services.AddTransient<ITaskConfirmationRepository, TaskConfirmationRepository>();
             #endregion
 
             #region GenericRepositories
@@ -198,6 +199,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IGenericRepository<IssueError>, GenericRepository<IssueError>>();
             services.AddTransient<IGenericRepository<PushToken>, GenericRepository<PushToken>>();
             services.AddTransient<IGenericRepository<Notification>, GenericRepository<Notification>>();
+            services.AddTransient<IGenericRepository<TaskConfirmationRepository>, GenericRepository<TaskConfirmationRepository>>();
             #endregion
 
 
