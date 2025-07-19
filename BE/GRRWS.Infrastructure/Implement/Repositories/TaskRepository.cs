@@ -441,6 +441,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 IsUninstallDevice = task.IsUninstall ?? false, // Assuming IsUninstall is a property in Tasks
                 WarrantyClaimId = task.WarrantyClaim?.Id, // Unique identifier for the warranty claim
                 IsInstall = task.IsInstall ?? false, // True if this is an install task, false if it's an uninstall task
+                IsSigned = task.IsSigned ?? false, // True if this is an install task, false if it's an uninstall task
                 RequestMachineId = task.RequestMachineReplacement?.Id ?? Guid.Empty,
                 RequestMachineDescription = task.RequestMachineReplacement?.Notes ?? null, // Assuming Reason is a property in RequestMachineReplacement
                 Documents = task.WarrantyClaim?.Documents?.Select(doc => new WarrantyDocument
@@ -628,6 +629,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 NewDeviceId = task.RequestMachineReplacement?.NewDeviceId ?? Guid.Empty,
                 IsUninstall = task.IsUninstall ?? false, // True if this is an uninstall task, false if it's an install task
                 IsInstall = task.IsInstall ?? false, // 
+                IsSigned = task.IsSigned ?? false,
                 AssigneeConfirm = task.RequestMachineReplacement?.AssigneeConfirm ?? false, // True if the mechanic has confirmed the task, false otherwise
                 StockKeeperConfirm = task.RequestMachineReplacement?.StokkKeeperConfirm ?? false, // True if the stock keeper has confirmed the task, false otherwise
                 RequestMachineId = task.RequestMachineReplacement?.Id ?? Guid.Empty, // ID of the request machine, if applicable
@@ -1698,7 +1700,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         CreatedDate = TimeHelper.GetHoChiMinhTime(),
                         IsUninstall = false,
                         IsDeleted = false,
-                        IsInstall = false
+                        IsInstall = false,
+
                     };
                     await _context.Tasks.AddAsync(task);
                     await _context.SaveChangesAsync();

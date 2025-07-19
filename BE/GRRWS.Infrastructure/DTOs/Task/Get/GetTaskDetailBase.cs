@@ -14,5 +14,6 @@
         public DateTime? EndTime { get; set; }
         public string? AssigneeName { get; set; }
         public bool IsInstall { get; set; } // True if this is an install task, false if it's an uninstall task
+        public bool IsSigned { get; set; } // True if this is an install task, false if it's an uninstall task
     }
 }
