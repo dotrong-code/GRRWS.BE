@@ -111,6 +111,29 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Where(p => !p.IsDeleted && p.Zone != null && p.Zone.AreaId == areaId)
                 .ToListAsync();
         }
-
+        public async Task<List<Request>> GetRequestsByPositionIdAsync(Guid positionId)
+        {
+            return await _context.Requests
+                .Include(r => r.Device)
+                .Include(r => r.Sender)
+                .Include(r => r.Position)
+                .Where(r => r.PositionId == positionId && !r.IsDeleted)
+                .ToListAsync();
+        }
+        public async Task<List<TaskConfirmation>> GetTaskConfirmationsByPositionIdAsync(Guid positionId)
+        {
+            return await _context.TaskConfirmations
+                .Include(tc => tc.Task)
+                    .ThenInclude(t => t.TaskGroup)
+                        .ThenInclude(tg => tg != null ? tg.Report : null)
+                            .ThenInclude(rp => rp != null ? rp.Request : null)
+                .Include(tc => tc.Signer)
+                .Where(tc => tc.Task.TaskGroup != null
+                          && tc.Task.TaskGroup.Report != null
+                          && tc.Task.TaskGroup.Report.Request != null
+                          && tc.Task.TaskGroup.Report.Request.PositionId == positionId
+                          && !tc.IsDeleted)
+                .ToListAsync();
+        }
     }
 }
