@@ -102,6 +102,15 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Include(p => p.Device)
                 .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
         }
+        public async Task<List<Position>> GetPositionsByAreaIdAsync(Guid areaId)
+        {
+            return await _context.Positions
+                .Include(p => p.Zone)
+                    .ThenInclude(z => z.Area)
+                .Include(p => p.Device)
+                .Where(p => !p.IsDeleted && p.Zone != null && p.Zone.AreaId == areaId)
+                .ToListAsync();
+        }
 
     }
 }

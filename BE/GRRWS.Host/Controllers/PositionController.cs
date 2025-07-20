@@ -17,14 +17,7 @@ namespace GRRWS.Host.Controllers
         {
             _positionService = positionService;
         }
-        [HttpGet]
-        public async Task<IResult> GetAllPositionDetails([FromQuery] Guid? areaId = null)
-        {
-            var result = await _positionService.GetAllPositionDetailsAsync(areaId);
-            return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, "Position details retrieved successfully")
-                : ResultExtensions.ToProblemDetails(result);
-        }
+        
 
         [HttpPost]
         public async Task<IResult> CreatePosition([FromBody] CreatePositionRequest request)
@@ -81,5 +74,14 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Positions imported successfully!")
                 : ResultExtensions.ToProblemDetails(result);
         }
+        [HttpGet("by-area/{areaId}")]
+        public async Task<IResult> GetPositionsByAreaId(Guid areaId)
+        {
+            var result = await _positionService.GetPositionsByAreaIdAsync(areaId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Positions retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+
     }
 }
