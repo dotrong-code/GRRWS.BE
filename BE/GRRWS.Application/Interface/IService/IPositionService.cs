@@ -18,5 +18,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> DeletePositionAsync(Guid id);
         Task<Result> ImportPositionsAsync(IFormFile file);
         Task<Result> GetPositionsByAreaIdAsync(Guid areaId);
+        Task<Result> GetRequestsByPositionIdAsync(Guid positionId);
+        Task<Result> GetTaskConfirmationsByPositionIdAsync(Guid positionId);
     }
 }

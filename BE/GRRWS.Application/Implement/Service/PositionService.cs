@@ -8,6 +8,8 @@ using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
 using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.Position;
+using GRRWS.Infrastructure.DTOs.RequestDTO;
+using GRRWS.Infrastructure.DTOs.Task;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -243,8 +245,91 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", $"Failed to retrieve positions: {ex.Message}"));
             }
         }
+        public async Task<Result> GetRequestsByPositionIdAsync(Guid positionId)
+        {
+            try
+            {
+                // Check if position exists
+                var position = await _unitOfWork.PositionRepository.GetByIdAsync(positionId);
+                if (position == null)
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", $"Position with ID {positionId} not found."));
+                }
 
+                var requests = await _unitOfWork.PositionRepository.GetRequestsByPositionIdAsync(positionId);
+                if (!requests.Any())
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", $"No requests found for PositionId: {positionId}."));
+                }
 
+                var response = requests.Select(r => new GetRequestResponse
+                {
+                    Id = r.Id,
+                    RequestTitle = r.RequestTitle ?? "N/A",
+                    Description = r.Description ?? "No description",
+                    Status = r.Status.ToString(),
+                    IsSolved = r.IsSovled,
+                    DueDate = r.DueDate,
+                    Priority = r.Priority.ToString(),
+                    IsNeedSign = r.IsNeedSign,
+                    DeviceId = r.DeviceId,
+                    DeviceName = r.Device?.DeviceName ?? "N/A",
+                    RequestedById = r.RequestedById,
+                    SenderName = r.Sender?.FullName ?? "N/A",
+                    PositionId = r.PositionId,
+                    CreatedDate = r.CreatedDate,
+                    ModifiedDate = r.ModifiedDate
+                }).ToList();
+
+                return Result.SuccessWithObject(response);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", $"Failed to retrieve requests: {ex.Message}"));
+            }
+        }
+        public async Task<Result> GetTaskConfirmationsByPositionIdAsync(Guid positionId)
+        {
+            try
+            {
+                // Check if position exists
+                var position = await _unitOfWork.PositionRepository.GetByIdAsync(positionId);
+                if (position == null)
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", $"Position with ID {positionId} not found."));
+                }
+
+                var taskConfirmations = await _unitOfWork.PositionRepository.GetTaskConfirmationsByPositionIdAsync(positionId);
+                if (!taskConfirmations.Any())
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", $"No task confirmations found for PositionId: {positionId}."));
+                }
+
+                var response = taskConfirmations.Select(tc => new GetTaskConfirmationResponse
+                {
+                    Id = tc.Id,
+                    TaskId = tc.TaskId,
+                    TaskName = tc.Task?.TaskName ?? "N/A",
+                    SignerId = tc.SignerId,
+                    SignerName = tc.Signer?.FullName ?? "N/A",
+                    SignerRole = tc.SignerRole,
+                    SignatureBase64 = tc.SignatureBase64 ?? "N/A",
+                    DeviceSerial = tc.DeviceSerial ?? "N/A",
+                    DeviceModel = tc.DeviceModel ?? "N/A",
+                    DeviceCondition = tc.DeviceCondition ?? "N/A",
+                    ConfirmationType = tc.ConfirmationType,
+                    Notes = tc.Notes ?? "No notes",
+                    CreatedDate = tc.CreatedDate,
+                    ModifiedDate = tc.ModifiedDate
+                }).ToList();
+
+                return Result.SuccessWithObject(response);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", $"Failed to retrieve task confirmations: {ex.Message}"));
+            }
+        }
 
     }
 }
