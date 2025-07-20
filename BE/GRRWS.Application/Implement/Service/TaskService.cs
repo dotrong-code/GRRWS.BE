@@ -747,6 +747,17 @@ namespace GRRWS.Application.Implement.Service
             _unitOfWork.ClearChangeTracker();
             var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
             // Only send notification if the task status is Completed
+            if (task.Status == Status.Pending && task.TaskType == TaskType.WarrantySubmission)
+            {
+                var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(taskId);
+                if (request != null)
+                {
+                    request.IsNeedSign = true;
+                    await _unitOfWork.RequestRepository.UpdateAsync(request);
+                    await _unitOfWork.SaveChangesAsync(); // Save the request update
+                    _unitOfWork.ClearChangeTracker();
+                }
+            }
             if (task.Status == Status.Completed)
             {
                 var assignee = await _unitOfWork.UserRepository.GetByIdAsync(userId);
