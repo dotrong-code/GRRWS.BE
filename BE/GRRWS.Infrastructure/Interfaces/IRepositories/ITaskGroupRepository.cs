@@ -7,5 +7,6 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
     {
         Task<TaskGroup?> GetTaskGroupWithTasksAsync(Guid taskGroupId);
         Task<List<TaskGroup>> GetTaskGroupsByReportIdAsync(Guid reportId);
+        Task<TaskGroup> GetByRequestIdAsync(Guid requestId);
     }
 }

@@ -19,5 +19,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<List<TechnicalIssueForRequestDetailWeb>> GetTechnicalIssuesForRequestDetailWebAsync(Guid requestId);
         Task<List<TaskForRequestDetailWeb>> GetTasksForRequestDetailWebAsync(Guid requestId);
         Task<Request> GetByTaskIdAsync(Guid taskId);
+        Task<Request> GetActiveRequestByPositionIdAsync(Guid positionId);
+        Task<Request> GetByTaskIdInclueDeviceAsync(Guid taskId);
     }
 }

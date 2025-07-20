@@ -384,5 +384,19 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             return request;
         }
+        public async Task<Request> GetActiveRequestByPositionIdAsync(Guid positionId)
+        {
+            return await _context.Requests
+                .Include(r => r.Device)
+                .Where(r => r.PositionId == positionId && !r.IsDeleted &&
+                            new[] { Status.Pending, Status.Approved, Status.InProgress }.Contains(r.Status))
+                .OrderByDescending(r => r.CreatedDate)
+                .FirstOrDefaultAsync();
+        }
+
+        public Task<Request> GetByTaskIdInclueDeviceAsync(Guid taskId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

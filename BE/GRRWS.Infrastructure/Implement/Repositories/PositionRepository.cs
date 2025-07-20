@@ -86,5 +86,31 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Where(p => p.ZoneId == zoneId && !p.IsDeleted)
                 .ToListAsync();
         }
+        public async Task<List<Position>> GetAllPositionsWithDetailsAsync()
+        {
+            return await _context.Positions
+                .Include(p => p.Zone)
+                    .ThenInclude(z => z.Area)
+                .Include(p => p.Device)
+                .Where(p => !p.IsDeleted)
+                .ToListAsync();
+        }
+        public async Task<Position> GetByIdAsync(Guid id)
+        {
+            return await _context.Positions
+                .Include(p => p.Zone)
+                .Include(p => p.Device)
+                .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
+        }
+        public async Task<List<Position>> GetPositionsByAreaIdAsync(Guid areaId)
+        {
+            return await _context.Positions
+                .Include(p => p.Zone)
+                    .ThenInclude(z => z.Area)
+                .Include(p => p.Device)
+                .Where(p => !p.IsDeleted && p.Zone != null && p.Zone.AreaId == areaId)
+                .ToListAsync();
+        }
+
     }
 }
