@@ -150,7 +150,13 @@ namespace GRRWS.Application.Implement.Service
 
                 // Add confirmation to repository
                 await _unitOfWork.TaskConfirmationRepository.CreateAsync(taskConfirmation);
-
+                //Update request Is
+                if(request != null)
+                {
+                    request.IsNeedSign = false;
+                    await _unitOfWork.RequestRepository.UpdateAsync(request);
+                }
+                
                 // Update task IsSigned field
                 task.IsSigned = true;
                 await _unitOfWork.TaskRepository.UpdateAsync(task);
@@ -1050,11 +1056,21 @@ namespace GRRWS.Application.Implement.Service
             if (!checkTask.IsSuccess) return checkTask;
             var checkMechanic = await _checkIsExist.User(mechanicId);
             if (!checkMechanic.IsSuccess) return checkMechanic;
+            
             var isUpdated = await _unitOfWork.TaskRepository.UpdateUninstallDeviceInTask(taskId, mechanicId);
             if (isUpdated == null)
             {
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Task not found or device already uninstalled."));
             }
+            _unitOfWork.ClearChangeTracker();
+            var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(taskId);
+            if(request == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found ."));
+            }
+            request.IsNeedSign = true;
+            await _unitOfWork.RequestRepository.UpdateAsync(request);
+            await _unitOfWork.SaveChangesAsync();
             return Result.SuccessWithObject(new
             {
                 Message = "Uninstall device updated successfully!",
@@ -1075,7 +1091,7 @@ namespace GRRWS.Application.Implement.Service
             oldDevice.Status = DeviceStatus.InUse;
             oldDevice.ModifiedDate = TimeHelper.GetHoChiMinhTime();
             await _unitOfWork.DeviceRepository.UpdateAsync(oldDevice);
-            _unitOfWork.ClearChangeTracker();
+                
             var newDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync((Guid)requestMachine.NewDeviceId);
             newDevice.Status = DeviceStatus.Active;
             newDevice.ModifiedDate = TimeHelper.GetHoChiMinhTime();
@@ -1199,6 +1215,7 @@ namespace GRRWS.Application.Implement.Service
                     if (request?.DeviceId != null)
                     {
                         device.Status = DeviceStatus.InUse;
+
                         await _unitOfWork.DeviceRepository.UpdateAsync(device);
                     }
                     // Create a RequestMachineReplacement for StockReturn of the temporary device
@@ -1248,6 +1265,7 @@ namespace GRRWS.Application.Implement.Service
                     await _unitOfWork.TaskRepository.UpdateAsync(task);
                     _unitOfWork.ClearChangeTracker(); // Clear change tracker after updating task
                     request.IsSovled = true;
+                    request.IsNeedSign = true;
                     request.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                     await _unitOfWork.RequestRepository.UpdateAsync(request);
                 }
@@ -1276,6 +1294,7 @@ namespace GRRWS.Application.Implement.Service
                     task.IsInstall = true;
                     await _unitOfWork.TaskRepository.UpdateAsync(task);
                     request.IsSovled = true;
+                    request.IsNeedSign = true;
                     request.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                     await _unitOfWork.RequestRepository.UpdateAsync(request);
                 }

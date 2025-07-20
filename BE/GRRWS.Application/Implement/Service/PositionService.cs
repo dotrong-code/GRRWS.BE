@@ -4,10 +4,16 @@ using GRRWS.Application.Interface.IService;
 using GRRWS.Domain.Entities;
 using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
+using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
 using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.Position;
 using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace GRRWS.Application.Implement.Service
 {
@@ -34,7 +40,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failures(errors);
             }
 
-
+            
 
             var position = new Position
             {
@@ -108,7 +114,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(PositionErrorMessage.PositionNotExist());
             }
 
-
+            
 
             position.Index = request.Index;
             position.ZoneId = request.ZoneId;
@@ -136,25 +142,20 @@ namespace GRRWS.Application.Implement.Service
 
             return await _importService.ImportAsync<Position>(file.OpenReadStream(), _unitOfWork.PositionRepository);
         }
-        public async Task<Result> GetAllPositionDetailsAsync(Guid? areaId = null)
+        public async Task<Result> GetPositionsByAreaIdAsync(Guid areaId)
         {
             try
             {
-                var positions = await _unitOfWork.PositionRepository.GetAllPositionsWithDetailsAsync();
-                if (areaId.HasValue)
-                {
-                    positions = positions.Where(p => p.Zone?.AreaId == areaId.Value).ToList();
-                }
-
+                var positions = await _unitOfWork.PositionRepository.GetPositionsByAreaIdAsync(areaId);
                 if (!positions.Any())
                 {
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "No positions found for the specified area."));
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", $"No positions found for AreaId: {areaId}."));
                 }
 
-                var response = new List<GetPositionDetailsResponse>();
+                var response = new List<GetPositionByAreaResponse>();
                 foreach (var position in positions)
                 {
-                    var positionResponse = new GetPositionDetailsResponse
+                    var positionResponse = new GetPositionByAreaResponse
                     {
                         PositionId = position.Id,
                         PositionName = $"{position.Zone?.Area?.AreaName} - {position.Zone?.ZoneName} - Vị trí {position.Index}"
@@ -169,55 +170,30 @@ namespace GRRWS.Application.Implement.Service
                             positionResponse.CurrentDevice = new CurrentDeviceDetails
                             {
                                 DeviceId = device.Id,
-                                Serial = device.SerialNumber ?? "N/A",
+                                DeviceName = device.DeviceName ?? "N/A",
+                                DeviceCode = device.DeviceCode ?? "N/A",
+                                SerialNumber = device.SerialNumber ?? "N/A",
                                 Model = device.Model ?? "N/A",
-                                Status = device.Status switch
-                                {
-                                    DeviceStatus.InUse => "InUse",
-                                    DeviceStatus.InWarranty => "WarrantyOut",
-                                    _ => device.InUsed == true ? "Temporary" : "Unknown"
-                                }
+                                Status = device.Status.ToString(),
+                                IsUnderWarranty = device.IsUnderWarranty
                             };
                         }
                     }
 
-                    // Current Request
+                    // Current Request (only Pending, Approved, or InProgress)
                     var request = await _unitOfWork.RequestRepository.GetActiveRequestByPositionIdAsync(position.Id);
-                    if (request != null)
+                    if (request != null && new[] { Status.Pending, Status.Approved, Status.InProgress }.Contains(request.Status))
                     {
-                        var taskGroup = await _unitOfWork.TaskGroupRepository.GetByRequestIdAsync(request.Id);
-                        var tasks = taskGroup != null ? await _unitOfWork.TaskRepository.GetTasksByTaskGroupIdAsync(taskGroup.Id) : new List<Tasks>();
-                        var warrantyClaim = tasks.FirstOrDefault(t => t.WarrantyClaimId.HasValue)?.WarrantyClaim;
-                        var requestMachine = tasks.FirstOrDefault(t => t.TaskType == TaskType.Installation).RequestMachineReplacement;
-                        var stockOutMachine = requestMachine?.FirstOrDefault(rm => rm.RequestType == RequestMachineReplacementType.StockOut);
                         positionResponse.CurrentRequest = new CurrentRequestDetails
                         {
                             RequestId = request.Id,
-                            Status = request.Status == Status.Completed ? "Done" : "InProgress",
+                            RequestTitle = request.RequestTitle ?? "N/A",
+                            Description = request.Description ?? "No description",
+                            Status = request.Status.ToString(),
                             IsSolved = request.IsSovled,
-                            ExpectedReturnDate = warrantyClaim?.ExpectedReturnDate,
-                            Note = request.CompletedDetails ?? warrantyClaim?.WarrantyNotes ?? "No notes",
-                            OldDevice = requestMachine != null && stockOutMachine.OldDeviceId != null
-                                ? new DeviceDetails
-                                {
-                                    Serial = stockOutMachine.OldDevice?.SerialNumber ?? "N/A",
-                                    Model = stockOutMachine.OldDevice?.Model ?? "N/A"
-                                }
-                                : null,
-                            TemporaryDevice = requestMachine != null && stockOutMachine.NewDeviceId.HasValue
-                                ? new DeviceDetails
-                                {
-                                    Serial = stockOutMachine.NewDevice?.SerialNumber ?? "N/A",
-                                    Model = stockOutMachine.NewDevice?.Model ?? "N/A"
-                                }
-                                : null,
-                            Handover = new HandoverDetails
-                            {
-                                Staff = stockOutMachine?.Assignee?.FullName ?? "N/A",
-                                Status = requestMachine != null
-                                    ? (stockOutMachine.AssigneeConfirm && stockOutMachine.StokkKeeperConfirm ? "Delivered" : "Awaiting")
-                                    : "N/A"
-                            }
+                            DueDate = request.DueDate,
+                            Priority = request.Priority.ToString(),
+                            IsNeedSign = request.IsNeedSign
                         };
                     }
 
@@ -228,9 +204,10 @@ namespace GRRWS.Application.Implement.Service
             }
             catch (Exception ex)
             {
-                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", $"Failed to retrieve position details: {ex.Message}"));
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", $"Failed to retrieve positions: {ex.Message}"));
             }
         }
+
 
 
     }
