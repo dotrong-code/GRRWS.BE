@@ -27,6 +27,16 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Where(d => d.Id == id && !d.IsDeleted)
                 .FirstOrDefaultAsync();
         }
+        public async Task<List<Device>> GetDevicesByPositionIdsAsync(Guid positionIds)
+        {
+            return await _context.Devices
+                .Include(d => d.Machine)
+                .Include(d => d.Position)
+                    .ThenInclude(p => p.Zone)
+                        .ThenInclude(z => z.Area)
+                .Where(d => d.PositionId == positionIds && !d.IsDeleted)
+                .ToListAsync();
+        }
         public async Task<(List<GetDeviceResponse> Devices, int TotalCount)> GetAllDevicesAsync(
             string? deviceName, string? deviceCode, string? status, Guid? positionId, int pageNumber, int pageSize)
         {

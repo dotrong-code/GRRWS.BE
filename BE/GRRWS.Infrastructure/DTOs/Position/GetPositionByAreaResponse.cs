@@ -5,6 +5,7 @@
         public Guid PositionId { get; set; }
         public string PositionName { get; set; }
         public CurrentDeviceDetails? CurrentDevice { get; set; }
+        public CurrentDeviceDetails? OriginalDevice { get; set; }
         public CurrentRequestDetails? CurrentRequest { get; set; }
     }
 
