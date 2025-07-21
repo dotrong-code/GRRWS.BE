@@ -1843,13 +1843,17 @@ namespace GRRWS.Application.Implement.Service
                 var uninstallTask = tasksToApply.FirstOrDefault(t => t.TaskType == TaskType.Uninstallation);
                 var warrantyTask = tasksToApply.FirstOrDefault(t => t.TaskType == TaskType.WarrantySubmission);
                 var installTask = tasksToApply.FirstOrDefault(t => t.TaskType == TaskType.Installation);
+                var repairTask = tasksToApply.FirstOrDefault(t => t.TaskType == TaskType.Repair);
 
                 // Select mechanics based on availability and performance
                 var primaryMechanic = availableMechanics.First(); // Best available mechanic
                 var secondaryMechanic = availableMechanics.Count > 1 ? availableMechanics[1] : primaryMechanic;
 
+                var thirdMechanic = availableMechanics.Count > 1 ? availableMechanics[2] : primaryMechanic;
+
                 var uninstallWarrantyMechanicId = primaryMechanic.MechanicId;
                 var installMechanicId = secondaryMechanic.MechanicId;
+                var repairMechanicId = thirdMechanic.MechanicId;
 
                 var appliedTasks = new List<object>();
                 _unitOfWork.ClearChangeTracker();
@@ -1880,6 +1884,21 @@ namespace GRRWS.Application.Implement.Service
                     var warrantyShiftResult = await _mechanicShiftService.CreateMechanicShiftAsync(uninstallWarrantyMechanicId, warrantyTask.Id);
 
                     appliedTasks.Add(new { TaskId = warrantyTask.Id, TaskType = "WarrantySubmission", MechanicId = uninstallWarrantyMechanicId });
+                }
+                _unitOfWork.ClearChangeTracker();
+                // Apply assignment to Repair task (different mechanic)
+                if (repairTask != null)
+                {
+                    repairTask.AssigneeId = repairMechanicId;
+                    repairTask.Status = Status.Pending;
+                    repairTask.ModifiedDate = TimeHelper.GetHoChiMinhTime();
+                    repairTask.ExpectedTime = thirdMechanic.ExpectedTime;
+                    await _unitOfWork.TaskRepository.UpdateAsync(repairTask);
+
+                    // Create mechanic shift for repair task
+                    var repairShiftResult = await _mechanicShiftService.CreateMechanicShiftAsync(repairMechanicId, repairTask.Id);
+
+                    appliedTasks.Add(new { TaskId = repairTask.Id, TaskType = "Repair", MechanicId = repairMechanicId });
                 }
                 _unitOfWork.ClearChangeTracker();
                 // Apply assignment to Install task (different mechanic)
