@@ -10,8 +10,8 @@ namespace GRRWS.Domain.Entities
         public Guid? DeviceId { get; set; }
         public string SignerRole { get; set; } // Role of the signer (e.g., "Mechanic", "HOD", "HOT")
         public string? SignatureBase64 { get; set; } // Signature stored as base64 string, nullable
-        public string? DeviceSerial { get; set; } // Device serial number (optional)
-        public string? DeviceModel { get; set; } // Device model (optional)
+        public string? DeviceName { get; set; }
+        public string? DeviceCode { get; set; }
         public string? DeviceCondition { get; set; } // Device condition at time of signing
         public string ConfirmationType { get; set; } // Type of confirmation (e.g., "Uninstall", "Install", "WarrantySubmission")
         public string? Notes { get; set; } // Additional notes (optional)
