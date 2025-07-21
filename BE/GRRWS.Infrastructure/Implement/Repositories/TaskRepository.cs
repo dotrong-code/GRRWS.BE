@@ -1748,7 +1748,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         ExpectedTime = (request.StartDate ?? TimeHelper.GetHoChiMinhTime()).AddHours(2), // Default 3 hours for installation
                         Status = request.AssigneeId == null ? Status.WaitingForConfirmation : Status.Pending,
                         Priority = Domain.Enum.Priority.Medium,
-                        AssigneeId = request.AssigneeId,
+                        AssigneeId = null,
                         TaskGroupId = taskGroupId,
                         OrderIndex = orderIndex,
                         CreatedDate = TimeHelper.GetHoChiMinhTime(),
