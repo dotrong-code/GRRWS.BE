@@ -7,6 +7,7 @@ namespace GRRWS.Domain.Entities
     {
         public Guid TaskId { get; set; } // Foreign key to Tasks
         public Guid? SignerId { get; set; } // User who signed (Mechanic, HOD, or HOT), nullable
+        public Guid? DeviceId { get; set; }
         public string SignerRole { get; set; } // Role of the signer (e.g., "Mechanic", "HOD", "HOT")
         public string? SignatureBase64 { get; set; } // Signature stored as base64 string, nullable
         public string? DeviceSerial { get; set; } // Device serial number (optional)
