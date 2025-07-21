@@ -266,7 +266,7 @@ namespace GRRWS.Application.Implement.Service
                 var taskConfirmations = await _unitOfWork.PositionRepository.GetTaskConfirmationsByPositionIdAsync(positionId);
                 if (!taskConfirmations.Any())
                 {
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", $"No task confirmations found for PositionId: {positionId}."));
+                    return Result.SuccessWithObject(taskConfirmations);
                 }
 
                 var response = taskConfirmations.Select(tc => new GetTaskConfirmationResponse
@@ -275,11 +275,12 @@ namespace GRRWS.Application.Implement.Service
                     TaskId = tc.TaskId,
                     TaskName = tc.Task?.TaskName ?? "N/A",
                     SignerId = tc.SignerId,
+                    DeviceId = tc.DeviceId,
                     SignerName = tc.Signer?.FullName ?? "N/A",
                     SignerRole = tc.SignerRole,
                     SignatureBase64 = tc.SignatureBase64 ?? "N/A",
-                    DeviceSerial = tc.DeviceSerial ?? "N/A",
-                    DeviceModel = tc.DeviceModel ?? "N/A",
+                    DeviceName = tc.DeviceName ?? "N/A",
+                    DeviceCode = tc.DeviceCode ?? "N/A",
                     DeviceCondition = tc.DeviceCondition ?? "N/A",
                     ConfirmationType = tc.ConfirmationType,
                     Notes = tc.Notes ?? "No notes",
