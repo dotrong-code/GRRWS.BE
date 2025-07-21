@@ -1481,20 +1481,20 @@ namespace GRRWS.Application.Implement.Service
                 var repairMechanic = mechanics.Skip(1).First().Id; // Lấy Mechanic thứ hai
                 var repairTask = await _unitOfWork.TaskRepository.GetByIdAsync(repairTaskId2);
                 repairTask.AssigneeId = repairMechanic;
-                repairTask.Status = Status.Suggested;
+                //repairTask.Status = Status.Suggested;
                 _unitOfWork.TaskRepository.Update(repairTask);
 
                 // Kiểm tra và gán Mechanic cho Repair Task nếu yêu cầu phụ tùng
-                if (guidelineIds.Any())
-                {
-                    var errorSpareParts = await _unitOfWork.ErrorSparepartRepository.GetByErrorGuidelineIdsAsync(guidelineIds);
-                    if (errorSpareParts.Any())
-                    {
-                        // Nếu yêu cầu phụ tùng, giữ trạng thái Suggested và không cần gán lại Mechanic
-                        repairTask.Status = Status.Suggested; // Đợi Stock Keeper xác nhận phụ tùng
-                        _unitOfWork.TaskRepository.Update(repairTask);
-                    }
-                }
+                //if (guidelineIds.Any())
+                //{
+                //    var errorSpareParts = await _unitOfWork.ErrorSparepartRepository.GetByErrorGuidelineIdsAsync(guidelineIds);
+                //    if (errorSpareParts.Any())
+                //    {
+                //        // Nếu yêu cầu phụ tùng, giữ trạng thái Suggested và không cần gán lại Mechanic
+                //        repairTask.Status = Status.Suggested; // Đợi Stock Keeper xác nhận phụ tùng
+                //        _unitOfWork.TaskRepository.Update(repairTask);
+                //    }
+                //}
 
                 // Lưu tất cả thay đổi
                 await _unitOfWork.SaveChangesAsync();
@@ -1832,7 +1832,7 @@ namespace GRRWS.Application.Implement.Service
                 }
 
                 // Get available mechanics using the existing recommendation system
-                var availableMechanics = await _unitOfWork.UserRepository.GetRecommendedMechanicsAsync(currentTime, 1, 10);
+                var availableMechanics = await _unitOfWork.UserRepository.GetMechanicsWithoutTask();
 
                 if (!availableMechanics.Any())
                 {
@@ -1851,9 +1851,9 @@ namespace GRRWS.Application.Implement.Service
 
                 var thirdMechanic = availableMechanics.Count > 1 ? availableMechanics[2] : primaryMechanic;
 
-                var uninstallWarrantyMechanicId = primaryMechanic.MechanicId;
-                var installMechanicId = secondaryMechanic.MechanicId;
-                var repairMechanicId = thirdMechanic.MechanicId;
+                var uninstallWarrantyMechanicId = primaryMechanic.Id;
+                var installMechanicId = secondaryMechanic.Id;
+                var repairMechanicId = thirdMechanic.Id;
 
                 var appliedTasks = new List<object>();
                 _unitOfWork.ClearChangeTracker();
@@ -1863,7 +1863,7 @@ namespace GRRWS.Application.Implement.Service
                     uninstallTask.AssigneeId = uninstallWarrantyMechanicId;
                     uninstallTask.Status = Status.Pending;
                     uninstallTask.ModifiedDate = TimeHelper.GetHoChiMinhTime();
-                    uninstallTask.ExpectedTime = primaryMechanic.ExpectedTime;
+                    //uninstallTask.ExpectedTime = primaryMechanic.ExpectedTime;
                     await _unitOfWork.TaskRepository.UpdateAsync(uninstallTask);
 
                     // Create mechanic shift for uninstall task
@@ -1877,7 +1877,7 @@ namespace GRRWS.Application.Implement.Service
                     warrantyTask.AssigneeId = uninstallWarrantyMechanicId;
                     warrantyTask.Status = Status.Pending;
                     warrantyTask.ModifiedDate = TimeHelper.GetHoChiMinhTime();
-                    warrantyTask.ExpectedTime = primaryMechanic.ExpectedTime;
+                    //warrantyTask.ExpectedTime = primaryMechanic.ExpectedTime;
                     await _unitOfWork.TaskRepository.UpdateAsync(warrantyTask);
 
                     // Create mechanic shift for warranty task
@@ -1892,7 +1892,7 @@ namespace GRRWS.Application.Implement.Service
                     repairTask.AssigneeId = repairMechanicId;
                     repairTask.Status = Status.Pending;
                     repairTask.ModifiedDate = TimeHelper.GetHoChiMinhTime();
-                    repairTask.ExpectedTime = thirdMechanic.ExpectedTime;
+                    //repairTask.ExpectedTime = thirdMechanic.ExpectedTime;
                     await _unitOfWork.TaskRepository.UpdateAsync(repairTask);
 
                     // Create mechanic shift for repair task
@@ -1907,7 +1907,7 @@ namespace GRRWS.Application.Implement.Service
                     installTask.AssigneeId = installMechanicId;
                     installTask.Status = Status.Pending;
                     installTask.ModifiedDate = TimeHelper.GetHoChiMinhTime();
-                    installTask.ExpectedTime = secondaryMechanic.ExpectedTime;
+                    //installTask.ExpectedTime = secondaryMechanic.ExpectedTime;
                     await _unitOfWork.TaskRepository.UpdateAsync(installTask);
 
                     // Create mechanic shift for install task
