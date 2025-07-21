@@ -1326,7 +1326,218 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", $"Failed to install device: {ex.Message}"));
             }
         }
+        public async Task<Result> CreateCombinedRepairAndReplacementTasks(CreateCombinedTaskRequest request, Guid userId)
+        {
+            try
+            {
+                // Kiểm tra RequestId
+                var requestCheck = await _checkIsExist.Request(request.RequestId);
+                if (!requestCheck.IsSuccess) return requestCheck;
 
+                // Kiểm tra UserId
+                var userCheck = await _checkIsExist.User(userId);
+                if (!userCheck.IsSuccess) return userCheck;
+
+                // Kiểm tra RequestInfo
+                var requestInfo = await _unitOfWork.TaskRepository.GetRequestInfoAsync(request.RequestId);
+                if (requestInfo == null)
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found."));
+
+                // Kiểm tra xem đã có task Repair hoặc Installation đang xử lý chưa
+                var isRepairTaskProcessing = await IsTaskCompletedInRequestAsync(request.RequestId, TaskType.Repair);
+                if (!isRepairTaskProcessing)
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Conflict", "A repair task is already being processed for this request."));
+
+                var isInstallTaskProcessing = await IsTaskCompletedInRequestAsync(request.RequestId, TaskType.Installation);
+                if (!isInstallTaskProcessing)
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Conflict", "An installation task is already being processed for this request."));
+
+                // Kiểm tra ErrorGuidelineIds (nếu có)
+                List<Guid> guidelineIds = new List<Guid>();
+                if (request.ErrorGuidelineIds != null && request.ErrorGuidelineIds.Any())
+                {
+                    var validGuidelines = await _unitOfWork.ErrorGuidelineRepository.GetErrorGuidelinesAsync(request.ErrorGuidelineIds);
+                    if (!validGuidelines.Any() || validGuidelines.Count != request.ErrorGuidelineIds.Count)
+                    {
+                        _logger.LogWarning("Invalid or missing ErrorGuidelineIds: {ErrorGuidelineIds}", string.Join(", ", request.ErrorGuidelineIds));
+                        return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "One or more error guidelines not found."));
+                    }
+                    guidelineIds = request.ErrorGuidelineIds;
+                }
+
+                // Lấy danh sách Mechanic chưa có task
+                var mechanics = await _unitOfWork.UserRepository.GetMechanicsWithoutTask();
+                if (mechanics == null || mechanics.Count < 2)
+                {
+                    _logger.LogWarning("Not enough available mechanics to assign for tasks for RequestId: {RequestId}", request.RequestId);
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Failure", "At least two available mechanics are required to assign tasks."));
+                }
+
+                // Lấy thông tin thiết bị và thiết bị thay thế
+                var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(requestInfo.DeviceId);
+                var deviceByMachine = await _unitOfWork.DeviceRepository.GetDevicesByMachineIdAsync(device.MachineId ?? Guid.Empty);
+                var replaceDeviceId = deviceByMachine.FirstOrDefault(d => d.Id != device.Id && d.Status == DeviceStatus.Active)?.Id;
+                var deviceInfo = replaceDeviceId.HasValue
+                    ? await _unitOfWork.TaskRepository.GetDeviceInfoAsync(replaceDeviceId.Value)
+                    : "Unknown Device";
+
+                // Tạo hoặc lấy TaskGroup
+                var taskGroupId = await _taskGroupService.CreateOrGetTaskGroupAsync(
+                    null,
+                    TaskType.Repair, // Sử dụng Repair làm GroupType chính vì ActionType là Repair
+                    requestInfo.DeviceName ?? "Unknown Device",
+                    requestInfo.ReportId,
+                    userId
+                );
+
+                // Tạo Installation Task (OrderIndex = 1)
+                Guid? installationTaskId = null;
+                var installRequest = new CreateInstallTaskRequest
+                {
+                    RequestId = request.RequestId,
+                    NewDeviceId = replaceDeviceId,
+                    TaskGroupId = taskGroupId
+                };
+
+                var installTaskId = await _unitOfWork.TaskRepository.CreateInstallTaskWithGroup(installRequest, userId, taskGroupId, orderIndex: 1);
+                if (installTaskId == Guid.Empty)
+                {
+                    _logger.LogWarning("Failed to create installation task for RequestId: {RequestId}", request.RequestId);
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Failure", "Failed to create installation task."));
+                }
+                installationTaskId = installTaskId;
+
+                // Gán Mechanic cho Installation Task
+                var installMechanic = mechanics.First().Id;
+                var installTask = await _unitOfWork.TaskRepository.GetByIdAsync(installTaskId);
+                installTask.AssigneeId = installMechanic;
+                installTask.Status = Status.Suggested;
+                _unitOfWork.TaskRepository.Update(installTask);
+
+                // Tạo RequestMachineReplacement cho Installation Task
+                var requestMachineResult = await RequestReplaceMachineForInstall(request.RequestId, installTaskId, replaceDeviceId, device);
+                if (requestMachineResult.IsFailure)
+                {
+                    _logger.LogWarning("Failed to create RequestMachineReplacement for TaskId: {TaskId}, Error: {Error}", installTaskId, requestMachineResult.Error.Description);
+                }
+
+                // Tạo Repair Task (OrderIndex = 2)
+                Guid? repairTaskId = null;
+                var repairRequest = new CreateRepairTaskRequest
+                {
+                    RequestId = request.RequestId,
+                    ErrorGuidelineIds = guidelineIds
+                };
+
+                var repairTaskId2 = await _unitOfWork.TaskRepository.CreateRepairTaskWithGroup(repairRequest, userId, taskGroupId, orderIndex: 2);
+                if (repairTaskId == Guid.Empty)
+                {
+                    _logger.LogWarning("Failed to create repair task for RequestId: {RequestId}", request.RequestId);
+                    return Result.SuccessWithObject(new
+                    {
+                        Message = "Installation task created successfully, but failed to create repair task.",
+                        TaskGroupId = taskGroupId,
+                        InstallationTaskId = installationTaskId
+                    });
+                }
+                repairTaskId = repairTaskId2;
+
+                // Gán Mechanic cho Repair Task (khác với Installation Task)
+                var repairMechanic = mechanics.Skip(1).First().Id; // Lấy Mechanic thứ hai
+                var repairTask = await _unitOfWork.TaskRepository.GetByIdAsync(repairTaskId2);
+                repairTask.AssigneeId = repairMechanic;
+                repairTask.Status = Status.Suggested;
+                _unitOfWork.TaskRepository.Update(repairTask);
+
+                // Kiểm tra và gán Mechanic cho Repair Task nếu yêu cầu phụ tùng
+                if (guidelineIds.Any())
+                {
+                    var errorSpareParts = await _unitOfWork.ErrorSparepartRepository.GetByErrorGuidelineIdsAsync(guidelineIds);
+                    if (errorSpareParts.Any())
+                    {
+                        // Nếu yêu cầu phụ tùng, giữ trạng thái Suggested và không cần gán lại Mechanic
+                        repairTask.Status = Status.WaitingForConfirmation; // Đợi Stock Keeper xác nhận phụ tùng
+                        _unitOfWork.TaskRepository.Update(repairTask);
+                    }
+                }
+
+                // Lưu tất cả thay đổi
+                await _unitOfWork.SaveChangesAsync();
+
+                return Result.SuccessWithObject(new
+                {
+                    Message = "Combined repair and replacement tasks created successfully!",
+                    TaskGroupId = taskGroupId,
+                    InstallationTaskId = installationTaskId,
+                    RepairTaskId = repairTaskId,
+                    InstallMechanicId = installMechanic,
+                    RepairMechanicId = repairMechanic
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating combined repair and replacement tasks for RequestId: {RequestId}, UserId: {UserId}", request.RequestId, userId);
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("InternalServerError", $"Failed to create combined tasks: {ex.Message}"));
+            }
+        }
+        public async Task<Result> UpdateTaskAssigneeAsync(Guid taskId, Guid newAssigneeId, Guid updatedByUserId)
+        {
+            try
+            {
+                // Lấy task
+                var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
+
+                if (task == null)
+                {
+                    _logger.LogWarning("Task {TaskId} not found.", taskId);
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", $"Task {taskId} not found."));
+                }
+
+                // Kiểm tra trạng thái
+                if (task.Status != Status.Suggested)
+                {
+                    _logger.LogWarning("Cannot update AssigneeId for Task {TaskId} because its status is {Status}.", taskId, task.Status);
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("InvalidOperation", "Cannot update assignee because task is not in Suggested status."));
+                }
+
+                // Kiểm tra thời gian (dự phòng, nếu API được gọi thủ công)
+                var currentTime = TimeHelper.GetHoChiMinhTime();
+                if (task.CreatedDate <= currentTime.AddMinutes(-30))
+                {
+                    _logger.LogWarning("Cannot update AssigneeId for Task {TaskId} because 30 minutes have passed since creation.", taskId);
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("InvalidOperation", "Cannot update assignee because 30 minutes have passed since task creation."));
+                }
+
+                // Kiểm tra newAssigneeId
+                var assignee = await _unitOfWork.UserRepository.GetByIdAsync(newAssigneeId);
+                if (assignee == null || assignee.Role != 2) // Role 2: Mechanic
+                {
+                    _logger.LogWarning("Invalid AssigneeId {AssigneeId} for Task {TaskId}. Must be a valid Mechanic.", newAssigneeId, taskId);
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("InvalidInput", "Assignee must be a valid Mechanic."));
+                }
+
+                // Cập nhật AssigneeId
+                task.AssigneeId = newAssigneeId;
+                task.ModifiedBy = updatedByUserId;
+                task.ModifiedDate = TimeHelper.GetHoChiMinhTime();
+                _unitOfWork.TaskRepository.Update(task);
+
+                await _unitOfWork.SaveChangesAsync();
+
+                _logger.LogInformation("Updated AssigneeId for Task {TaskId} to {AssigneeId}.", taskId, newAssigneeId);
+                return Result.SuccessWithObject(new
+                {
+                    Message = $"Successfully updated assignee for Task {taskId}.",
+                    TaskId = taskId,
+                    NewAssigneeId = newAssigneeId
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating AssigneeId for Task {TaskId}.", taskId);
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("InternalServerError", $"Failed to update task assignee: {ex.Message}"));
+            }
+        }
         #endregion
         #region old methods
         public async Task<Result> GetTasksByReportIdAsync(Guid reportId)

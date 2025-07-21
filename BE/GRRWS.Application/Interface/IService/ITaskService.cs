@@ -56,5 +56,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> ReInstallOldDevice(Guid taskId);
         Task<Result> InstallDevice(Guid taskId, Guid deviceId);
         Task<Result> ConfirmTask(Guid taskId, Guid mechanicId, TaskConfirmationDTO confirmation);
+        Task<Result> CreateCombinedRepairAndReplacementTasks(CreateCombinedTaskRequest request, Guid userId);
+        Task<Result> UpdateTaskAssigneeAsync(Guid taskId, Guid newAssigneeId, Guid updatedByUserId);
     }
 }

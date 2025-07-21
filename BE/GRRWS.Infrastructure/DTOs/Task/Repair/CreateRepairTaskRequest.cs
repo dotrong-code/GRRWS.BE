@@ -6,6 +6,5 @@
         public DateTime StartDate { get; set; }
         public Guid? AssigneeId { get; set; }
         public List<Guid> ErrorGuidelineIds { get; set; } = new List<Guid>(); // Required
-
     }
 }

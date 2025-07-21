@@ -1351,7 +1351,36 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     {
                         totalExpectedTime = TimeSpan.FromHours(8);
                     }
+                    // Kiểm tra số lượng tồn kho của phụ tùng
+                    bool isDelayed = false;
+                    var getErrorGuidelineSpareparts = await _context.ErrorSpareparts
+                        .Include(egsp => egsp.Sparepart)
+                        .Where(egsp => request.ErrorGuidelineIds.Contains(egsp.ErrorGuidelineId))
+                        .ToListAsync();
 
+                    foreach (var sparepart in getErrorGuidelineSpareparts)
+                    {
+                        var stockQuantity = sparepart.Sparepart?.StockQuantity ?? 0;
+                        var quantityNeeded = sparepart.QuantityNeeded ?? 1;
+                        if (stockQuantity == 0 || stockQuantity < quantityNeeded)
+                        {
+                            isDelayed = true;
+                            break;
+                        }
+                    }
+
+                    Guid? stockKeeperId = null;
+                    if (!isDelayed)
+                    {
+                        stockKeeperId = await _context.Users
+                            .Where(u => u.Role == 4)
+                            .Select(u => u.Id)
+                            .FirstOrDefaultAsync();
+                        if (stockKeeperId == Guid.Empty)
+                        {
+                            throw new Exception("No StockKeeper found in the system.");
+                        }
+                    }
                     // Create the repair task
                     var task = new Tasks
                     {
@@ -1361,7 +1390,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         TaskDescription = $"Sửa lỗi: {string.Join(", ", errorGuidelines.Select(eg => eg.Error?.Name ?? "Unknown"))}",
                         StartTime = TimeHelper.GetHoChiMinhTime(),
                         ExpectedTime = (TimeHelper.GetHoChiMinhTime()).AddHours(2),
-                        Status = request.AssigneeId == null ? Status.Suggested : Status.Pending,
+                        Status = isDelayed ? Status.Delayed : Status.Suggested,
                         Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,
                         TaskGroupId = taskGroupId,
@@ -1406,10 +1435,12 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                                     RequestDate = TimeHelper.GetHoChiMinhTime(),
                                     RequestedById = userId,
                                     AssigneeId = request.AssigneeId,
-                                    Status = SparePartRequestStatus.Unconfirmed,
+                                    Status = SparePartRequestStatus.Confirmed,
                                     Notes = $"Auto-generated for repair task: {task.TaskName}",
                                     CreatedDate = TimeHelper.GetHoChiMinhTime(),
-                                    IsDeleted = false
+                                    IsDeleted = false,
+                                    ConfirmedById = isDelayed ? null : stockKeeperId,
+                                    ConfirmedDate = isDelayed ? null : TimeHelper.GetHoChiMinhTime()
                                 };
 
                                 await _context.RequestTakeSparePartUsages.AddAsync(requestTakeSparePartUsage);
@@ -1420,7 +1451,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                                     Id = Guid.NewGuid(),
                                     SparePartId = egsp.SparepartId,
                                     QuantityUsed = egsp.QuantityNeeded ?? 1, // Default to 1 if not specified
-                                    IsTakenFromStock = false,
+                                    IsTakenFromStock = !isDelayed,
                                     RequestTakeSparePartUsageId = requestTakeSparePartUsage.Id,
                                     CreatedDate = TimeHelper.GetHoChiMinhTime(),
                                     IsDeleted = false
