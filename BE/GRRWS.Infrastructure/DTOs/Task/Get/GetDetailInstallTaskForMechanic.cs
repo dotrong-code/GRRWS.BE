@@ -16,4 +16,5 @@ namespace GRRWS.Infrastructure.DTOs.Task.Get
         public string? RequestMachineDescription { get; set; } // Description of the request machine
         public List<TaskConfirmationResponeDTO>? TaskConfirmations { get; set; }
     }
+
 }

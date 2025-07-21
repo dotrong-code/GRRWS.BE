@@ -473,12 +473,6 @@ namespace GRRWS.Infrastructure.DB
                 .HasForeignKey<RequestMachineReplacement>(ed => ed.ErrorDetailId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            modelBuilder.Entity<RequestMachineReplacement>()
-                .HasOne(r => r.Task)
-                .WithOne(t => t.RequestMachineReplacement)
-                .HasForeignKey<RequestMachineReplacement>(r => r.TaskId)
-                .OnDelete(DeleteBehavior.SetNull);
-
             // RequestTakeSparePartUsage
             modelBuilder.Entity<RequestTakeSparePartUsage>()
                 .HasKey(rtspu => rtspu.Id);
@@ -1008,6 +1002,11 @@ namespace GRRWS.Infrastructure.DB
                 .WithMany()
                 .HasForeignKey(nr => nr.ReceiverId)
                 .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<RequestMachineReplacement>()
+    .HasOne(r => r.Task)
+    .WithMany(t => t.RequestMachineReplacement)
+    .HasForeignKey(r => r.TaskId)
+    .OnDelete(DeleteBehavior.SetNull);
 
             // BaseEntity Defaults
             modelBuilder.Entity<BaseEntity>()
