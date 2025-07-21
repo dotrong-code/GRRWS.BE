@@ -14,16 +14,21 @@ namespace GRRWS.Domain.Entities
         public Priority Priority { get; set; }
         public string? RejectionReason { get; set; }
         public string? CompletedDetails { get; set; } // Use when HOT mark it as completed when verifying the request
+        public bool? IsNeedSign {  get; set; }
+
         // Foreign key 
         public Guid DeviceId { get; set; }
         public Guid RequestedById { get; set; }
         public Guid? ReportId { get; set; }
         public Guid? SerderId { get; set; }
+        public Guid? PositionId { get; set; }
         // Navigation properties
         public Device? Device { get; set; }
         public User? Sender { get; set; }
         public Report? Report { get; set; }
         public ICollection<RequestIssue>? RequestIssues { get; set; }
+        public Position? Position { get; set; }
+
 
     }
 }

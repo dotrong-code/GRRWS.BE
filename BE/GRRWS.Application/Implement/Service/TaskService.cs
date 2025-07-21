@@ -98,12 +98,12 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Error", ex.Message));
             }
         }
-        public async Task<Result> ConfirmTask(Guid taskId, Guid mechanicId, TaskConfirmationDTO confirmation)
+        public async Task<Result> ConfirmTask(TaskConfirmationDTO confirmation)
         {
-            var checkTask = await _checkIsExist.Task(taskId);
+            var checkTask = await _checkIsExist.Task(confirmation.TaskId);
             if (!checkTask.IsSuccess) return checkTask;
 
-            var checkMechanic = await _checkIsExist.User(mechanicId);
+            var checkMechanic = await _checkIsExist.User(confirmation.SignerId);
             if (!checkMechanic.IsSuccess) return checkMechanic;
 
             // Validate confirmation type
@@ -113,7 +113,7 @@ namespace GRRWS.Application.Implement.Service
 
             try
             {
-                var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
+                var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(confirmation.TaskId);
                 if (task == null)
                     return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Task not found."));
 
@@ -129,28 +129,39 @@ namespace GRRWS.Application.Implement.Service
                 if (task.IsSigned == true)
                     return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("AlreadySigned", "Task has already been signed."));
 
-                var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(taskId);
-                var device = request != null ? await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(request.DeviceId) : null;
+                var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(confirmation.TaskId);
+
+                
+                var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(confirmation.DeviceId);
+                   
+                
 
                 var taskConfirmation = new TaskConfirmation
                 {
                     Id = Guid.NewGuid(),
-                    TaskId = taskId,
-                    SignerId = confirmation.SignerId ?? mechanicId,
+                    TaskId = confirmation.TaskId,
+                    DeviceId = device.Id,
+                    SignerId = confirmation.SignerId,
                     SignerRole = confirmation.SignerRole,
                     SignatureBase64 = confirmation.SignatureBase64,
-                    DeviceSerial = device?.DeviceCode,
-                    DeviceModel = device?.Machine?.MachineCode,
+                    DeviceName = device?.DeviceName,
+                    DeviceCode = device?.DeviceCode,                  
                     DeviceCondition = confirmation.DeviceCondition,
                     ConfirmationType = confirmation.ConfirmationType,
                     Notes = confirmation.Notes,
                     CreatedDate = TimeHelper.GetHoChiMinhTime(),
-                    CreatedBy = mechanicId
+                    CreatedBy = confirmation.SignerId
                 };
 
                 // Add confirmation to repository
                 await _unitOfWork.TaskConfirmationRepository.CreateAsync(taskConfirmation);
-
+                //Update request Is
+                if(request != null)
+                {
+                    request.IsNeedSign = false;
+                    await _unitOfWork.RequestRepository.UpdateAsync(request);
+                }
+                
                 // Update task IsSigned field
                 task.IsSigned = true;
                 await _unitOfWork.TaskRepository.UpdateAsync(task);
@@ -162,13 +173,13 @@ namespace GRRWS.Application.Implement.Service
                 return Result.SuccessWithObject(new
                 {
                     Message = $"{confirmation.ConfirmationType} task confirmed successfully!",
-                    TaskId = taskId,
+                    TaskId = confirmation.TaskId,
                     ConfirmationId = taskConfirmation.Id
                 });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error confirming {ConfirmationType} for task {TaskId}: {Message}", confirmation.ConfirmationType, taskId, ex.Message);
+                _logger.LogError(ex, "Error confirming {ConfirmationType} for task {TaskId}: {Message}", confirmation.ConfirmationType, confirmation.TaskId, ex.Message);
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", $"Failed to confirm {confirmation.ConfirmationType}: {ex.Message}"));
             }
         }
@@ -741,6 +752,17 @@ namespace GRRWS.Application.Implement.Service
             _unitOfWork.ClearChangeTracker();
             var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
             // Only send notification if the task status is Completed
+            if (task.Status == Status.InProgress && task.TaskType == TaskType.WarrantySubmission)
+            {
+                var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(taskId);
+                if (request != null)
+                {
+                    request.IsNeedSign = true;
+                    await _unitOfWork.RequestRepository.UpdateAsync(request);
+                    await _unitOfWork.SaveChangesAsync(); // Save the request update
+                    _unitOfWork.ClearChangeTracker();
+                }
+            }
             if (task.Status == Status.Completed)
             {
                 var assignee = await _unitOfWork.UserRepository.GetByIdAsync(userId);
@@ -1050,11 +1072,21 @@ namespace GRRWS.Application.Implement.Service
             if (!checkTask.IsSuccess) return checkTask;
             var checkMechanic = await _checkIsExist.User(mechanicId);
             if (!checkMechanic.IsSuccess) return checkMechanic;
+            
             var isUpdated = await _unitOfWork.TaskRepository.UpdateUninstallDeviceInTask(taskId, mechanicId);
             if (isUpdated == null)
             {
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Task not found or device already uninstalled."));
             }
+            _unitOfWork.ClearChangeTracker();
+            var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(taskId);
+            if(request == null)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found ."));
+            }
+            request.IsNeedSign = true;
+            await _unitOfWork.RequestRepository.UpdateAsync(request);
+            await _unitOfWork.SaveChangesAsync();
             return Result.SuccessWithObject(new
             {
                 Message = "Uninstall device updated successfully!",
@@ -1075,7 +1107,7 @@ namespace GRRWS.Application.Implement.Service
             oldDevice.Status = DeviceStatus.InUse;
             oldDevice.ModifiedDate = TimeHelper.GetHoChiMinhTime();
             await _unitOfWork.DeviceRepository.UpdateAsync(oldDevice);
-            _unitOfWork.ClearChangeTracker();
+                
             var newDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync((Guid)requestMachine.NewDeviceId);
             newDevice.Status = DeviceStatus.Active;
             newDevice.ModifiedDate = TimeHelper.GetHoChiMinhTime();
@@ -1199,6 +1231,7 @@ namespace GRRWS.Application.Implement.Service
                     if (request?.DeviceId != null)
                     {
                         device.Status = DeviceStatus.InUse;
+
                         await _unitOfWork.DeviceRepository.UpdateAsync(device);
                     }
                     // Create a RequestMachineReplacement for StockReturn of the temporary device
@@ -1248,6 +1281,7 @@ namespace GRRWS.Application.Implement.Service
                     await _unitOfWork.TaskRepository.UpdateAsync(task);
                     _unitOfWork.ClearChangeTracker(); // Clear change tracker after updating task
                     request.IsSovled = true;
+                    request.IsNeedSign = true;
                     request.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                     await _unitOfWork.RequestRepository.UpdateAsync(request);
                 }
@@ -1276,6 +1310,7 @@ namespace GRRWS.Application.Implement.Service
                     task.IsInstall = true;
                     await _unitOfWork.TaskRepository.UpdateAsync(task);
                     request.IsSovled = true;
+                    request.IsNeedSign = true;
                     request.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                     await _unitOfWork.RequestRepository.UpdateAsync(request);
                 }

@@ -102,6 +102,38 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Include(p => p.Device)
                 .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
         }
-
+        public async Task<List<Position>> GetPositionsByAreaIdAsync(Guid areaId)
+        {
+            return await _context.Positions
+                .Include(p => p.Zone)
+                    .ThenInclude(z => z.Area)
+                .Include(p => p.Device)
+                .Where(p => !p.IsDeleted && p.Zone != null && p.Zone.AreaId == areaId)
+                .ToListAsync();
+        }
+        public async Task<List<Request>> GetRequestsByPositionIdAsync(Guid positionId)
+        {
+            return await _context.Requests
+                .Include(r => r.Device)
+                .Include(r => r.Sender)
+                .Include(r => r.Position)
+                .Where(r => r.PositionId == positionId && !r.IsDeleted)
+                .ToListAsync();
+        }
+        public async Task<List<TaskConfirmation>> GetTaskConfirmationsByPositionIdAsync(Guid positionId)
+        {
+            return await _context.TaskConfirmations
+                .Include(tc => tc.Task)
+                    .ThenInclude(t => t.TaskGroup)
+                        .ThenInclude(tg => tg != null ? tg.Report : null)
+                            .ThenInclude(rp => rp != null ? rp.Request : null)
+                .Include(tc => tc.Signer)
+                .Where(tc => tc.Task.TaskGroup != null
+                          && tc.Task.TaskGroup.Report != null
+                          && tc.Task.TaskGroup.Report.Request != null
+                          && tc.Task.TaskGroup.Report.Request.PositionId == positionId
+                          && !tc.IsDeleted)
+                .ToListAsync();
+        }
     }
 }

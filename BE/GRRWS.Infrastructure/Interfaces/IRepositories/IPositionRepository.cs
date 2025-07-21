@@ -19,5 +19,8 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<List<Position>> GetPositionsByZoneIdAsync(Guid zoneId);
         Task<List<Position>> GetAllPositionsWithDetailsAsync();
         Task<Position> GetByIdAsync(Guid id);
+        Task<List<Position>> GetPositionsByAreaIdAsync(Guid areaId);
+        Task<List<Request>> GetRequestsByPositionIdAsync(Guid positionId);
+        Task<List<TaskConfirmation>> GetTaskConfirmationsByPositionIdAsync(Guid positionId);
     }
 }

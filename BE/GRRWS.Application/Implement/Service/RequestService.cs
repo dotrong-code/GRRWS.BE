@@ -376,7 +376,9 @@ namespace GRRWS.Application.Implement.Service
                     IssueId = issueId,
 
                     Images = new List<Image>()
-                }).ToList()
+                }).ToList(),
+                PositionId = getDevice.PositionId,
+                IsNeedSign = false
             };
 
             // Handle image uploads

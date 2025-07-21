@@ -462,20 +462,24 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     DocumentName = doc.DocumentName,
                     DocumentUrl = doc.DocumentUrl // Assuming DocumentUrl is a property in WarrantyClaimDocument
                 }).ToList() ?? new List<WarrantyDocument>(),
-                TaskConfirmations = task.TaskConfirmations?.Select(tc => new TaskConfirmationDTO
+                TaskConfirmations = task.TaskConfirmations?.Select(tc => new TaskConfirmationResponeDTO
                 {
 
                     TaskId = tc.TaskId,
                     SignerId = tc.SignerId,
+                    DeviceId = tc.DeviceId,
                     SignerRole = tc.SignerRole,
                     SignatureBase64 = tc.SignatureBase64,
-                    DeviceSerial = tc.DeviceSerial,
-                    DeviceModel = tc.DeviceModel,
+                    DeviceName = tc.DeviceName,
+                    DeviceCode = tc.DeviceCode,
+
                     DeviceCondition = tc.DeviceCondition,
                     ConfirmationType = tc.ConfirmationType,
                     Notes = tc.Notes
 
-                }).ToList() ?? new List<TaskConfirmationDTO>()
+
+                }).ToList() ?? new List<TaskConfirmationResponeDTO>()
+
 
             };
         }
@@ -549,20 +553,24 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 EndTime = task.EndTime,
                 AssigneeName = task.Assignee?.FullName,
                 ErrorDetails = errorDetails,
-                TaskConfirmations = task.TaskConfirmations?.Select(tc => new TaskConfirmationDTO
+                TaskConfirmations = task.TaskConfirmations?.Select(tc => new TaskConfirmationResponeDTO
                 {
 
                     TaskId = tc.TaskId,
                     SignerId = tc.SignerId,
+                    DeviceId = tc.DeviceId,
                     SignerRole = tc.SignerRole,
                     SignatureBase64 = tc.SignatureBase64,
-                    DeviceSerial = tc.DeviceSerial,
-                    DeviceModel = tc.DeviceModel,
+                    DeviceName = tc.DeviceName,
+                    DeviceCode = tc.DeviceCode,
+
                     DeviceCondition = tc.DeviceCondition,
                     ConfirmationType = tc.ConfirmationType,
                     Notes = tc.Notes
 
-                }).ToList() ?? new List<TaskConfirmationDTO>()
+
+                }).ToList() ?? new List<TaskConfirmationResponeDTO>()
+
             };
         }
         public Task<GetDetailReplaceTaskForMechanic> GetDetailReplaceTaskForMechanicByIdAsync(Guid taskId, string type)
@@ -617,20 +625,24 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 DeviceCode = deviceInfo?.DeviceCode ?? "N/A",
                 Location = deviceInfo?.Location ?? "Location not available",
                 TaskGroupName = task.TaskGroup?.GroupName,
-                TaskConfirmations = task.TaskConfirmations?.Select(tc => new TaskConfirmationDTO
+                TaskConfirmations = task.TaskConfirmations?.Select(tc => new TaskConfirmationResponeDTO
                 {
 
                     TaskId = tc.TaskId,
                     SignerId = tc.SignerId,
+                    DeviceId = tc.DeviceId,
                     SignerRole = tc.SignerRole,
                     SignatureBase64 = tc.SignatureBase64,
-                    DeviceSerial = tc.DeviceSerial,
-                    DeviceModel = tc.DeviceModel,
+                    DeviceName = tc.DeviceName,
+                    DeviceCode = tc.DeviceCode,
+
                     DeviceCondition = tc.DeviceCondition,
                     ConfirmationType = tc.ConfirmationType,
                     Notes = tc.Notes
 
-                }).ToList() ?? new List<TaskConfirmationDTO>()
+
+                }).ToList() ?? new List<TaskConfirmationResponeDTO>()
+
 
             };
         }
@@ -665,15 +677,11 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         : r.Report.Location ?? "Location not available"
                 })
                 .FirstOrDefaultAsync();
-            var requestMachines = await _context.RequestMachineReplacements
-                .Where(rm => rm.TaskId == taskId)
-                .ToListAsync();
-
-            var stockOut = requestMachines.FirstOrDefault(rm => rm.RequestType == RequestMachineReplacementType.StockOut);
+            var requestReplacement = task.RequestMachineReplacement?.FirstOrDefault();
             return new GetDetailInstallTaskForMechanic
             {
                 TaskId = task.Id,
-                DeviceId = stockOut.OldDeviceId,
+                DeviceId = requestReplacement?.OldDeviceId ?? Guid.Empty,
                 TaskType = task.TaskType.ToString(),
                 TaskName = task.TaskName,
                 TaskDescription = task.TaskDescription,
@@ -687,32 +695,31 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 DeviceCode = deviceInfo?.DeviceCode ?? "N/A",
                 Location = deviceInfo?.Location ?? "Location not available",
                 TaskGroupName = task.TaskGroup?.GroupName,
+                NewDeviceId = requestReplacement?.NewDeviceId ?? Guid.Empty,
                 IsUninstall = task.IsUninstall ?? false, // True if this is an uninstall task, false if it's an install task
                 IsInstall = task.IsInstall ?? false, // 
                 IsSigned = task.IsSigned ?? false,
-                TaskConfirmations = task.TaskConfirmations?.Select(tc => new TaskConfirmationDTO
+                AssigneeConfirm = requestReplacement?.AssigneeConfirm ?? false,
+                StockKeeperConfirm = requestReplacement?.StokkKeeperConfirm ?? false,
+                RequestMachineId = requestReplacement?.Id ?? Guid.Empty,
+                RequestMachineDescription = requestReplacement?.Notes,
+                TaskConfirmations = task.TaskConfirmations?.Select(tc => new TaskConfirmationResponeDTO
                 {
 
                     TaskId = tc.TaskId,
                     SignerId = tc.SignerId,
+                    DeviceId = tc.DeviceId,
                     SignerRole = tc.SignerRole,
                     SignatureBase64 = tc.SignatureBase64,
-                    DeviceSerial = tc.DeviceSerial,
-                    DeviceModel = tc.DeviceModel,
+                    DeviceName = tc.DeviceName,
+                    DeviceCode = tc.DeviceCode,
+
                     DeviceCondition = tc.DeviceCondition,
                     ConfirmationType = tc.ConfirmationType,
                     Notes = tc.Notes
 
-                }).ToList() ?? new List<TaskConfirmationDTO>(),
-                NewDeviceId = stockOut.NewDeviceId ?? Guid.Empty,
-                RequestMachines = requestMachines.Select(rm => new RequestMachineDetail
-                {
-                    RequestMachineId = rm.Id,
-                    RequestMachineDescription = rm.Notes,
-                    AssigneeConfirm = rm.AssigneeConfirm,
-                    StockKeeperConfirm = rm.StokkKeeperConfirm,
-                    RequestMachineReplacementType = rm.RequestType.ToString() // Assuming RequestType is a property in RequestMachineReplacement
-                }).ToList()
+                }).ToList() ?? new List<TaskConfirmationResponeDTO>()
+
             };
         }
         public async Task<Guid> CreateWarrantyTask(CreateWarrantyTaskRequest request, Guid userId)
