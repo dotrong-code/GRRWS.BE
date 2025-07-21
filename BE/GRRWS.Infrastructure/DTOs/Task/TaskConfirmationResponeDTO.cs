@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GRRWS.Infrastructure.DTOs.Task
 {
-    public class TaskConfirmationDTO
+    public class TaskConfirmationResponeDTO
     {
         public Guid TaskId { get; set; }
         public Guid? SignerId { get; set; } // Nullable, may be pre-filled for HOD
@@ -14,10 +14,10 @@ namespace GRRWS.Infrastructure.DTOs.Task
         public string SignerRole { get; set; } // "Mechanic", "HOD", "HOT"
         public string? SignatureBase64 { get; set; } // Nullable
         public string? DeviceCondition { get; set; }
+        public string? DeviceName { get; set; }
+        public string? DeviceCode { get; set; }
         public string ConfirmationType { get; set; } // "Uninstall", "Install", "WarrantySubmission"
         public string? Notes { get; set; }
 
     }
-
 }
-    

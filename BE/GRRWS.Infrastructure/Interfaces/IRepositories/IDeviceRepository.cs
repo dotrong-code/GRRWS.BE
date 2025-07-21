@@ -10,6 +10,8 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
     {
         Task<bool> DeviceCodeExistsAsync(string deviceCode);
         Task<Device> GetDeviceByIdAsync(Guid id);
+        Task<List<Device>> GetDevicesByPositionIdsAsync(Guid positionIds);
+        
         Task<(List<GetDeviceResponse> Devices, int TotalCount)> GetAllDevicesAsync(
             string? deviceName = null,
             string? deviceCode = null,

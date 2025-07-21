@@ -185,12 +185,12 @@ namespace GRRWS.Infrastructure.DB
                 .IsRequired(false); // Nullable
 
             modelBuilder.Entity<TaskConfirmation>()
-                .Property(tc => tc.DeviceSerial)
+                .Property(tc => tc.DeviceName)
                 .HasMaxLength(100)
                 .IsRequired(false);
 
             modelBuilder.Entity<TaskConfirmation>()
-                .Property(tc => tc.DeviceModel)
+                .Property(tc => tc.DeviceCode)
                 .HasMaxLength(100)
                 .IsRequired(false);
 

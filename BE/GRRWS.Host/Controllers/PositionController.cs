@@ -82,6 +82,21 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, "Positions retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
+        [HttpGet("{positionId}/requests")]
+        public async Task<IResult> GetRequestsByPositionId(Guid positionId)
+        {
+            var result = await _positionService.GetRequestsByPositionIdAsync(positionId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Requests retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpGet("{positionId}/task-confirmations")]
+        public async Task<IResult> GetTaskConfirmationsByPositionId(Guid positionId)
+        {
+            var result = await _positionService.GetTaskConfirmationsByPositionIdAsync(positionId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Task confirmations retrieved successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }

@@ -8,6 +8,8 @@ using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.Common.Message;
 using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.Position;
+using GRRWS.Infrastructure.DTOs.RequestDTO;
+using GRRWS.Infrastructure.DTOs.Task;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -40,7 +42,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failures(errors);
             }
 
-            
+
 
             var position = new Position
             {
@@ -114,7 +116,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(PositionErrorMessage.PositionNotExist());
             }
 
-            
+
 
             position.Index = request.Index;
             position.ZoneId = request.ZoneId;
@@ -161,24 +163,60 @@ namespace GRRWS.Application.Implement.Service
                         PositionName = $"{position.Zone?.Area?.AreaName} - {position.Zone?.ZoneName} - Vị trí {position.Index}"
                     };
 
-                    // Current Device
+                    // Original Device
                     if (position.DeviceId.HasValue)
                     {
-                        var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(position.DeviceId.Value);
-                        if (device != null)
+                        // Lấy danh sách thiết bị tại vị trí
+                        var listDevice = await _unitOfWork.DeviceRepository.GetDevicesByPositionIdsAsync(position.Id);
+
+                        if (listDevice.Count == 1)
                         {
+                            // Chỉ có 1 thiết bị -> xem nó là CurrentDevice
+                            var item = listDevice.First();
+
                             positionResponse.CurrentDevice = new CurrentDeviceDetails
                             {
-                                DeviceId = device.Id,
-                                DeviceName = device.DeviceName ?? "N/A",
-                                DeviceCode = device.DeviceCode ?? "N/A",
-                                SerialNumber = device.SerialNumber ?? "N/A",
-                                Model = device.Model ?? "N/A",
-                                Status = device.Status.ToString(),
-                                IsUnderWarranty = device.IsUnderWarranty
+                                DeviceId = item.Id,
+                                DeviceName = item.DeviceName ?? "N/A",
+                                DeviceCode = item.DeviceCode ?? "N/A",
+                                SerialNumber = item.SerialNumber ?? "N/A",
+                                Model = item.Model ?? "N/A",
+                                Status = item.Status.ToString(),
+                                IsUnderWarranty = item.IsUnderWarranty
                             };
                         }
+                        else if (listDevice.Count == 2)
+                        {
+                            // Lấy thiết bị original (nếu có)
+                            var originalDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(position.DeviceId.Value);
+                            // Có 2 thiết bị -> phân biệt Original và Current dựa vào ID
+                            foreach (var item in listDevice)
+                            {
+                                var deviceDetails = new CurrentDeviceDetails
+                                {
+                                    DeviceId = item.Id,
+                                    DeviceName = item.DeviceName ?? "N/A",
+                                    DeviceCode = item.DeviceCode ?? "N/A",
+                                    SerialNumber = item.SerialNumber ?? "N/A",
+                                    Model = item.Model ?? "N/A",
+                                    Status = item.Status.ToString(),
+                                    IsUnderWarranty = item.IsUnderWarranty
+                                };
+
+                                if (originalDevice != null && item.Id == originalDevice.Id)
+                                {
+                                    positionResponse.OriginalDevice = deviceDetails;
+                                }
+                                else
+                                {
+                                    positionResponse.CurrentDevice = deviceDetails;
+                                }
+                            }
+                        }
                     }
+
+
+
 
                     // Current Request (only Pending, Approved, or InProgress)
                     var request = await _unitOfWork.RequestRepository.GetActiveRequestByPositionIdAsync(position.Id);
@@ -207,8 +245,92 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", $"Failed to retrieve positions: {ex.Message}"));
             }
         }
+        public async Task<Result> GetRequestsByPositionIdAsync(Guid positionId)
+        {
+            try
+            {
+                // Check if position exists
+                var position = await _unitOfWork.PositionRepository.GetByIdAsync(positionId);
+                if (position == null)
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", $"Position with ID {positionId} not found."));
+                }
 
+                var requests = await _unitOfWork.PositionRepository.GetRequestsByPositionIdAsync(positionId);
+                if (!requests.Any())
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", $"No requests found for PositionId: {positionId}."));
+                }
 
+                var response = requests.Select(r => new GetRequestResponse
+                {
+                    Id = r.Id,
+                    RequestTitle = r.RequestTitle ?? "N/A",
+                    Description = r.Description ?? "No description",
+                    Status = r.Status.ToString(),
+                    IsSolved = r.IsSovled,
+                    DueDate = r.DueDate,
+                    Priority = r.Priority.ToString(),
+                    IsNeedSign = r.IsNeedSign,
+                    DeviceId = r.DeviceId,
+                    DeviceName = r.Device?.DeviceName ?? "N/A",
+                    RequestedById = r.RequestedById,
+                    SenderName = r.Sender?.FullName ?? "N/A",
+                    PositionId = r.PositionId,
+                    CreatedDate = r.CreatedDate,
+                    ModifiedDate = r.ModifiedDate
+                }).ToList();
+
+                return Result.SuccessWithObject(response);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", $"Failed to retrieve requests: {ex.Message}"));
+            }
+        }
+        public async Task<Result> GetTaskConfirmationsByPositionIdAsync(Guid positionId)
+        {
+            try
+            {
+                // Check if position exists
+                var position = await _unitOfWork.PositionRepository.GetByIdAsync(positionId);
+                if (position == null)
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", $"Position with ID {positionId} not found."));
+                }
+
+                var taskConfirmations = await _unitOfWork.PositionRepository.GetTaskConfirmationsByPositionIdAsync(positionId);
+                if (!taskConfirmations.Any())
+                {
+                    return Result.SuccessWithObject(taskConfirmations);
+                }
+
+                var response = taskConfirmations.Select(tc => new GetTaskConfirmationResponse
+                {
+                    Id = tc.Id,
+                    TaskId = tc.TaskId,
+                    TaskName = tc.Task?.TaskName ?? "N/A",
+                    SignerId = tc.SignerId,
+                    DeviceId = tc.DeviceId,
+                    SignerName = tc.Signer?.FullName ?? "N/A",
+                    SignerRole = tc.SignerRole,
+                    SignatureBase64 = tc.SignatureBase64 ?? "N/A",
+                    DeviceName = tc.DeviceName ?? "N/A",
+                    DeviceCode = tc.DeviceCode ?? "N/A",
+                    DeviceCondition = tc.DeviceCondition ?? "N/A",
+                    ConfirmationType = tc.ConfirmationType,
+                    Notes = tc.Notes ?? "No notes",
+                    CreatedDate = tc.CreatedDate,
+                    ModifiedDate = tc.ModifiedDate
+                }).ToList();
+
+                return Result.SuccessWithObject(response);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", $"Failed to retrieve task confirmations: {ex.Message}"));
+            }
+        }
 
     }
 }
