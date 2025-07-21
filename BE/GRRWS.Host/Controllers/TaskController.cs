@@ -300,6 +300,14 @@ namespace GRRWS.Host.Controllers
                 ? ResultExtensions.ToSuccessDetails(result, $"{confirmation.ConfirmationType} task confirmed successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
-
+        [HttpPut("update-assignee/{taskId}")]
+        public async Task<IResult> UpdateTaskAssignee(Guid taskId, Guid newAssigneeId)
+        {
+            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            var result = await _taskService.UpdateTaskAssigneeAsync(taskId, newAssigneeId, c.UserId);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Task assignee updated successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
     }
 }

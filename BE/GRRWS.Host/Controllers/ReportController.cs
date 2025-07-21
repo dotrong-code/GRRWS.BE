@@ -48,7 +48,7 @@ namespace GRRWS.Host.Controllers
         [HttpPost("with-issue-error")]
         public async Task<IResult> CreateReportWithIssueError([FromBody] ReportCreateWithIssueErrorDTO dto)
         {
-            var result = await _service.CreateReportWithIssueErrorAsync(dto);
+            var result = await _service.CreateReportWithIssueError2Async(dto);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Report created successfully with IssueErrors")
                 : ResultExtensions.ToProblemDetails(result);
