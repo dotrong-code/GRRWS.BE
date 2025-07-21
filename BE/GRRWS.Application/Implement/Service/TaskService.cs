@@ -98,12 +98,12 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Error", ex.Message));
             }
         }
-        public async Task<Result> ConfirmTask(Guid taskId, Guid mechanicId, TaskConfirmationDTO confirmation)
+        public async Task<Result> ConfirmTask(TaskConfirmationDTO confirmation)
         {
-            var checkTask = await _checkIsExist.Task(taskId);
+            var checkTask = await _checkIsExist.Task(confirmation.TaskId);
             if (!checkTask.IsSuccess) return checkTask;
 
-            var checkMechanic = await _checkIsExist.User(mechanicId);
+            var checkMechanic = await _checkIsExist.User(confirmation.SignerId);
             if (!checkMechanic.IsSuccess) return checkMechanic;
 
             // Validate confirmation type
@@ -113,7 +113,7 @@ namespace GRRWS.Application.Implement.Service
 
             try
             {
-                var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
+                var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(confirmation.TaskId);
                 if (task == null)
                     return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Task not found."));
 
@@ -129,23 +129,28 @@ namespace GRRWS.Application.Implement.Service
                 if (task.IsSigned == true)
                     return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("AlreadySigned", "Task has already been signed."));
 
-                var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(taskId);
-                var device = request != null ? await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(request.DeviceId) : null;
+                var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(confirmation.TaskId);
+
+                
+                var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(confirmation.DeviceId);
+                   
+                
 
                 var taskConfirmation = new TaskConfirmation
                 {
                     Id = Guid.NewGuid(),
-                    TaskId = taskId,
-                    SignerId = confirmation.SignerId ?? mechanicId,
+                    TaskId = confirmation.TaskId,
+                    DeviceId = device.Id,
+                    SignerId = confirmation.SignerId,
                     SignerRole = confirmation.SignerRole,
                     SignatureBase64 = confirmation.SignatureBase64,
-                    DeviceSerial = device?.DeviceCode,
-                    DeviceModel = device?.Machine?.MachineCode,
+                    DeviceName = device?.DeviceName,
+                    DeviceCode = device?.DeviceCode,                  
                     DeviceCondition = confirmation.DeviceCondition,
                     ConfirmationType = confirmation.ConfirmationType,
                     Notes = confirmation.Notes,
                     CreatedDate = TimeHelper.GetHoChiMinhTime(),
-                    CreatedBy = mechanicId
+                    CreatedBy = confirmation.SignerId
                 };
 
                 // Add confirmation to repository
@@ -168,13 +173,13 @@ namespace GRRWS.Application.Implement.Service
                 return Result.SuccessWithObject(new
                 {
                     Message = $"{confirmation.ConfirmationType} task confirmed successfully!",
-                    TaskId = taskId,
+                    TaskId = confirmation.TaskId,
                     ConfirmationId = taskConfirmation.Id
                 });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error confirming {ConfirmationType} for task {TaskId}: {Message}", confirmation.ConfirmationType, taskId, ex.Message);
+                _logger.LogError(ex, "Error confirming {ConfirmationType} for task {TaskId}: {Message}", confirmation.ConfirmationType, confirmation.TaskId, ex.Message);
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", $"Failed to confirm {confirmation.ConfirmationType}: {ex.Message}"));
             }
         }
@@ -734,7 +739,7 @@ namespace GRRWS.Application.Implement.Service
             _unitOfWork.ClearChangeTracker();
             var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
             // Only send notification if the task status is Completed
-            if (task.Status == Status.Pending && task.TaskType == TaskType.WarrantySubmission)
+            if (task.Status == Status.InProgress && task.TaskType == TaskType.WarrantySubmission)
             {
                 var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(taskId);
                 if (request != null)
