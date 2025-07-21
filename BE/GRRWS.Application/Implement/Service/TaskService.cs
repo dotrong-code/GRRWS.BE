@@ -1491,7 +1491,7 @@ namespace GRRWS.Application.Implement.Service
                     if (errorSpareParts.Any())
                     {
                         // Nếu yêu cầu phụ tùng, giữ trạng thái Suggested và không cần gán lại Mechanic
-                        repairTask.Status = Status.WaitingForConfirmation; // Đợi Stock Keeper xác nhận phụ tùng
+                        repairTask.Status = Status.Suggested; // Đợi Stock Keeper xác nhận phụ tùng
                         _unitOfWork.TaskRepository.Update(repairTask);
                     }
                 }
