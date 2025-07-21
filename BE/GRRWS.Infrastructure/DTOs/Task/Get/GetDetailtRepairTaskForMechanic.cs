@@ -5,6 +5,6 @@ namespace GRRWS.Infrastructure.DTOs.Task.Get
     public class GetDetailtRepairTaskForMechanic : GetTaskDetailBase
     {
         public List<ErrorDetailOfTask> ErrorDetails { get; set; } = new List<ErrorDetailOfTask>();
-        public List<TaskConfirmationDTO>? TaskConfirmations { get; set; }
+        public List<TaskConfirmationResponeDTO>? TaskConfirmations { get; set; }
     }
 }

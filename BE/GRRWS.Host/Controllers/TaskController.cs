@@ -294,7 +294,7 @@ namespace GRRWS.Host.Controllers
         [HttpPost("confirm-task")]
         public async Task<IResult> ConfirmTask([FromBody] TaskConfirmationDTO confirmation)
         {
-            CurrentUserObject c = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            
             var result = await _taskService.ConfirmTask(confirmation);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, $"{confirmation.ConfirmationType} task confirmed successfully")
