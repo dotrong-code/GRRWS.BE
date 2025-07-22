@@ -12,6 +12,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> CreateReportWithIssueErrorAsync(ReportCreateWithIssueErrorDTO dto);
         Task<Result> CreateReportWithIssueSymtomAsync(ReportCreateWithIssueSymtomDTO dto);
         Task<Result> GetErrorReportByIdAsync(Guid id);
+        Task<Result> CreateReportWithIssueError2Async(ReportCreateWithIssueErrorDTO dto);
     }
 
 }

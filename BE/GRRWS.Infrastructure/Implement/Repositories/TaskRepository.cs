@@ -677,11 +677,15 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         : r.Report.Location ?? "Location not available"
                 })
                 .FirstOrDefaultAsync();
-            var requestReplacement = task.RequestMachineReplacement?.FirstOrDefault();
+            var requestMachines = await _context.RequestMachineReplacements
+                .Where(rm => rm.TaskId == taskId)
+                .ToListAsync();
+
+            var stockOut = requestMachines.FirstOrDefault(rm => rm.RequestType == RequestMachineReplacementType.StockOut);
             return new GetDetailInstallTaskForMechanic
             {
                 TaskId = task.Id,
-                DeviceId = requestReplacement?.OldDeviceId ?? Guid.Empty,
+                DeviceId = stockOut.OldDeviceId,
                 TaskType = task.TaskType.ToString(),
                 TaskName = task.TaskName,
                 TaskDescription = task.TaskDescription,
@@ -695,14 +699,10 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 DeviceCode = deviceInfo?.DeviceCode ?? "N/A",
                 Location = deviceInfo?.Location ?? "Location not available",
                 TaskGroupName = task.TaskGroup?.GroupName,
-                NewDeviceId = requestReplacement?.NewDeviceId ?? Guid.Empty,
+                NewDeviceId = stockOut.NewDeviceId ?? Guid.Empty,
                 IsUninstall = task.IsUninstall ?? false, // True if this is an uninstall task, false if it's an install task
                 IsInstall = task.IsInstall ?? false, // 
                 IsSigned = task.IsSigned ?? false,
-                AssigneeConfirm = requestReplacement?.AssigneeConfirm ?? false,
-                StockKeeperConfirm = requestReplacement?.StokkKeeperConfirm ?? false,
-                RequestMachineId = requestReplacement?.Id ?? Guid.Empty,
-                RequestMachineDescription = requestReplacement?.Notes,
                 TaskConfirmations = task.TaskConfirmations?.Select(tc => new TaskConfirmationResponeDTO
                 {
 
@@ -718,7 +718,15 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     ConfirmationType = tc.ConfirmationType,
                     Notes = tc.Notes
 
-                }).ToList() ?? new List<TaskConfirmationResponeDTO>()
+                }).ToList() ?? new List<TaskConfirmationResponeDTO>(),
+                RequestMachines = requestMachines.Select(rm => new RequestMachineDetail
+                {
+                    RequestMachineId = rm.Id,
+                    RequestMachineDescription = rm.Notes,
+                    AssigneeConfirm = rm.AssigneeConfirm,
+                    StockKeeperConfirm = rm.StokkKeeperConfirm,
+                    RequestMachineReplacementType = rm.RequestType.ToString() // Assuming RequestType is a property in RequestMachineReplacement
+                }).ToList()
 
             };
         }
@@ -1358,7 +1366,36 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     {
                         totalExpectedTime = TimeSpan.FromHours(8);
                     }
+                    // Kiểm tra số lượng tồn kho của phụ tùng
+                    bool isDelayed = false;
+                    var getErrorGuidelineSpareparts = await _context.ErrorSpareparts
+                        .Include(egsp => egsp.Sparepart)
+                        .Where(egsp => request.ErrorGuidelineIds.Contains(egsp.ErrorGuidelineId))
+                        .ToListAsync();
 
+                    foreach (var sparepart in getErrorGuidelineSpareparts)
+                    {
+                        var stockQuantity = sparepart.Sparepart?.StockQuantity ?? 0;
+                        var quantityNeeded = sparepart.QuantityNeeded ?? 1;
+                        if (stockQuantity == 0 || stockQuantity < quantityNeeded)
+                        {
+                            isDelayed = true;
+                            break;
+                        }
+                    }
+
+                    Guid? stockKeeperId = null;
+                    if (!isDelayed)
+                    {
+                        stockKeeperId = await _context.Users
+                            .Where(u => u.Role == 4)
+                            .Select(u => u.Id)
+                            .FirstOrDefaultAsync();
+                        if (stockKeeperId == Guid.Empty)
+                        {
+                            throw new Exception("No StockKeeper found in the system.");
+                        }
+                    }
                     // Create the repair task
                     var task = new Tasks
                     {
@@ -1368,7 +1405,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         TaskDescription = $"Sửa lỗi: {string.Join(", ", errorGuidelines.Select(eg => eg.Error?.Name ?? "Unknown"))}",
                         StartTime = TimeHelper.GetHoChiMinhTime(),
                         ExpectedTime = (TimeHelper.GetHoChiMinhTime()).AddHours(2),
-                        Status = request.AssigneeId == null ? Status.Suggested : Status.Pending,
+                        Status = isDelayed ? Status.Delayed : Status.Suggested,
                         Priority = Domain.Enum.Priority.Medium,
                         AssigneeId = request.AssigneeId,
                         TaskGroupId = taskGroupId,
@@ -1413,10 +1450,12 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                                     RequestDate = TimeHelper.GetHoChiMinhTime(),
                                     RequestedById = userId,
                                     AssigneeId = request.AssigneeId,
-                                    Status = SparePartRequestStatus.Unconfirmed,
+                                    Status = SparePartRequestStatus.Confirmed,
                                     Notes = $"Auto-generated for repair task: {task.TaskName}",
                                     CreatedDate = TimeHelper.GetHoChiMinhTime(),
-                                    IsDeleted = false
+                                    IsDeleted = false,
+                                    ConfirmedById = isDelayed ? null : stockKeeperId,
+                                    ConfirmedDate = isDelayed ? null : TimeHelper.GetHoChiMinhTime()
                                 };
 
                                 await _context.RequestTakeSparePartUsages.AddAsync(requestTakeSparePartUsage);
@@ -1427,7 +1466,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                                     Id = Guid.NewGuid(),
                                     SparePartId = egsp.SparepartId,
                                     QuantityUsed = egsp.QuantityNeeded ?? 1, // Default to 1 if not specified
-                                    IsTakenFromStock = false,
+                                    IsTakenFromStock = !isDelayed,
                                     RequestTakeSparePartUsageId = requestTakeSparePartUsage.Id,
                                     CreatedDate = TimeHelper.GetHoChiMinhTime(),
                                     IsDeleted = false
@@ -1709,7 +1748,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         ExpectedTime = (request.StartDate ?? TimeHelper.GetHoChiMinhTime()).AddHours(2), // Default 3 hours for installation
                         Status = request.AssigneeId == null ? Status.WaitingForConfirmation : Status.Pending,
                         Priority = Domain.Enum.Priority.Medium,
-                        AssigneeId = request.AssigneeId,
+                        AssigneeId = null,
                         TaskGroupId = taskGroupId,
                         OrderIndex = orderIndex,
                         CreatedDate = TimeHelper.GetHoChiMinhTime(),
