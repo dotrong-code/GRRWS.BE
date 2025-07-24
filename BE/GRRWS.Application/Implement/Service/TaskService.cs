@@ -1897,7 +1897,7 @@ namespace GRRWS.Application.Implement.Service
                 if (repairTask != null)
                 {
                     repairTask.AssigneeId = repairMechanicId;
-                    repairTask.Status = Status.Pending;
+                    repairTask.Status = Status.WaitingForInstallation;
                     repairTask.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                     //repairTask.ExpectedTime = thirdMechanic.ExpectedTime;
                     await _unitOfWork.TaskRepository.UpdateAsync(repairTask);

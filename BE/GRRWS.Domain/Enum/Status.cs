@@ -12,6 +12,7 @@
         Suggested = 7, // Trạng thái task đã được hệ thống gợi ý mechanic (dùng cho khi tạo task)
         WaitingForConfirmation = 8, // Trạng thái task đang được chờ stockkeepr xác nhận (dùng cho khi tạo task)
         Delayed = 9, // Trạng thái yêu cầu bị trì hoãn do chưa có phụ tùng thay thế hoặc do nguyên nhân khác
+        WaitingForInstallation = 10, // Trạng thái yêu cầu đang chờ cài đặt thiết bị mới
     }
 }
 //[EnumDataType(typeof(Status))]
