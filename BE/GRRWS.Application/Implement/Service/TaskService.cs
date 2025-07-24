@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Google.Protobuf.WellKnownTypes;
 using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Common.Validator.Task;
@@ -774,20 +775,21 @@ namespace GRRWS.Application.Implement.Service
             {
                 var getCurrentTask = await _unitOfWork.TaskRepository.GetByIdAsync(taskId);
                 var getTaskGroup = await _unitOfWork.TaskGroupRepository.GetByIdAsync(getCurrentTask.TaskGroupId ?? Guid.Empty);
-                if (getTaskGroup == null)
-                {
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Task group not found for the completed task."));
-                }
                 var tasks = await _unitOfWork.TaskRepository.GetTasksByGroupIdAsync(getTaskGroup.Id);
+                var installationTask = tasks.FirstOrDefault(t => t.TaskType == TaskType.Installation && t.Status == Status.Completed);
                 var repairTask = tasks.FirstOrDefault(t => t.Status == Status.WaitingForInstallation);
                 if (repairTask == null)
                 {
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "No repair task found in the completed task group."));
+                    _unitOfWork.ClearChangeTracker();
                 }
-                repairTask.Status = Status.Pending;
-                await _unitOfWork.TaskRepository.UpdateAsync(repairTask);
-                await _unitOfWork.SaveChangesAsync(); // Save the repair task update
-                _unitOfWork.ClearChangeTracker();
+                if (installationTask != null)
+                {
+                    repairTask.Status = Status.Pending;
+                    await _unitOfWork.TaskRepository.UpdateAsync(repairTask);
+                    await _unitOfWork.SaveChangesAsync(); // Save the repair task update
+                    _unitOfWork.ClearChangeTracker();
+                }
+
                 var assignee = await _unitOfWork.UserRepository.GetByIdAsync(userId);
                 // Notify Head of Technical (HOT) about completed task
                 var notificationCompletedTaskForHOT = new NotificationRequest
