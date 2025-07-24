@@ -1,8 +1,9 @@
-﻿namespace GRRWS.Infrastructure.DTOs.Task.Get
+﻿using GRRWS.Infrastructure.DTOs.MachineActionConfirmation;
+
+namespace GRRWS.Infrastructure.DTOs.Task.Get
 {
     public class GetDetailWarrantyTaskForMechanic : GetTaskDetailBase
     {
-
         public string? ClaimNumber { get; set; } // Warranty claim number
         public string? WarrantyProvider { get; set; } // Name of the warranty provider
         public string? WarrantyCode { get; set; } // Name of the device under warranty
@@ -20,7 +21,7 @@
         public bool IsUninstallDevice { get; set; } // Indicates if the device needs to be uninstalled
         public Guid? WarrantyClaimId { get; set; } // Unique identifier for the warranty claim
         public List<WarrantyDocument>? Documents { get; set; } // List of documents related to the warranty claim
-        public List<TaskConfirmationResponeDTO>? TaskConfirmations { get; set; } // Added
+        public List<TaskConfirmationResponseDTO> TaskConfirmations { get; set; } = new List<TaskConfirmationResponseDTO>();
     }
 
     public class WarrantyDocument

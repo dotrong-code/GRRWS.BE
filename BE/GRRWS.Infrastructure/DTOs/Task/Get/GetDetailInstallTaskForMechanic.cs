@@ -11,7 +11,7 @@ namespace GRRWS.Infrastructure.DTOs.Task.Get
         public bool IsSigned { get; set; } // True if this is an uninstall task, false if it's an install task
         public Guid NewDeviceId { get; set; } // ID of the new device to be installed
 
-        public List<TaskConfirmationResponeDTO>? TaskConfirmations { get; set; }
+        public List<TaskConfirmationResponseDTO>? TaskConfirmations { get; set; }
     }
 
 }

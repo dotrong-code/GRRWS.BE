@@ -2,6 +2,7 @@
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
 using GRRWS.Infrastructure.DTOs.Common;
+using GRRWS.Infrastructure.DTOs.MachineActionConfirmation;
 using GRRWS.Infrastructure.DTOs.Task;
 using GRRWS.Infrastructure.DTOs.Task.ActionTask;
 using GRRWS.Infrastructure.DTOs.Task.Get;
@@ -273,33 +274,10 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
-        [HttpPut("reinstall-old-device/{taskId}")]
-        public async Task<IResult> ReInstallOldDevice(Guid taskId)
-        {
-            var result = await _taskService.ReInstallOldDevice(taskId);
-            return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, "Reinstall old device successfully")
-                : ResultExtensions.ToProblemDetails(result);
-        }
+        
 
-        [HttpPut("is-install-device")]
-        public async Task<IResult> UpdateIsInstallDevice(Guid taskId, Guid deviceId)
-        {
-            var result = await _taskService.InstallDevice(taskId, deviceId);
-            return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, "Is install device updated successfully")
-                : ResultExtensions.ToProblemDetails(result);
-        }
-        [Authorize]
-        [HttpPost("confirm-task")]
-        public async Task<IResult> ConfirmTask([FromBody] TaskConfirmationDTO confirmation)
-        {
-            
-            var result = await _taskService.ConfirmTask(confirmation);
-            return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, $"{confirmation.ConfirmationType} task confirmed successfully")
-                : ResultExtensions.ToProblemDetails(result);
-        }
+        
+
         [HttpPut("update-assignee/{taskId}")]
         public async Task<IResult> UpdateTaskAssignee(Guid taskId, Guid newAssigneeId)
         {

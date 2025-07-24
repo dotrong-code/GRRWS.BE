@@ -17,7 +17,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         {
             return await _context.Devices.AnyAsync(d => d.DeviceCode == deviceCode && !d.IsDeleted);
         }
-        public async Task<Device> GetDeviceByIdAsync(Guid id)
+        public async Task<Device> GetDeviceByIdAsync(Guid? id)
         {
             return await _context.Devices
                 .Include(d => d.Machine)
@@ -299,5 +299,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             var device = await _context.Devices.FirstOrDefaultAsync(d => d.PositionId == positionId && d.Status == status);
             return device;
         }
+
+        
     }
 }

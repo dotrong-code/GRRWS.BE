@@ -31,7 +31,47 @@
         {
             return $"Yêu cầu xuất kho thiết bị-{deviceName}";
         }
+        public static string StockOutConfirmation(string areaName, string zoneName, int positionIndex)
+        {
+            return $"STOCKOUT-{areaName}/{zoneName}/{positionIndex}-{TimeHelper.GetHoChiMinhTime():yyyyMMddHHmmss}";
+        }
 
+        public static string StockInConfirmation(string deviceName)
+        {
+            return $"STOCKIN-{deviceName}-{TimeHelper.GetHoChiMinhTime():yyyyMMddHHmmss}";
+        }
+
+        public static string InstallationConfirmation(string deviceName)
+        {
+            return $"INSTALL-{deviceName}-{TimeHelper.GetHoChiMinhTime():yyyyMMddHHmmss}";
+        }
+
+        public static string WarrantySubmissionConfirmation(string deviceName)
+        {
+            return $"Lấy thiết bị đi bảo hành-{deviceName}-{TimeHelper.GetHoChiMinhTime():yyyyMMddHHmmss}";
+        }
+
+        public static string StockOutNote(string newDeviceName, string oldDeviceName)
+        {
+            return $"Retrieve replacement device {newDeviceName} for {oldDeviceName}";
+        }
+
+        public static string StockInNote(string deviceName)
+        {
+            return $"Return faulty device {deviceName} to stock";
+        }
+
+        public static string InstallationNote(string deviceName)
+        {
+            return $"Confirm installation of {deviceName}";
+        }
+
+        public static string WarrantySubmissionNote(string deviceName)
+        {
+            return $"Submit {deviceName} for warranty repair";
+        }
+
+        
 
 
     }

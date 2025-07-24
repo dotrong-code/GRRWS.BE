@@ -23,14 +23,14 @@ namespace GRRWS.Application.Implement.Service
         private readonly IMapper _mapper;
         private readonly ITaskService _taskService;
         private readonly IMechanicShiftService _mechanicShiftService;
-        private readonly IRequestMachineReplacementService _requestMachineReplacementService;
-        public ReportService(IUnitOfWork unit, IMapper mapper, ITaskService taskService, IMechanicShiftService mechanicShiftService, IRequestMachineReplacementService requestMachineReplacementService)
+        
+        public ReportService(IUnitOfWork unit, IMapper mapper, ITaskService taskService, IMechanicShiftService mechanicShiftService)
         {
             _unit = unit;
             _mapper = mapper;
             _taskService = taskService;
             _mechanicShiftService = mechanicShiftService;
-            _requestMachineReplacementService = requestMachineReplacementService;
+           
         }
 
 
@@ -513,6 +513,9 @@ namespace GRRWS.Application.Implement.Service
             // Fix for CS0019 and CS1001 errors
             var users = await _unit.UserRepository.GetUsersByRole(2);
             var systemUserId = users?.FirstOrDefault()?.Id ?? Guid.Parse("32222222-2222-2222-2222-222222222222");
+
+            //Tao Task Bao hanh
+
             var result = await CreateWarrantyTaskGroup(report.Id, allSymtomIds.Distinct().ToList(), systemUserId);
             if (result.IsFailure)
             {
@@ -587,26 +590,15 @@ namespace GRRWS.Application.Implement.Service
                 {
                     return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", $"Request not found for the provided {reportId}."));
                 }
-
-                //var currentTime = DateTime.Now;
-                //var availableMechanics = await _unit.UserRepository.GetRecommendedMechanicsAsync(currentTime, 1, 10);
-
-
-                //if (!availableMechanics.Any())
-                //{
-                //    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", $"No more mechanic available."));
-                //}
-                var availableMechanics = await _unit.UserRepository.GetMechanicsWithoutTask();
-                var primaryMechanic = availableMechanics.First(); // Best available mechanic
-                //var secondaryMechanic = availableMechanics.Count > 1 ? availableMechanics[1] : primaryMechanic;
-
-                //var newDeviceId = await _unit.DeviceRepository.GetDeviceByStatusAsync(DeviceStatus.Active);
+                
+                //
                 var deviceWarrantyId = await _unit.DeviceWarrantyRepository.GetDeviceWarrantyByDeviceIdForDevice(request.DeviceId);
-                // Step 2: Create Warranty Submission Task using existing TaskService method
+                // Step 2: Tạo task mang máy đi bảo hành (Chưa có tạo request lấy máy bảo hành dưới kho rồi mang đi bảo hành)
                 var warrantyRequest = new CreateWarrantyTaskRequest
                 {
                     RequestId = requestId,
-                    AssigneeId = primaryMechanic.Id, // Will be assigned later through auto-assignment
+                    AssigneeId = null,
+                    StartDate = null,
                     DeviceWarrantyId = deviceWarrantyId,
                     TechnicalIssueIds = technicalSymptomIds,
 
@@ -622,13 +614,14 @@ namespace GRRWS.Application.Implement.Service
                 Guid taskGroupId = data.TaskGroupId;
                 _unit.ClearChangeTracker();
 
-                // Step 3: Create Installation Task for replacement device using existing TaskService method
+                // Step 3: Tạo task lấy máy thay thế tạm thời + Request yêu cầu lấy máy dưới kho
                 var installRequest = new CreateInstallTaskRequest
                 {
                     RequestId = requestId,
-                    //AssigneeId = secondaryMechanic.Id, // Will be assigned later through auto-assignment
+                    AssigneeId=null,
+                    StartDate =null,
                     TaskGroupId = taskGroupId,
-                    //NewDeviceId = newDeviceId,
+                    NewDeviceId=null
                 };
                 var installResult = await _taskService.CreateInstallTask(installRequest, createdByUserId);
                 if (installResult.IsFailure)

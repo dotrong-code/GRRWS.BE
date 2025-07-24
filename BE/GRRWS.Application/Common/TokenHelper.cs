@@ -17,6 +17,13 @@ namespace GRRWS.Application.Common
             get { if (instance == null) instance = new TokenHelper(); return Common.TokenHelper.instance; }
             private set { Common.TokenHelper.instance = value; }
         }
+        private static readonly Dictionary<string, int> RoleMap = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "Head of Department", 1 },
+            { "Head of Technical", 2 },
+            { "Staff", 3 },
+            { "SK", 4 }
+        };
         public async Task<CurrentUserObject> GetThisUserInfo(HttpContext httpContext)
         {
 
@@ -32,10 +39,20 @@ namespace GRRWS.Application.Common
             {
                 Email = checkUser.Value,
                 Fullname = httpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value,
-                PhoneNumber = httpContext.User.Claims.FirstOrDefault(c => c.Type == "phone")?.Value,
-                RoleName = httpContext.User.Claims.FirstOrDefault(c => c.Type == "role")?.Value
+                PhoneNumber = httpContext.User.Claims.FirstOrDefault(c => c.Type == "phoneNumber")?.Value,
+                RoleName = httpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value,
             };
-
+            // Map the string role to integer Role
+            var roleClaim = httpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+            if (!string.IsNullOrEmpty(roleClaim) && RoleMap.TryGetValue(roleClaim, out int roleValue))
+            {
+                currentUser.Role = roleValue;
+            }
+            else
+            {
+                // Default to 0 or handle invalid role
+                currentUser.Role = 0; // Or throw an exception/log an error if invalid role is critical
+            }
             // Convert UserId claim (string) to Guid
             var userIdClaim = httpContext.User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
             if (Guid.TryParse(userIdClaim, out Guid userId))

@@ -1,4 +1,5 @@
 ﻿using GRRWS.Application.Common.Result;
+using GRRWS.Infrastructure.DTOs.MachineActionConfirmation;
 using GRRWS.Infrastructure.DTOs.Task;
 using GRRWS.Infrastructure.DTOs.Task.ActionTask;
 using GRRWS.Infrastructure.DTOs.Task.Get;
@@ -31,7 +32,7 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> CreateRepairTask(CreateRepairTaskRequest request, Guid userId);
         #endregion
         Task<Result> UpdateTaskStatusAsync(Guid taskId, Guid userId);
-        Task<Result> UpdateIsInstallDevice(Guid taskId, Guid? NewDeviceId);
+        
         Task<Result> FillInWarrantyTask(FillInWarrantyTask request, Guid userId);
         Task<Result> UpdateWarrantyClaim(UpdateWarrantyClaimRequest request, Guid userId);
         Task<Result> CreateWarrantyReturnTask(CreateWarrantyReturnTaskRequest request, Guid userId);
@@ -53,10 +54,11 @@ namespace GRRWS.Application.Interface.IService
         Task<Result> ApplySuggestedTaskAssignmentAsync(Guid taskId, Guid? mechanicId = null);
         Task<Result> GetSuggestedTasksByTaskGroupIdAsync(Guid taskGroupId);
 
-        Task<Result> ReInstallOldDevice(Guid taskId);
-        Task<Result> InstallDevice(Guid taskId, Guid deviceId);
-        Task<Result> ConfirmTask(TaskConfirmationDTO confirmation);
+        
+        
+        
         Task<Result> CreateCombinedRepairAndReplacementTasks(CreateCombinedTaskRequest request, Guid userId);
         Task<Result> UpdateTaskAssigneeAsync(Guid taskId, Guid newAssigneeId, Guid updatedByUserId);
+        
     }
 }

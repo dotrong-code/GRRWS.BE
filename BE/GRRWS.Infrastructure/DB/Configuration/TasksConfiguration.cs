@@ -23,8 +23,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                      StartTime = new DateTime(2025, 4, 15, 10, 30, 0, DateTimeKind.Utc),
                      ExpectedTime = new DateTime(2025, 4, 16, 10, 30, 0, DateTimeKind.Utc),
                      EndTime = null,
-                     DeviceReturnTime = null,
-                     DeviceCondition = null,
+                     
                      ReportNotes = null,
                      AssigneeId = Guid.Parse("43333333-3333-3333-3333-333333333334") // Staff Member
                      // Additional mechanics: Staff Member 2 (43333333-3333-3333-3333-333333333334)
@@ -40,8 +39,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                      StartTime = new DateTime(2025, 5, 1, 14, 00, 0, DateTimeKind.Utc),
                      ExpectedTime = new DateTime(2025, 5, 4, 14, 00, 0, DateTimeKind.Utc),
                      EndTime = null,
-                     DeviceReturnTime = null,
-                     DeviceCondition = null,
+                    
                      ReportNotes = null,
                      AssigneeId = Guid.Parse("43333333-3333-3333-3333-333333333334") // Staff Member 2
                      // Additional mechanics: Staff Member 3 (43333333-3333-3333-3333-333333333335)
@@ -57,8 +55,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                      StartTime = new DateTime(2025, 5, 10, 9, 00, 0, DateTimeKind.Utc),
                      ExpectedTime = new DateTime(2025, 5, 13, 9, 00, 0, DateTimeKind.Utc),
                      EndTime = null,
-                     DeviceReturnTime = null,
-                     DeviceCondition = null,
+                    
                      ReportNotes = null,
                      AssigneeId = Guid.Parse("43333333-3333-3333-3333-333333333337") // Staff Member 3
                      // Additional mechanics: Staff Member 4 (43333333-3333-3333-3333-333333333336)
@@ -74,8 +71,7 @@ namespace GRRWS.Infrastructure.DB.Configuration
                      StartTime = new DateTime(2025, 3, 20, 11, 15, 0, DateTimeKind.Utc),
                      ExpectedTime = new DateTime(2025, 3, 21, 11, 15, 0, DateTimeKind.Utc),
                      EndTime = null,
-                     DeviceReturnTime = null,
-                     DeviceCondition = null,
+                     
                      ReportNotes = null,
                      AssigneeId = Guid.Parse("43333333-3333-3333-3333-333333333337") // Staff Member 4
                      // Additional mechanics: Staff Member 5 (43333333-3333-3333-3333-333333333337)
