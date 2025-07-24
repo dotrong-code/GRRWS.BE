@@ -331,7 +331,7 @@ namespace GRRWS.Application.Implement.Service
                 }
 
                 // Tạo request trả máy hư về kho
-                var stockInConfirmation = await CreateStockInConfirmation(request.RequestId, taskId, device.Id, userId);
+                var stockInConfirmation = await CreateStockInConfirmation(request.RequestId, taskId, device.Id, userId, "Return faulty device to stock");
                 if (stockInConfirmation.IsFailure)
                 {
                     return Result.SuccessWithObject(new
@@ -545,9 +545,14 @@ namespace GRRWS.Application.Implement.Service
                 {
                     return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Device not found."));
                 }
-
+                // Update device status to reflect return to stock
+                device.Status = DeviceStatus.Inactive; // Or another appropriate status, e.g., DeviceStatus.InStock
+                device.InstallationDate = null;
+                device.PositionId = null;
+                device.InUsed = false;
+                await _unitOfWork.DeviceRepository.UpdateAsync(device);
                 // Create MachineActionConfirmation for warranty return (StockIn)
-                var stockInResult = await CreateStockInConfirmation(primaryRequest.Id, taskId, device.Id, userId);
+                var stockInResult = await CreateStockInConfirmation(primaryRequest.Id, taskId, device.Id, userId, "Return fault device to stock");
                 if (!stockInResult.IsSuccess)
                 {
                     return stockInResult; // Propagate error if stock-in confirmation fails
@@ -598,7 +603,7 @@ namespace GRRWS.Application.Implement.Service
                     _unitOfWork.ClearChangeTracker(); // Clear change tracker after getting the device
 
                     // Create MachineActionConfirmation for returning the temporary device to stock (StockIn)
-                    var stockReturnResult = await CreateStockInConfirmation(primaryRequest.Id, installTaskResult, tempDeviceInUse.Id, userId);
+                    var stockReturnResult = await CreateStockInConfirmation(primaryRequest.Id, installTaskResult, tempDeviceInUse.Id, userId, "Return warranty device to stock");
                     if (!stockReturnResult.IsSuccess)
                     {
                         return stockReturnResult; // Propagate error if stock-in confirmation fails
@@ -1792,7 +1797,7 @@ namespace GRRWS.Application.Implement.Service
             });
         }
         //Tạo phiếu trả máy về kho
-        private async Task<Result> CreateStockInConfirmation(Guid requestId, Guid taskId, Guid deviceId, Guid userId)
+        private async Task<Result> CreateStockInConfirmation(Guid requestId, Guid taskId, Guid deviceId, Guid userId,string? reason)
         {
             var request = await _unitOfWork.RequestRepository.GetRequestByIdAsync(requestId);
             if (request == null)
@@ -1811,7 +1816,7 @@ namespace GRRWS.Application.Implement.Service
                 DeviceId = deviceId,
                 MachineId = deviceDetail.MachineId,
                 TaskId = taskId,
-                Reason = "Return faulty device to stock",
+                Reason = reason,
                 Status = MachineActionStatus.Pending,
                 ActionType = MachineActionType.StockIn,
                 Notes = "Awaiting mechanic to return faulty device",
@@ -1832,6 +1837,9 @@ namespace GRRWS.Application.Implement.Service
                 ConfirmationCode = confirmation.ConfirmationCode
             });
         }
+
+
+
         //private async Task UpdateForWarrantyDeviceInfor(Guid taskId)
         //{
         //    var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
