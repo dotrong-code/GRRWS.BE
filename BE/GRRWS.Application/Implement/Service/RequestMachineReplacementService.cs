@@ -1,6 +1,7 @@
 ﻿using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
+using GRRWS.Application.Interfaces;
 using GRRWS.Domain.Common;
 using GRRWS.Domain.Entities;
 using GRRWS.Domain.Enum;
@@ -14,10 +15,12 @@ namespace GRRWS.Application.Implement.Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly CheckIsExist _checkIsExist;
-        public RequestMachineReplacementService(IUnitOfWork unitOfWork, CheckIsExist checkIsExist)
+        private readonly INotificationService _notificationService;
+        public RequestMachineReplacementService(IUnitOfWork unitOfWork, CheckIsExist checkIsExist, INotificationService notificationService)
         {
             _unitOfWork = unitOfWork;
             _checkIsExist = checkIsExist;
+            _notificationService = notificationService;
         }
 
         public async Task<Result> ConfirmHadDevice(Guid requestMachineId, Guid userId)
@@ -60,6 +63,11 @@ namespace GRRWS.Application.Implement.Service
 
             await UpdateForInstalledDeviceInfor(requestMachine.OldDeviceId, (Guid)requestMachine.NewDeviceId);
 
+            // Realtime for task status update for confirmation
+            await _notificationService.SendRealtimeMessageToRoleAsync(2, "NotificationReceived", new
+            {
+                Méssage = "Task has been assigned to a mechanic.",
+            });
 
             _unitOfWork.RequestMachineReplacementRepository.Update(requestMachine);
             await _unitOfWork.SaveChangesAsync();
