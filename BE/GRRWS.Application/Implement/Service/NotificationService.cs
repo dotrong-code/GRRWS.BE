@@ -389,5 +389,49 @@ namespace GRRWS.Application.Implement.Service
 
             _logger.LogDebug("Push notification sent successfully to {RecipientCount} users", recipientUserIds.Count);
         }
+
+        public async Task SendRealtimeMessageAsync(Guid userId, string eventName, object data)
+        {
+            try
+            {
+                await _hubContext.Clients.Group($"user:{userId}")
+                    .SendAsync(eventName, data);
+                _logger.LogInformation("SendRealtimeMessageAsync to {UserId} with event {Event}", userId, eventName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "SendRealtimeMessageAsync failed for {UserId} with event {Event}", userId, eventName);
+            }
+        }
+        public async Task SendRealtimeMessageToRoleAsync(int role, string eventName, object data)
+        {
+            try
+            {
+                // 1️ Lấy tất cả userId thuộc role đó
+                var userIds = await _unitOfWork.NotificationRepository.GetUserIdsByRoleAsync(role);
+                if (!userIds.Any())
+                {
+                    _logger.LogWarning("No users found for role {Role}", role);
+                    return;
+                }
+
+                // 2️ Gửi từng userId (group name kiểu user:{userId})
+                foreach (var userId in userIds)
+                {
+                    await _hubContext.Clients.Group($"user:{userId}")
+                        .SendAsync(eventName, data);
+                }
+
+                _logger.LogInformation("SendRealtimeMessageToRoleAsync sent to {Count} users in role {Role} with event {Event}",
+                    userIds.Count, role, eventName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "SendRealtimeMessageToRoleAsync failed for role {Role} with event {Event}", role, eventName);
+            }
+        }
+
+
+
     }
 }

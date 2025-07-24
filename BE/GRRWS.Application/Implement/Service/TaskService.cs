@@ -131,10 +131,10 @@ namespace GRRWS.Application.Implement.Service
 
                 var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(confirmation.TaskId);
 
-                
+
                 var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(confirmation.DeviceId);
-                   
-                
+
+
 
                 var taskConfirmation = new TaskConfirmation
                 {
@@ -145,7 +145,7 @@ namespace GRRWS.Application.Implement.Service
                     SignerRole = confirmation.SignerRole,
                     SignatureBase64 = confirmation.SignatureBase64,
                     DeviceName = device?.DeviceName,
-                    DeviceCode = device?.DeviceCode,                  
+                    DeviceCode = device?.DeviceCode,
                     DeviceCondition = confirmation.DeviceCondition,
                     ConfirmationType = confirmation.ConfirmationType,
                     Notes = confirmation.Notes,
@@ -156,12 +156,12 @@ namespace GRRWS.Application.Implement.Service
                 // Add confirmation to repository
                 await _unitOfWork.TaskConfirmationRepository.CreateAsync(taskConfirmation);
                 //Update request Is
-                if(request != null)
+                if (request != null)
                 {
                     request.IsNeedSign = false;
                     await _unitOfWork.RequestRepository.UpdateAsync(request);
                 }
-                
+
                 // Update task IsSigned field
                 task.IsSigned = true;
                 await _unitOfWork.TaskRepository.UpdateAsync(task);
@@ -751,7 +751,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Fail", "Task status could not be updated."));
             _unitOfWork.ClearChangeTracker();
             var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
-            // Only send notification if the task status is Completed
+
             if (task.Status == Status.InProgress && task.TaskType == TaskType.WarrantySubmission)
             {
                 var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(taskId);
@@ -763,6 +763,13 @@ namespace GRRWS.Application.Implement.Service
                     _unitOfWork.ClearChangeTracker();
                 }
             }
+            // Realtime for task status update
+            await _notificationService.SendRealtimeMessageToRoleAsync(2, "NotificationReceived", new
+            {
+                TaskId = taskId
+            });
+
+            // Only send notification if the task status is Completed
             if (task.Status == Status.Completed)
             {
                 var assignee = await _unitOfWork.UserRepository.GetByIdAsync(userId);
@@ -1072,7 +1079,7 @@ namespace GRRWS.Application.Implement.Service
             if (!checkTask.IsSuccess) return checkTask;
             var checkMechanic = await _checkIsExist.User(mechanicId);
             if (!checkMechanic.IsSuccess) return checkMechanic;
-            
+
             var isUpdated = await _unitOfWork.TaskRepository.UpdateUninstallDeviceInTask(taskId, mechanicId);
             if (isUpdated == null)
             {
@@ -1080,7 +1087,7 @@ namespace GRRWS.Application.Implement.Service
             }
             _unitOfWork.ClearChangeTracker();
             var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(taskId);
-            if(request == null)
+            if (request == null)
             {
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found ."));
             }
@@ -1107,7 +1114,7 @@ namespace GRRWS.Application.Implement.Service
             oldDevice.Status = DeviceStatus.InUse;
             oldDevice.ModifiedDate = TimeHelper.GetHoChiMinhTime();
             await _unitOfWork.DeviceRepository.UpdateAsync(oldDevice);
-                
+
             var newDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync((Guid)requestMachine.NewDeviceId);
             newDevice.Status = DeviceStatus.Active;
             newDevice.ModifiedDate = TimeHelper.GetHoChiMinhTime();

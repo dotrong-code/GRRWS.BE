@@ -19,5 +19,7 @@ namespace GRRWS.Application.Interfaces
         Task<Result> MarkAsReadAsync(Guid notificationId, Guid userId);
         Task<Result> GetUnreadCountAsync(Guid userId);
         Task<Result> RegisterPushTokenAsync(Guid userId, string token, string platform);
+        Task SendRealtimeMessageAsync(Guid userId, string eventName, object data);
+        Task SendRealtimeMessageToRoleAsync(int role, string eventName, object data);
     }
 }
