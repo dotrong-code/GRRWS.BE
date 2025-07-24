@@ -777,19 +777,17 @@ namespace GRRWS.Application.Implement.Service
                 var getTaskGroup = await _unitOfWork.TaskGroupRepository.GetByIdAsync(getCurrentTask.TaskGroupId ?? Guid.Empty);
                 var tasks = await _unitOfWork.TaskRepository.GetTasksByGroupIdAsync(getTaskGroup.Id);
                 var installationTask = tasks.FirstOrDefault(t => t.TaskType == TaskType.Installation && t.Status == Status.Completed);
-                var repairTask = tasks.FirstOrDefault(t => t.Status == Status.WaitingForInstallation);
-                if (repairTask == null)
-                {
-                    _unitOfWork.ClearChangeTracker();
-                }
                 if (installationTask != null)
                 {
-                    repairTask.Status = Status.Pending;
-                    await _unitOfWork.TaskRepository.UpdateAsync(repairTask);
-                    await _unitOfWork.SaveChangesAsync(); // Save the repair task update
-                    _unitOfWork.ClearChangeTracker();
+                    var repairTask = tasks.FirstOrDefault(t => t.Status == Status.WaitingForInstallation);
+                    if (repairTask != null)
+                    {
+                        repairTask.Status = Status.Pending;
+                        await _unitOfWork.TaskRepository.UpdateAsync(repairTask);
+                        await _unitOfWork.SaveChangesAsync(); // Save the repair task update
+                        _unitOfWork.ClearChangeTracker();
+                    }
                 }
-
                 var assignee = await _unitOfWork.UserRepository.GetByIdAsync(userId);
                 // Notify Head of Technical (HOT) about completed task
                 var notificationCompletedTaskForHOT = new NotificationRequest
@@ -1466,19 +1464,18 @@ namespace GRRWS.Application.Implement.Service
                 }
                 installationTaskId = installTaskId;
 
-                // Gán Mechanic cho Installation Task
-                var installMechanic = mechanics.First().Id;
-                var installTask = await _unitOfWork.TaskRepository.GetByIdAsync(installTaskId);
-                installTask.AssigneeId = installMechanic;
-                installTask.Status = Status.Suggested;
-                _unitOfWork.TaskRepository.Update(installTask);
-
                 // Tạo RequestMachineReplacement cho Installation Task
                 var requestMachineResult = await RequestReplaceMachineForInstall(request.RequestId, installTaskId, replaceDeviceId, device);
                 if (requestMachineResult.IsFailure)
                 {
                     _logger.LogWarning("Failed to create RequestMachineReplacement for TaskId: {TaskId}, Error: {Error}", installTaskId, requestMachineResult.Error.Description);
                 }
+                // Gán Mechanic cho Installation Task
+                //var installMechanic = mechanics.First().Id;
+                //var installTask = await _unitOfWork.TaskRepository.GetByIdAsync(installTaskId);
+                //installTask.AssigneeId = installMechanic;
+                //installTask.Status = Status.Suggested;
+                //_unitOfWork.TaskRepository.Update(installTask);
 
                 // Tạo Repair Task (OrderIndex = 2)
                 Guid? repairTaskId = null;
@@ -1502,7 +1499,7 @@ namespace GRRWS.Application.Implement.Service
                 repairTaskId = repairTaskId2;
 
                 // Gán Mechanic cho Repair Task (khác với Installation Task)
-                var repairMechanic = mechanics.Skip(1).First().Id; // Lấy Mechanic thứ hai
+                var repairMechanic = mechanics.First().Id; // Lấy Mechanic thứ hai
                 var repairTask = await _unitOfWork.TaskRepository.GetByIdAsync(repairTaskId2);
                 repairTask.AssigneeId = repairMechanic;
                 //repairTask.Status = Status.Suggested;
@@ -1529,7 +1526,6 @@ namespace GRRWS.Application.Implement.Service
                     TaskGroupId = taskGroupId,
                     InstallationTaskId = installationTaskId,
                     RepairTaskId = repairTaskId,
-                    InstallMechanicId = installMechanic,
                     RepairMechanicId = repairMechanic
                 });
             }
@@ -1929,11 +1925,10 @@ namespace GRRWS.Application.Implement.Service
                 if (installTask != null)
                 {
                     installTask.AssigneeId = installMechanicId;
-                    installTask.Status = Status.Pending;
+                    installTask.Status = Status.WaitingForConfirmation;
                     installTask.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                     //installTask.ExpectedTime = secondaryMechanic.ExpectedTime;
                     await _unitOfWork.TaskRepository.UpdateAsync(installTask);
-
                     // Create mechanic shift for install task
                     var installShiftResult = await _mechanicShiftService.CreateMechanicShiftAsync(installMechanicId, installTask.Id);
 
