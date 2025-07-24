@@ -1466,7 +1466,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                                     Id = Guid.NewGuid(),
                                     SparePartId = egsp.SparepartId,
                                     QuantityUsed = egsp.QuantityNeeded ?? 1, // Default to 1 if not specified
-                                    IsTakenFromStock = !isDelayed,
+                                    IsTakenFromStock = false,
                                     RequestTakeSparePartUsageId = requestTakeSparePartUsage.Id,
                                     CreatedDate = TimeHelper.GetHoChiMinhTime(),
                                     IsDeleted = false

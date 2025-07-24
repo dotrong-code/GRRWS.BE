@@ -772,8 +772,23 @@ namespace GRRWS.Application.Implement.Service
             // Only send notification if the task status is Completed
             if (task.Status == Status.Completed)
             {
+                var getCurrentTask = await _unitOfWork.TaskRepository.GetByIdAsync(taskId);
+                var getTaskGroup = await _unitOfWork.TaskGroupRepository.GetByIdAsync(getCurrentTask.TaskGroupId ?? Guid.Empty);
+                if (getTaskGroup == null)
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Task group not found for the completed task."));
+                }
+                var tasks = await _unitOfWork.TaskRepository.GetTasksByGroupIdAsync(getTaskGroup.Id);
+                var repairTask = tasks.FirstOrDefault(t => t.Status == Status.WaitingForInstallation);
+                if (repairTask == null)
+                {
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "No repair task found in the completed task group."));
+                }
+                repairTask.Status = Status.Pending;
+                await _unitOfWork.TaskRepository.UpdateAsync(repairTask);
+                await _unitOfWork.SaveChangesAsync(); // Save the repair task update
+                _unitOfWork.ClearChangeTracker();
                 var assignee = await _unitOfWork.UserRepository.GetByIdAsync(userId);
-
                 // Notify Head of Technical (HOT) about completed task
                 var notificationCompletedTaskForHOT = new NotificationRequest
                 {
@@ -1967,12 +1982,12 @@ namespace GRRWS.Application.Implement.Service
                     }
 
                     // Check if mechanic is available at the current time
-                    var currentTime = TimeHelper.GetHoChiMinhTime();
-                    var mechanicShift = await _unitOfWork.MechanicShiftRepository.GetCurrentShiftAsync(mechanicId.Value, currentTime);
-                    if (mechanicShift != null && !mechanicShift.IsAvailable)
-                    {
-                        return Result.Failure(new Infrastructure.DTOs.Common.Error("MechanicUnavailable", "Mechanic is not available at this time.", 0));
-                    }
+                    //var currentTime = TimeHelper.GetHoChiMinhTime();
+                    //var mechanicShift = await _unitOfWork.MechanicShiftRepository.GetCurrentShiftAsync(mechanicId.Value, currentTime);
+                    //if (mechanicShift != null && !mechanicShift.IsAvailable)
+                    //{
+                    //    return Result.Failure(new Infrastructure.DTOs.Common.Error("MechanicUnavailable", "Mechanic is not available at this time.", 0));
+                    //}
 
                     assignedMechanicId = mechanicId.Value;
                 }
@@ -1980,14 +1995,14 @@ namespace GRRWS.Application.Implement.Service
                 {
                     // Auto assignment - get best available mechanic
                     var currentTime = TimeHelper.GetHoChiMinhTime();
-                    var availableMechanics = await _unitOfWork.UserRepository.GetRecommendedMechanicsAsync(currentTime, 1, 1);
+                    var availableMechanics = await _unitOfWork.UserRepository.GetMechanicsWithoutTask();
 
                     if (!availableMechanics.Any())
                     {
                         return Result.Failure(new Infrastructure.DTOs.Common.Error("NoAvailableMechanics", "No available mechanics for assignment.", 0));
                     }
 
-                    assignedMechanicId = availableMechanics.First().MechanicId;
+                    assignedMechanicId = availableMechanics.First().Id;
                 }
 
                 // Apply the assignment
