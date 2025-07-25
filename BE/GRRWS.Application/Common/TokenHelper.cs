@@ -19,8 +19,8 @@ namespace GRRWS.Application.Common
         }
         private static readonly Dictionary<string, int> RoleMap = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
         {
-            { "Head of Department", 1 },
-            { "Head of Technical", 2 },
+            { "HOD", 1 },
+            { "HOT", 2 },
             { "Staff", 3 },
             { "SK", 4 }
         };
