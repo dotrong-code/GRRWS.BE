@@ -33,12 +33,12 @@
         }
         public static string StockOutConfirmation(string areaName, string zoneName, int positionIndex)
         {
-            return $"STOCKOUT-{areaName}/{zoneName}/{positionIndex}-{TimeHelper.GetHoChiMinhTime():yyyyMMddHHmmss}";
+            return $"Lấy thiết bị-{areaName}/{zoneName}/{positionIndex}-{TimeHelper.GetHoChiMinhTime():yyyyMMddHHmmss}";
         }
 
         public static string StockInConfirmation(string deviceName)
         {
-            return $"STOCKIN-{deviceName}-{TimeHelper.GetHoChiMinhTime():yyyyMMddHHmmss}";
+            return $"Nhập thiết bị-{deviceName}-{TimeHelper.GetHoChiMinhTime():yyyyMMddHHmmss}";
         }
 
         public static string InstallationConfirmation(string deviceName)
