@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using Google.Protobuf.WellKnownTypes;
 using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Common.Validator.Task;
@@ -1470,6 +1469,24 @@ namespace GRRWS.Application.Implement.Service
                 {
                     _logger.LogWarning("Failed to create RequestMachineReplacement for TaskId: {TaskId}, Error: {Error}", installTaskId, requestMachineResult.Error.Description);
                 }
+                _unitOfWork.ClearChangeTracker();
+                var requestStockIn = new RequestMachineReplacement
+                {
+                    Id = Guid.NewGuid(),
+                    CreatedDate = TimeHelper.GetHoChiMinhTime(),
+                    ModifiedDate = TimeHelper.GetHoChiMinhTime(),
+                    RequestedById = userId,
+                    OldDeviceId = device.Id,
+                    MachineId = device.MachineId,
+                    RequestCode = RequestReplaceMachineString.ReturnDeviceToStockKeeper(device.DeviceName),
+                    Status = MachineReplacementStatus.Pending,
+                    TaskId = installationTaskId,
+                    RequestType = RequestMachineReplacementType.StockIn,
+                };
+                _unitOfWork.ClearChangeTracker();
+                var requestMachine = await _unitOfWork.RequestMachineReplacementRepository.CreateAsync(requestStockIn);
+                _unitOfWork.ClearChangeTracker();
+
                 // Gán Mechanic cho Installation Task
                 //var installMechanic = mechanics.First().Id;
                 //var installTask = await _unitOfWork.TaskRepository.GetByIdAsync(installTaskId);
@@ -2095,6 +2112,8 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("ValidationError", "Device does not have a machine model."));
 
             await _unitOfWork.RequestMachineReplacementRepository.CreateAsync(requestMachineReplacement);
+
+
             await _unitOfWork.SaveChangesAsync();
 
             return Result.SuccessWithObject(new
