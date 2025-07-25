@@ -113,8 +113,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Error", ex.Message));
             }
         }
-        
-        
+
         // In TaskService.CreateRepairTask
         public async Task<Result> CreateRepairTask(CreateRepairTaskRequest request, Guid userId)
         {
@@ -706,7 +705,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Fail", "Task status could not be updated."));
             _unitOfWork.ClearChangeTracker();
             var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
-            // Only send notification if the task status is Completed
+
             if (task.Status == Status.InProgress && task.TaskType == TaskType.WarrantySubmission)
             {
                 var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(taskId);
@@ -718,10 +717,31 @@ namespace GRRWS.Application.Implement.Service
                     _unitOfWork.ClearChangeTracker();
                 }
             }
+            // Realtime for task status update
+            await _notificationService.SendRealtimeMessageToRoleAsync(2, "NotificationReceived", new
+            {
+                TaskId = taskId
+            });
+
+            // Only send notification if the task status is Completed
             if (task.Status == Status.Completed)
             {
+                var getCurrentTask = await _unitOfWork.TaskRepository.GetByIdAsync(taskId);
+                var getTaskGroup = await _unitOfWork.TaskGroupRepository.GetByIdAsync(getCurrentTask.TaskGroupId ?? Guid.Empty);
+                var tasks = await _unitOfWork.TaskRepository.GetTasksByGroupIdAsync(getTaskGroup.Id);
+                var installationTask = tasks.FirstOrDefault(t => t.TaskType == TaskType.Installation && t.Status == Status.Completed);
+                if (installationTask != null)
+                {
+                    var repairTask = tasks.FirstOrDefault(t => t.Status == Status.WaitingForInstallation);
+                    if (repairTask != null)
+                    {
+                        repairTask.Status = Status.Pending;
+                        await _unitOfWork.TaskRepository.UpdateAsync(repairTask);
+                        await _unitOfWork.SaveChangesAsync(); // Save the repair task update
+                        _unitOfWork.ClearChangeTracker();
+                    }
+                }
                 var assignee = await _unitOfWork.UserRepository.GetByIdAsync(userId);
-
                 // Notify Head of Technical (HOT) about completed task
                 var notificationCompletedTaskForHOT = new NotificationRequest
                 {
@@ -918,7 +938,7 @@ namespace GRRWS.Application.Implement.Service
             if (!checkTask.IsSuccess) return checkTask;
             var checkMechanic = await _checkIsExist.User(mechanicId);
             if (!checkMechanic.IsSuccess) return checkMechanic;
-            
+
             var isUpdated = await _unitOfWork.TaskRepository.UpdateUninstallDeviceInTask(taskId, mechanicId);
             if (isUpdated == null)
             {
@@ -926,7 +946,7 @@ namespace GRRWS.Application.Implement.Service
             }
             _unitOfWork.ClearChangeTracker();
             var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(taskId);
-            if(request == null)
+            if (request == null)
             {
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found ."));
             }
@@ -940,8 +960,7 @@ namespace GRRWS.Application.Implement.Service
                 UpdatedAt = TimeHelper.GetHoChiMinhTime()
             });
         }
-     
-       
+
         public async Task<Result> CreateStockReturnTask(CreateStockReturnTaskRequest request, Guid userId)
         {
             // Validate request
@@ -1005,160 +1024,7 @@ namespace GRRWS.Application.Implement.Service
             }
         }
         
-        public async Task<Result> CreateCombinedRepairAndReplacementTasks(CreateCombinedTaskRequest request, Guid userId)
-        {
-            try
-            {
-                // Kiểm tra RequestId
-                var requestCheck = await _checkIsExist.Request(request.RequestId);
-                if (!requestCheck.IsSuccess) return requestCheck;
-
-                // Kiểm tra UserId
-                var userCheck = await _checkIsExist.User(userId);
-                if (!userCheck.IsSuccess) return userCheck;
-
-                // Kiểm tra RequestInfo
-                var requestInfo = await _unitOfWork.TaskRepository.GetRequestInfoAsync(request.RequestId);
-                if (requestInfo == null)
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found."));
-
-                // Kiểm tra xem đã có task Repair hoặc Installation đang xử lý chưa
-                var isRepairTaskProcessing = await IsTaskCompletedInRequestAsync(request.RequestId, TaskType.Repair);
-                if (!isRepairTaskProcessing)
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Conflict", "A repair task is already being processed for this request."));
-
-                var isInstallTaskProcessing = await IsTaskCompletedInRequestAsync(request.RequestId, TaskType.Installation);
-                if (!isInstallTaskProcessing)
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Conflict", "An installation task is already being processed for this request."));
-
-                // Kiểm tra ErrorGuidelineIds (nếu có)
-                List<Guid> guidelineIds = new List<Guid>();
-                if (request.ErrorGuidelineIds != null && request.ErrorGuidelineIds.Any())
-                {
-                    var validGuidelines = await _unitOfWork.ErrorGuidelineRepository.GetErrorGuidelinesAsync(request.ErrorGuidelineIds);
-                    if (!validGuidelines.Any() || validGuidelines.Count != request.ErrorGuidelineIds.Count)
-                    {
-                        _logger.LogWarning("Invalid or missing ErrorGuidelineIds: {ErrorGuidelineIds}", string.Join(", ", request.ErrorGuidelineIds));
-                        return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "One or more error guidelines not found."));
-                    }
-                    guidelineIds = request.ErrorGuidelineIds;
-                }
-
-                // Lấy danh sách Mechanic chưa có task
-                var mechanics = await _unitOfWork.UserRepository.GetMechanicsWithoutTask();
-                if (mechanics == null || mechanics.Count < 2)
-                {
-                    _logger.LogWarning("Not enough available mechanics to assign for tasks for RequestId: {RequestId}", request.RequestId);
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Failure", "At least two available mechanics are required to assign tasks."));
-                }
-
-                // Lấy thông tin thiết bị và thiết bị thay thế
-                var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(requestInfo.DeviceId);
-                var deviceByMachine = await _unitOfWork.DeviceRepository.GetDevicesByMachineIdAsync(device.MachineId ?? Guid.Empty);
-                var replaceDeviceId = deviceByMachine.FirstOrDefault(d => d.Id != device.Id && d.Status == DeviceStatus.Active)?.Id;
-                var deviceInfo = replaceDeviceId.HasValue
-                    ? await _unitOfWork.TaskRepository.GetDeviceInfoAsync(replaceDeviceId.Value)
-                    : "Unknown Device";
-
-                // Tạo hoặc lấy TaskGroup
-                var taskGroupId = await _taskGroupService.CreateOrGetTaskGroupAsync(
-                    null,
-                    TaskType.Repair, // Sử dụng Repair làm GroupType chính vì ActionType là Repair
-                    requestInfo.DeviceName ?? "Unknown Device",
-                    requestInfo.ReportId,
-                    userId
-                );
-
-                // Tạo Installation Task (OrderIndex = 1)
-                Guid? installationTaskId = null;
-                var installRequest = new CreateInstallTaskRequest
-                {
-                    RequestId = request.RequestId,
-                    NewDeviceId = replaceDeviceId,
-                    TaskGroupId = taskGroupId
-                };
-
-                var installTaskId = await _unitOfWork.TaskRepository.CreateInstallTaskWithGroup(installRequest, userId, taskGroupId, orderIndex: 1);
-                if (installTaskId == Guid.Empty)
-                {
-                    _logger.LogWarning("Failed to create installation task for RequestId: {RequestId}", request.RequestId);
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Failure", "Failed to create installation task."));
-                }
-                installationTaskId = installTaskId;
-
-                // Gán Mechanic cho Installation Task
-                var installMechanic = mechanics.First().Id;
-                var installTask = await _unitOfWork.TaskRepository.GetByIdAsync(installTaskId);
-                installTask.AssigneeId = installMechanic;
-                installTask.Status = Status.Suggested;
-                _unitOfWork.TaskRepository.Update(installTask);
-
-                // Tạo RequestMachineReplacement cho Installation Task
-                var requestMachineResult = await CreateStockOutConfirmation(request.RequestId, installTaskId, device, userId);
-                if (requestMachineResult.IsFailure)
-                {
-                    _logger.LogWarning("Failed to create RequestMachineReplacement for TaskId: {TaskId}, Error: {Error}", installTaskId, requestMachineResult.Error.Description);
-                }
-
-                // Tạo Repair Task (OrderIndex = 2)
-                Guid? repairTaskId = null;
-                var repairRequest = new CreateRepairTaskRequest
-                {
-                    RequestId = request.RequestId,
-                    ErrorGuidelineIds = guidelineIds
-                };
-
-                var repairTaskId2 = await _unitOfWork.TaskRepository.CreateRepairTaskWithGroup(repairRequest, userId, taskGroupId, orderIndex: 2);
-                if (repairTaskId == Guid.Empty)
-                {
-                    _logger.LogWarning("Failed to create repair task for RequestId: {RequestId}", request.RequestId);
-                    return Result.SuccessWithObject(new
-                    {
-                        Message = "Installation task created successfully, but failed to create repair task.",
-                        TaskGroupId = taskGroupId,
-                        InstallationTaskId = installationTaskId
-                    });
-                }
-                repairTaskId = repairTaskId2;
-
-                // Gán Mechanic cho Repair Task (khác với Installation Task)
-                var repairMechanic = mechanics.Skip(1).First().Id; // Lấy Mechanic thứ hai
-                var repairTask = await _unitOfWork.TaskRepository.GetByIdAsync(repairTaskId2);
-                repairTask.AssigneeId = repairMechanic;
-                //repairTask.Status = Status.Suggested;
-                _unitOfWork.TaskRepository.Update(repairTask);
-
-                // Kiểm tra và gán Mechanic cho Repair Task nếu yêu cầu phụ tùng
-                //if (guidelineIds.Any())
-                //{
-                //    var errorSpareParts = await _unitOfWork.ErrorSparepartRepository.GetByErrorGuidelineIdsAsync(guidelineIds);
-                //    if (errorSpareParts.Any())
-                //    {
-                //        // Nếu yêu cầu phụ tùng, giữ trạng thái Suggested và không cần gán lại Mechanic
-                //        repairTask.Status = Status.Suggested; // Đợi Stock Keeper xác nhận phụ tùng
-                //        _unitOfWork.TaskRepository.Update(repairTask);
-                //    }
-                //}
-
-                // Lưu tất cả thay đổi
-                await _unitOfWork.SaveChangesAsync();
-
-                return Result.SuccessWithObject(new
-                {
-                    Message = "Combined repair and replacement tasks created successfully!",
-                    TaskGroupId = taskGroupId,
-                    InstallationTaskId = installationTaskId,
-                    RepairTaskId = repairTaskId,
-                    InstallMechanicId = installMechanic,
-                    RepairMechanicId = repairMechanic
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating combined repair and replacement tasks for RequestId: {RequestId}, UserId: {UserId}", request.RequestId, userId);
-                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("InternalServerError", $"Failed to create combined tasks: {ex.Message}"));
-            }
-        }
+        
         public async Task<Result> UpdateTaskAssigneeAsync(Guid taskId, Guid newAssigneeId, Guid updatedByUserId)
         {
             try
@@ -1545,11 +1411,10 @@ namespace GRRWS.Application.Implement.Service
                 if (installTask != null)
                 {
                     installTask.AssigneeId = installMechanicId;
-                    installTask.Status = Status.Pending;
+                    installTask.Status = Status.WaitingForConfirmation;
                     installTask.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                     //installTask.ExpectedTime = secondaryMechanic.ExpectedTime;
                     await _unitOfWork.TaskRepository.UpdateAsync(installTask);
-
                     // Create mechanic shift for install task
                     var installShiftResult = await _mechanicShiftService.CreateMechanicShiftAsync(installMechanicId, installTask.Id);
 
@@ -1600,12 +1465,12 @@ namespace GRRWS.Application.Implement.Service
                     }
 
                     // Check if mechanic is available at the current time
-                    var currentTime = TimeHelper.GetHoChiMinhTime();
-                    var mechanicShift = await _unitOfWork.MechanicShiftRepository.GetCurrentShiftAsync(mechanicId.Value, currentTime);
-                    if (mechanicShift != null && !mechanicShift.IsAvailable)
-                    {
-                        return Result.Failure(new Infrastructure.DTOs.Common.Error("MechanicUnavailable", "Mechanic is not available at this time.", 0));
-                    }
+                    //var currentTime = TimeHelper.GetHoChiMinhTime();
+                    //var mechanicShift = await _unitOfWork.MechanicShiftRepository.GetCurrentShiftAsync(mechanicId.Value, currentTime);
+                    //if (mechanicShift != null && !mechanicShift.IsAvailable)
+                    //{
+                    //    return Result.Failure(new Infrastructure.DTOs.Common.Error("MechanicUnavailable", "Mechanic is not available at this time.", 0));
+                    //}
 
                     assignedMechanicId = mechanicId.Value;
                 }
@@ -1613,14 +1478,14 @@ namespace GRRWS.Application.Implement.Service
                 {
                     // Auto assignment - get best available mechanic
                     var currentTime = TimeHelper.GetHoChiMinhTime();
-                    var availableMechanics = await _unitOfWork.UserRepository.GetRecommendedMechanicsAsync(currentTime, 1, 1);
+                    var availableMechanics = await _unitOfWork.UserRepository.GetMechanicsWithoutTask();
 
                     if (!availableMechanics.Any())
                     {
                         return Result.Failure(new Infrastructure.DTOs.Common.Error("NoAvailableMechanics", "No available mechanics for assignment.", 0));
                     }
 
-                    assignedMechanicId = availableMechanics.First().MechanicId;
+                    assignedMechanicId = availableMechanics.First().Id;
                 }
 
                 // Apply the assignment
@@ -1680,8 +1545,7 @@ namespace GRRWS.Application.Implement.Service
         }
 
 
-       
-        
+
 
         private async Task<List<WarrantyDocument>> MapDocsWithImagesAsync(ICollection<WarrantyDocument> documents)
         {
