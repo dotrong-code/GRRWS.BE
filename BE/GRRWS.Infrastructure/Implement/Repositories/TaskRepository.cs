@@ -3,6 +3,7 @@ using GRRWS.Domain.Enum;
 using GRRWS.Infrastructure.Common;
 using GRRWS.Infrastructure.Common.StringHelper;
 using GRRWS.Infrastructure.DB;
+using GRRWS.Infrastructure.DTOs.MachineActionConfirmation;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
 using GRRWS.Infrastructure.DTOs.Task;
 using GRRWS.Infrastructure.DTOs.Task.ActionTask;
@@ -59,8 +60,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     EndTime = t.EndTime,
                     AssigneeId = t.AssigneeId,
                     AssigneeName = t.Assignee.FullName,
-                    DeviceReturnTime = t.DeviceReturnTime,
-                    DeviceCondition = t.DeviceCondition,
+                    
+                    
                     ReportNotes = t.ReportNotes,
                     RepairSpareparts = t.RepairSpareparts.Select(rs => new RepairSparepartDto
                     {
@@ -92,8 +93,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     EndTime = t.EndTime,
                     AssigneeId = t.AssigneeId,
                     AssigneeName = t.Assignee.FullName,
-                    DeviceReturnTime = t.DeviceReturnTime,
-                    DeviceCondition = t.DeviceCondition,
+                    
                     ReportNotes = t.ReportNotes,
                     RepairSpareparts = t.RepairSpareparts.Select(rs => new RepairSparepartDto
                     {
@@ -114,7 +114,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Include(t => t.Assignee)
                 .Include(t => t.ErrorDetails).ThenInclude(ed => ed.Error)
                 .Include(t => t.RepairSpareparts).ThenInclude(rs => rs.Sparepart)
-                .Include(t => t.RequestMachineReplacement)
+                .Include(t => t.ActionConfirmations)
                 .ToListAsync();
         }
         public async Task<Tasks> GetTaskByIdAsync(Guid id)
@@ -123,7 +123,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .Include(t => t.Assignee)
                 .Include(t => t.ErrorDetails).ThenInclude(ed => ed.Error)
                 .Include(t => t.RepairSpareparts).ThenInclude(rs => rs.Sparepart)
-                .Include(t => t.RequestMachineReplacement)
+                .Include(t => t.ActionConfirmations)
                 .Include(t => t.WarrantyClaim)
                     .ThenInclude(wc => wc.DeviceWarranty)
                 .FirstOrDefaultAsync(t => t.Id == id);
@@ -280,8 +280,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     EndTime = t.EndTime,
                     AssigneeId = t.AssigneeId,
                     AssigneeName = t.Assignee.FullName,
-                    DeviceReturnTime = t.DeviceReturnTime,
-                    DeviceCondition = t.DeviceCondition,
+                    
                     ReportNotes = t.ReportNotes,
                     RepairSpareparts = t.RepairSpareparts.Select(rs => new RepairSparepartDto
                     {
@@ -403,25 +402,23 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     .ThenInclude(u => u.CreatedByUser)
                 .Include(t => t.WarrantyClaim)
                     .ThenInclude(dc => dc.Documents)
-                .Include(t => t.RequestMachineReplacement)
-                .Include(t => t.TaskConfirmations)
+                .Include(t => t.ActionConfirmations)
                 .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == type)
                 .FirstOrDefaultAsync();
 
             if (task == null)
                 return null;
-            var requestMachines = await _context.RequestMachineReplacements
-                .Where(rm => rm.TaskId == taskId)
-                .Select(rm => new RequestMachineDetail
-                {
-                    RequestMachineId = rm.Id,
-                    RequestMachineDescription = rm.Notes,
-                    AssigneeConfirm = rm.AssigneeConfirm,
-                    StockKeeperConfirm = rm.StokkKeeperConfirm,
-                    RequestMachineReplacementType = rm.RequestType.ToString() // Assuming RequestType is a property in RequestMachineReplacement
-
-                })
-                .ToListAsync();
+            var actionConfirmations = await _context.MachineActionConfirmations
+         .Where(mac => mac.TaskId == taskId)
+         .Select(mac => new ActionConfirmationDetail
+         {
+             ConfirmationId = mac.Id,
+             ConfirmationDescription = mac.Notes,
+             AssigneeConfirm = mac.MechanicConfirm,
+             StockKeeperConfirm = mac.StockkeeperConfirm,
+             ActionType = mac.ActionType.ToString()
+         })
+        .ToListAsync();
             return new GetDetailWarrantyTaskForMechanic
             {
                 TaskId = task.Id,
@@ -454,31 +451,26 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 WarrantyClaimId = task.WarrantyClaim?.Id, // Unique identifier for the warranty claim
                 IsInstall = task.IsInstall ?? false, // True if this is an install task, false if it's an uninstall task
                 IsSigned = task.IsSigned ?? false, // True if this is an install task, false if it's an uninstall task
-
-                RequestMachines = requestMachines, // Include request machines details
+                ActionConfirmations = actionConfirmations,
                 Documents = task.WarrantyClaim?.Documents?.Select(doc => new WarrantyDocument
                 {
                     DocumentType = doc.DocumentType,
                     DocumentName = doc.DocumentName,
                     DocumentUrl = doc.DocumentUrl // Assuming DocumentUrl is a property in WarrantyClaimDocument
                 }).ToList() ?? new List<WarrantyDocument>(),
-                TaskConfirmations = task.TaskConfirmations?.Select(tc => new TaskConfirmationResponeDTO
+                TaskConfirmations = task.ActionConfirmations?.Select(mac => new TaskConfirmationResponseDTO
                 {
-
-                    TaskId = tc.TaskId,
-                    SignerId = tc.SignerId,
-                    DeviceId = tc.DeviceId,
-                    SignerRole = tc.SignerRole,
-                    SignatureBase64 = tc.SignatureBase64,
-                    DeviceName = tc.DeviceName,
-                    DeviceCode = tc.DeviceCode,
-
-                    DeviceCondition = tc.DeviceCondition,
-                    ConfirmationType = tc.ConfirmationType,
-                    Notes = tc.Notes
-
-
-                }).ToList() ?? new List<TaskConfirmationResponeDTO>()
+                    TaskId = mac.TaskId,
+                    SignerId = mac.SignerId,
+                    DeviceId = mac.DeviceId,
+                    SignerRole = mac.SignerRole,
+                    SignatureBase64 = mac.SignatureBase64,
+                    DeviceName = mac.Device?.DeviceName,
+                    DeviceCode = mac.Device?.DeviceCode,
+                    DeviceCondition = mac.DeviceCondition,
+                    ActionType = mac.ActionType.ToString(),
+                    Notes = mac.Notes
+                }).ToList() ?? new List<TaskConfirmationResponseDTO>()
 
 
             };
@@ -497,7 +489,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     .ThenInclude(ed => ed.RequestTakeSparePartUsage)
                         .ThenInclude(rtspu => rtspu.SparePartUsages) // Fixed: Access the collection
                             .ThenInclude(spu => spu.SparePart) // Then access SparePart from SparePartUsage
-                .Include(t => t.TaskConfirmations)
+                .Include(t => t.ActionConfirmations)
                 .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == TaskType.Repair)
                 .FirstOrDefaultAsync();
             var reportId = task.ErrorDetails.FirstOrDefault()?.ReportId;
@@ -553,23 +545,19 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 EndTime = task.EndTime,
                 AssigneeName = task.Assignee?.FullName,
                 ErrorDetails = errorDetails,
-                TaskConfirmations = task.TaskConfirmations?.Select(tc => new TaskConfirmationResponeDTO
+                TaskConfirmations = task.ActionConfirmations?.Select(mac => new TaskConfirmationResponseDTO
                 {
-
-                    TaskId = tc.TaskId,
-                    SignerId = tc.SignerId,
-                    DeviceId = tc.DeviceId,
-                    SignerRole = tc.SignerRole,
-                    SignatureBase64 = tc.SignatureBase64,
-                    DeviceName = tc.DeviceName,
-                    DeviceCode = tc.DeviceCode,
-
-                    DeviceCondition = tc.DeviceCondition,
-                    ConfirmationType = tc.ConfirmationType,
-                    Notes = tc.Notes
-
-
-                }).ToList() ?? new List<TaskConfirmationResponeDTO>()
+                    TaskId = mac.TaskId,
+                    SignerId = mac.SignerId,
+                    DeviceId = mac.DeviceId,
+                    SignerRole = mac.SignerRole,
+                    SignatureBase64 = mac.SignatureBase64,
+                    DeviceName = mac.Device?.DeviceName,
+                    DeviceCode = mac.Device?.DeviceCode,
+                    DeviceCondition = mac.DeviceCondition,
+                    ActionType = mac.ActionType.ToString(),
+                    Notes = mac.Notes
+                }).ToList() ?? new List<TaskConfirmationResponseDTO>()
 
             };
         }
@@ -582,7 +570,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
             var task = await _context.Tasks
                 .Include(t => t.Assignee)
                 .Include(t => t.TaskGroup)
-                .Include(t => t.TaskConfirmations)
+                .Include(t => t.ActionConfirmations)
                 .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == TaskType.Uninstallation)
                 .FirstOrDefaultAsync();
 
@@ -625,23 +613,19 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 DeviceCode = deviceInfo?.DeviceCode ?? "N/A",
                 Location = deviceInfo?.Location ?? "Location not available",
                 TaskGroupName = task.TaskGroup?.GroupName,
-                TaskConfirmations = task.TaskConfirmations?.Select(tc => new TaskConfirmationResponeDTO
+                TaskConfirmations = task.ActionConfirmations?.Select(mac => new TaskConfirmationResponseDTO
                 {
-
-                    TaskId = tc.TaskId,
-                    SignerId = tc.SignerId,
-                    DeviceId = tc.DeviceId,
-                    SignerRole = tc.SignerRole,
-                    SignatureBase64 = tc.SignatureBase64,
-                    DeviceName = tc.DeviceName,
-                    DeviceCode = tc.DeviceCode,
-
-                    DeviceCondition = tc.DeviceCondition,
-                    ConfirmationType = tc.ConfirmationType,
-                    Notes = tc.Notes
-
-
-                }).ToList() ?? new List<TaskConfirmationResponeDTO>()
+                    TaskId = mac.TaskId,
+                    SignerId = mac.SignerId,
+                    DeviceId = mac.DeviceId,
+                    SignerRole = mac.SignerRole,
+                    SignatureBase64 = mac.SignatureBase64,
+                    DeviceName = mac.Device?.DeviceName,
+                    DeviceCode = mac.Device?.DeviceCode,
+                    DeviceCondition = mac.DeviceCondition,
+                    ActionType = mac.ActionType.ToString(),
+                    Notes = mac.Notes
+                }).ToList() ?? new List<TaskConfirmationResponseDTO>()
 
 
             };
@@ -650,9 +634,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         {
             var task = await _context.Tasks
                 .Include(t => t.Assignee)
-                .Include(rrm => rrm.RequestMachineReplacement)
+                .Include(rrm => rrm.ActionConfirmations)
                 .Include(t => t.TaskGroup)
-                .Include(t => t.TaskConfirmations)
                 .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == TaskType.Installation)
                 .FirstOrDefaultAsync();
 
@@ -677,15 +660,15 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         : r.Report.Location ?? "Location not available"
                 })
                 .FirstOrDefaultAsync();
-            var requestMachines = await _context.RequestMachineReplacements
+            var actionConfirmations = await _context.MachineActionConfirmations
                 .Where(rm => rm.TaskId == taskId)
                 .ToListAsync();
 
-            var stockOut = requestMachines.FirstOrDefault(rm => rm.RequestType == RequestMachineReplacementType.StockOut);
+            var stockOut = actionConfirmations.FirstOrDefault(mac => mac.ActionType == MachineActionType.StockOut);
             return new GetDetailInstallTaskForMechanic
             {
                 TaskId = task.Id,
-                DeviceId = stockOut.OldDeviceId,
+                DeviceId = stockOut?.DeviceId ?? Guid.Empty,
                 TaskType = task.TaskType.ToString(),
                 TaskName = task.TaskName,
                 TaskDescription = task.TaskDescription,
@@ -699,33 +682,30 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 DeviceCode = deviceInfo?.DeviceCode ?? "N/A",
                 Location = deviceInfo?.Location ?? "Location not available",
                 TaskGroupName = task.TaskGroup?.GroupName,
-                NewDeviceId = stockOut.NewDeviceId ?? Guid.Empty,
+                NewDeviceId = stockOut?.DeviceId ?? Guid.Empty,
                 IsUninstall = task.IsUninstall ?? false, // True if this is an uninstall task, false if it's an install task
                 IsInstall = task.IsInstall ?? false, // 
                 IsSigned = task.IsSigned ?? false,
-                TaskConfirmations = task.TaskConfirmations?.Select(tc => new TaskConfirmationResponeDTO
+                TaskConfirmations = task.ActionConfirmations?.Select(mac => new TaskConfirmationResponseDTO
                 {
-
-                    TaskId = tc.TaskId,
-                    SignerId = tc.SignerId,
-                    DeviceId = tc.DeviceId,
-                    SignerRole = tc.SignerRole,
-                    SignatureBase64 = tc.SignatureBase64,
-                    DeviceName = tc.DeviceName,
-                    DeviceCode = tc.DeviceCode,
-
-                    DeviceCondition = tc.DeviceCondition,
-                    ConfirmationType = tc.ConfirmationType,
-                    Notes = tc.Notes
-
-                }).ToList() ?? new List<TaskConfirmationResponeDTO>(),
-                RequestMachines = requestMachines.Select(rm => new RequestMachineDetail
+                    TaskId = mac.TaskId,
+                    SignerId = mac.SignerId,
+                    DeviceId = mac.DeviceId,
+                    SignerRole = mac.SignerRole,
+                    SignatureBase64 = mac.SignatureBase64,
+                    DeviceName = mac.Device?.DeviceName,
+                    DeviceCode = mac.Device?.DeviceCode,
+                    DeviceCondition = mac.DeviceCondition,
+                    ActionType = mac.ActionType.ToString(),
+                    Notes = mac.Notes
+                }).ToList() ?? new List<TaskConfirmationResponseDTO>(),
+                ActionConfirmations = actionConfirmations.Select(mac => new ActionConfirmationDetail
                 {
-                    RequestMachineId = rm.Id,
-                    RequestMachineDescription = rm.Notes,
-                    AssigneeConfirm = rm.AssigneeConfirm,
-                    StockKeeperConfirm = rm.StokkKeeperConfirm,
-                    RequestMachineReplacementType = rm.RequestType.ToString() // Assuming RequestType is a property in RequestMachineReplacement
+                    ConfirmationId = mac.Id,
+                    ConfirmationDescription = mac.Notes,
+                    AssigneeConfirm = mac.MechanicConfirm,
+                    StockKeeperConfirm = mac.StockkeeperConfirm,
+                    ActionType = mac.ActionType.ToString()
                 }).ToList()
 
             };
@@ -945,18 +925,19 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         TaskName = taskName,
                         TaskType = TaskType.WarrantySubmission,
                         TaskDescription = taskDescrtiption,
-                        StartTime = request.StartDate,
-                        ExpectedTime = (request.StartDate ?? TimeHelper.GetHoChiMinhTime()).AddHours(5),
-                        Status = request.AssigneeId == null ? Status.Suggested : Status.Pending,
+                        StartTime = null,
+                        ExpectedTime = null,
+                        Status = Status.Pending,
                         Priority = Domain.Enum.Priority.High,
-                        AssigneeId = request.AssigneeId,
+                        AssigneeId = null,
                         WarrantyClaimId = warrantyClaim.Id,
                         TaskGroupId = taskGroupId,
                         OrderIndex = orderIndex,
                         CreatedDate = TimeHelper.GetHoChiMinhTime(),
                         CreatedBy = userId,
                         IsUninstall = false,
-                        IsDeleted = false
+                        IsDeleted = false,
+                        IsSigned= false
                     };
                     await _context.Tasks.AddAsync(task);
 
@@ -1744,7 +1725,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         TaskName = taskName,
                         TaskType = TaskType.Installation,
                         TaskDescription = taskDescrtiption,
-                        StartTime = request.StartDate ?? TimeHelper.GetHoChiMinhTime(),
+                        StartTime = null,
                         ExpectedTime = (request.StartDate ?? TimeHelper.GetHoChiMinhTime()).AddHours(2), // Default 3 hours for installation
                         Status = request.AssigneeId == null ? Status.WaitingForConfirmation : Status.Pending,
                         Priority = Domain.Enum.Priority.Medium,
@@ -1754,7 +1735,9 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                         CreatedDate = TimeHelper.GetHoChiMinhTime(),
                         CreatedBy = userId,
                         IsUninstall = false,
-                        IsDeleted = false
+                        IsDeleted = false,
+                        IsInstall = false,
+                        IsSigned = false
                     };
                     await _context.Tasks.AddAsync(task);
                     await _context.SaveChangesAsync();
@@ -2123,10 +2106,9 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         {
             return await _context.Tasks
                 .Include(t => t.Assignee)
-                .Include(t => t.RequestMachineReplacement)
-                    .ThenInclude(rm => rm.OldDevice)
-                .Include(t => t.RequestMachineReplacement)
-                    .ThenInclude(rm => rm.NewDevice)
+                .Include(t => t.ActionConfirmations)
+                     .ThenInclude(mac => mac.Device)
+                
                 .Include(t => t.WarrantyClaim)
                 .Where(t => t.TaskGroupId == taskGroupId && !t.IsDeleted)
                 .OrderBy(t => t.OrderIndex)
@@ -2317,6 +2299,13 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             });
 
+        }
+        public async Task<Tasks> GetByTaskGroupIdAndTypeAsync(Guid taskGroupId, TaskType taskType)
+        {
+            return await _context.Tasks
+                .Where(t => t.TaskGroupId == taskGroupId && t.TaskType == taskType && !t.IsDeleted)
+                .OrderBy(t => t.OrderIndex)
+                .FirstOrDefaultAsync();
         }
     }
 }

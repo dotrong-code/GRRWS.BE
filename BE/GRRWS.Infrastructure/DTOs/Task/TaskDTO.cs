@@ -15,8 +15,6 @@ namespace GRRWS.Infrastructure.DTOs.Task
         public DateTime? EndTime { get; set; }
         public Guid? AssigneeId { get; set; }
         public string AssigneeName { get; set; }
-        public DateTime? DeviceReturnTime { get; set; }
-        public string DeviceCondition { get; set; }
         public string ReportNotes { get; set; }
         public DateTime CreatedDate { get; set; }
         public Guid CreatedBy { get; set; }

@@ -1,4 +1,6 @@
-﻿namespace GRRWS.Infrastructure.DTOs.Task.Get
+﻿using GRRWS.Infrastructure.DTOs.MachineActionConfirmation;
+
+namespace GRRWS.Infrastructure.DTOs.Task.Get
 {
     public class GetTaskDetailBase
     {
@@ -15,7 +17,7 @@
         public string? AssigneeName { get; set; }
         public bool IsInstall { get; set; } // True if this is an install task, false if it's an uninstall task
         public bool IsSigned { get; set; } // True if this is an install task, false if it's an uninstall task
-        public List<RequestMachineDetail> RequestMachines { get; set; } = new List<RequestMachineDetail>();
+        public List<ActionConfirmationDetail> ActionConfirmations { get; set; } = new List<ActionConfirmationDetail>();
     }
 
 

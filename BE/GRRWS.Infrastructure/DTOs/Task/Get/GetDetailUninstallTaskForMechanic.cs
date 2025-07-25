@@ -6,6 +6,6 @@ namespace GRRWS.Infrastructure.DTOs.Task.Get
         public string DeviceCode { get; set; }
         public string Location { get; set; }
         public string? TaskGroupName { get; set; }
-        public List<TaskConfirmationResponeDTO>? TaskConfirmations { get; set; }
+        public List<TaskConfirmationResponseDTO>? TaskConfirmations { get; set; }
     }
 }

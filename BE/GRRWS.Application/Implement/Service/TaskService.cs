@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using Google.Protobuf.WellKnownTypes;
 using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Common.Validator.Task;
@@ -12,6 +11,7 @@ using GRRWS.Infrastructure.Common.StringHelper;
 using GRRWS.Infrastructure.DTOs.Common.Message;
 using GRRWS.Infrastructure.DTOs.Firebase.AddImage;
 using GRRWS.Infrastructure.DTOs.Firebase.GetImage;
+using GRRWS.Infrastructure.DTOs.MachineActionConfirmation;
 using GRRWS.Infrastructure.DTOs.Notification;
 using GRRWS.Infrastructure.DTOs.Paging;
 using GRRWS.Infrastructure.DTOs.RequestDTO;
@@ -33,13 +33,13 @@ namespace GRRWS.Application.Implement.Service
         private readonly CheckIsExist _checkIsExist;
         private readonly ILogger<TaskService> _logger;
         private readonly IMechanicShiftService _mechanicShiftService;
-        private readonly IRequestMachineReplacementService _requestMachineReplacementService;
+        
         private readonly INotificationService _notificationService;
         public TaskService(UnitOfWork unitOfWork,
             ITaskGroupService taskGroupService,
             IValidator<StartTaskRequest> startTaskValidator,
             IValidator<CreateTaskReportRequest> createReportValidator,
-            IRequestMachineReplacementService requestMachineReplacementService,
+            
             CheckIsExist checkIsExist, ILogger<TaskService> logger, IMechanicShiftService mechanicShiftService,
             INotificationService notificationService)
         {
@@ -50,7 +50,7 @@ namespace GRRWS.Application.Implement.Service
             _checkIsExist = checkIsExist;
             _logger = logger;
             _mechanicShiftService = mechanicShiftService;
-            _requestMachineReplacementService = requestMachineReplacementService;
+            
             _notificationService = notificationService;
         }
 
@@ -65,6 +65,7 @@ namespace GRRWS.Application.Implement.Service
 
             var assigneeCheck = await _checkIsExist.User(request.AssigneeId, allowNull: true);
             if (!assigneeCheck.IsSuccess) return assigneeCheck;
+
             var isTaskProcessing = await IsTaskCompletedInRequestAsync(request.RequestId, TaskType.WarrantySubmission);
             if (!isTaskProcessing)
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Conflict", "A warranty task is already being processed for this request."));
@@ -84,104 +85,32 @@ namespace GRRWS.Application.Implement.Service
                     userId);
 
                 var orderIndex = 1; // First task in new warranty group (WarrantySubmission)
-                request.StartDate = TimeHelper.GetHoChiMinhTime(); // Set start date to current time
+                
                 var taskId = await _unitOfWork.TaskRepository.CreateWarrantyTaskWithGroup(request, userId, taskGroupId, orderIndex);
 
+                // //Tạo phiếu lấy máy mang đi bảo hành
+                var warrantyConfirmation = await CreateWarrantySubmissionConfirmation(request.RequestId, taskId, requestInfo.DeviceId, userId);
+                if (warrantyConfirmation.IsFailure)
+                {
+                    return Result.SuccessWithObject(new
+                    {
+                        Message = $"Warranty task created successfully! But failed to create warranty confirmation: {warrantyConfirmation.Error.Description}",
+                        TaskId = taskId,
+                        TaskGroupId = taskGroupId
+                    });
+                }
+                dynamic confirmationObj = warrantyConfirmation.Object;
                 return Result.SuccessWithObject(new
                 {
-                    Message = "Warranty task created successfully!",
+                    Message = "Warranty task and confirmation created successfully!",
                     TaskId = taskId,
-                    TaskGroupId = taskGroupId
+                    TaskGroupId = taskGroupId,
+                    ConfirmationId = confirmationObj.ConfirmationId
                 });
             }
             catch (Exception ex)
             {
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Error", ex.Message));
-            }
-        }
-        public async Task<Result> ConfirmTask(TaskConfirmationDTO confirmation)
-        {
-            var checkTask = await _checkIsExist.Task(confirmation.TaskId);
-            if (!checkTask.IsSuccess) return checkTask;
-
-            var checkMechanic = await _checkIsExist.User(confirmation.SignerId);
-            if (!checkMechanic.IsSuccess) return checkMechanic;
-
-            // Validate confirmation type
-            var validConfirmationTypes = new[] { "WarrantySubmission", "Uninstall", "Install" };
-            if (!validConfirmationTypes.Contains(confirmation.ConfirmationType))
-                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Invalid", $"Confirmation type must be one of: {string.Join(", ", validConfirmationTypes)}."));
-
-            try
-            {
-                var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(confirmation.TaskId);
-                if (task == null)
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Task not found."));
-
-                // Validate task type against confirmation type
-                if ((confirmation.ConfirmationType == "WarrantySubmission" && task.TaskType != TaskType.WarrantySubmission) ||
-                    (confirmation.ConfirmationType == "Uninstall" && task.TaskType != TaskType.Uninstallation) ||
-                    (confirmation.ConfirmationType == "Install" && task.TaskType != TaskType.Installation))
-                {
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Invalid", $"Confirmation type {confirmation.ConfirmationType} does not match task type {task.TaskType}."));
-                }
-
-                // Check if task is already signed
-                if (task.IsSigned == true)
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("AlreadySigned", "Task has already been signed."));
-
-                var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(confirmation.TaskId);
-
-
-                var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(confirmation.DeviceId);
-
-
-
-                var taskConfirmation = new TaskConfirmation
-                {
-                    Id = Guid.NewGuid(),
-                    TaskId = confirmation.TaskId,
-                    DeviceId = device.Id,
-                    SignerId = confirmation.SignerId,
-                    SignerRole = confirmation.SignerRole,
-                    SignatureBase64 = confirmation.SignatureBase64,
-                    DeviceName = device?.DeviceName,
-                    DeviceCode = device?.DeviceCode,
-                    DeviceCondition = confirmation.DeviceCondition,
-                    ConfirmationType = confirmation.ConfirmationType,
-                    Notes = confirmation.Notes,
-                    CreatedDate = TimeHelper.GetHoChiMinhTime(),
-                    CreatedBy = confirmation.SignerId
-                };
-
-                // Add confirmation to repository
-                await _unitOfWork.TaskConfirmationRepository.CreateAsync(taskConfirmation);
-                //Update request Is
-                if (request != null)
-                {
-                    request.IsNeedSign = false;
-                    await _unitOfWork.RequestRepository.UpdateAsync(request);
-                }
-
-                // Update task IsSigned field
-                task.IsSigned = true;
-                await _unitOfWork.TaskRepository.UpdateAsync(task);
-
-                // Save changes
-                await _unitOfWork.SaveChangesAsync();
-                _unitOfWork.ClearChangeTracker();
-
-                return Result.SuccessWithObject(new
-                {
-                    Message = $"{confirmation.ConfirmationType} task confirmed successfully!",
-                    TaskId = confirmation.TaskId,
-                    ConfirmationId = taskConfirmation.Id
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error confirming {ConfirmationType} for task {TaskId}: {Message}", confirmation.ConfirmationType, confirmation.TaskId, ex.Message);
-                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", $"Failed to confirm {confirmation.ConfirmationType}: {ex.Message}"));
             }
         }
 
@@ -350,10 +279,8 @@ namespace GRRWS.Application.Implement.Service
             if (!assigneeCheck.IsSuccess) return assigneeCheck;
 
             var taskGroupCheck = await _checkIsExist.TaskGroup(request.TaskGroupId, allowNull: true);
-            if (!taskGroupCheck.IsSuccess) return taskGroupCheck;
+            if (!taskGroupCheck.IsSuccess) return taskGroupCheck; 
 
-            var newDeviceCheck = await _checkIsExist.Device(request.NewDeviceId, allowNull: true);
-            if (!newDeviceCheck.IsSuccess) return newDeviceCheck;
             var isTaskProcessing = await IsTaskCompletedInRequestAsync(request.RequestId, TaskType.Installation);
             if (!isTaskProcessing)
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Conflict", "An installation task is already being processed for this request."));
@@ -363,12 +290,8 @@ namespace GRRWS.Application.Implement.Service
                 if (requestInfo == null)
                     return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found."));
                 var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(requestInfo.DeviceId);
-                var deviceByMachine = await _unitOfWork.DeviceRepository.GetDevicesByMachineIdAsync(device.MachineId ?? Guid.Empty);
-                var replaceDeviceId = deviceByMachine.FirstOrDefault(d => d.Id != device.Id && d.Status == DeviceStatus.Active)?.Id;
-                request.NewDeviceId = replaceDeviceId;
-                var deviceInfo = request.NewDeviceId.HasValue
-                    ? await _unitOfWork.TaskRepository.GetDeviceInfoAsync(request.NewDeviceId.Value)
-                    : "Unknown Device";
+                if (device == null)
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Device not found."));
 
                 Guid taskGroupId;
                 int orderIndex;
@@ -385,7 +308,7 @@ namespace GRRWS.Application.Implement.Service
                     taskGroupId = await _taskGroupService.CreateOrGetTaskGroupAsync(
                         null,
                         TaskType.Replacement,
-                        deviceInfo,
+                        requestInfo.DeviceName,
                         requestInfo.ReportId, // Use ReportId from RequestInfo
                         userId);
                     orderIndex = 1; // First task in new replacement group
@@ -393,19 +316,35 @@ namespace GRRWS.Application.Implement.Service
 
                 var taskId = await _unitOfWork.TaskRepository.CreateInstallTaskWithGroup(request, userId, taskGroupId, orderIndex);
                 _unitOfWork.ClearChangeTracker();
-                var requestMachine = await RequestReplaceMachineForInstall(request.RequestId, taskId, replaceDeviceId, device);
-                if (requestMachine.IsFailure)
+
+                //Tạo request lấy máy thay thế
+                var stockOutConfirmation = await CreateStockOutConfirmation(request.RequestId, taskId, device, userId);
+                if (stockOutConfirmation.IsFailure)
                 {
                     return Result.SuccessWithObject(new
                     {
-                        Message = $"Install task created successfully! But fail to create request machine{requestMachine.Error.Description}",
+                        Message = $"Install task created successfully! But failed to create StockOut confirmation: {stockOutConfirmation.Error.Description}",
                         TaskId = taskId,
                         TaskGroupId = taskGroupId
                     });
                 }
+
+                // Tạo request trả máy hư về kho
+                var stockInConfirmation = await CreateStockInConfirmation(request.RequestId, taskId, device.Id, userId, "Return faulty device to stock");
+                if (stockInConfirmation.IsFailure)
+                {
+                    return Result.SuccessWithObject(new
+                    {
+                        Message = $"Install task created successfully! But failed to create StockIn confirmation: {stockInConfirmation.Error.Description}",
+                        TaskId = taskId,
+                        TaskGroupId = taskGroupId
+                    });
+                }
+
+
                 return Result.SuccessWithObject(new
                 {
-                    Message = "Install task created successfully!",
+                    Message = "Install task and associated requests created successfully!",
                     TaskId = taskId,
                     TaskGroupId = taskGroupId
                 });
@@ -523,8 +462,9 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("UpdateFailed", ex.Message));
             }
         }
+        
         public async Task<Result> CreateWarrantyReturnTask(CreateWarrantyReturnTaskRequest request, Guid userId)
-        {
+            {
             // Validate user existence
             var userCheck = await _checkIsExist.User(userId);
             if (!userCheck.IsSuccess) return userCheck;
@@ -591,39 +531,35 @@ namespace GRRWS.Application.Implement.Service
                 warrantyClaim.ClaimStatus = request.IsWarrantyFailed ? WarrantyClaimStatus.Failed : WarrantyClaimStatus.Completed;
                 await _unitOfWork.WarrantyClaimRepository.UpdateAsync(warrantyClaim);
 
-                var requestMachine = await _unitOfWork.RequestMachineReplacementRepository.GetByTaskGroupIdAsync(taskGroupId);
-                if (requestMachine == null)
+                // Get the primary request associated with the task group
+                var primaryRequest = await _unitOfWork.RequestRepository.GetByTaskIdAsync(taskId);
+                if (primaryRequest == null)
                 {
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "No associated machine replacement request found."));
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "No associated request found for the task group."));
                 }
 
                 _unitOfWork.ClearChangeTracker(); // Clear change tracker to avoid tracking WarrantyClaim changes
                 var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(warrantyClaim.DeviceWarranty.DeviceId);
-                var requestMachineReturn = new RequestMachineReplacement
+                if (device == null)
                 {
-                    Id = Guid.NewGuid(),
-                    RequestCode = RequestReplaceMachineString.WarrantyReturnReceive(device.DeviceName),
-                    OldDeviceId = device.Id,
-                    Notes = request.IsWarrantyFailed
-                                            ? RequestReplaceMachineString.NoteWarrantyReturnFailed()
-                                            : RequestReplaceMachineString.NoteWarrantyReturnSuccess(),
-                    CreatedBy = userId,
-                    RequestedById = userId,
-                    CreatedDate = TimeHelper.GetHoChiMinhTime(),
-                    TaskId = taskId,
-                    IsDeleted = false,
-                    AssigneeId = request.AssigneeId,
-                    RequestType = RequestMachineReplacementType.StockIn,
-                };
-
-
-                await _unitOfWork.RequestMachineReplacementRepository.CreateAsync(requestMachineReturn);
-                await _unitOfWork.SaveChangesAsync();
-                _unitOfWork.ClearChangeTracker(); // Clear change tracker after saving changes
-                var primaryRequest = await _unitOfWork.RequestRepository.GetByTaskIdAsync(taskId);
+                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Device not found."));
+                }
+                // Update device status to reflect return to stock
+                device.Status = DeviceStatus.Inactive; // Or another appropriate status, e.g., DeviceStatus.InStock
+                device.InstallationDate = null;
+                device.PositionId = null;
+                device.InUsed = false;
+                await _unitOfWork.DeviceRepository.UpdateAsync(device);
+                // Create MachineActionConfirmation for warranty return (StockIn)
+                var stockInResult = await CreateStockInConfirmation(primaryRequest.Id, taskId, device.Id, userId, "Return fault device to stock");
+                if (!stockInResult.IsSuccess)
+                {
+                    return stockInResult; // Propagate error if stock-in confirmation fails
+                }
 
                 if (request.IsReInstallOldDevice)
                 {
+                    // Create re-install task
                     var installTask = new CreateInstallTaskRequest
                     {
                         RequestId = primaryRequest.Id,
@@ -637,57 +573,74 @@ namespace GRRWS.Application.Implement.Service
                     {
                         return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Failure", "Failed to create re-install task."));
                     }
+
+                    // Get the first installation task to identify the temporary device
                     var firstInstallTaskId = taskGroup.Tasks.FirstOrDefault(t => t.TaskType == TaskType.Installation && t.OrderIndex == 3)?.Id;
-                    var firstInstallTask = await _unitOfWork.TaskRepository.GetByIdIncludedAsync(firstInstallTaskId.Value, t => t.RequestMachineReplacement);
-                    var tempDeviceInUse = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(firstInstallTask.RequestMachineReplacement.FirstOrDefault().NewDeviceId.Value);
+                    if (!firstInstallTaskId.HasValue)
+                    {
+                        return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "First installation task not found."));
+                    }
+
+                    var firstInstallTask = await _unitOfWork.TaskRepository.GetByIdIncludedAsync(firstInstallTaskId.Value, t => t.ActionConfirmations);
+                    if (firstInstallTask == null || !firstInstallTask.ActionConfirmations.Any())
+                    {
+                        return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "First installation task or its confirmations not found."));
+                    }
+
+                    var tempDeviceId = firstInstallTask.ActionConfirmations.FirstOrDefault()?.DeviceId;
+                    if (!tempDeviceId.HasValue)
+                    {
+                        return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Temporary device not found in first installation task."));
+                    }
+
+                    var tempDeviceInUse = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(tempDeviceId.Value);
+                    if (tempDeviceInUse == null)
+                    {
+                        return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Temporary device not found."));
+                    }
+
                     _unitOfWork.ClearChangeTracker(); // Clear change tracker after getting the device
-                    var stockReturnRequest = new RequestMachineReplacement
+
+                    // Create MachineActionConfirmation for returning the temporary device to stock (StockIn)
+                    var stockReturnResult = await CreateStockInConfirmation(primaryRequest.Id, installTaskResult, tempDeviceInUse.Id, userId, "Return warranty device to stock");
+                    if (!stockReturnResult.IsSuccess)
                     {
-                        RequestCode = RequestReplaceMachineString.ReturnDeviceToStockKeeper(tempDeviceInUse.DeviceName),
-                        OldDeviceId = tempDeviceInUse.Id, // The temp device to be returned
-                        RequestType = RequestMachineReplacementType.StockIn,
-                        Status = MachineReplacementStatus.Pending,
-                        CreatedDate = TimeHelper.GetHoChiMinhTime(),
-                        NewDeviceId = device.Id,
-                        RequestedById = userId,
-                        AssigneeId = request.AssigneeId,
-                        TaskId = installTaskResult
-                    };
-                    await _unitOfWork.RequestMachineReplacementRepository.CreateAsync(stockReturnRequest);
-                    _unitOfWork.ClearChangeTracker();
-                    var stockOutRequest = new RequestMachineReplacement
+                        return stockReturnResult; // Propagate error if stock-in confirmation fails
+                    }
+
+                    // Create MachineActionConfirmation for stock-out of the reinstalled device (StockOut)
+                    var stockOutResult = await CreateStockOutConfirmation(primaryRequest.Id, installTaskResult, device, userId);
+                    if (!stockOutResult.IsSuccess)
                     {
-                        RequestCode = RequestReplaceMachineString.StocOutRequest(device.DeviceName),
-                        OldDeviceId = tempDeviceInUse.Id, // The temp device to be returned
-                        RequestType = RequestMachineReplacementType.StockOut,
-                        Status = MachineReplacementStatus.Pending,
-                        CreatedDate = TimeHelper.GetHoChiMinhTime(),
-                        NewDeviceId = device.Id,
-                        RequestedById = userId,
-                        AssigneeId = request.AssigneeId,
-                        TaskId = installTaskResult
-                    };
-                    await _unitOfWork.RequestMachineReplacementRepository.CreateAsync(stockOutRequest);
+                        return stockOutResult; // Propagate error if stock-out confirmation fails
+                    }
+
+                    await _unitOfWork.SaveChangesAsync();
+
                     return Result.SuccessWithObject(new
                     {
-                        Message = "Warranty return task, installation task, and stock return task created successfully!",
+                        Message = "Warranty return task, installation task, stock-in confirmation, and stock-out confirmation created successfully!",
                         WarrantyReturnTaskId = taskId,
                         TaskGroupId = taskGroupId,
-                        ReInstallTaskId = installTaskResult
+                        ReInstallTaskId = installTaskResult,
+                        StockInConfirmation = stockInResult,
+                        StockOutConfirmation = stockOutResult
                     });
                 }
 
+                await _unitOfWork.SaveChangesAsync();
+
                 return Result.SuccessWithObject(new
                 {
-                    Message = "Warranty return task, installation task, and stock return task created successfully!",
+                    Message = "Warranty return task and stock-in confirmation created successfully!",
                     WarrantyReturnTaskId = taskId,
                     TaskGroupId = taskGroupId,
+                    StockInConfirmation = stockInResult
                 });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating warranty return task for WarrantyClaimId: {WarrantyClaimId}", request.WarrantyClaimId);
-
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Error", ex.Message));
             }
         }
@@ -823,116 +776,7 @@ namespace GRRWS.Application.Implement.Service
                 UpdatedAt = TimeHelper.GetHoChiMinhTime()
             });
         }
-        public async Task<Result> UpdateIsInstallDevice(Guid taskId, Guid? deviceId = null)
-        {
-            var taskCheck = await _checkIsExist.Task(taskId);
-            if (!taskCheck.IsSuccess) return taskCheck;
-
-            var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
-            task.IsInstall = true;
-            var requestMachine1 = await _unitOfWork.RequestMachineReplacementRepository.GetByTaskIdAsync(taskId);
-            var device1 = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(requestMachine1.OldDeviceId);
-            var tempDevice1 = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(requestMachine1.NewDeviceId ?? new Guid());
-            tempDevice1.PositionId = device1.PositionId;
-            await _unitOfWork.DeviceRepository.UpdateAsync(tempDevice1);
-            if (task.TaskType == TaskType.WarrantyReturn)
-            {
-                var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(task.WarrantyClaim.DeviceWarranty.DeviceId);
-                var tempDevice = await _unitOfWork.DeviceRepository.GetDeviceByLocation(
-                    device.Position.Zone.Area.Id,
-                    device.Position.Zone.Id,
-                    device.PositionId ?? Guid.Empty
-                );
-
-                tempDevice.Status = DeviceStatus.Active;
-                tempDevice.PositionId = null;
-
-                var requestMachine = new RequestMachineReplacement
-                {
-                    Id = Guid.NewGuid(),
-                    RequestCode = RequestReplaceMachineString.ReturnDeviceToStockKeeper(tempDevice.DeviceName),
-                    OldDeviceId = tempDevice.Id,
-                    Notes = RequestReplaceMachineString.NoteWarrantyReturnSuccess(),
-                    CreatedBy = task.CreatedBy,
-                    CreatedDate = TimeHelper.GetHoChiMinhTime(),
-                    RequestedById = task.CreatedBy ?? Guid.NewGuid(),
-                    AssigneeId = task.AssigneeId,
-                    IsDeleted = false
-                };
-
-                await _unitOfWork.DeviceRepository.UpdateAsync(tempDevice);
-                await _unitOfWork.RequestMachineReplacementRepository.CreateAsync(requestMachine);
-            }
-
-            if (task.TaskType != TaskType.WarrantyReturn && deviceId.HasValue)
-            {
-                var requestMachine = await _unitOfWork.RequestMachineReplacementRepository.GetByTaskIdAsync(taskId);
-                if (requestMachine != null)
-                {
-                    var oldDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(requestMachine.OldDeviceId);
-                    if (oldDevice == null)
-                    {
-                        return Result.SuccessWithObject(new
-                        {
-                            Message = "Old device not found for the specified RequestMachineReplacement.",
-                            TaskId = taskId,
-                            UpdatedAt = TimeHelper.GetHoChiMinhTime()
-                        });
-                    }
-
-                    var newDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(deviceId.Value);
-                    if (newDevice == null)
-                    {
-                        return Result.SuccessWithObject(new
-                        {
-                            Message = "New device not found for the specified deviceId.",
-                            TaskId = taskId,
-                            UpdatedAt = TimeHelper.GetHoChiMinhTime()
-                        });
-                    }
-
-                    newDevice.PositionId = oldDevice.PositionId;
-                    newDevice.ModifiedDate = TimeHelper.GetHoChiMinhTime();
-
-                    requestMachine.NewDeviceId = deviceId.Value;
-                    requestMachine.Notes = "Updated with new replacement device due to non-functional device.";
-                    requestMachine.ModifiedDate = TimeHelper.GetHoChiMinhTime();
-                    await _unitOfWork.RequestMachineReplacementRepository.UpdateAsync(requestMachine);
-                    await _unitOfWork.DeviceRepository.UpdateAsync(newDevice);
-
-                }
-                else
-                {
-                    return Result.SuccessWithObject(new
-                    {
-                        Message = "No RequestMachineReplacement found for the specified taskId.",
-                        TaskId = taskId,
-                        UpdatedAt = TimeHelper.GetHoChiMinhTime()
-                    });
-                }
-            }
-
-            await _unitOfWork.TaskRepository.UpdateAsync(task);
-
-            var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(taskId);
-            if (request != null)
-            {
-                request.IsSovled = true;
-                request.ModifiedDate = TimeHelper.GetHoChiMinhTime();
-                await _unitOfWork.RequestRepository.UpdateAsync(request);
-            }
-
-            // Save once for all changes
-            await _unitOfWork.SaveChangesAsync();
-            _unitOfWork.ClearChangeTracker();
-
-            return Result.SuccessWithObject(new
-            {
-                Message = "Task updated successfully!",
-                TaskId = taskId,
-                UpdatedAt = TimeHelper.GetHoChiMinhTime()
-            });
-        }
+        
         // Add to TaskService implementation
         public async Task<Result> GetAllSingleTasksAsync(GetAllSingleTasksRequest request)
         {
@@ -1116,34 +960,7 @@ namespace GRRWS.Application.Implement.Service
                 UpdatedAt = TimeHelper.GetHoChiMinhTime()
             });
         }
-        public async Task<Result> ReInstallOldDevice(Guid taskId)
-        {
-            var checkTask = await _checkIsExist.Task(taskId);
-            if (!checkTask.IsSuccess) return checkTask;
-            var returnTask = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
-            var tasks = await _unitOfWork.TaskRepository.GetAllTasksAsync();
-            var installTask = tasks.FirstOrDefault(t => t.TaskType == TaskType.Installation && t.TaskGroupId == returnTask.TaskGroupId);
 
-            var requestMachine = await _unitOfWork.RequestMachineReplacementRepository.GetByIdAsync(installTask.RequestMachineReplacement.FirstOrDefault().Id);
-            var oldDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(requestMachine.OldDeviceId);
-            oldDevice.Status = DeviceStatus.InUse;
-            oldDevice.ModifiedDate = TimeHelper.GetHoChiMinhTime();
-            await _unitOfWork.DeviceRepository.UpdateAsync(oldDevice);
-
-            var newDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync((Guid)requestMachine.NewDeviceId);
-            newDevice.Status = DeviceStatus.Active;
-            newDevice.ModifiedDate = TimeHelper.GetHoChiMinhTime();
-            await _unitOfWork.DeviceRepository.UpdateAsync(newDevice);
-
-            await _unitOfWork.SaveChangesAsync();
-            return Result.SuccessWithObject(new
-            {
-                Message = "Old device reinstalled successfully!",
-                TaskId = taskId,
-                RequestMachineId = requestMachine.Id,
-                UpdatedAt = TimeHelper.GetHoChiMinhTime()
-            });
-        }
         public async Task<Result> CreateStockReturnTask(CreateStockReturnTaskRequest request, Guid userId)
         {
             // Validate request
@@ -1206,335 +1023,8 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Error", ex.Message));
             }
         }
-        public async Task<Result> InstallDevice(Guid taskId, Guid deviceId)
-        {
-            // Validate task exists
-            var taskCheck = await _checkIsExist.Task(taskId);
-            if (!taskCheck.IsSuccess)
-                return taskCheck;
-
-            var task = await _unitOfWork.TaskRepository.GetByIdAsync(taskId);
-
-            // Validate device exists
-            var deviceCheck = await _checkIsExist.Device(deviceId);
-            if (!deviceCheck.IsSuccess)
-                return deviceCheck;
-
-            var device = await _unitOfWork.DeviceRepository.GetByIdAsync(deviceId);
-
-            try
-            {
-                // Get request and machine replacement info if available
-                var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(taskId);
-                var requestMachine = request != null ?
-                    await _unitOfWork.RequestMachineReplacementRepository.GetByTaskIdAsync(taskId) : null;
-
-                // Check if this is a reinstallation of original device
-                var isReinstallOriginal = request.DeviceId == deviceId;
-
-                // Check if this is a new temporary device installation
-                var isTemporaryInstall = requestMachine != null &&
-                    requestMachine.NewDeviceId.HasValue &&
-                    requestMachine.NewDeviceId.Value == deviceId;
-
-                // Check if we're installing a different device than what was planned
-                var isDifferentDevice = requestMachine != null &&
-                    requestMachine.NewDeviceId.HasValue &&
-                    requestMachine.NewDeviceId.Value != deviceId &&
-                    (task.TaskType == TaskType.Installation);
-
-                // Case 1: Reinstalling original device
-                if (isReinstallOriginal)
-                {
-                    _logger.LogInformation("Reinstalling original device {DeviceId} for task {TaskId}", deviceId, taskId);
-                    var tempDevice = await _unitOfWork.DeviceRepository.GetDeviceByPositionIdWithStatus((Guid)device.PositionId, DeviceStatus.InUse);
-                    _unitOfWork.ClearChangeTracker();
-                    // Update the device status and position
-                    if (request?.DeviceId != null)
-                    {
-                        device.Status = DeviceStatus.InUse;
-
-                        await _unitOfWork.DeviceRepository.UpdateAsync(device);
-                    }
-                    // Create a RequestMachineReplacement for StockReturn of the temporary device
-
-
-                    if (tempDevice != null)
-                    {
-                        // Create new RequestMachineReplacement for stock return
-                        //var stockReturnRequest = new RequestMachineReplacement
-                        //{
-                        //    RequestCode = RequestReplaceMachineString.ReturnDeviceToStockKeeper(tempDevice.DeviceName),
-                        //    OldDeviceId = tempDevice.Id, // The temp device to be returned
-                        //    RequestType = RequestMachineReplacementType.StockReturn,
-                        //    Status = MachineReplacementStatus.Pending,
-                        //    CreatedDate = TimeHelper.GetHoChiMinhTime(),
-                        //    RequestedById = task.CreatedBy ?? Guid.NewGuid(),
-                        //    AssigneeId = task.AssigneeId,
-                        //};
-                        //await _unitOfWork.RequestMachineReplacementRepository.CreateAsync(stockReturnRequest);
-
-                        // Update device status to pending stock return
-                        tempDevice.Status = DeviceStatus.Active;
-                        tempDevice.PositionId = null;
-                        _unitOfWork.ClearChangeTracker();
-                        await _unitOfWork.DeviceRepository.UpdateAsync(tempDevice);
-                    }
-                    // Update task status
-                    task.IsInstall = true;
-                    await _unitOfWork.TaskRepository.UpdateAsync(task);
-                }
-                // Case 2: Installing temporary device
-                else if (isTemporaryInstall || task.TaskType == TaskType.Installation)
-                {
-                    _logger.LogInformation("Installing temporary/new device {DeviceId} for task {TaskId}", deviceId, taskId);
-                    var oldDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(requestMachine.OldDeviceId);
-                    // Install the new device
-                    if (request?.DeviceId != null)
-                    {
-                        // Update position with new device
-                        device.PositionId = oldDevice.PositionId;
-                        device.Status = DeviceStatus.InUse;
-                        await _unitOfWork.DeviceRepository.UpdateAsync(device);
-
-                    }
-                    // Update task status
-                    task.IsInstall = true;
-                    await _unitOfWork.TaskRepository.UpdateAsync(task);
-                    _unitOfWork.ClearChangeTracker(); // Clear change tracker after updating task
-                    request.IsSovled = true;
-                    request.IsNeedSign = true;
-                    request.ModifiedDate = TimeHelper.GetHoChiMinhTime();
-                    await _unitOfWork.RequestRepository.UpdateAsync(request);
-                }
-                // Case 3: Installing a different device than originally planned
-                else if (isDifferentDevice)
-                {
-                    _logger.LogInformation("Installing different device {DeviceId} than originally planned {PlannedDeviceId} for task {TaskId}",
-                        deviceId, requestMachine.NewDeviceId, taskId);
-
-
-                    // Update the request machine replacement record with the new device
-                    var originalNewDeviceId = requestMachine.NewDeviceId.Value;
-                    requestMachine.NewDeviceId = deviceId;
-                    await _unitOfWork.RequestMachineReplacementRepository.UpdateAsync(requestMachine);
-                    var oldDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(requestMachine.OldDeviceId);
-                    // Install the new device
-                    if (request?.DeviceId != null)
-                    {
-                        // Update position with new device
-                        device.PositionId = oldDevice.PositionId;
-                        device.Status = DeviceStatus.InUse;
-                        await _unitOfWork.DeviceRepository.UpdateAsync(device);
-                    }
-
-                    // Update task status
-                    task.IsInstall = true;
-                    await _unitOfWork.TaskRepository.UpdateAsync(task);
-                    request.IsSovled = true;
-                    request.IsNeedSign = true;
-                    request.ModifiedDate = TimeHelper.GetHoChiMinhTime();
-                    await _unitOfWork.RequestRepository.UpdateAsync(request);
-                }
-                // Case 4: Invalid installation scenario
-                else
-                {
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.Failure(
-                        "InvalidOperation",
-                        "The specified device cannot be installed for this task. Verify that it's either the original device or an approved replacement device."
-                    ));
-                }
-
-                await _unitOfWork.SaveChangesAsync();
-
-                // Send notification
-                //if (request != null && request.RequestedById.HasValue)
-                //{
-                //    var notificationContent = isReinstallOriginal
-                //        ? "Your original device has been reinstalled after maintenance"
-                //        : isDifferentDevice
-                //            ? "A different replacement device has been installed than originally planned"
-                //            : "A temporary device has been installed while your device is under maintenance";
-
-                //    await _notificationService.SendNotificationAsync(new CreateNotificationRequest
-                //    {
-                //        Title = "Device Installation",
-                //        Content = notificationContent,
-                //        UserId = request.RequestedById.Value,
-                //        DataType = "Task",
-                //        DataId = task.Id.ToString()
-                //    });
-                //}
-
-                return Result.SuccessWithObject(new
-                {
-                    Message = isReinstallOriginal
-                        ? "Original device reinstalled successfully and stock return request created"
-                        : isDifferentDevice
-                            ? "Different replacement device installed successfully"
-                            : "Device installed successfully",
-                    TaskId = taskId,
-                    DeviceId = deviceId
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error installing device {DeviceId} for task {TaskId}", deviceId, taskId);
-                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Error", $"Failed to install device: {ex.Message}"));
-            }
-        }
-        public async Task<Result> CreateCombinedRepairAndReplacementTasks(CreateCombinedTaskRequest request, Guid userId)
-        {
-            try
-            {
-                // Kiểm tra RequestId
-                var requestCheck = await _checkIsExist.Request(request.RequestId);
-                if (!requestCheck.IsSuccess) return requestCheck;
-
-                // Kiểm tra UserId
-                var userCheck = await _checkIsExist.User(userId);
-                if (!userCheck.IsSuccess) return userCheck;
-
-                // Kiểm tra RequestInfo
-                var requestInfo = await _unitOfWork.TaskRepository.GetRequestInfoAsync(request.RequestId);
-                if (requestInfo == null)
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found."));
-
-                // Kiểm tra xem đã có task Repair hoặc Installation đang xử lý chưa
-                var isRepairTaskProcessing = await IsTaskCompletedInRequestAsync(request.RequestId, TaskType.Repair);
-                if (!isRepairTaskProcessing)
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Conflict", "A repair task is already being processed for this request."));
-
-                var isInstallTaskProcessing = await IsTaskCompletedInRequestAsync(request.RequestId, TaskType.Installation);
-                if (!isInstallTaskProcessing)
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.Conflict("Conflict", "An installation task is already being processed for this request."));
-
-                // Kiểm tra ErrorGuidelineIds (nếu có)
-                List<Guid> guidelineIds = new List<Guid>();
-                if (request.ErrorGuidelineIds != null && request.ErrorGuidelineIds.Any())
-                {
-                    var validGuidelines = await _unitOfWork.ErrorGuidelineRepository.GetErrorGuidelinesAsync(request.ErrorGuidelineIds);
-                    if (!validGuidelines.Any() || validGuidelines.Count != request.ErrorGuidelineIds.Count)
-                    {
-                        _logger.LogWarning("Invalid or missing ErrorGuidelineIds: {ErrorGuidelineIds}", string.Join(", ", request.ErrorGuidelineIds));
-                        return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "One or more error guidelines not found."));
-                    }
-                    guidelineIds = request.ErrorGuidelineIds;
-                }
-
-                // Lấy danh sách Mechanic chưa có task
-                var mechanics = await _unitOfWork.UserRepository.GetMechanicsWithoutTask();
-                if (mechanics == null || mechanics.Count < 2)
-                {
-                    _logger.LogWarning("Not enough available mechanics to assign for tasks for RequestId: {RequestId}", request.RequestId);
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Failure", "At least two available mechanics are required to assign tasks."));
-                }
-
-                // Lấy thông tin thiết bị và thiết bị thay thế
-                var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(requestInfo.DeviceId);
-                var deviceByMachine = await _unitOfWork.DeviceRepository.GetDevicesByMachineIdAsync(device.MachineId ?? Guid.Empty);
-                var replaceDeviceId = deviceByMachine.FirstOrDefault(d => d.Id != device.Id && d.Status == DeviceStatus.Active)?.Id;
-                var deviceInfo = replaceDeviceId.HasValue
-                    ? await _unitOfWork.TaskRepository.GetDeviceInfoAsync(replaceDeviceId.Value)
-                    : "Unknown Device";
-
-                // Tạo hoặc lấy TaskGroup
-                var taskGroupId = await _taskGroupService.CreateOrGetTaskGroupAsync(
-                    null,
-                    TaskType.Repair, // Sử dụng Repair làm GroupType chính vì ActionType là Repair
-                    requestInfo.DeviceName ?? "Unknown Device",
-                    requestInfo.ReportId,
-                    userId
-                );
-
-                // Tạo Installation Task (OrderIndex = 1)
-                Guid? installationTaskId = null;
-                var installRequest = new CreateInstallTaskRequest
-                {
-                    RequestId = request.RequestId,
-                    NewDeviceId = replaceDeviceId,
-                    TaskGroupId = taskGroupId
-                };
-
-                var installTaskId = await _unitOfWork.TaskRepository.CreateInstallTaskWithGroup(installRequest, userId, taskGroupId, orderIndex: 1);
-                if (installTaskId == Guid.Empty)
-                {
-                    _logger.LogWarning("Failed to create installation task for RequestId: {RequestId}", request.RequestId);
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Failure", "Failed to create installation task."));
-                }
-                installationTaskId = installTaskId;
-
-                // Tạo RequestMachineReplacement cho Installation Task
-                var requestMachineResult = await RequestReplaceMachineForInstall(request.RequestId, installTaskId, replaceDeviceId, device);
-                if (requestMachineResult.IsFailure)
-                {
-                    _logger.LogWarning("Failed to create RequestMachineReplacement for TaskId: {TaskId}, Error: {Error}", installTaskId, requestMachineResult.Error.Description);
-                }
-                // Gán Mechanic cho Installation Task
-                //var installMechanic = mechanics.First().Id;
-                //var installTask = await _unitOfWork.TaskRepository.GetByIdAsync(installTaskId);
-                //installTask.AssigneeId = installMechanic;
-                //installTask.Status = Status.Suggested;
-                //_unitOfWork.TaskRepository.Update(installTask);
-
-                // Tạo Repair Task (OrderIndex = 2)
-                Guid? repairTaskId = null;
-                var repairRequest = new CreateRepairTaskRequest
-                {
-                    RequestId = request.RequestId,
-                    ErrorGuidelineIds = guidelineIds
-                };
-
-                var repairTaskId2 = await _unitOfWork.TaskRepository.CreateRepairTaskWithGroup(repairRequest, userId, taskGroupId, orderIndex: 2);
-                if (repairTaskId == Guid.Empty)
-                {
-                    _logger.LogWarning("Failed to create repair task for RequestId: {RequestId}", request.RequestId);
-                    return Result.SuccessWithObject(new
-                    {
-                        Message = "Installation task created successfully, but failed to create repair task.",
-                        TaskGroupId = taskGroupId,
-                        InstallationTaskId = installationTaskId
-                    });
-                }
-                repairTaskId = repairTaskId2;
-
-                // Gán Mechanic cho Repair Task (khác với Installation Task)
-                var repairMechanic = mechanics.First().Id; // Lấy Mechanic thứ hai
-                var repairTask = await _unitOfWork.TaskRepository.GetByIdAsync(repairTaskId2);
-                repairTask.AssigneeId = repairMechanic;
-                //repairTask.Status = Status.Suggested;
-                _unitOfWork.TaskRepository.Update(repairTask);
-
-                // Kiểm tra và gán Mechanic cho Repair Task nếu yêu cầu phụ tùng
-                //if (guidelineIds.Any())
-                //{
-                //    var errorSpareParts = await _unitOfWork.ErrorSparepartRepository.GetByErrorGuidelineIdsAsync(guidelineIds);
-                //    if (errorSpareParts.Any())
-                //    {
-                //        // Nếu yêu cầu phụ tùng, giữ trạng thái Suggested và không cần gán lại Mechanic
-                //        repairTask.Status = Status.Suggested; // Đợi Stock Keeper xác nhận phụ tùng
-                //        _unitOfWork.TaskRepository.Update(repairTask);
-                //    }
-                //}
-
-                // Lưu tất cả thay đổi
-                await _unitOfWork.SaveChangesAsync();
-
-                return Result.SuccessWithObject(new
-                {
-                    Message = "Combined repair and replacement tasks created successfully!",
-                    TaskGroupId = taskGroupId,
-                    InstallationTaskId = installationTaskId,
-                    RepairTaskId = repairTaskId,
-                    RepairMechanicId = repairMechanic
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating combined repair and replacement tasks for RequestId: {RequestId}, UserId: {UserId}", request.RequestId, userId);
-                return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("InternalServerError", $"Failed to create combined tasks: {ex.Message}"));
-            }
-        }
+        
+        
         public async Task<Result> UpdateTaskAssigneeAsync(Guid taskId, Guid newAssigneeId, Guid updatedByUserId)
         {
             try
@@ -1696,12 +1186,10 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.Failure(TaskErrorMessage.InvalidStatusTransition());
 
-            if (task.DeviceReturnTime.HasValue)
-                return Result.Failure(TaskErrorMessage.ReportAlreadyCreated());
+            
 
             task.EndTime = TimeHelper.GetHoChiMinhTime();
-            task.DeviceReturnTime = request.DeviceReturnTime;
-            task.DeviceCondition = request.DeviceCondition;
+            
             task.ReportNotes = request.ReportNotes;
 
             await _unitOfWork.TaskRepository.UpdateAsync(task);
@@ -1724,8 +1212,7 @@ namespace GRRWS.Application.Implement.Service
                     EndTime = t.EndTime,
                     AssigneeId = t.AssigneeId,
                     AssigneeName = t.Assignee?.UserName,
-                    DeviceReturnTime = t.DeviceReturnTime,
-                    DeviceCondition = t.DeviceCondition,
+                
                     ReportNotes = t.ReportNotes,
                     CreatedDate = t.CreatedDate,
                     ModifiedDate = t.ModifiedDate,
@@ -1761,8 +1248,7 @@ namespace GRRWS.Application.Implement.Service
                 EndTime = task.EndTime,
                 AssigneeId = task.AssigneeId,
                 AssigneeName = task.Assignee?.UserName,
-                DeviceReturnTime = task.DeviceReturnTime,
-                DeviceCondition = task.DeviceCondition,
+                
                 ReportNotes = task.ReportNotes,
                 CreatedDate = task.CreatedDate,
                 ModifiedDate = task.ModifiedDate,
@@ -2058,53 +1544,8 @@ namespace GRRWS.Application.Implement.Service
             }
         }
 
-        private async Task<Result> RequestReplaceMachineForInstall(Guid requestId, Guid taskId, Guid? replaceDeviceId, Device oldeDeivce)
-        {
-            var request = await _unitOfWork.RequestRepository.GetRequestByIdAsync(requestId);
-            if (request == null)
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found."));
 
-            var oldDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(request.DeviceId);
-            if (oldDevice == null)
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Old device not found."));
 
-            if (!replaceDeviceId.HasValue)
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "No replacement device specified."));
-
-            var newDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(replaceDeviceId.Value);
-            if (newDevice == null)
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Replacement device not found."));
-
-            var requestMachineReplacement = new RequestMachineReplacement
-            {
-                Id = Guid.NewGuid(),
-                CreatedDate = TimeHelper.GetHoChiMinhTime(),
-                ModifiedDate = TimeHelper.GetHoChiMinhTime(),
-                RequestedById = request.RequestedById,
-                OldDeviceId = oldDevice.Id,
-                MachineId = oldDevice.MachineId,
-                RequestCode = RequestReplaceMachineString.RequesReplaceMachine(oldDevice.Position.Zone.Area.AreaName, oldDevice.Position.Zone.ZoneName, oldDevice.Position.Index),
-                Notes = RequestReplaceMachineString.RequesReplaceMachineNote(newDeviceName: newDevice.DeviceName, oldDeviceName: oldeDeivce.DeviceName),
-                Status = MachineReplacementStatus.Pending,
-                TaskId = taskId,
-                NewDeviceId = replaceDeviceId,
-                RequestType = RequestMachineReplacementType.StockOut,
-            };
-
-            if (!requestMachineReplacement.MachineId.HasValue)
-                return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("ValidationError", "Device does not have a machine model."));
-
-            await _unitOfWork.RequestMachineReplacementRepository.CreateAsync(requestMachineReplacement);
-            await _unitOfWork.SaveChangesAsync();
-
-            return Result.SuccessWithObject(new
-            {
-                Message = "Machine replacement request created successfully!",
-                RequestMachineId = requestMachineReplacement.Id,
-                RequestCode = requestMachineReplacement.RequestCode,
-                CreatedDate = requestMachineReplacement.CreatedDate
-            });
-        }
 
         private async Task<List<WarrantyDocument>> MapDocsWithImagesAsync(ICollection<WarrantyDocument> documents)
         {
@@ -2139,6 +1580,129 @@ namespace GRRWS.Application.Implement.Service
 
             return updatedDocs;
         }
+        //Tạo phiếu lấy máy mang đi bảo hành
+        private async Task<Result> CreateWarrantySubmissionConfirmation(Guid requestId, Guid taskId, Guid deviceId, Guid userId)
+        {
+            var request = await _unitOfWork.RequestRepository.GetRequestByIdAsync(requestId);
+            if (request == null)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found."));
+
+            var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(deviceId);
+            if (device == null)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Device not found."));
+
+            var confirmation = new MachineActionConfirmation
+            {
+                Id = Guid.NewGuid(),
+                ConfirmationCode = RequestReplaceMachineString.WarrantySubmissionConfirmation(device.DeviceName),
+                StartDate = null,
+                RequestedById = userId,
+                DeviceId = deviceId,
+                MachineId = device.MachineId,
+                TaskId = taskId,
+                Reason = "Retrieve faulty device for warranty submission",
+                Status = MachineActionStatus.Pending,
+                ActionType = MachineActionType.WarrantySubmission,
+                Notes = "Awaiting mechanic to retrieve device for warranty",
+                StockkeeperConfirm = false,
+                ApprovedDate = null
+            };
+
+            if (!confirmation.MachineId.HasValue)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("ValidationError", "Device does not have a machine model."));
+
+            await _unitOfWork.MachineActionConfirmationRepository.CreateAsync(confirmation);
+            await _unitOfWork.SaveChangesAsync();
+
+            return Result.SuccessWithObject(new
+            {
+                Message = "Warranty submission confirmation created successfully!",
+                ConfirmationId = confirmation.Id,
+                ConfirmationCode = confirmation.ConfirmationCode
+            });
+        }
+        //Tạo phiếu lấy máy mang đi thay thế
+        private async Task<Result> CreateStockOutConfirmation(Guid requestId, Guid taskId, Device oldDevice, Guid userId)
+        {
+            var request = await _unitOfWork.RequestRepository.GetRequestByIdAsync(requestId);
+            if (request == null)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found."));
+            var deviceDetail = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(oldDevice.Id);
+            if (deviceDetail == null)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "deviceDetail not found."));
+            var confirmation = new MachineActionConfirmation
+            {
+                Id = Guid.NewGuid(),
+                ConfirmationCode = RequestReplaceMachineString.StockOutConfirmation(deviceDetail.Position.Zone.Area.AreaName, deviceDetail.Position.Zone.ZoneName, deviceDetail.Position.Index),
+                StartDate = null,
+                RequestedById = userId,
+                DeviceId = null, 
+                MachineId = oldDevice.MachineId,
+                TaskId = taskId,
+                Reason = "Retrieve replacement device for installation",
+                Status = MachineActionStatus.Pending,
+                ActionType = MachineActionType.StockOut,
+                Notes = "Awaiting stockkeeper confirmation for replacement device",
+                StockkeeperConfirm = false,
+                ApprovedDate = null
+            };
+
+            if (!confirmation.MachineId.HasValue)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("ValidationError", "Device does not have a machine model."));
+
+            await _unitOfWork.MachineActionConfirmationRepository.CreateAsync(confirmation);
+            await _unitOfWork.SaveChangesAsync();
+
+            return Result.SuccessWithObject(new
+            {
+                Message = "StockOut confirmation created successfully!",
+                ConfirmationId = confirmation.Id,
+                ConfirmationCode = confirmation.ConfirmationCode
+            });
+        }
+        //Tạo phiếu trả máy về kho
+        private async Task<Result> CreateStockInConfirmation(Guid requestId, Guid taskId, Guid deviceId, Guid userId,string? reason)
+        {
+            var request = await _unitOfWork.RequestRepository.GetRequestByIdAsync(requestId);
+            if (request == null)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found."));
+
+            var deviceDetail = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(deviceId);
+            if (deviceDetail == null)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "deviceDetail not found."));
+
+            var confirmation = new MachineActionConfirmation
+            {
+                Id = Guid.NewGuid(),
+                ConfirmationCode = RequestReplaceMachineString.StockInConfirmation(deviceDetail.DeviceName),
+                StartDate = null,
+                RequestedById = userId,
+                DeviceId = deviceId,
+                MachineId = deviceDetail.MachineId,
+                TaskId = taskId,
+                Reason = reason,
+                Status = MachineActionStatus.Pending,
+                ActionType = MachineActionType.StockIn,
+                Notes = "Awaiting mechanic to return faulty device",
+                StockkeeperConfirm = false,
+                ApprovedDate = null
+            };
+
+            if (!confirmation.MachineId.HasValue)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("ValidationError", "Device does not have a machine model."));
+
+            await _unitOfWork.MachineActionConfirmationRepository.CreateAsync(confirmation);
+            await _unitOfWork.SaveChangesAsync();
+
+            return Result.SuccessWithObject(new
+            {
+                Message = "StockIn confirmation created successfully!",
+                ConfirmationId = confirmation.Id,
+                ConfirmationCode = confirmation.ConfirmationCode
+            });
+        }
+
+
 
         //private async Task UpdateForWarrantyDeviceInfor(Guid taskId)
         //{

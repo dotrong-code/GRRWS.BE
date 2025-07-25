@@ -128,7 +128,8 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IHOTDashboardService, HOTDashboardService>();
             services.AddTransient<IMechanicShiftService, MechanicShiftService>();
             services.AddTransient<IWarrantyClaimService, WarrantyClaimService>();
-            services.AddTransient<IRequestMachineReplacementService, RequestMachineReplacementService>();
+           
+            services.AddTransient<IMachineActionConfirmationService, MachineActionConfirmationService>();
             services.AddTransient<IOcrService, OcrService>();
 
 
@@ -178,8 +179,8 @@ namespace GRRWS.Host.Starup
 
 
             services.AddTransient<IHOTDashboardRepository, HOTDashboardRepository>();
-            services.AddTransient<IRequestMachineReplacementRepository, RequestMachineReplacementRepository>();
-            services.AddTransient<ITaskConfirmationRepository, TaskConfirmationRepository>();
+            
+            services.AddTransient<IMachineActionConfirmationRepository, MachineActionConfirmationRepository>();
             #endregion
 
             #region GenericRepositories
@@ -199,7 +200,8 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IGenericRepository<IssueError>, GenericRepository<IssueError>>();
             services.AddTransient<IGenericRepository<PushToken>, GenericRepository<PushToken>>();
             services.AddTransient<IGenericRepository<Notification>, GenericRepository<Notification>>();
-            services.AddTransient<IGenericRepository<TaskConfirmationRepository>, GenericRepository<TaskConfirmationRepository>>();
+            
+            services.AddTransient<IGenericRepository<MachineActionConfirmation>, GenericRepository<MachineActionConfirmation>>();
             #endregion
 
 

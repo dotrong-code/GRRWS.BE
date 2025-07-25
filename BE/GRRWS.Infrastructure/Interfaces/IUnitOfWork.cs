@@ -44,8 +44,7 @@ namespace GRRWS.Infrastructure.Interfaces
         IMechanicPerformanceHistoryRepository MechanicPerformanceHistoryRepository { get; }
         IMechanicPerformanceRepository MechanicPerformanceRepository { get; }
         IWarrantyClaimRepository WarrantyClaimRepository { get; }
-        IRequestMachineReplacementRepository RequestMachineReplacementRepository { get; }
-        ITaskConfirmationRepository TaskConfirmationRepository { get; }
+        IMachineActionConfirmationRepository MachineActionConfirmationRepository { get; }
         int Complete();
         void ClearChangeTracker(); // Add this method
         Task<int> SaveChangesAsync();

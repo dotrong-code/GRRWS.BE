@@ -11,30 +11,28 @@ namespace GRRWS.Domain.Entities
         public Priority Priority { get; set; }
         public Status Status { get; set; }
         public DateTime? StartTime { get; set; }
-        public DateTime? ExpectedTime { get; set; }
         public DateTime? EndTime { get; set; }
+        public DateTime? ExpectedTime { get; set; }
         public Guid? AssigneeId { get; set; }
         public bool? IsUninstall { get; set; }
         public bool? IsInstall { get; set; }
         public bool? IsSigned { get; set; } = false;
-
-        public DateTime? DeviceReturnTime { get; set; } // Time device is returned
-        public string? DeviceCondition { get; set; } // Condition after repair
         public string? ReportNotes { get; set; }
         public Guid? WarrantyClaimId { get; set; }
         public Guid? TaskGroupId { get; set; } // Grouping tasks together
+        
 
         #region relationships
         public User? Assignee { get; set; }
         public WarrantyClaim? WarrantyClaim { get; set; }
         public TaskGroup? TaskGroup { get; set; } // Group this task belongs to
+       
+        public ICollection<MachineActionConfirmation> ActionConfirmations { get; set; }
         public ICollection<ErrorDetail> ErrorDetails { get; set; }
         public ICollection<RepairSparepart>? RepairSpareparts { get; set; }
         public ICollection<TechnicalSymptomReport>? TechnicalSymptomReports { get; set; }
-        public ICollection<MechanicShift>? MechanicShifts { get; set; }
-        // public RequestMachineReplacement? RequestMachineReplacement { get; set; }
-        public ICollection<TaskConfirmation>? TaskConfirmations { get; set; } // Confirmations for this task
-        public ICollection<RequestMachineReplacement>? RequestMachineReplacement { get; set; }
+        public ICollection<MechanicShift>? MechanicShifts { get; set; }     
+        
         #endregion
     }
 }

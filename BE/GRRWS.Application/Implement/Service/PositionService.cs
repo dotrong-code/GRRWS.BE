@@ -299,7 +299,7 @@ namespace GRRWS.Application.Implement.Service
                     return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", $"Position with ID {positionId} not found."));
                 }
 
-                var taskConfirmations = await _unitOfWork.PositionRepository.GetTaskConfirmationsByPositionIdAsync(positionId);
+                var taskConfirmations = await _unitOfWork.PositionRepository.GetMachineActionConfirmationsByPositionIdAsync(positionId);
                 if (!taskConfirmations.Any())
                 {
                     return Result.SuccessWithObject(taskConfirmations);
@@ -315,10 +315,10 @@ namespace GRRWS.Application.Implement.Service
                     SignerName = tc.Signer?.FullName ?? "N/A",
                     SignerRole = tc.SignerRole,
                     SignatureBase64 = tc.SignatureBase64 ?? "N/A",
-                    DeviceName = tc.DeviceName ?? "N/A",
-                    DeviceCode = tc.DeviceCode ?? "N/A",
+                    DeviceName = tc.Device.DeviceName ?? "N/A",
+                    DeviceCode = tc.Device.DeviceCode ?? "N/A",
                     DeviceCondition = tc.DeviceCondition ?? "N/A",
-                    ConfirmationType = tc.ConfirmationType,
+                    ConfirmationType = tc.ActionType.ToString(),
                     Notes = tc.Notes ?? "No notes",
                     CreatedDate = tc.CreatedDate,
                     ModifiedDate = tc.ModifiedDate

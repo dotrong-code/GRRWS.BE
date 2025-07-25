@@ -1,6 +1,9 @@
-﻿using GRRWS.Application.Common.Result;
+﻿using GRRWS.Application.Common;
+using GRRWS.Application.Common.Result;
 using GRRWS.Application.Interface.IService;
+using GRRWS.Infrastructure.DTOs.Common;
 using GRRWS.Infrastructure.DTOs.Report;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GRRWS.Host.Controllers
@@ -45,19 +48,22 @@ namespace GRRWS.Host.Controllers
 : ResultExtensions.ToProblemDetails(result);
         }
 
-        [HttpPost("with-issue-error")]
-        public async Task<IResult> CreateReportWithIssueError([FromBody] ReportCreateWithIssueErrorDTO dto)
-        {
-            var result = await _service.CreateReportWithIssueError2Async(dto);
-            return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, "Report created successfully with IssueErrors")
-                : ResultExtensions.ToProblemDetails(result);
-        }
-
+        //[HttpPost("with-issue-error")]
+        //public async Task<IResult> CreateReportWithIssueError([FromBody] ReportCreateWithIssueErrorDTO dto)
+        //{
+        //    var result = await _service.CreateReportWithIssueError2Async(dto);
+        //    return result.IsSuccess
+        //        ? ResultExtensions.ToSuccessDetails(result, "Report created successfully with IssueErrors")
+        //        : ResultExtensions.ToProblemDetails(result);
+        //}
+        [Authorize]
         [HttpPost("with-issue-symptom")]
         public async Task<IResult> CreateReportWithIssueSymptom([FromBody] ReportCreateWithIssueSymtomDTO dto)
         {
-            var result = await _service.CreateReportWithIssueSymtomAsync(dto);
+            CurrentUserObject currentUser = await TokenHelper.Instance.GetThisUserInfo(HttpContext);
+            if (currentUser.Role != 2) // Ensure only HOT can verify
+                return ResultExtensions.ToProblemDetails(Result.Failure(Infrastructure.DTOs.Common.Error.Unauthorized("Unauthorized", "Only Head of Technical can create Report.")));
+            var result = await _service.CreateReportWithIssueSymtomAsync(dto,currentUser.UserId);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Report created successfully with IssueSymptoms!")
                 : ResultExtensions.ToProblemDetails(result);

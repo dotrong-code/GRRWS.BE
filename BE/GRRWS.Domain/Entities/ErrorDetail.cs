@@ -13,6 +13,6 @@
         public ErrorGuideline? ErrorGuideline { get; set; } // Nullable to allow for cases without a guideline
         public ICollection<ErrorFixProgress>? ProgressRecords { get; set; }
         public RequestTakeSparePartUsage? RequestTakeSparePartUsage { get; set; } // Navigation property 1-1
-        public RequestMachineReplacement? RequestMachineReplacement { get; set; }
+        public MachineActionConfirmation? MachineActionConfirmation { get; set; }
     }
 }
