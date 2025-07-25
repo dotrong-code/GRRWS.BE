@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Google.Protobuf.WellKnownTypes;
 using GRRWS.Application.Common;
 using GRRWS.Application.Common.Result;
 using GRRWS.Application.Common.Validator.Task;
@@ -131,10 +132,10 @@ namespace GRRWS.Application.Implement.Service
 
                 var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(confirmation.TaskId);
 
-                
+
                 var device = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync(confirmation.DeviceId);
-                   
-                
+
+
 
                 var taskConfirmation = new TaskConfirmation
                 {
@@ -145,7 +146,7 @@ namespace GRRWS.Application.Implement.Service
                     SignerRole = confirmation.SignerRole,
                     SignatureBase64 = confirmation.SignatureBase64,
                     DeviceName = device?.DeviceName,
-                    DeviceCode = device?.DeviceCode,                  
+                    DeviceCode = device?.DeviceCode,
                     DeviceCondition = confirmation.DeviceCondition,
                     ConfirmationType = confirmation.ConfirmationType,
                     Notes = confirmation.Notes,
@@ -156,12 +157,12 @@ namespace GRRWS.Application.Implement.Service
                 // Add confirmation to repository
                 await _unitOfWork.TaskConfirmationRepository.CreateAsync(taskConfirmation);
                 //Update request Is
-                if(request != null)
+                if (request != null)
                 {
                     request.IsNeedSign = false;
                     await _unitOfWork.RequestRepository.UpdateAsync(request);
                 }
-                
+
                 // Update task IsSigned field
                 task.IsSigned = true;
                 await _unitOfWork.TaskRepository.UpdateAsync(task);
@@ -751,7 +752,7 @@ namespace GRRWS.Application.Implement.Service
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Fail", "Task status could not be updated."));
             _unitOfWork.ClearChangeTracker();
             var task = await _unitOfWork.TaskRepository.GetTaskByIdAsync(taskId);
-            // Only send notification if the task status is Completed
+
             if (task.Status == Status.InProgress && task.TaskType == TaskType.WarrantySubmission)
             {
                 var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(taskId);
@@ -763,10 +764,31 @@ namespace GRRWS.Application.Implement.Service
                     _unitOfWork.ClearChangeTracker();
                 }
             }
+            // Realtime for task status update
+            await _notificationService.SendRealtimeMessageToRoleAsync(2, "NotificationReceived", new
+            {
+                TaskId = taskId
+            });
+
+            // Only send notification if the task status is Completed
             if (task.Status == Status.Completed)
             {
+                var getCurrentTask = await _unitOfWork.TaskRepository.GetByIdAsync(taskId);
+                var getTaskGroup = await _unitOfWork.TaskGroupRepository.GetByIdAsync(getCurrentTask.TaskGroupId ?? Guid.Empty);
+                var tasks = await _unitOfWork.TaskRepository.GetTasksByGroupIdAsync(getTaskGroup.Id);
+                var installationTask = tasks.FirstOrDefault(t => t.TaskType == TaskType.Installation && t.Status == Status.Completed);
+                if (installationTask != null)
+                {
+                    var repairTask = tasks.FirstOrDefault(t => t.Status == Status.WaitingForInstallation);
+                    if (repairTask != null)
+                    {
+                        repairTask.Status = Status.Pending;
+                        await _unitOfWork.TaskRepository.UpdateAsync(repairTask);
+                        await _unitOfWork.SaveChangesAsync(); // Save the repair task update
+                        _unitOfWork.ClearChangeTracker();
+                    }
+                }
                 var assignee = await _unitOfWork.UserRepository.GetByIdAsync(userId);
-
                 // Notify Head of Technical (HOT) about completed task
                 var notificationCompletedTaskForHOT = new NotificationRequest
                 {
@@ -1072,7 +1094,7 @@ namespace GRRWS.Application.Implement.Service
             if (!checkTask.IsSuccess) return checkTask;
             var checkMechanic = await _checkIsExist.User(mechanicId);
             if (!checkMechanic.IsSuccess) return checkMechanic;
-            
+
             var isUpdated = await _unitOfWork.TaskRepository.UpdateUninstallDeviceInTask(taskId, mechanicId);
             if (isUpdated == null)
             {
@@ -1080,7 +1102,7 @@ namespace GRRWS.Application.Implement.Service
             }
             _unitOfWork.ClearChangeTracker();
             var request = await _unitOfWork.RequestRepository.GetByTaskIdAsync(taskId);
-            if(request == null)
+            if (request == null)
             {
                 return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found ."));
             }
@@ -1107,7 +1129,7 @@ namespace GRRWS.Application.Implement.Service
             oldDevice.Status = DeviceStatus.InUse;
             oldDevice.ModifiedDate = TimeHelper.GetHoChiMinhTime();
             await _unitOfWork.DeviceRepository.UpdateAsync(oldDevice);
-                
+
             var newDevice = await _unitOfWork.DeviceRepository.GetDeviceByIdAsync((Guid)requestMachine.NewDeviceId);
             newDevice.Status = DeviceStatus.Active;
             newDevice.ModifiedDate = TimeHelper.GetHoChiMinhTime();
@@ -1442,19 +1464,18 @@ namespace GRRWS.Application.Implement.Service
                 }
                 installationTaskId = installTaskId;
 
-                // Gán Mechanic cho Installation Task
-                var installMechanic = mechanics.First().Id;
-                var installTask = await _unitOfWork.TaskRepository.GetByIdAsync(installTaskId);
-                installTask.AssigneeId = installMechanic;
-                installTask.Status = Status.Suggested;
-                _unitOfWork.TaskRepository.Update(installTask);
-
                 // Tạo RequestMachineReplacement cho Installation Task
                 var requestMachineResult = await RequestReplaceMachineForInstall(request.RequestId, installTaskId, replaceDeviceId, device);
                 if (requestMachineResult.IsFailure)
                 {
                     _logger.LogWarning("Failed to create RequestMachineReplacement for TaskId: {TaskId}, Error: {Error}", installTaskId, requestMachineResult.Error.Description);
                 }
+                // Gán Mechanic cho Installation Task
+                //var installMechanic = mechanics.First().Id;
+                //var installTask = await _unitOfWork.TaskRepository.GetByIdAsync(installTaskId);
+                //installTask.AssigneeId = installMechanic;
+                //installTask.Status = Status.Suggested;
+                //_unitOfWork.TaskRepository.Update(installTask);
 
                 // Tạo Repair Task (OrderIndex = 2)
                 Guid? repairTaskId = null;
@@ -1478,7 +1499,7 @@ namespace GRRWS.Application.Implement.Service
                 repairTaskId = repairTaskId2;
 
                 // Gán Mechanic cho Repair Task (khác với Installation Task)
-                var repairMechanic = mechanics.Skip(1).First().Id; // Lấy Mechanic thứ hai
+                var repairMechanic = mechanics.First().Id; // Lấy Mechanic thứ hai
                 var repairTask = await _unitOfWork.TaskRepository.GetByIdAsync(repairTaskId2);
                 repairTask.AssigneeId = repairMechanic;
                 //repairTask.Status = Status.Suggested;
@@ -1505,7 +1526,6 @@ namespace GRRWS.Application.Implement.Service
                     TaskGroupId = taskGroupId,
                     InstallationTaskId = installationTaskId,
                     RepairTaskId = repairTaskId,
-                    InstallMechanicId = installMechanic,
                     RepairMechanicId = repairMechanic
                 });
             }
@@ -1890,7 +1910,7 @@ namespace GRRWS.Application.Implement.Service
                 if (repairTask != null)
                 {
                     repairTask.AssigneeId = repairMechanicId;
-                    repairTask.Status = Status.Pending;
+                    repairTask.Status = Status.WaitingForInstallation;
                     repairTask.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                     //repairTask.ExpectedTime = thirdMechanic.ExpectedTime;
                     await _unitOfWork.TaskRepository.UpdateAsync(repairTask);
@@ -1905,11 +1925,10 @@ namespace GRRWS.Application.Implement.Service
                 if (installTask != null)
                 {
                     installTask.AssigneeId = installMechanicId;
-                    installTask.Status = Status.Pending;
+                    installTask.Status = Status.WaitingForConfirmation;
                     installTask.ModifiedDate = TimeHelper.GetHoChiMinhTime();
                     //installTask.ExpectedTime = secondaryMechanic.ExpectedTime;
                     await _unitOfWork.TaskRepository.UpdateAsync(installTask);
-
                     // Create mechanic shift for install task
                     var installShiftResult = await _mechanicShiftService.CreateMechanicShiftAsync(installMechanicId, installTask.Id);
 
@@ -1960,12 +1979,12 @@ namespace GRRWS.Application.Implement.Service
                     }
 
                     // Check if mechanic is available at the current time
-                    var currentTime = TimeHelper.GetHoChiMinhTime();
-                    var mechanicShift = await _unitOfWork.MechanicShiftRepository.GetCurrentShiftAsync(mechanicId.Value, currentTime);
-                    if (mechanicShift != null && !mechanicShift.IsAvailable)
-                    {
-                        return Result.Failure(new Infrastructure.DTOs.Common.Error("MechanicUnavailable", "Mechanic is not available at this time.", 0));
-                    }
+                    //var currentTime = TimeHelper.GetHoChiMinhTime();
+                    //var mechanicShift = await _unitOfWork.MechanicShiftRepository.GetCurrentShiftAsync(mechanicId.Value, currentTime);
+                    //if (mechanicShift != null && !mechanicShift.IsAvailable)
+                    //{
+                    //    return Result.Failure(new Infrastructure.DTOs.Common.Error("MechanicUnavailable", "Mechanic is not available at this time.", 0));
+                    //}
 
                     assignedMechanicId = mechanicId.Value;
                 }
@@ -1973,14 +1992,14 @@ namespace GRRWS.Application.Implement.Service
                 {
                     // Auto assignment - get best available mechanic
                     var currentTime = TimeHelper.GetHoChiMinhTime();
-                    var availableMechanics = await _unitOfWork.UserRepository.GetRecommendedMechanicsAsync(currentTime, 1, 1);
+                    var availableMechanics = await _unitOfWork.UserRepository.GetMechanicsWithoutTask();
 
                     if (!availableMechanics.Any())
                     {
                         return Result.Failure(new Infrastructure.DTOs.Common.Error("NoAvailableMechanics", "No available mechanics for assignment.", 0));
                     }
 
-                    assignedMechanicId = availableMechanics.First().MechanicId;
+                    assignedMechanicId = availableMechanics.First().Id;
                 }
 
                 // Apply the assignment
