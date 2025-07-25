@@ -57,7 +57,7 @@ namespace GRRWS.Application.Interface.IService
         
         
         
-        Task<Result> CreateCombinedRepairAndReplacementTasks(CreateCombinedTaskRequest request, Guid userId);
+        
         Task<Result> UpdateTaskAssigneeAsync(Guid taskId, Guid newAssigneeId, Guid updatedByUserId);
         
     }

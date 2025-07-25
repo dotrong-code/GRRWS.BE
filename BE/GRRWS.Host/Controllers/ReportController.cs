@@ -48,14 +48,14 @@ namespace GRRWS.Host.Controllers
 : ResultExtensions.ToProblemDetails(result);
         }
 
-        [HttpPost("with-issue-error")]
-        public async Task<IResult> CreateReportWithIssueError([FromBody] ReportCreateWithIssueErrorDTO dto)
-        {
-            var result = await _service.CreateReportWithIssueError2Async(dto);
-            return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, "Report created successfully with IssueErrors")
-                : ResultExtensions.ToProblemDetails(result);
-        }
+        //[HttpPost("with-issue-error")]
+        //public async Task<IResult> CreateReportWithIssueError([FromBody] ReportCreateWithIssueErrorDTO dto)
+        //{
+        //    var result = await _service.CreateReportWithIssueError2Async(dto);
+        //    return result.IsSuccess
+        //        ? ResultExtensions.ToSuccessDetails(result, "Report created successfully with IssueErrors")
+        //        : ResultExtensions.ToProblemDetails(result);
+        //}
         [Authorize]
         [HttpPost("with-issue-symptom")]
         public async Task<IResult> CreateReportWithIssueSymptom([FromBody] ReportCreateWithIssueSymtomDTO dto)
