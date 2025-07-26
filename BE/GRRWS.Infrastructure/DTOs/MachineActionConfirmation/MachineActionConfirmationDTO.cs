@@ -15,8 +15,8 @@ namespace GRRWS.Infrastructure.DTOs.MachineActionConfirmation
         public Guid? RequestedById { get; set; }
         public Guid? DeviceId { get; set; }
         public Guid? TaskId { get; set; }
-        public MachineActionStatus? Status { get; set; }
-        public MachineActionType? ActionType { get; set; }
+        public string? Status { get; set; }
+        public string? ActionType { get; set; }
         public DateTime? CompletedDate { get; set; }
         public string? Reason { get; set; }
         public Guid? VerificationToken { get; set; }
