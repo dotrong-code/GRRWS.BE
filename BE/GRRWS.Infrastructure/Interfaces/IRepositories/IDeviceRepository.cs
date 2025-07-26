@@ -36,7 +36,7 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
         Task<List<DeviceTechnicalSymptomHistoryResponse>> GetDeviceTechnicalSymptomHistoryByDeviceIdAsync(Guid deviceId);
         Task<List<MachineTechnicalSymptomHistoryResponse>> GetMachineTechnicalSymptomHistoryByMachineIdAsync(Guid machineId);
         Task<List<Device>> GetDevicesByPositionIdAsync(Guid positionId);
-        Task<List<Device>> GetDevicesByMachineIdAsync(Guid machineId);
+        Task<(List<Device>, int)> GetDevicesByMachineIdAsync(Guid machineId, int pageNumber, int pageSize);
         Task<Device> GetDeviceByLocation(Guid areaId, Guid zoneId, Guid positionId);
         Task<Device> GetDeviceByPositionIdWithStatus(Guid positionId, DeviceStatus status);
     }

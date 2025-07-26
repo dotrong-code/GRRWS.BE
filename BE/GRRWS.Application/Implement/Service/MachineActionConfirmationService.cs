@@ -21,7 +21,7 @@ namespace GRRWS.Application.Implement.Service
             _unitOfWork = unitOfWork;
             _checkIsExist = checkIsExist;
         }
-
+        
         public async Task<Result> StockkeeperConfirmHadDevice(Guid confirmationId, Guid userId, Guid Deviceid)
         {
             var confirmation = await _unitOfWork.MachineActionConfirmationRepository.GetByIdAsync(confirmationId);

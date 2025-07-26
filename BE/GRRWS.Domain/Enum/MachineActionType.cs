@@ -11,6 +11,7 @@ namespace GRRWS.Domain.Enum
         StockOut,         // Retrieve device from stock
         StockIn,          // Return device to stock
         Installation,     // Confirm installation of replacement device
-        WarrantySubmission // Submit device for warranty
+        WarrantySubmission, // Submit device for warranty,
+        SparePartRequest
     }
 }

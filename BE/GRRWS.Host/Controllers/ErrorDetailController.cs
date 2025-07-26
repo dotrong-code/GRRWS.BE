@@ -52,15 +52,6 @@ namespace GRRWS.Host.Controllers
                 : ResultExtensions.ToProblemDetails(result);
         }
 
-        [HttpPut("update-guideline/{id}")]
-        public async Task<IResult> UpdateErrorGuideline(Guid id, [FromBody] UpdateErrorGuidelineRequest request)
-        {
-            var result = await _errorDetailService.UpdateErrorGuidelineAsync(id, request);
-            return result.IsSuccess
-                ? ResultExtensions.ToSuccessDetails(result, "Error guideline updated successfully")
-                : ResultExtensions.ToProblemDetails(result);
-        }
-
         [HttpPut("update-task/{id}")]
         public async Task<IResult> UpdateErrorTask(Guid id, [FromBody] UpdateErrorTaskRequest request)
         {

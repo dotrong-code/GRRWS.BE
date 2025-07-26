@@ -124,20 +124,7 @@ namespace GRRWS.Application.Implement.Service
             var userCheck = await _checkIsExist.User(userId);
             if (!userCheck.IsSuccess) return userCheck;
 
-            var assigneeCheck = await _checkIsExist.User(request.AssigneeId, allowNull: true);
-            if (!assigneeCheck.IsSuccess) return assigneeCheck;
 
-            // Add validation for ErrorGuidelineIds
-            var guidelineIds = request.ErrorGuidelineIds; // Assuming request contains ErrorGuidelineIds
-            if (guidelineIds != null && guidelineIds.Any())
-            {
-                var validGuidelines = await _unitOfWork.ErrorGuidelineRepository.GetErrorGuidelinesAsync(guidelineIds);
-                if (!validGuidelines.Any() || validGuidelines.Count != guidelineIds.Count)
-                {
-                    _logger.LogWarning("Invalid or missing ErrorGuidelineIds: {ErrorGuidelineIds}", string.Join(", ", guidelineIds));
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "One or more error guidelines not found."));
-                }
-            }
 
             var isTaskProcessing = await IsTaskCompletedInRequestAsync(request.RequestId, TaskType.Repair);
             if (!isTaskProcessing)
@@ -157,34 +144,9 @@ namespace GRRWS.Application.Implement.Service
 
                 if (taskId == Guid.Empty)
                     return Result.Failure(Infrastructure.DTOs.Common.Error.Failure("Failure", "Failed to create repair task."));
-                // Check if ErrorGuidelines require spare parts
+                
                 bool requiresSpareParts = false;
-                if (guidelineIds != null && guidelineIds.Any())
-                {
-                    var errorSpareParts = await _unitOfWork.ErrorSparepartRepository.GetByErrorGuidelineIdsAsync(guidelineIds);
-                    requiresSpareParts = errorSpareParts.Any();
-                }
-                if (!requiresSpareParts && request.AssigneeId == null)
-                {
-                    var mechanics = await _unitOfWork.UserRepository.GetMechanicsWithoutTask();
-                    if (mechanics == null || !mechanics.Any())
-                    {
-                        _logger.LogWarning("No available mechanics to assign for task: {TaskId}", taskId);
-                        return Result.SuccessWithObject(new
-                        {
-                            Message = "Repair task created successfully, but no available mechanics to assign.",
-                            TaskId = taskId,
-                            TaskGroupId = taskGroupId
-                        });
-                    }
-
-                    var primaryMechanic = mechanics.First().Id;
-                    var task = await _unitOfWork.TaskRepository.GetByIdAsync(taskId);
-                    task.AssigneeId = primaryMechanic;
-                    task.Status = Status.Pending;
-                    _unitOfWork.TaskRepository.Update(task);
-                    await _unitOfWork.SaveChangesAsync();
-                }
+                
                 return Result.SuccessWithObject(new
                 {
                     Message = "Repair task created successfully!",
@@ -1222,11 +1184,7 @@ namespace GRRWS.Application.Implement.Service
                         Id = ed.Error.Id,
                         Name = ed.Error.Name
                     }).ToList(),
-                    Spareparts = t.RepairSpareparts?.Select(rs => new SparepartSimpleDTO
-                    {
-                        Id = rs.Sparepart.Id,
-                        SparepartName = rs.Sparepart.SparepartName
-                    }).ToList()
+                    
                 }).ToList();
 
             return Result.SuccessWithObject(dtos);
@@ -1257,12 +1215,8 @@ namespace GRRWS.Application.Implement.Service
                 {
                     Id = ed.Error.Id,
                     Name = ed.Error.Name
-                }).ToList(),
-                Spareparts = task.RepairSpareparts?.Select(rs => new SparepartSimpleDTO
-                {
-                    Id = rs.Sparepart.Id,
-                    SparepartName = rs.Sparepart.SparepartName
                 }).ToList()
+                
             };
 
             return Result.SuccessWithObject(dto);
@@ -1701,6 +1655,8 @@ namespace GRRWS.Application.Implement.Service
                 ConfirmationCode = confirmation.ConfirmationCode
             });
         }
+
+      
 
 
 

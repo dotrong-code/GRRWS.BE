@@ -27,13 +27,12 @@ namespace GRRWS.Infrastructure.Interfaces
         ITaskRepository TaskRepository { get; }
         IWarrantyDetailRepository WarrantyDetailRepository { get; }
         IIssueErrorRepository IssueErrorRepository { get; }
-        IErrorFixStepRepository ErrorFixStepRepository { get; }
+       
         IErrorSparepartRepository ErrorSparepartRepository { get; }
         ISparepartRepository SparepartRepository { get; }
-        IErrorGuidelineRepository ErrorGuidelineRepository { get; }
-        IErrorFixProgressRepository ErrorFixProgressRepository { get; }
+        
         ISparePartUsageRepository SparePartUsageRepository { get; }
-        IRequestTakeSparePartUsageRepository RequestTakeSparePartUsageRepository { get; }
+  
         IMachineSparepartRepository MachineSparepartRepository { get; }
         IMachineRepository MachineRepository { get; }
         ISupplierRepository SupplierRepository { get; }
