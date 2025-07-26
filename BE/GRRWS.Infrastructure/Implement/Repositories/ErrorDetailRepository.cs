@@ -37,17 +37,10 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         public async Task<ErrorDetail> GetByIdWithDetailsAsync(Guid id)
         {
             return await _context.ErrorDetails
-                .Include(ed => ed.RequestTakeSparePartUsage)
-                    .ThenInclude(rtspu => rtspu.SparePartUsages)
-                    .ThenInclude(spu => spu.SparePart)
-                .Include(ed => ed.ProgressRecords)
-                    .ThenInclude(efp => efp.ErrorFixStep)
+                .Include(ed => ed.Error)
+   
                 .FirstOrDefaultAsync(ed => ed.Id == id && !ed.IsDeleted);
         }
-        public async Task<ErrorDetail> GetByRequestTakeSparePartUsageIdAsync(Guid requestTakeSparePartUsageId)
-        {
-            return await _context.ErrorDetails
-                .FirstOrDefaultAsync(ed => ed.RequestTakeSparePartUsageId == requestTakeSparePartUsageId);
-        }
+        
     }
 }

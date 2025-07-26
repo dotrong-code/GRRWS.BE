@@ -35,7 +35,6 @@ namespace GRRWS.Application.Implement.Service
             // Create a list to hold all the new error details
             var newErrorDetails = new List<ErrorDetail>();
             var skippedErrors = new List<Guid>();
-            var processedDetails = new List<object>();
 
             // Process each error ID
             foreach (var errorId in request.ErrorId)
@@ -63,55 +62,7 @@ namespace GRRWS.Application.Implement.Service
                     ReportId = reportId
                 };
 
-                // Get the first available ErrorGuideline for this error
-                var guideline = await _unitOfWork.ErrorGuidelineRepository.GetFirstByErrorIdAsync(errorId);
-
-                if (guideline != null)
-                {
-                    // Assign the guideline to the error detail
-                    errorDetail.ErrorGuideLineId = guideline.Id;
-
-                    // Create progress records for each step in the guideline
-                    var errorFixSteps = await _unitOfWork.ErrorFixStepRepository.GetByErrorGuidelineIdAsync(guideline.Id);
-                    if (errorFixSteps != null && errorFixSteps.Any())
-                    {
-                        errorDetail.ProgressRecords = errorFixSteps.Select(step => new ErrorFixProgress
-                        {
-                            ErrorFixStepId = step.Id,
-                            IsCompleted = false
-                        }).ToList();
-                    }
-
-                    // Create spare part usage request if the guideline has spare parts
-                    var errorSpareparts = await _unitOfWork.ErrorSparepartRepository.GetByErrorGuidelineIdAsync(guideline.Id);
-                    if (errorSpareparts != null && errorSpareparts.Any())
-                    {
-                        var requestCode = $"REQ-{TimeHelper.GetHoChiMinhTime().Ticks}-{Guid.NewGuid().ToString().Substring(0, 8)}";
-                        var newRequest = new RequestTakeSparePartUsage
-                        {
-                            RequestCode = requestCode,
-                            RequestDate = TimeHelper.GetHoChiMinhTime(),
-                            Status = Domain.Enum.SparePartRequestStatus.Unconfirmed,
-                            SparePartUsages = errorSpareparts.Select(sp => new SparePartUsage
-                            {
-                                SparePartId = sp.SparepartId,
-                                QuantityUsed = sp.QuantityNeeded ?? 0,
-                                IsTakenFromStock = false
-                            }).ToList()
-                        };
-
-                        await _unitOfWork.RequestTakeSparePartUsageRepository.CreateAsync(newRequest);
-                        errorDetail.RequestTakeSparePartUsageId = newRequest.Id;
-                    }
-                }
-
                 newErrorDetails.Add(errorDetail);
-                processedDetails.Add(new
-                {
-                    ErrorId = errorId,
-                    HasGuideline = guideline != null,
-                    GuidelineId = guideline?.Id
-                });
             }
 
             // If no valid error details could be created
@@ -138,7 +89,6 @@ namespace GRRWS.Application.Implement.Service
                 CreatedCount = newErrorDetails.Count,
                 SkippedCount = skippedErrors.Count,
                 SkippedErrorIds = skippedErrors,
-                ProcessedDetails = processedDetails,
                 TaskGroupId = taskGroupResult.IsSuccess ? taskGroupResult.Object : null
             });
         }
@@ -261,28 +211,9 @@ namespace GRRWS.Application.Implement.Service
                 Id = errorDetail.Id,
                 ReportId = errorDetail.ReportId,
                 ErrorId = errorDetail.ErrorId,
-                ErrorGuideLineId = errorDetail.ErrorGuideLineId,
+                
                 TaskId = errorDetail.TaskId,
-                RequestTakeSparePartUsage = new
-                {
-                    Id = errorDetail.RequestTakeSparePartUsage?.Id,
-                    RequestCode = errorDetail.RequestTakeSparePartUsage?.RequestCode,
-                    Status = errorDetail.RequestTakeSparePartUsage?.Status,
-                    SparePartUsages = errorDetail.RequestTakeSparePartUsage?.SparePartUsages.Select(spu => new
-                    {
-                        Id = spu.Id,
-                        SparePartId = spu.SparePartId,
-                        QuantityUsed = spu.QuantityUsed,
-                        IsTakenFromStock = spu.IsTakenFromStock
-                    }).ToList()
-                },
-                ProgressRecords = errorDetail.ProgressRecords?.Select(pr => new
-                {
-                    Id = pr.Id,
-                    ErrorFixStepId = pr.ErrorFixStepId,
-                    IsCompleted = pr.IsCompleted,
-                    StepName = pr.ErrorFixStep?.StepDescription // Gi? ??nh ErrorFixStep có thu?c tính Title
-                }).ToList()
+                
             };
 
             return Result.SuccessWithObject(resultDto);
@@ -312,106 +243,6 @@ namespace GRRWS.Application.Implement.Service
 
             return Result.SuccessWithObject(new { Message = "ErrorDetail deleted successfully!" });
         }
-
-        public async Task<Result> UpdateErrorGuidelineAsync(Guid id, UpdateErrorGuidelineRequest request)
-        {
-            // 1?? Ki?m tra t?n t?i c?a ErrorDetail
-            var errorDetail = await _unitOfWork.ErrorDetailRepository.GetByIdAsync(id);
-            if (errorDetail == null)
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "ErrorDetail not found"));
-
-            if (!request.ErrorGuideLineId.HasValue)
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Bad Request", "ErrorGuideLineId is required"));
-
-            // 2?? Gán ErrorGuideLine m?i
-            errorDetail.ErrorGuideLineId = request.ErrorGuideLineId;
-
-            // 3?? Generate ProgressRecords m?i theo Guideline
-            var errorFixSteps = await _unitOfWork.ErrorFixStepRepository.GetByErrorGuidelineIdAsync(request.ErrorGuideLineId.Value);
-            if (errorFixSteps == null || !errorFixSteps.Any())
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "No ErrorFixSteps found for the given ErrorGuidelineId"));
-
-            var progressRecords = errorFixSteps.Select(step => new ErrorFixProgress
-            {
-                Id = Guid.NewGuid(),
-                ErrorDetailId = id,
-                ErrorFixStepId = step.Id,
-                IsCompleted = false
-            }).ToList();
-
-            // 4?? Thêm các Progress m?i (ch? thêm n?u ch?a có step ?ó)
-            if (errorDetail.ProgressRecords == null)
-            {
-                errorDetail.ProgressRecords = new List<ErrorFixProgress>();
-            }
-
-            var newProgress = progressRecords
-                .Where(pr => !errorDetail.ProgressRecords.Any(existing => existing.ErrorFixStepId == pr.ErrorFixStepId))
-                .ToList();
-
-            // 5?? Thêm progress m?i vào repository
-            if (newProgress.Any())
-            {
-                await _unitOfWork.ErrorFixProgressRepository.AddRangeAsync(newProgress);
-            }
-
-            // 6?? X? lý t?o m?i RequestTakeSparePartUsage và SparePartUsage
-
-            // 6.1 Xóa b?n RequestTakeSparePartUsage c? n?u có
-            if (errorDetail.RequestTakeSparePartUsageId.HasValue)
-            {
-                var oldRequest = await _unitOfWork.RequestTakeSparePartUsageRepository.GetByIdAsync(errorDetail.RequestTakeSparePartUsageId.Value);
-                if (oldRequest != null)
-                {
-                    _unitOfWork.RequestTakeSparePartUsageRepository.Remove(oldRequest);
-                }
-            }
-
-            // 6.2 T?o m?i RequestTakeSparePartUsage
-            var requestCode = $"REQ-{TimeHelper.GetHoChiMinhTime().Ticks}";
-            var newRequest = new RequestTakeSparePartUsage
-            {
-                Id = Guid.NewGuid(),
-                RequestCode = requestCode,
-                RequestDate = TimeHelper.GetHoChiMinhTime(),
-                Status = Domain.Enum.SparePartRequestStatus.Unconfirmed,
-                SparePartUsages = new List<SparePartUsage>(),
-
-            };
-
-            // 6.3 L?y danh sách sparepart theo guideline
-            var errorSpareparts = await _unitOfWork.ErrorSparepartRepository.GetByErrorGuidelineIdAsync(request.ErrorGuideLineId.Value);
-            if (errorSpareparts == null || !errorSpareparts.Any())
-                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("Not found", "No ErrorSpareparts found for the given ErrorGuidelineId"));
-
-            foreach (var sp in errorSpareparts)
-            {
-                var usage = new SparePartUsage
-                {
-                    Id = Guid.NewGuid(),
-                    RequestTakeSparePartUsageId = newRequest.Id,
-                    SparePartId = sp.SparepartId,
-                    QuantityUsed = sp.QuantityNeeded ?? 0,
-                    IsTakenFromStock = false
-                };
-                newRequest.SparePartUsages.Add(usage);
-            }
-
-            // 6.4 Insert RequestTakeSparePartUsage m?i
-            await _unitOfWork.RequestTakeSparePartUsageRepository.CreateAsync(newRequest);
-
-            // 7?? Gán l?i request m?i vào ErrorDetail
-            errorDetail.RequestTakeSparePartUsageId = newRequest.Id;
-
-            // 8?? Update ErrorDetail
-            await _unitOfWork.ErrorDetailRepository.UpdateAsync(errorDetail);
-
-            // 9?? Cu?i cùng SaveChanges 1 l?n duy nh?t
-            await _unitOfWork.SaveChangesAsync();
-
-            return Result.SuccessWithObject(new { Message = "Error guideline updated successfully!" });
-        }
-
 
 
         public async Task<Result> UpdateErrorTaskAsync(Guid id, UpdateErrorTaskRequest request)

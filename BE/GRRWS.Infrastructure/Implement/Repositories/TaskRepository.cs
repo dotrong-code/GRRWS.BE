@@ -63,11 +63,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     
                     
                     ReportNotes = t.ReportNotes,
-                    RepairSpareparts = t.RepairSpareparts.Select(rs => new RepairSparepartDto
-                    {
-                        SpareId = rs.SpareId,
-                        SparepartName = rs.Sparepart.SparepartName
-                    }).ToList(),
+                    
                     ErrorDetails = t.ErrorDetails.Select(ed => new ErrorDetailDto
                     {
                         ErrorId = ed.ErrorId,
@@ -78,51 +74,51 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             return tasks;
         }
-        public async Task<GetTaskResponse> GetTaskDetailsAsync(Guid taskId)
-        {
-            return await _context.Tasks
-                .Where(t => t.Id == taskId && !t.IsDeleted)
-                .Select(t => new GetTaskResponse
-                {
-                    Id = t.Id,
-                    TaskName = t.TaskName,
-                    TaskDescription = t.TaskDescription,
-                    TaskType = t.TaskType.ToString(),
-                    StartTime = t.StartTime,
-                    ExpectedTime = t.ExpectedTime,
-                    EndTime = t.EndTime,
-                    AssigneeId = t.AssigneeId,
-                    AssigneeName = t.Assignee.FullName,
+        //public async Task<GetTaskResponse> GetTaskDetailsAsync(Guid taskId)
+        //{
+        //    return await _context.Tasks
+        //        .Where(t => t.Id == taskId && !t.IsDeleted)
+        //        .Select(t => new GetTaskResponse
+        //        {
+        //            Id = t.Id,
+        //            TaskName = t.TaskName,
+        //            TaskDescription = t.TaskDescription,
+        //            TaskType = t.TaskType.ToString(),
+        //            StartTime = t.StartTime,
+        //            ExpectedTime = t.ExpectedTime,
+        //            EndTime = t.EndTime,
+        //            AssigneeId = t.AssigneeId,
+        //            AssigneeName = t.Assignee.FullName,
                     
-                    ReportNotes = t.ReportNotes,
-                    RepairSpareparts = t.RepairSpareparts.Select(rs => new RepairSparepartDto
-                    {
-                        SpareId = rs.SpareId,
-                        SparepartName = rs.Sparepart.SparepartName
-                    }).ToList(),
-                    ErrorDetails = t.ErrorDetails.Select(ed => new ErrorDetailDto
-                    {
-                        ErrorId = ed.ErrorId,
-                        ErrorCode = ed.Error.ErrorCode
-                    }).ToList()
-                })
-                .FirstOrDefaultAsync();
-        }
-        public async Task<List<Tasks>> GetAllTasksAsync()
-        {
-            return await _context.Tasks
-                .Include(t => t.Assignee)
-                .Include(t => t.ErrorDetails).ThenInclude(ed => ed.Error)
-                .Include(t => t.RepairSpareparts).ThenInclude(rs => rs.Sparepart)
-                .Include(t => t.ActionConfirmations)
-                .ToListAsync();
-        }
+        //            ReportNotes = t.ReportNotes,
+        //            RepairSpareparts = t.RepairSpareparts.Select(rs => new RepairSparepartDto
+        //            {
+        //                SpareId = rs.SpareId,
+        //                SparepartName = rs.Sparepart.SparepartName
+        //            }).ToList(),
+        //            ErrorDetails = t.ErrorDetails.Select(ed => new ErrorDetailDto
+        //            {
+        //                ErrorId = ed.ErrorId,
+        //                ErrorCode = ed.Error.ErrorCode
+        //            }).ToList()
+        //        })
+        //        .FirstOrDefaultAsync();
+        //}
+        //public async Task<List<Tasks>> GetAllTasksAsync()
+        //{
+        //    return await _context.Tasks
+        //        .Include(t => t.Assignee)
+        //        .Include(t => t.ErrorDetails).ThenInclude(ed => ed.Error)
+                
+        //        .Include(t => t.ActionConfirmations)
+        //        .ToListAsync();
+        //}
         public async Task<Tasks> GetTaskByIdAsync(Guid id)
         {
             return await _context.Tasks
                 .Include(t => t.Assignee)
                 .Include(t => t.ErrorDetails).ThenInclude(ed => ed.Error)
-                .Include(t => t.RepairSpareparts).ThenInclude(rs => rs.Sparepart)
+                
                 .Include(t => t.ActionConfirmations)
                 .Include(t => t.WarrantyClaim)
                     .ThenInclude(wc => wc.DeviceWarranty)
@@ -175,12 +171,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 // Deduplicate sparepartIds to prevent duplicate RepairSparepart entries
                 var uniqueSparepartIds = sparepartIds.Distinct().ToList();
 
-                var repairSpareparts = uniqueSparepartIds.Select(sparepartId => new RepairSparepart
-                {
-                    SpareId = sparepartId,
-                    TaskId = task.Id
-                }).ToList();
-                await _context.RepairSpareparts.AddRangeAsync(repairSpareparts);
+                
             }
 
             // Save all changes
@@ -190,7 +181,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
         {
             var existingTask = await _context.Tasks
                 .Include(t => t.ErrorDetails)
-                .Include(t => t.RepairSpareparts)
+                
                 .FirstOrDefaultAsync(t => t.Id == task.Id);
 
             if (existingTask == null)
@@ -218,19 +209,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 await _context.ErrorDetails.AddRangeAsync(newErrorDetails);
             }
 
-            // Update RepairSpareparts
-            var existingRepairSpareparts = existingTask.RepairSpareparts.ToList();
-            _context.RepairSpareparts.RemoveRange(existingRepairSpareparts);
-
-            if (sparepartIds != null && sparepartIds.Any())
-            {
-                var newRepairSpareparts = sparepartIds.Select(sparepartId => new RepairSparepart
-                {
-                    SpareId = sparepartId,
-                    TaskId = task.Id
-                }).ToList();
-                await _context.RepairSpareparts.AddRangeAsync(newRepairSpareparts);
-            }
+            
 
             await _context.SaveChangesAsync();
         }
@@ -282,11 +261,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     AssigneeName = t.Assignee.FullName,
                     
                     ReportNotes = t.ReportNotes,
-                    RepairSpareparts = t.RepairSpareparts.Select(rs => new RepairSparepartDto
-                    {
-                        SpareId = rs.SpareId,
-                        SparepartName = rs.Sparepart.SparepartName
-                    }).ToList(),
+                   
                     ErrorDetails = t.ErrorDetails.Select(ed => new ErrorDetailDto
                     {
                         ErrorId = ed.ErrorId,
@@ -475,96 +450,8 @@ namespace GRRWS.Infrastructure.Implement.Repositories
 
             };
         }
-        public async Task<GetDetailtRepairTaskForMechanic> GetDetailtRepairTaskForMechanicByIdAsync(Guid taskId, string type)
-        {
-            var task = await _context.Tasks
-                .Include(t => t.Assignee)
-                .Include(t => t.ErrorDetails)
-                    .ThenInclude(ed => ed.Error)
-                        .ThenInclude(e => e.ErrorGuidelines)
-                .Include(t => t.ErrorDetails)
-                    .ThenInclude(ed => ed.ProgressRecords)
-                        .ThenInclude(pr => pr.ErrorFixStep)
-                .Include(t => t.ErrorDetails)
-                    .ThenInclude(ed => ed.RequestTakeSparePartUsage)
-                        .ThenInclude(rtspu => rtspu.SparePartUsages) // Fixed: Access the collection
-                            .ThenInclude(spu => spu.SparePart) // Then access SparePart from SparePartUsage
-                .Include(t => t.ActionConfirmations)
-                .Where(t => t.Id == taskId && !t.IsDeleted && t.TaskType == TaskType.Repair)
-                .FirstOrDefaultAsync();
-            var reportId = task.ErrorDetails.FirstOrDefault()?.ReportId;
-
-            if (reportId == null)
-            {
-                throw new Exception("ReportId not found in ErrorDetails.");
-            }
-
-            var deviceId = await _context.Requests
-                .Where(r => r.ReportId == reportId)
-                .Select(r => r.DeviceId)
-                .FirstOrDefaultAsync();
-
-            if (task == null)
-                return null;
-
-            var errorDetails = task.ErrorDetails.Select(ed => new ErrorDetailOfTask
-            {
-                ErrorId = ed.ErrorId,
-                ErrorDetailId = ed.Id,
-                ErrorName = ed.Error?.Name,
-                ErrorGuildelineTitle = ed.Error?.ErrorGuidelines?.FirstOrDefault()?.Title,
-                ErrorFixProgress = ed.ProgressRecords?.Select(pr => new ErrorFixProgressDTO
-                {
-                    ErrorFixProgressId = pr.Id,
-                    StepDescription = pr.ErrorFixStep?.StepDescription,
-                    StepOrder = pr.ErrorFixStep?.StepOrder ?? 0,
-                    IsCompleted = pr.IsCompleted,
-                    CompletedAt = pr.CompletedAt,
-                }).OrderBy(dto => dto.StepOrder).ToList() ?? new List<ErrorFixProgressDTO>(),
-                SparePartUsages = ed.RequestTakeSparePartUsage?.SparePartUsages?.Select(spu => new SparePartUsageDTO
-                {
-                    SparePartUsageId = spu.Id,
-                    SparePartId = spu.SparePartId,
-                    SparePartName = spu.SparePart?.SparepartName,
-                    QuantityUsed = spu.QuantityUsed,
-                    IsTakenFromStock = spu.IsTakenFromStock,
-                }).ToList() ?? new List<SparePartUsageDTO>() // Fixed: Map the collection properly
-            }).ToList();
-
-            return new GetDetailtRepairTaskForMechanic
-            {
-                TaskId = task.Id,
-                DeviceId = deviceId,
-                TaskType = task.TaskType.ToString(),
-                TaskName = task.TaskName,
-                TaskDescription = task.TaskDescription,
-                Priority = task.Priority.ToString(),
-                Status = task.Status.ToString(),
-                StartTime = task.StartTime,
-                ExpectedTime = task.ExpectedTime,
-                EndTime = task.EndTime,
-                AssigneeName = task.Assignee?.FullName,
-                ErrorDetails = errorDetails,
-                TaskConfirmations = task.ActionConfirmations?.Select(mac => new TaskConfirmationResponseDTO
-                {
-                    TaskId = mac.TaskId,
-                    SignerId = mac.SignerId,
-                    DeviceId = mac.DeviceId,
-                    SignerRole = mac.SignerRole,
-                    SignatureBase64 = mac.SignatureBase64,
-                    DeviceName = mac.Device?.DeviceName,
-                    DeviceCode = mac.Device?.DeviceCode,
-                    DeviceCondition = mac.DeviceCondition,
-                    ActionType = mac.ActionType.ToString(),
-                    Notes = mac.Notes
-                }).ToList() ?? new List<TaskConfirmationResponseDTO>()
-
-            };
-        }
-        public Task<GetDetailReplaceTaskForMechanic> GetDetailReplaceTaskForMechanicByIdAsync(Guid taskId, string type)
-        {
-            throw new NotImplementedException();
-        }
+        
+       
         public async Task<GetDetailUninstallTaskForMechanic> GetDetailUninstallTaskForMechanicByIdAsync(Guid taskId)
         {
             var task = await _context.Tasks
@@ -1139,171 +1026,157 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 }
             });
         }
-        public async Task<Guid> CreateRepairTask(CreateRepairTaskRequest request, Guid userId)
-        {
-            var executionStrategy = _context.Database.CreateExecutionStrategy();
+        //public async Task<Guid> CreateRepairTask(CreateRepairTaskRequest request, Guid userId)
+        //{
+        //    var executionStrategy = _context.Database.CreateExecutionStrategy();
 
-            return await executionStrategy.ExecuteAsync(async () =>
-            {
-                await using var transaction = await _context.Database.BeginTransactionAsync();
-                try
-                {
-                    // Get report and device information from request
-                    var requestInfo = await _context.Requests
-                        .Include(r => r.Device)
-                        .Where(r => r.Id == request.RequestId)
-                        .Select(r => new { r.ReportId, DeviceName = r.Device.DeviceName })
-                        .FirstOrDefaultAsync();
+        //    return await executionStrategy.ExecuteAsync(async () =>
+        //    {
+        //        await using var transaction = await _context.Database.BeginTransactionAsync();
+        //        try
+        //        {
+        //            // Get report and device information from request
+        //            var requestInfo = await _context.Requests
+        //                .Include(r => r.Device)
+        //                .Where(r => r.Id == request.RequestId)
+        //                .Select(r => new { r.ReportId, DeviceName = r.Device.DeviceName })
+        //                .FirstOrDefaultAsync();
 
-                    if (requestInfo == null)
-                        throw new Exception("No request found.");
+        //            if (requestInfo == null)
+        //                throw new Exception("No request found.");
 
-                    // Validate error guidelines exist
-                    var errorGuidelines = await _context.ErrorGuidelines
-                        .Include(eg => eg.ErrorFixSteps)
-                        .Include(eg => eg.Error)
-                        .Where(eg => request.ErrorGuidelineIds.Contains(eg.Id))
-                        .ToListAsync();
 
-                    if (!errorGuidelines.Any())
-                        throw new Exception("No error guidelines found.");
 
-                    // Calculate total expected time from all error guidelines
-                    var totalExpectedTime = TimeSpan.Zero;
-                    foreach (var guideline in errorGuidelines)
-                    {
-                        if (guideline.EstimatedRepairTime.HasValue)
-                        {
-                            totalExpectedTime = totalExpectedTime.Add(guideline.EstimatedRepairTime.Value);
-                        }
-                    }
+        //            // Calculate total expected time from all error guidelines
+        //            var totalExpectedTime = TimeSpan.Zero;
+        //            foreach (var guideline in errorGuidelines)
+        //            {
+        //                if (guideline.EstimatedRepairTime.HasValue)
+        //                {
+        //                    totalExpectedTime = totalExpectedTime.Add(guideline.EstimatedRepairTime.Value);
+        //                }
+        //            }
 
-                    // If no estimated time found, default to 8 hours
-                    if (totalExpectedTime == TimeSpan.Zero)
-                    {
-                        totalExpectedTime = TimeSpan.FromHours(8);
-                    }
+        //            // If no estimated time found, default to 8 hours
+        //            if (totalExpectedTime == TimeSpan.Zero)
+        //            {
+        //                totalExpectedTime = TimeSpan.FromHours(8);
+        //            }
 
-                    // Create the repair task
-                    var task = new Tasks
-                    {
-                        Id = Guid.NewGuid(),
-                        TaskName = $"Sửa máy - {requestInfo.DeviceName}",
-                        TaskType = TaskType.Repair,
-                        TaskDescription = $"Repair task for errors: {string.Join(", ", errorGuidelines.Select(eg => eg.Error?.Name ?? "Unknown"))}",
-                        StartTime = request.StartDate,
-                        ExpectedTime = request.StartDate.Add(totalExpectedTime),
-                        Status = Status.Pending,
-                        Priority = Domain.Enum.Priority.Medium,
-                        AssigneeId = request.AssigneeId,
-                        CreatedDate = TimeHelper.GetHoChiMinhTime(),
-                        IsDeleted = false
-                    };
+        //            // Create the repair task
+        //            var task = new Tasks
+        //            {
+        //                Id = Guid.NewGuid(),
+        //                TaskName = $"Sửa máy - {requestInfo.DeviceName}",
+        //                TaskType = TaskType.Repair,
+        //                TaskDescription = $"Repair task for errors: {string.Join(", ", errorGuidelines.Select(eg => eg.Error?.Name ?? "Unknown"))}",
+        //                StartTime = request.StartDate,
+        //                ExpectedTime = request.StartDate.Add(totalExpectedTime),
+        //                Status = Status.Pending,
+        //                Priority = Domain.Enum.Priority.Medium,
+        //                AssigneeId = request.AssigneeId,
+        //                CreatedDate = TimeHelper.GetHoChiMinhTime(),
+        //                IsDeleted = false
+        //            };
 
-                    await _context.Tasks.AddAsync(task);
+        //            await _context.Tasks.AddAsync(task);
 
-                    // Update ErrorDetails and create RequestTakeSparePartUsage for each error guideline
-                    foreach (var errorGuideline in errorGuidelines)
-                    {
-                        // Find existing ErrorDetail for this error and report
-                        var errorDetail = await _context.ErrorDetails
-                            .FirstOrDefaultAsync(ed => ed.ReportId == requestInfo.ReportId && ed.ErrorId == errorGuideline.ErrorId);
+        //            // Update ErrorDetails and create RequestTakeSparePartUsage for each error guideline
+        //            foreach (var errorGuideline in errorGuidelines)
+        //            {
+        //                // Find existing ErrorDetail for this error and report
+        //                var errorDetail = await _context.ErrorDetails
+        //                    .FirstOrDefaultAsync(ed => ed.ReportId == requestInfo.ReportId && ed.ErrorId == errorGuideline.ErrorId);
 
-                        if (errorDetail != null)
-                        {
-                            // Update ErrorDetail with task and guideline
-                            errorDetail.TaskId = task.Id;
-                            errorDetail.ErrorGuideLineId = errorGuideline.Id;
+        //                if (errorDetail != null)
+        //                {
+        //                    // Update ErrorDetail with task and guideline
+        //                    errorDetail.TaskId = task.Id;
+        //                    errorDetail.ErrorGuideLineId = errorGuideline.Id;
 
-                            // Create RequestTakeSparePartUsage if guideline has spareparts
-                            var errorGuidelineSpareparts = await _context.ErrorSpareparts
-                                .Include(egsp => egsp.Sparepart)
-                                .Where(egsp => egsp.ErrorGuidelineId == errorGuideline.Id)
-                                .ToListAsync();
+        //                    // Create RequestTakeSparePartUsage if guideline has spareparts
+        //                    var errorGuidelineSpareparts = await _context.ErrorSpareparts
+        //                        .Include(egsp => egsp.Sparepart)
+        //                        .Where(egsp => egsp.ErrorGuidelineId == errorGuideline.Id)
+        //                        .ToListAsync();
 
-                            if (errorGuidelineSpareparts.Any())
-                            {
-                                // Generate request code
-                                var requestCount = await _context.RequestTakeSparePartUsages.CountAsync();
-                                var requestCode = $"REQ-{TimeHelper.GetHoChiMinhTime():yyyyMM}-{(requestCount + 1):D3}";
+        //                    if (errorGuidelineSpareparts.Any())
+        //                    {
+        //                        // Generate request code
+        //                        var requestCount = await _context.RequestTakeSparePartUsages.CountAsync();
+        //                        var requestCode = $"REQ-{TimeHelper.GetHoChiMinhTime():yyyyMM}-{(requestCount + 1):D3}";
 
-                                // Create RequestTakeSparePartUsage
-                                var requestTakeSparePartUsage = new RequestTakeSparePartUsage
-                                {
-                                    Id = Guid.NewGuid(),
-                                    RequestCode = requestCode,
-                                    RequestDate = TimeHelper.GetHoChiMinhTime(),
-                                    RequestedById = userId,
-                                    AssigneeId = request.AssigneeId,
-                                    Status = SparePartRequestStatus.Unconfirmed,
-                                    Notes = $"Auto-generated for repair task: {task.TaskName}",
-                                    CreatedDate = TimeHelper.GetHoChiMinhTime(),
-                                    IsDeleted = false
-                                };
+        //                        // Create RequestTakeSparePartUsage
+        //                        var requestTakeSparePartUsage = new RequestTakeSparePartUsage
+        //                        {
+        //                            Id = Guid.NewGuid(),
+        //                            RequestCode = requestCode,
+        //                            RequestDate = TimeHelper.GetHoChiMinhTime(),
+        //                            RequestedById = userId,
+        //                            AssigneeId = request.AssigneeId,
+        //                            Status = SparePartRequestStatus.Unconfirmed,
+        //                            Notes = $"Auto-generated for repair task: {task.TaskName}",
+        //                            CreatedDate = TimeHelper.GetHoChiMinhTime(),
+        //                            IsDeleted = false
+        //                        };
 
-                                await _context.RequestTakeSparePartUsages.AddAsync(requestTakeSparePartUsage);
+        //                        await _context.RequestTakeSparePartUsages.AddAsync(requestTakeSparePartUsage);
 
-                                // Create SparePartUsages
-                                var sparePartUsages = errorGuidelineSpareparts.Select(egsp => new SparePartUsage
-                                {
-                                    Id = Guid.NewGuid(),
-                                    SparePartId = egsp.SparepartId,
-                                    QuantityUsed = egsp.QuantityNeeded ?? 1, // Default to 1 if not specified
-                                    IsTakenFromStock = false,
-                                    RequestTakeSparePartUsageId = requestTakeSparePartUsage.Id,
-                                    CreatedDate = TimeHelper.GetHoChiMinhTime(),
-                                    IsDeleted = false
-                                }).ToList();
+        //                        // Create SparePartUsages
+        //                        var sparePartUsages = errorGuidelineSpareparts.Select(egsp => new SparePartUsage
+        //                        {
+        //                            Id = Guid.NewGuid(),
+        //                            SparePartId = egsp.SparepartId,
+        //                            QuantityUsed = egsp.QuantityNeeded ?? 1, // Default to 1 if not specified
+        //                            IsTakenFromStock = false,
+        //                            RequestTakeSparePartUsageId = requestTakeSparePartUsage.Id,
+        //                            CreatedDate = TimeHelper.GetHoChiMinhTime(),
+        //                            IsDeleted = false
+        //                        }).ToList();
 
-                                await _context.SparePartUsages.AddRangeAsync(sparePartUsages);
+        //                        await _context.SparePartUsages.AddRangeAsync(sparePartUsages);
 
-                                // Link ErrorDetail to RequestTakeSparePartUsage
-                                errorDetail.RequestTakeSparePartUsageId = requestTakeSparePartUsage.Id;
-                            }
+        //                        // Link ErrorDetail to RequestTakeSparePartUsage
+        //                        errorDetail.RequestTakeSparePartUsageId = requestTakeSparePartUsage.Id;
+        //                    }
 
-                            _context.ErrorDetails.Update(errorDetail);
+        //                    _context.ErrorDetails.Update(errorDetail);
 
-                            // Create ErrorFixProgress for each step in the guideline
-                            if (errorGuideline.ErrorFixSteps != null && errorGuideline.ErrorFixSteps.Any())
-                            {
-                                var errorFixProgresses = errorGuideline.ErrorFixSteps.Select(step => new ErrorFixProgress
-                                {
-                                    Id = Guid.NewGuid(),
-                                    ErrorDetailId = errorDetail.Id,
-                                    ErrorFixStepId = step.Id,
-                                    IsCompleted = false,
-                                    CreatedDate = TimeHelper.GetHoChiMinhTime(),
-                                    IsDeleted = false
-                                }).ToList();
+        //                    // Create ErrorFixProgress for each step in the guideline
+        //                    if (errorGuideline.ErrorFixSteps != null && errorGuideline.ErrorFixSteps.Any())
+        //                    {
+        //                        var errorFixProgresses = errorGuideline.ErrorFixSteps.Select(step => new ErrorFixProgress
+        //                        {
+        //                            Id = Guid.NewGuid(),
+        //                            ErrorDetailId = errorDetail.Id,
+        //                            ErrorFixStepId = step.Id,
+        //                            IsCompleted = false,
+        //                            CreatedDate = TimeHelper.GetHoChiMinhTime(),
+        //                            IsDeleted = false
+        //                        }).ToList();
 
-                                await _context.ErrorFixProgresses.AddRangeAsync(errorFixProgresses);
-                            }
-                        }
-                    }
+        //                        await _context.ErrorFixProgresses.AddRangeAsync(errorFixProgresses);
+        //                    }
+        //                }
+        //            }
 
-                    await _context.SaveChangesAsync();
-                    await transaction.CommitAsync();
+        //            await _context.SaveChangesAsync();
+        //            await transaction.CommitAsync();
 
-                    return task.Id;
-                }
-                catch
-                {
-                    await transaction.RollbackAsync();
-                    throw;
-                }
-            });
-        }
+        //            return task.Id;
+        //        }
+        //        catch
+        //        {
+        //            await transaction.RollbackAsync();
+        //            throw;
+        //        }
+        //    });
+        //}
         public async Task<Guid> CreateRepairTaskWithGroup(CreateRepairTaskRequest request, Guid userId, Guid? taskGroupId, int orderIndex)
         {
-            var guidelineIds = request.ErrorGuidelineIds;
-            var guidelines = await _context.ErrorGuidelines
-                .Where(eg => guidelineIds.Contains(eg.Id))
-                .ToListAsync();
+           
 
-            if (!guidelines.Any())
-            {
-                throw new Exception($"No error guidelines found for provided IDs: {string.Join(", ", guidelineIds)}");
-            }
+           
             var executionStrategy = _context.Database.CreateExecutionStrategy();
 
             return await executionStrategy.ExecuteAsync(async () =>
@@ -1321,74 +1194,23 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     if (requestInfo == null)
                         throw new Exception("No request found.");
 
-                    // Validate error guidelines exist
-                    var errorGuidelines = await _context.ErrorGuidelines
-                        .Include(eg => eg.ErrorFixSteps)
-                        .Include(eg => eg.Error)
-                        .Where(eg => request.ErrorGuidelineIds.Contains(eg.Id))
-                        .AsSplitQuery()
-                        .ToListAsync();
+                   
 
-                    if (!errorGuidelines.Any())
-                        throw new Exception("No error guidelines found.");
+                 
 
-                    // Calculate total expected time from all error guidelines
-                    var totalExpectedTime = TimeSpan.Zero;
-                    foreach (var guideline in errorGuidelines)
-                    {
-                        if (guideline.EstimatedRepairTime.HasValue)
-                        {
-                            totalExpectedTime = totalExpectedTime.Add(guideline.EstimatedRepairTime.Value);
-                        }
-                    }
-
-                    // If no estimated time found, default to 8 hours
-                    if (totalExpectedTime == TimeSpan.Zero)
-                    {
-                        totalExpectedTime = TimeSpan.FromHours(8);
-                    }
-                    // Kiểm tra số lượng tồn kho của phụ tùng
-                    bool isDelayed = false;
-                    var getErrorGuidelineSpareparts = await _context.ErrorSpareparts
-                        .Include(egsp => egsp.Sparepart)
-                        .Where(egsp => request.ErrorGuidelineIds.Contains(egsp.ErrorGuidelineId))
-                        .ToListAsync();
-
-                    foreach (var sparepart in getErrorGuidelineSpareparts)
-                    {
-                        var stockQuantity = sparepart.Sparepart?.StockQuantity ?? 0;
-                        var quantityNeeded = sparepart.QuantityNeeded ?? 1;
-                        if (stockQuantity == 0 || stockQuantity < quantityNeeded)
-                        {
-                            isDelayed = true;
-                            break;
-                        }
-                    }
-
-                    Guid? stockKeeperId = null;
-                    if (!isDelayed)
-                    {
-                        stockKeeperId = await _context.Users
-                            .Where(u => u.Role == 4)
-                            .Select(u => u.Id)
-                            .FirstOrDefaultAsync();
-                        if (stockKeeperId == Guid.Empty)
-                        {
-                            throw new Exception("No StockKeeper found in the system.");
-                        }
-                    }
+                   
                     // Create the repair task
                     var task = new Tasks
                     {
                         Id = Guid.NewGuid(),
                         TaskName = $"Sửa máy - {requestInfo.DeviceName}",
                         TaskType = TaskType.Repair,
-                        TaskDescription = $"Sửa lỗi: {string.Join(", ", errorGuidelines.Select(eg => eg.Error?.Name ?? "Unknown"))}",
-                        StartTime = TimeHelper.GetHoChiMinhTime(),
+                        TaskDescription = null,
+                        StartTime = null,
                         ExpectedTime = (TimeHelper.GetHoChiMinhTime()).AddHours(2),
-                        Status = isDelayed ? Status.Delayed : Status.Suggested,
+                        Status = Status.Pending,
                         Priority = Domain.Enum.Priority.Medium,
-                        AssigneeId = request.AssigneeId,
+                        AssigneeId = null,
                         TaskGroupId = taskGroupId,
                         OrderIndex = orderIndex,
                         CreatedDate = TimeHelper.GetHoChiMinhTime(),
@@ -1399,85 +1221,7 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                     await _context.Tasks.AddAsync(task);
 
                     // Update ErrorDetails and create RequestTakeSparePartUsage for each error guideline
-                    foreach (var errorGuideline in errorGuidelines)
-                    {
-                        // Find existing ErrorDetail for this error and report
-                        var errorDetail = await _context.ErrorDetails
-                            .FirstOrDefaultAsync(ed => ed.ReportId == requestInfo.ReportId && ed.ErrorId == errorGuideline.ErrorId);
-
-                        if (errorDetail != null)
-                        {
-                            // Update ErrorDetail with task and guideline
-                            errorDetail.TaskId = task.Id;
-                            errorDetail.ErrorGuideLineId = errorGuideline.Id;
-
-                            // Create RequestTakeSparePartUsage if guideline has spareparts
-                            var errorGuidelineSpareparts = await _context.ErrorSpareparts
-                                .Include(egsp => egsp.Sparepart)
-                                .Where(egsp => egsp.ErrorGuidelineId == errorGuideline.Id)
-                                .ToListAsync();
-
-                            if (errorGuidelineSpareparts.Any())
-                            {
-                                // Generate request code
-                                var requestCount = await _context.RequestTakeSparePartUsages.CountAsync();
-                                var requestCode = $"REQ-{TimeHelper.GetHoChiMinhTime():yyyyMM}-{(requestCount + 1):D3}";
-
-                                // Create RequestTakeSparePartUsage
-                                var requestTakeSparePartUsage = new RequestTakeSparePartUsage
-                                {
-                                    Id = Guid.NewGuid(),
-                                    RequestCode = requestCode,
-                                    RequestDate = TimeHelper.GetHoChiMinhTime(),
-                                    RequestedById = userId,
-                                    AssigneeId = request.AssigneeId,
-                                    Status = SparePartRequestStatus.Confirmed,
-                                    Notes = $"Auto-generated for repair task: {task.TaskName}",
-                                    CreatedDate = TimeHelper.GetHoChiMinhTime(),
-                                    IsDeleted = false,
-                                    ConfirmedById = isDelayed ? null : stockKeeperId,
-                                    ConfirmedDate = isDelayed ? null : TimeHelper.GetHoChiMinhTime()
-                                };
-
-                                await _context.RequestTakeSparePartUsages.AddAsync(requestTakeSparePartUsage);
-
-                                // Create SparePartUsages
-                                var sparePartUsages = errorGuidelineSpareparts.Select(egsp => new SparePartUsage
-                                {
-                                    Id = Guid.NewGuid(),
-                                    SparePartId = egsp.SparepartId,
-                                    QuantityUsed = egsp.QuantityNeeded ?? 1, // Default to 1 if not specified
-                                    IsTakenFromStock = false,
-                                    RequestTakeSparePartUsageId = requestTakeSparePartUsage.Id,
-                                    CreatedDate = TimeHelper.GetHoChiMinhTime(),
-                                    IsDeleted = false
-                                }).ToList();
-
-                                await _context.SparePartUsages.AddRangeAsync(sparePartUsages);
-
-                                // Link ErrorDetail to RequestTakeSparePartUsage
-                                errorDetail.RequestTakeSparePartUsageId = requestTakeSparePartUsage.Id;
-                            }
-
-                            _context.ErrorDetails.Update(errorDetail);
-
-                            // Create ErrorFixProgress for each step in the guideline
-                            if (errorGuideline.ErrorFixSteps != null && errorGuideline.ErrorFixSteps.Any())
-                            {
-                                var errorFixProgresses = errorGuideline.ErrorFixSteps.Select(step => new ErrorFixProgress
-                                {
-                                    Id = Guid.NewGuid(),
-                                    ErrorDetailId = errorDetail.Id,
-                                    ErrorFixStepId = step.Id,
-                                    IsCompleted = false,
-                                    CreatedDate = TimeHelper.GetHoChiMinhTime(),
-                                    IsDeleted = false
-                                }).ToList();
-
-                                await _context.ErrorFixProgresses.AddRangeAsync(errorFixProgresses);
-                            }
-                        }
-                    }
+                    
 
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
@@ -2307,5 +2051,32 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .OrderBy(t => t.OrderIndex)
                 .FirstOrDefaultAsync();
         }
+
+        public Task<GetTaskResponse> GetTaskDetailsAsync(Guid taskId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<Tasks>> GetAllTasksAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Guid> CreateRepairTask(CreateRepairTaskRequest request, Guid userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<GetDetailtRepairTaskForMechanic> GetDetailtRepairTaskForMechanicByIdAsync(Guid taskId, string type)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<GetDetailReplaceTaskForMechanic> GetDetailReplaceTaskForMechanicByIdAsync(Guid taskId, string type)
+        {
+            throw new NotImplementedException();
+        }
+
+        
     }
 }

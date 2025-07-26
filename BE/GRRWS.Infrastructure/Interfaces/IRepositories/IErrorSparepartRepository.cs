@@ -10,7 +10,6 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
 {
     public interface IErrorSparepartRepository : IGenericRepository<ErrorSparepart>
     {
-        Task<List<ErrorSparepart>> GetByErrorGuidelineIdAsync(Guid errorGuidelineId);
-        Task<List<ErrorSparepart>> GetByErrorGuidelineIdsAsync(IEnumerable<Guid> guidelineIds);
+        Task<List<ErrorSparepart>> GetByErrorIdsAsync(List<Guid> errorIds);
     }
 }

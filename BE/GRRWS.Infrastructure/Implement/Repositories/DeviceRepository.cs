@@ -273,14 +273,29 @@ namespace GRRWS.Infrastructure.Implement.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<Device>> GetDevicesByMachineIdAsync(Guid machineId)
+        public async Task<(List<Device>, int)> GetDevicesByMachineIdAsync(Guid machineId, int pageNumber, int pageSize)
         {
-            var devices = await _context.Devices
-                .Include(d => d.Machine)
-                .Where(d => d.MachineId == machineId && !d.IsDeleted)
+            var query = _context.Devices
+                .Where(d => d.MachineId == machineId
+                    && (d.InUsed == false || d.InUsed == null)
+                    && (d.PositionId == null || d.PositionId == Guid.Empty)
+                    && d.Status == DeviceStatus.Active);
+
+            var totalCount = await query.CountAsync();
+
+            var devices = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(d => new Device
+                {
+                    Id = d.Id,
+                    DeviceName = d.DeviceName
+                })
                 .ToListAsync();
-            return devices;
+
+            return (devices, totalCount);
         }
+
 
         public async Task<Device> GetDeviceByLocation(Guid areaId, Guid zoneId, Guid positionId)
         {

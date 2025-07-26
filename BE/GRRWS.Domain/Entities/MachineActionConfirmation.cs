@@ -12,12 +12,13 @@ namespace GRRWS.Domain.Entities
     {
         public string ConfirmationCode { get; set; } // Unique code (e.g., "STOCKOUT-20250723-001", "INSTALL-20250723-001")
         public DateTime? StartDate { get; set; } // Date of the action (e.g., request, installation)
+        public DateTime? CompletedDate { get; set; } // Date of completion
         public Guid RequestedById { get; set; } // User who initiated the action       
         public Guid? DeviceId { get; set; } // Device involved (old or new, depending on action)
         public Guid TaskId { get; set; } // Associated task 
         public MachineActionStatus Status { get; set; } // Pending, Approved, InProgress, Completed, Rejected, Cancelled   
         public MachineActionType ActionType { get; set; } // StockOut, StockIn, Installation, WarrantySubmission   
-        public DateTime? CompletedDate { get; set; } // Date of completion
+        
         public string? Reason { get; set; } // Reason for Rejected    
         public Guid? VerificationToken { get; set; } // Token for QR code verification (new field)
         public DateTime? TokenExpiration { get; set; } // Token expiration time (optional, for security)
@@ -26,15 +27,16 @@ namespace GRRWS.Domain.Entities
         public Guid? SignerId { get; set; } // User who signed (e.g., HOD for installation)
         public string? SignerRole { get; set; } // Role of signer (e.g., "HOD", "Mechanic")
         public string? SignatureBase64 { get; set; } // Signature as base64 (nullable)
+        public bool IsSigned {get; set; } = false;
         
         //For Mechanic
         public Guid? AssigneeId { get; set; } // Mechanic assigned to the action
         public bool MechanicConfirm { get; set; } = false; // Mechanic confirmation
 
         // For Stockkeeper
-        public Guid? ApprovedById { get; set; } // User who approved (e.g., stockkeeper)
-        public bool StockkeeperConfirm { get; set; } = false; // Stockkeeper confirmation        
+        public Guid? ApprovedById { get; set; } // Id Stockkeeper
         public DateTime? ApprovedDate { get; set; } // Date of approval
+        public bool StockkeeperConfirm { get; set; } = false; // Stockkeeper confirmation  có thiết bị hay không có thiết bị              
         public Guid? MachineId { get; set; } // Machine model (nullable if not applicable)
         //For HOD
         public string? Notes { get; set; } // Additional notes
@@ -51,5 +53,6 @@ namespace GRRWS.Domain.Entities
         public Device? Device { get; set; }
         public Machine? Machine { get; set; }
         public Tasks? Task { get; set; }
+        public ICollection<SparePartUsage> SparePartUsages { get; set; } = new List<SparePartUsage>(); // Liên kết với SparePartUsage
     }
 }
