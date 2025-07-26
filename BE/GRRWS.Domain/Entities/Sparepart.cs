@@ -15,7 +15,6 @@
         public string? Category { get; set; }
         public string? ImgUrl { get; set; }
         // Quan hệ
-        public ICollection<RepairSparepart>? RepairSpareparts { get; set; }
         public ICollection<ErrorSparepart>? ErrorSpareparts { get; set; }
         public Supplier?Supplier { get; set; }
         public ICollection<MachineSparepart>? MachineSpareparts { get; set; }

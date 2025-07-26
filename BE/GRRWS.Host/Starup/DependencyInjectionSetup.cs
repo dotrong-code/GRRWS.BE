@@ -113,8 +113,7 @@ namespace GRRWS.Host.Starup
             services.AddTransient<ITaskService, TaskService>();
             services.AddTransient<IWarrantyDetailService, WarrantyDetailService>();
             services.AddTransient<IErrorDetailService, ErrorDetailService>();
-            services.AddTransient<IErrorFixProgressService, ErrorFixProgressService>();
-            services.AddTransient<IErrorGuidelineService, ErrorGuidelineService>();
+           
             services.AddTransient<ISparePartUsageService, SparePartUsageService>();
             services.AddTransient<ISparepartService, SparepartService>();
             services.AddTransient<ITaskGroupService, TaskGroupService>();
@@ -161,15 +160,13 @@ namespace GRRWS.Host.Starup
             services.AddTransient<IIssueErrorRepository, IssueErrorRepository>();
             services.AddTransient<IErrorDetailRepository, ErrorDetailRepository>();
             services.AddTransient<IErrorSparepartRepository, ErrorSparepartRepository>();
-            services.AddTransient<IErrorFixStepRepository, ErrorFixStepRepository>();
-            services.AddTransient<IErrorFixProgressRepository, ErrorFixProgressRepository>();
-            services.AddTransient<IErrorGuidelineRepository, ErrorGuidelineRepository>();
+            
             services.AddTransient<ISparePartUsageRepository, SparePartUsageRepository>();
             services.AddTransient<ISparepartRepository, SparepartRepository>();
             services.AddTransient<IMachineSparepartRepository, MachineSparepartRepository>();
             services.AddTransient<IMachineRepository, MachineRepository>();
             services.AddTransient<ISupplierRepository, SupplierRepository>();
-            services.AddTransient<IRequestTakeSparePartUsageRepository, RequestTakeSparePartUsageRepository>();
+            
             services.AddTransient<ITaskGroupRepository, TaskGroupRepository>();
             services.AddTransient<IShiftRepository, ShiftRepository>();
             services.AddTransient<IMechanicShiftRepository, MechanicShiftRepository>();

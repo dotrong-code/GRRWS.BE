@@ -14,17 +14,13 @@ namespace GRRWS.Infrastructure.Implement.Repositories
     public class ErrorSparepartRepository : GenericRepository<ErrorSparepart>, IErrorSparepartRepository
     {
         public ErrorSparepartRepository(GRRWSContext context) : base(context) { }
-        public async Task<List<ErrorSparepart>> GetByErrorGuidelineIdAsync(Guid errorGuidelineId)
+        public async Task<List<ErrorSparepart>> GetByErrorIdsAsync(List<Guid> errorIds)
         {
             return await _context.ErrorSpareparts
-                .Where(es => es.ErrorGuidelineId == errorGuidelineId)
+                .Where(sp => errorIds.Contains(sp.ErrorId))
+                .Include(sp => sp.Sparepart)
                 .ToListAsync();
         }
-        public async Task<List<ErrorSparepart>> GetByErrorGuidelineIdsAsync(IEnumerable<Guid> guidelineIds)
-        {
-            return await _context.ErrorSpareparts
-                .Where(es => guidelineIds.Contains(es.ErrorGuidelineId))
-                .ToListAsync();
-        }
+
     }
 }

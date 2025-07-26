@@ -1,4 +1,5 @@
-﻿using GRRWS.Application.Common.Result;
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+using GRRWS.Application.Common.Result;
 using GRRWS.Application.Common.Validator.Abstract;
 using GRRWS.Application.Implement.Service;
 using GRRWS.Application.Interface.IService;
@@ -143,6 +144,14 @@ namespace GRRWS.Host.Controllers
             var result = await _deviceService.ImportDevicesAsync(file);
             return result.IsSuccess
                 ? ResultExtensions.ToSuccessDetails(result, "Devices imported successfully")
+                : ResultExtensions.ToProblemDetails(result);
+        }
+        [HttpGet("by-machine/{machineId}")]
+        public async Task<IResult> GetDevicesByMachineId(Guid machineId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            var result = await _deviceService.GetDevicesByMachineIdAsync(machineId, pageNumber, pageSize);
+            return result.IsSuccess
+                ? ResultExtensions.ToSuccessDetails(result, "Devices retrieved successfully")
                 : ResultExtensions.ToProblemDetails(result);
         }
 

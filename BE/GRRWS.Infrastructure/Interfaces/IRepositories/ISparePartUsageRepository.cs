@@ -10,10 +10,6 @@ namespace GRRWS.Infrastructure.Interfaces.IRepositories
 {
     public interface ISparePartUsageRepository : IGenericRepository<SparePartUsage>
     {
-        Task<PagedResponse<RequestTakeSparePartUsage>> GetAllRequestTakeSparePartUsagesAsync(int pageNumber, int pageSize, string assigneeName = null);
-        Task<PagedResponse<RequestTakeSparePartUsage>> GetRequestTakeSparePartUsagesByStatusAsync(SparePartRequestStatus status, int pageNumber, int pageSize, string assigneeName = null);
-        Task<RequestTakeSparePartUsage> GetRequestTakeSparePartUsageByIdAsync(Guid id);
-        Task<SparePartUsage> GetByIdAsync(Guid id);
-        Task<List<SparePartUsage>> GetByRequestTakeSparePartUsageIdAsync(Guid requestId);
+  
     }
 }

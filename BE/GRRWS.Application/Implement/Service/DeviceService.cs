@@ -399,5 +399,29 @@ public class DeviceService : IDeviceService
         return Result.SuccessWithObject(response);
     }
 
+    public async Task<Result> GetDevicesByMachineIdAsync(Guid machineId, int pageNumber, int pageSize)
+    {
+        var (devices, totalCount) = await _unitOfWork.DeviceRepository.GetDevicesByMachineIdAsync(machineId, pageNumber, pageSize);
+        if (!devices.Any())
+        {
+            return Result.SuccessWithObject(DeviceErrorMessage.DeviceNotExist());
+        }
+
+        var response = new PagedResponse<DeviceSimpleResponse>
+        {
+            Data = devices.Select(d => new DeviceSimpleResponse
+            {
+                Id = d.Id,
+                DeviceName = d.DeviceName
+            }).ToList(),
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+
+        return Result.SuccessWithObject(response);
+    }
+
+
 
 }

@@ -32,9 +32,9 @@ namespace GRRWS.Application.Implement.Service
             _mechanicShiftService = mechanicShiftService;
            
         }
-#region Main
+        #region Main
         #region Create Report
-        public async Task<Result> CreateReportWithIssueErrorAsync(ReportCreateWithIssueErrorDTO dto)
+        public async Task<Result> CreateReportWithIssueErrorAsync(ReportCreateWithIssueErrorDTO dto,Guid userId)
         {
             // Kiểm tra RequestId
             if (dto.RequestId == null)
@@ -113,7 +113,7 @@ namespace GRRWS.Application.Implement.Service
                 RequestId = dto.RequestId,
                 Location = createLocation,
                 CreatedDate = TimeHelper.GetHoChiMinhTime(),
-                
+
             };
 
             // Tạo ErrorDetails
@@ -164,17 +164,15 @@ namespace GRRWS.Application.Implement.Service
             await _unit.RequestRepository.UpdateAsync(request);
 
             // Tạo Task Group dựa trên ActionType
-            var users = await _unit.UserRepository.GetUsersByRole(2); // Role 2: Mechanic
-            var systemUserId = users?.FirstOrDefault()?.Id ?? Guid.Parse("32222222-2222-2222-2222-222222222222");
             Result taskGroupResult;
 
             if (dto.ActionType == ActionType.Replacement)
             {
-                taskGroupResult = await CreateReplacementTaskGroup(report.Id, allErrorIds.Distinct().ToList(), systemUserId);
+                taskGroupResult = await CreateReplacementTaskGroup(report.Id, allErrorIds.Distinct().ToList(), userId);
             }
             else // ActionType.Repair
             {
-                taskGroupResult = await CreateRepairTaskGroup(report.Id, allErrorIds.Distinct().ToList(), systemUserId);
+                taskGroupResult = await CreateRepairTaskGroup(report.Id, allErrorIds.Distinct().ToList(), userId);
             }
 
             if (taskGroupResult.IsFailure)
@@ -196,9 +194,10 @@ namespace GRRWS.Application.Implement.Service
             {
                 Message = $"Report created successfully for {dto.ActionType} with IssueErrors!",
                 ReportId = report.Id,
-                TaskGroupId = TaskGroupId 
+                TaskGroupId = TaskGroupId
             });
         }
+
         //public async Task<Result> CreateReportWithIssueError2Async(ReportCreateWithIssueErrorDTO dto)
         //{
         //    // Kiểm tra RequestId
@@ -601,7 +600,7 @@ namespace GRRWS.Application.Implement.Service
                 
                 //
                 var deviceWarrantyId = await _unit.DeviceWarrantyRepository.GetDeviceWarrantyByDeviceIdForDevice(request.DeviceId);
-                // Step 2: Tạo task mang máy đi bảo hành (Chưa có tạo request lấy máy bảo hành dưới kho rồi mang đi bảo hành)
+                //Tạo task mang máy đi bảo hành (Chưa có tạo request lấy máy bảo hành dưới kho rồi mang đi bảo hành)
                 var warrantyRequest = new CreateWarrantyTaskRequest
                 {
                     RequestId = requestId,
@@ -622,7 +621,7 @@ namespace GRRWS.Application.Implement.Service
                 Guid taskGroupId = data.TaskGroupId;
                 _unit.ClearChangeTracker();
 
-                // Step 3: Tạo task lấy máy thay thế tạm thời + Request yêu cầu lấy máy dưới kho
+                //Tạo task thay thế
                 var installRequest = new CreateInstallTaskRequest
                 {
                     RequestId = requestId,
@@ -748,22 +747,14 @@ namespace GRRWS.Application.Implement.Service
                     ));
                 }
 
-               
-                // Chuyển đổi ErrorIds thành ErrorGuidelineIds
-                var guidelineIds = await _unit.ErrorGuidelineRepository.GetGuidelineIdsByErrorIdsAsync(errorIds);
-                if (!guidelineIds.Any())
-                {
-                    
-                    return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound(
-                        "NotFound", $"No error guidelines found for the provided error IDs: {string.Join(", ", errorIds)}."
-                    ));
-                }
                 // Tạo Repair Task
                 var repairRequest = new CreateRepairTaskRequest
                 {
                     RequestId = requestId,
-                    ErrorGuidelineIds = guidelineIds // Gán các ErrorIds để xác định lỗi cần sửa
+                    AssigneeId = null,
+                    StartDate = null
                 };
+
                 var repairResult = await _taskService.CreateRepairTask(repairRequest, createdByUserId);
                 if (repairResult.IsFailure)
                 {
@@ -775,6 +766,38 @@ namespace GRRWS.Application.Implement.Service
                 Guid repairTaskId = repairData.TaskId;
                 Guid taskGroupId = repairData.TaskGroupId;
                 _unit.ClearChangeTracker();
+
+                // Tạo SparePartRequest Confirmation nếu có ErrorSparepart
+                var sparePartConfirmationResult = await CreateSparePartRequestConfirmation(requestId, repairTaskId, errorIds, createdByUserId);
+                if (sparePartConfirmationResult.IsFailure)
+                {
+                    return Result.SuccessWithObject(new
+                    {
+                        Message = $"Repair task created successfully but failed to create SparePartRequest confirmation: {sparePartConfirmationResult.Error.Description}",
+                        TaskGroupId = taskGroupId
+                    });
+                }
+
+                //Tạo task thay thế
+                var installRequest = new CreateInstallTaskRequest
+                {
+                    RequestId = requestId,
+                    AssigneeId = null,
+                    StartDate = null,
+                    TaskGroupId = taskGroupId,
+                    NewDeviceId = null
+                };
+                var installResult = await _taskService.CreateInstallTask(installRequest, createdByUserId);
+                if (installResult.IsFailure)
+                {
+                    {
+                        return Result.Failure(Infrastructure.DTOs.Common.Error.Failure(
+                            "Failure", $"Installation task creation failed"
+                        ));
+                    }
+
+                }
+
                 return Result.SuccessWithObject(new
                 {
                     Message = "Repair task group created successfully!",
@@ -788,6 +811,64 @@ namespace GRRWS.Application.Implement.Service
                 ));
             }
         }
+
+        private async Task<Result> CreateSparePartRequestConfirmation(Guid requestId, Guid taskId, List<Guid> errorIds, Guid userId)
+        {
+            var request = await _unit.RequestRepository.GetRequestByIdAsync(requestId);
+            if (request == null)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Request not found."));
+
+            var device = await _unit.DeviceRepository.GetDeviceByIdAsync(request.DeviceId);
+            if (device == null)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.NotFound("NotFound", "Device not found."));
+
+            // Lấy tất cả ErrorSparepart liên quan đến errorIds
+            var errorSpareparts = await _unit.ErrorSparepartRepository.GetByErrorIdsAsync(errorIds);
+            if (!errorSpareparts.Any())
+            {
+                return Result.SuccessWithObject(new
+                {
+                    Message = "No spare parts required for the provided errors."
+                });
+            }
+
+            var confirmation = new MachineActionConfirmation
+            {
+                Id = Guid.NewGuid(),
+                ConfirmationCode = $"SPARE-REQ-{TimeHelper.GetHoChiMinhTime().Ticks}-{Guid.NewGuid().ToString().Substring(0, 8)}",
+                StartDate = null,
+                RequestedById = userId,
+                DeviceId = device.Id,
+                MachineId = device.MachineId,
+                TaskId = taskId,
+                Reason = "Request spare parts for repair",
+                Status = MachineActionStatus.Pending,
+                ActionType = MachineActionType.SparePartRequest,
+                Notes = "Awaiting stockkeeper confirmation for spare parts",
+                StockkeeperConfirm = false,
+                ApprovedDate = null,
+                SparePartUsages = errorSpareparts.Select(sp => new SparePartUsage
+                {
+                    SparePartId = sp.SparepartId,
+                    QuantityUsed = sp.QuantityNeeded ?? 0,
+                    IsEnough = false // Ban đầu chưa xác nhận đủ linh kiện
+                }).ToList()
+            };
+
+            if (!confirmation.MachineId.HasValue)
+                return Result.Failure(Infrastructure.DTOs.Common.Error.Validation("ValidationError", "Device does not have a machine model."));
+
+            await _unit.MachineActionConfirmationRepository.CreateAsync(confirmation);
+            await _unit.SaveChangesAsync();
+
+            return Result.SuccessWithObject(new
+            {
+                Message = "SparePartRequest confirmation created successfully!",
+                ConfirmationId = confirmation.Id,
+                ConfirmationCode = confirmation.ConfirmationCode
+            });
+        }
+
         //private async Task<Result> CreateRepairTaskGroup2(Guid reportId, List<Guid> errorIds, Guid createdByUserId)
         //{
         //    try
@@ -860,6 +941,6 @@ namespace GRRWS.Application.Implement.Service
         //    }
         //}
 
-#endregion
+        #endregion
     }
 }
