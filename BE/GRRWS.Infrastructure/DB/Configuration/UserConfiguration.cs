@@ -43,28 +43,28 @@ namespace GRRWS.Infrastructure.DB.Configuration
                     Role = 1, // HOD
                     AreaId = Guid.Parse("b1c2d3e4-0003-0003-0003-000000000003") // Khu Kiểm Tra Chất Lượng
                 },
-                new User
-                {
-                    Id = Guid.Parse("21111111-1111-1111-1111-111111111114"),
-                    Email = "hod4@gmail.com",
-                    FullName = "Head of Department 4",
-                    UserName = "Head of Department 4",
-                    PhoneNumber = "09785628663",
-                    PasswordHash = "String123!",
-                    Role = 1, // HOD
-                    AreaId = Guid.Parse("b1c2d3e4-0004-0004-0004-000000000004") // Khu Cắt Vải
-                },
-                new User
-                {
-                    Id = Guid.Parse("21111111-1111-1111-1111-111111111115"),
-                    Email = "hod5@gmail.com",
-                    FullName = "Head of Department 5",
-                    UserName = "Head of Department 5",
-                    PhoneNumber = "09785628664",
-                    PasswordHash = "String123!",
-                    Role = 1, // HOD
-                    AreaId = Guid.Parse("b1c2d3e4-0005-0005-0005-000000000005") // Khu Thêu
-                },
+                //new User
+                //{
+                //    Id = Guid.Parse("21111111-1111-1111-1111-111111111114"),
+                //    Email = "hod4@gmail.com",
+                //    FullName = "Head of Department 4",
+                //    UserName = "Head of Department 4",
+                //    PhoneNumber = "09785628663",
+                //    PasswordHash = "String123!",
+                //    Role = 1, // HOD
+                //    AreaId = Guid.Parse("b1c2d3e4-0004-0004-0004-000000000004") // Khu Cắt Vải
+                //},
+                //new User
+                //{
+                //    Id = Guid.Parse("21111111-1111-1111-1111-111111111115"),
+                //    Email = "hod5@gmail.com",
+                //    FullName = "Head of Department 5",
+                //    UserName = "Head of Department 5",
+                //    PhoneNumber = "09785628664",
+                //    PasswordHash = "String123!",
+                //    Role = 1, // HOD
+                //    AreaId = Guid.Parse("b1c2d3e4-0005-0005-0005-000000000005") // Khu Thêu
+                //},
                 new User
                 {
                     Id = Guid.Parse("21111111-1111-1111-1111-111111111116"),
